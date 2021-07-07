@@ -22,7 +22,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: MacOS (10.14.6)",
     ],
-    package_dir={"": "freeda"},
-    packages=setuptools.find_packages(where="freeda"),
+    package_dir={"": "freeda_package"},
+    packages=setuptools.find_packages(where="freeda_package"),
     python_requires=">=3.7",
 )
