@@ -334,7 +334,7 @@ def generate_files_to_MSA(contig, cds, gene, fasta_path):
     with open(name, "w") as o:
         o.write(cds)
         for seq in sequences:
-            o.write("\n" + seq)
+            o.write("\n" + seq + "\n") # ADDED "\n" at the end (07_06_2021)
         o.write(gene.rstrip("\n+"))  
     o.close()
     shutil.move(name, MSA_path)
@@ -349,7 +349,8 @@ def select_contigs_to_MSA(contig, fasta_path):
     
     # get paths to fasta files for a given contig
     pattern = "*_" + str(contig) + ".fasta"
-    for path in glob.glob(fasta_path + "/" + pattern):
+    sorted_paths = sorted(glob.glob(fasta_path + "/" + pattern), key=os.path.getsize, reverse=False) # ADDED sorting (07/06/2021)
+    for path in sorted_paths:
         # if match on opposite strand, fil rev_comp_seqs list with comp sequences
         if "comp" in path:
             comp = True
