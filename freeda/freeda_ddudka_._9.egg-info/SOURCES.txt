@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+setup.py
+freeda/freeda_ddudka_._9.egg-info/PKG-INFO
+freeda/freeda_ddudka_._9.egg-info/SOURCES.txt
+freeda/freeda_ddudka_._9.egg-info/dependency_links.txt
+freeda/freeda_ddudka_._9.egg-info/top_level.txt

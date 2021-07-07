@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="freeda-ddudka_.-9",
+    name="freeda",
     version="0.0.1",
     author="Damian Dudka",
     author_email="damiandudka0@gmail.com",
