@@ -1,3 +1,6 @@
+--index-url https://pypi.fury.io/ddudka9/
+--extra-index-url https://pypi.org/simple/
+private-package==0.0.1
 biopython==1.78
 matplotlib==3.3.1
 numpy==1.20.2
