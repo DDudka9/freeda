@@ -63,6 +63,13 @@ def get_pymol_script(wdir, result_path, dictionary, protein, protein_path):
                 f.write("color magenta, " + residue + "\n")
                 f.write("show sticks, " + residue + "\n")
                 f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
+            
+            if 0.90 > float(features[2]) >= 0.75:
+                residue = features[0] + str(site)
+                f.write("select " + residue + ", resi " + str(site) + "\n")
+                f.write("color white, " + residue + "\n")
+                f.write("show sticks, " + residue + "\n")
+                f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
                 
         
         # PyMOL comand to mark N-term and C-term
@@ -73,7 +80,7 @@ def get_pymol_script(wdir, result_path, dictionary, protein, protein_path):
         f.write("set label_size, 20\n")
             
         # PyMOL command to set label positions
-        f.write("set label_position, (1,1,1)\n")
+        f.write("set label_position, (2,2,2)\n")
             
         # PyMOL command to set background color for saved output file
         f.write("set ray_opaque_background, on\n")
