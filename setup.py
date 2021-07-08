@@ -33,5 +33,5 @@ setuptools.setup(
     include_package_data=True,
     package_dir={"": "freeda"},
     packages=setuptools.find_packages(where="freeda"),
-    python_requires="==3.7",
+    python_requires=">=3.7",
 )
