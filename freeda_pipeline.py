@@ -179,6 +179,11 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
 
     if user_input1 == "y":
         blast_path = tblastn.run_blast(wdir, original_species)
+        if blast_path == None:
+            print("\nBlast database build failed for at least one genome" \
+                  "\n   Make sure you downloaded all genomes -> exiting the pipeline now...")
+            return
+        
     else:
         blast_path = wdir + "Blast_output/"
     
@@ -245,7 +250,7 @@ def check_structure(wdir):
                 structure_model_present = True
             else:
                 structure_model_present = False
-                print("...WARNING... Structure prediction for protein: %s DOES NOT EXIST" % protein)
+                print("\n...WARNING... Structure prediction for protein: %s DOES NOT EXIST" % protein)
     
     # do not return any script if even one model is not present
     return structure_model_present
