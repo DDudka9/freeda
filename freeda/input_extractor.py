@@ -7,31 +7,34 @@ Created on Fri Jul  9 22:47:43 2021
 """
 
 # REQUIRES INSTALLATION OF THE REFERENCE GENOME:
-    # pyensembl install --species mouse --release 93
-    # pyensembl install --species human --release 75
+    # pyensembl install --species mouse --release 100
+    # pyensembl install --species human --release 100
 
 from freeda.tblastn import check_genome_present
+from freeda import reference_genome_dict_generator
 import pyensembl
 import pybedtools
 
 import os
-#import glob
-import shutil
-wdir = os.getcwd() + "/"
-original_species = "Mm"
-protein = "Cenpt"
+# import glob
+# import shutil
+#original_species = "Hs"
+#wdir = os.getcwd() + "/"
+#protein = "MAVS"
+
+
+# Hard code "reference_contigs_dict" for human and mouse, potentially other main species
+# Cose you need the user to have it with the packcage without digging to instal folder
+
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
          "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
 
-def extract_input(wdir, original_species, genome, protein):
-    """Extracts all input sequences required by FREEDA from the indicated reference genome (original_species)"""
+def generate_reference_genome_object(wdir, original_species):
+    """Generates a reference Genome object using pyensembl as a wrapper for ensembl database"""
     
-    blast_input_path = wdir + "Blast_input/"
-    coding_sequence_input_path = wdir + "Coding_sequences/"
-    gene_input_path = wdir + "Genes/"
-    exons_input_path = wdir + "Exons/"
+    # THE ORIGINAL SPECIES NAME SHOULD BE STREAMLINED TO "Hs" etc...
     
     # default is mouse
     mouse_names = {"Mm", "mouse", "Mus musculus", "mus musculus"}
@@ -39,15 +42,15 @@ def extract_input(wdir, original_species, genome, protein):
     if original_species in mouse_names:
         #header = "musculus"
         species = "mus musculus"
-        release = 93
-        reference_genome_contigs_file = "MUSCULUS_genome_contigs.txt"
+        release = 100
+        reference_genome_contigs_dict = reference_genome_dict_generator.get_reference_genome_contigs_dict(original_species)
         reference_genome_name = "MUSCULUS_genome"
     
     elif original_species in human_names:
         #header = "sapiens"
         species = "homo sapiens"
-        release = 75
-        reference_genome_contigs_file = "SAPIENS_genome_contigs.txt"
+        release = 100
+        reference_genome_contigs_dict = reference_genome_dict_generator.get_reference_genome_contigs_dict(original_species)
         reference_genome_name = "SAPIENS_genome"
     
     # make sure original species genome (reference genome) is present
@@ -64,22 +67,39 @@ def extract_input(wdir, original_species, genome, protein):
     # define biotype (FREEDA deals only with protein coding sequences)
     biotype = "Protein coding"
     
+    # match contigs named between pyensembl Genome object and GeneBank assembly
+    #reference_contigs_dict = {}
+    #with open(reference_genome_contigs_file, "r") as f:
+    #    file = f.readlines()
+    #    for line in file:
+    #        l = line.split("\t")
+    #        reference_contigs_dict[l[0]] = l[4]
+    
+    return reference_genome_present, ensembl, original_species, reference_genomes_path, \
+            reference_genome_name, reference_genome_contigs_dict, biotype
+
+
+def extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
+                  reference_genome_contigs_dict, ensembl, biotype, protein):
+    """Extracts all input sequences required by FREEDA from the indicated reference genome (original_species)"""
+    
+    
+    blast_input_path = wdir + "Blast_input/"
+    coding_sequence_input_path = wdir + "Coding_sequences/"
+    gene_input_path = wdir + "Genes/"
+    exons_input_path = wdir + "Exons/"
+
     # find coding sequence
-    transcript, longest_transcript_id, gene_id, contig, strand, UTR_5, UTR_3 = extract_cds(ensembl, 
+    transcript, longest_transcript_id, gene_id, contig, strand, UTR_5, UTR_3, cds_sequence = extract_cds(ensembl, 
                 original_species, coding_sequence_input_path, protein, biotype)
-    # find coding sequence
-    #extract_cds(ensembl, original_species, coding_sequence_input_path, protein, biotype)
     # find protein sequence
     extract_protein(original_species, blast_input_path, protein, strand, transcript)
     # find gene sequence
-    reference_contigs_dict =  extract_gene(original_species, gene_input_path, 
-                                ensembl, contig, strand, gene_id, reference_genomes_path, 
-                                reference_genome_name, reference_genome_contigs_file, protein)
+    extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
+                reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein)
     # find exons sequence
-    extract_exons(protein, exons_input_path, reference_genomes_path, reference_genome_name, 
-                  contig, strand, transcript, reference_contigs_dict, UTR_5, UTR_3)
-    
-    return reference_genome_present
+    extract_exons(original_species, protein, exons_input_path, reference_genomes_path, reference_genome_name, 
+                  contig, strand, transcript, reference_genome_contigs_dict, UTR_5, UTR_3, cds_sequence)
     
     
 def extract_protein(original_species, blast_input_path, protein, strand, transcript):
@@ -88,17 +108,15 @@ def extract_protein(original_species, blast_input_path, protein, strand, transcr
     # find proteins sequence
     protein_sequence = transcript.protein_sequence
     # get and save the sequence
-    parse_sequence(blast_input_path, protein_sequence, protein, strand = None, sequence_type = "protein")
+    parse_sequence(original_species, blast_input_path, protein_sequence, 
+                   protein, strand = None, sequence_type = "protein")
     
     
-def extract_exons(protein, exons_input_path, reference_genomes_path, reference_genome_name, 
-                  contig, strand, transcript, reference_contigs_dict, UTR_5, UTR_3):
-    
-    # TEST "+" STRAND SEQUENCES !!!!
-    # FIGURE OUT HOW TO DEAL WITH UTRs SPANNING MULTIPLE EXONS !!!
-    
-    
+def extract_exons(original_species, protein, exons_input_path, reference_genomes_path, reference_genome_name, 
+                  contig, strand, transcript, reference_genome_contigs_dict, UTR_5, UTR_3, cds_sequence):
     """Extracts exoms sequence based on Transcript object"""
+    
+    # THIS FUNCTION WAS NOT TESTED FOR UTR_3 SPANNING MORE THAN ONE EXON!
         
     # get start and stop for each exon
     exon_intervals = transcript.exon_intervals
@@ -108,62 +126,163 @@ def extract_exons(protein, exons_input_path, reference_genomes_path, reference_g
     exons_file = open(exons_input_path + exons_filename, "w")
     
     number = 0
-    
-    for exon in exon_intervals:
-        number += 1
-        start = exon[0]
-        stop = exon[1]
-        header = protein + "_" + original_species + "_exon" + str(number)
-        exon_bed_filename = header + ".bed"
-        exon_fasta_filename = header + ".fasta"
-        with open(exon_bed_filename, "w") as b:
-            b.write(reference_contigs_dict[contig] + "\t")
-            
-            if strand == "-":
-                start = start - 1
+    last_exon_number = 1000
+    single_coding_exon = False
+    coding_exons = {}
 
-            # TEST "+" STRAND SEQUENCES !!!!
-            
-            b.write(str(start) + "\t")
-            b.write(str(stop))
+    exon_intervals_copy = exon_intervals[::]
+    
+    # Get first coding exon
+    for exon in exon_intervals_copy:
+        exon_fasta_sequence = get_single_exon(original_species, protein, reference_genome_contigs_dict, 
+            reference_genomes_path, reference_genome_name, rules, contig, strand, number, exon, last_exon_number)
         
-        bed_object = pybedtools.BedTool(exon_bed_filename)
-        bed_object = bed_object.sequence(fi = reference_genomes_path + \
-                            reference_genome_name + ".fasta")
-        exon_fasta_sequence = bed_object.save_seqs(exon_fasta_filename)
-        
-        with open(exon_fasta_filename, "r") as f:
-            file = f.readlines()
-            exon_fasta_sequence = file[1].rstrip("\n").upper()
-               
-            # write into file with all exons
-            exons_file.write(">" + header + "\n")
-            if strand == "-":
-                complement = ""
-                for base in exon_fasta_sequence:
-                    complement = rules[base] + complement
-                    exon_fasta_sequence = complement
+        if len(UTR_5) > 0:
             
-            if number == 1:
-                # already in correct orientation
+            # This is a non-coding exon
+            if len(UTR_5) >= len(exon_fasta_sequence):
+                # trim the UTR_5 and dont write this exon into exons file
+                UTR_5 = UTR_5[len(exon_fasta_sequence):]
+                print("Trimmed UTR_5: %s" % UTR_5)
+                # reset exon count
+                number == 0
+                # remove that exon from the intervals list
+                exon_intervals = exon_intervals[1:]
+                continue
+            
+            # This is the first coding exon
+            else:
+                number += 1
+                # trim and write exon -> already in correct orientation
                 exon_fasta_sequence_trimmed = exon_fasta_sequence.replace(UTR_5, "")
                 exon_fasta_sequence = exon_fasta_sequence_trimmed
+                UTR_5 = 0
+                # remove that exon from the intervals list if there are more than 1 exons listed
+                if len(exon_intervals) != 1:
+                    # write header into coding exons dict (number should = 1)
+                    coding_exons[number] = exon_fasta_sequence
+                    exon_intervals = exon_intervals[1:]
+                else:
+                    # This is NOT triggred if UTR_3 is divided into more than one exon!
+                    single_coding_exon = True
                 
-            if number == len(exon_intervals):
-                # already in correct orientation
-                exon_fasta_sequence_trimmed = exon_fasta_sequence.replace(UTR_3, "")
-                exon_fasta_sequence = exon_fasta_sequence_trimmed
-                
-            exons_file.write(exon_fasta_sequence + "\n")
-        
-        os.remove(exon_bed_filename)
-        os.remove(exon_fasta_filename)
-
-    exons_file.close()
+                break
     
+    # Get last coding exon
+    for exon in reversed(exon_intervals_copy):
+        
+        # If there is more than one coding exon
+        if single_coding_exon == False:
+            last_exon_number -= 1
+            exon_fasta_sequence = get_single_exon(original_species, protein, reference_genome_contigs_dict, 
+                reference_genomes_path, reference_genome_name, rules, contig, strand, number, exon, last_exon_number)
+        
+            if len(UTR_3) > 0:
+            
+                # This is a non-coding exon
+                if len(UTR_3) > len(exon_fasta_sequence):
+                    # trim the UTR_3 and dont write this exon into exons file
+                    UTR_3 = UTR_3[:len(exon_fasta_sequence)]
+                    # remove that exon from the intervals list
+                    exon_intervals = exon_intervals[:-1]
+                    continue
+            
+                # This is the last coding exon
+                else:
+                    # trim and write exon -> already in correct orientation
+                    exon_fasta_sequence_trimmed = exon_fasta_sequence.replace(UTR_3, "")
+                    exon_fasta_sequence = exon_fasta_sequence_trimmed
+                    UTR_3 = 0
+                    # write header into coding exons dict -> pick a huge arbitrary placeholder number
+                    coding_exons[float("inf")] = exon_fasta_sequence
+                    # remove that exon from the intervals list
+                    exon_intervals = exon_intervals[:-1]
+                    break
+        
+        # If there is only one coding exon
+        else:
+            number == 1
+            # trim and write exon sequence coming from UTR_5 trimming -> already in correct orientation
+            exon_fasta_sequence_trimmed = exon_fasta_sequence.replace(UTR_3, "")
+            exon_fasta_sequence = exon_fasta_sequence_trimmed
+            UTR_3 = 0
+            # write header into coding exons dict (number should = 1)
+            coding_exons[number] = exon_fasta_sequence
+            break
+            
+               
+    # Get the rest of the coding exons
+    if single_coding_exon == False:
+        for exon in exon_intervals:
+            exon_fasta_sequence = get_single_exon(original_species, protein, reference_genome_contigs_dict, 
+                reference_genomes_path, reference_genome_name, rules, contig, strand, number, exon, last_exon_number)
+        
+            # write header into coding exons dict
+            number += 1
+            coding_exons[number] = exon_fasta_sequence
+        
+    # Reset the number of the last exon
+    final_order = sorted([number for number, exon in coding_exons.items()])
+    final_coding_exons = {number : coding_exons[number] for number in final_order}
+    
+    #print(coding_exons)
+    #print(final_order)
+    #print(final_coding_exons)
+    
+    for nr, exon_sequence in final_coding_exons.items():
+        if nr != float("inf"):
+            header = ">" + protein + "_exon_" + str(nr)
+        else:
+            header = ">" + protein + "_exon_" + str(len(final_coding_exons))
+        exons_file.write(header + "\n")
+        exons_file.write(exon_sequence + "\n")
+    
+    exons_file.close()
+            
+
+def get_single_exon(original_species, protein, reference_genome_contigs_dict, 
+        reference_genomes_path, reference_genome_name, rules, contig, strand, number, exon, last_exon_number):
+    """Returns a header and a string representation of a current exon."""
+    
+    if last_exon_number < 1000:
+        number = last_exon_number
+    else:
+        number += 1
+        
+    # need to provide an off by 1 offset for start on both strands
+    start = exon[0] - 1
+    stop = exon[1]
+    header = protein + "_" + original_species + "_exon_" + str(number)
+    exon_bed_filename = header + ".bed"
+    exon_fasta_filename = header + ".fasta"
+    with open(exon_bed_filename, "w") as b:
+        b.write(reference_genome_contigs_dict[contig] + "\t")
+        b.write(str(start) + "\t")
+        b.write(str(stop))
+        
+    bed_object = pybedtools.BedTool(exon_bed_filename)
+    bed_object = bed_object.sequence(fi = reference_genomes_path + \
+                        reference_genome_name + ".fasta")
+    # makes a file and writes a fasta seq into it
+    exon_fasta_sequence = bed_object.save_seqs(exon_fasta_filename)
+    
+    with open(exon_fasta_filename, "r") as f:
+        file = f.readlines()
+        exon_fasta_sequence = file[1].rstrip("\n").upper()
+    
+    if strand == "-":
+        complement = ""
+        for base in exon_fasta_sequence:
+            complement = rules[base] + complement
+        exon_fasta_sequence = complement
+    
+    os.remove(exon_bed_filename)
+    os.remove(exon_fasta_filename)
+    
+    return exon_fasta_sequence
 
 def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
-        reference_genomes_path, reference_genome_name, reference_genome_contigs_file, protein):
+        reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein):
     """Extracts gene sequence based on Genome object"""
     
     # list all genes in contig
@@ -180,16 +299,8 @@ def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gen
     
     # make a bed and fasta file for gene (add underscore to differenciate from other handles)
     gene_bed_filename = "_" + gene_name + ".bed"
-    
-    # match contigs named between pyensembl Genome object and GeneBank assembly
-    reference_contigs_dict = {}
-    with open(reference_genome_contigs_file, "r") as f:
-        file = f.readlines()
-        for line in file:
-            l = line.split("\t")
-            reference_contigs_dict[l[0]] = l[4]
         
-    matched_contig = reference_contigs_dict[str(contig)]
+    matched_contig = reference_genome_contigs_dict[str(contig)]
     
     # make a bedtool file
     with open(gene_bed_filename, "w") as b:
@@ -202,21 +313,20 @@ def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gen
         
     os.remove(gene_bed_filename)
         
-    parse_sequence(gene_input_path, gene_fasta_sequence, protein, strand, sequence_type="gene")
-    
-    return reference_contigs_dict
+    parse_sequence(original_species, gene_input_path, gene_fasta_sequence, 
+                   protein, strand, sequence_type="gene")
 
-    #print(open(gene_fasta_file.seqfn).read())
-    #gene_sequence = gene_fasta_sequence_file.save_seqs(gene_fasta_filename)
-    
 
-def parse_sequence(output_path, fasta_sequence, protein, strand, sequence_type):
+def parse_sequence(original_species, output_path, fasta_sequence, protein, strand, sequence_type):
     """Parses either a pybedtools.bedtool.BedTool object or string into a file"""
     
+    # check if its a bedtool object
     if isinstance(fasta_sequence, pybedtools.bedtool.BedTool):
-        file = open(fasta_sequence.seqfn).readlines()
+        file = open(fasta_sequence.seqfn)
+        content = file.readlines()
         header = ">" + protein + "_" + original_species + "_" + sequence_type
-        sequence = file[1].upper().rstrip("\n")
+        sequence = content[1].upper().rstrip("\n")
+        file.close()
     
     if not isinstance(fasta_sequence, pybedtools.bedtool.BedTool):
         header = ">" + protein + "_" + original_species + "_" + sequence_type
@@ -311,23 +421,13 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
     # get 3'UTR sequence
     UTR_3 = transcript.three_prime_utr_sequence.upper()
     # get and save the sequence
-    parse_sequence(coding_sequence_input_path, cds_sequence, protein, 
-                                              strand, sequence_type="cds")
+    parse_sequence(original_species, coding_sequence_input_path, cds_sequence, 
+                   protein, strand, sequence_type="cds")
     
     if start_codon_present and stop_codon_present:
-        return transcript, longest_transcript_id, gene_id, contig, strand, UTR_5, UTR_3
+        return transcript, longest_transcript_id, gene_id, contig, strand, UTR_5, UTR_3, cds_sequence
     else:
         print("Chosen transcript for protein: %s does not have START and STOP annotated" % protein)
         
-        
-        
-        
-        
-        
-        
-        
-        
-    
-      
-    
+
     

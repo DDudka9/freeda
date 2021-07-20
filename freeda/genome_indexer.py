@@ -13,7 +13,6 @@ from Bio import SeqIO
 import logging
 import glob
 
-
 def index_genome_database(wdir, genome_name):
     
     genomes_dir = wdir + "Genomes/"
