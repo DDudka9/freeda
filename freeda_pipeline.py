@@ -115,7 +115,7 @@ Before testing make sure that code can communicate witg files:
 
 # TEST
 
-
+from freeda import input_extractor
 from freeda import tblastn
 from freeda import exon_extractor
 from freeda import paml_launcher
@@ -149,6 +149,10 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
     
     structure_model_present = check_structure(wdir)
     
+    
+######## GET USER INPUT ########
+    
+    
     while user_input1 != "y" and user_input1 != "n":
         user_input1 = input("(FREEDA) Should I run blast? (y / n)\n").lower()
         if user_input1.lower() != "y" and user_input1.lower() != "n":
@@ -169,13 +173,37 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
         if user_input4.lower() != "y" and user_input4.lower() != "n":
             print("Please answer y or n\n")
     
-    
     # make sure all structure prediction models are present
     if user_input4 == "y" and not structure_model_present:
         structure_overlay = False
         print("...WARNING... (FREEDA) I cannot overlay adaptive sites until all proteins have structure predictions\n")
         print("...WARNING... (FREEDA) I will run the pipeline skipping PyMOL\n")
         print("...WARNING... (FREEDA) You can run PyMOL later on based on these results\n")
+    
+    
+######## GET ALL INPUT DATA  ########
+
+
+    # generate a reference Genome object
+    reference_genome_present, ensembl, original_species, reference_genomes_path, reference_genome_name, \
+        reference_genome_contigs_dict, biotype = input_extractor.generate_reference_genome_object(wdir, original_species)
+    
+    if reference_genome_present == True:
+        all_proteins = open(wdir + "proteins.txt", "r").readlines()
+        for protein in all_proteins:
+            input_extractor.extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
+                  reference_genome_contigs_dict, ensembl, biotype, protein.rstrip("\n"))
+        print("\nInput data have been generated -> checking genome blast databases...\n")
+        
+    if reference_genome_present == False:
+        print("\n(FREEDA) I couldnt find the reference genome" \
+              "\n   Make sure you downloaded it into .../Data/Reference_genomes from https://www.ncbi.nlm.nih.gov/assembly (mouse: GCA_000001635.8; human: GCA_000001405.28) "\
+                  "-> exiting the pipeline now...")
+        return
+    
+    
+######## RUN BLAST ########
+    
 
     if user_input1 == "y":
         blast_path = tblastn.run_blast(wdir, original_species)
@@ -186,10 +214,26 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
         
     else:
         blast_path = wdir + "Blast_output/"
+
+
+
+    # ADD A CHECK FOR BLAST OUTPUT IN CASE IT WAS TEMPERED WITH OR SPECIES WERE REMOVED
+
+
+
+######## RUN EXON FINDING ########
+
+
     
     if user_input2 == "y":
         result_path = exon_extractor.analyse_blast_results(wdir, blast_path, \
                                         original_species, int(t), mafft_path)
+
+
+
+######## RUN PAML ########
+
+
 
     if user_input3 == "y" and user_input2 == "n":
         nr_of_tries = 1
@@ -205,13 +249,17 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
                 proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, 
                                                                                 original_species, result_path, mafft_path)
                 paml_visualizer.analyse_PAML_results(wdir, result_path, 
-                                                proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
+                            proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
                 
     if user_input3 == "y" and user_input2 == "y":
         proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, 
                                                             original_species, result_path, mafft_path)
         paml_visualizer.analyse_PAML_results(wdir, result_path, 
-                                             proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
+                            proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
+    
+    
+######## RUN PyMOL ########
+    
     
     if user_input1 == "n" and user_input2 == "n" and user_input3 == "n" and user_input4 == "y" and structure_model_present:
         nr_of_tries = 1
@@ -234,6 +282,8 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
         
     
     print("\nYou reached the end of FREEDA pipeline.")
+
+
 
 
 def check_structure(wdir):
