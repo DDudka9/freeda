@@ -25,7 +25,6 @@ Outputs tabulated text files per protein per genomes.
 import subprocess
 import os
 import glob
-import logging
 import tarfile
 import shutil
 import gzip

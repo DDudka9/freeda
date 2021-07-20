@@ -14,8 +14,8 @@ from freeda.tblastn import check_genome_present
 from freeda import reference_genome_dict_generator
 import pyensembl
 import pybedtools
-
 import os
+
 # import glob
 # import shutil
 #original_species = "Hs"
@@ -143,7 +143,7 @@ def extract_exons(original_species, protein, exons_input_path, reference_genomes
             if len(UTR_5) >= len(exon_fasta_sequence):
                 # trim the UTR_5 and dont write this exon into exons file
                 UTR_5 = UTR_5[len(exon_fasta_sequence):]
-                print("Trimmed UTR_5: %s" % UTR_5)
+                # print("Trimmed UTR_5: %s" % UTR_5)
                 # reset exon count
                 number == 0
                 # remove that exon from the intervals list
