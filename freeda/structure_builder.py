@@ -17,6 +17,26 @@ import os
 #wdir = os.getcwd() + "/"
 #result_path = wdir + "Results-06-13-2021-23-37/"
 
+"""
+from Bio import PDB
+from Bio.PDB.MMCIFParser import MMCIFParser
+
+pdbl = PDB.PDBList()
+pdbl.retrieve_pdb_file("4o9f")
+
+parser = MMCIFParser()
+structure = parser.get_structure("4o9f", "4o9f.cif")
+
+
+
+
+structure_id = "4O9F".lower()
+filename = "pdb4o9f.ent"
+structure = parser.get_structure(structure_id, filename)
+
+"""
+
+
 def run_pymol(wdir, original_species, result_path, offset):
     
     structures_path = wdir + "Structures"
