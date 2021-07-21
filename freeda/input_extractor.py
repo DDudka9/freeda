@@ -18,14 +18,22 @@ import os
 
 # import glob
 # import shutil
-#original_species = "Hs"
-#wdir = os.getcwd() + "/"
-#protein = "MAVS"
+original_species = "Mm"
+wdir = os.getcwd() + "/"
+protein = "Cenpa"
 
 
 # Hard code "reference_contigs_dict" for human and mouse, potentially other main species
 # Cose you need the user to have it with the packcage without digging to instal folder
+# Done
 
+# Provide the user with a list of possible genes per assembly (to avoid wrong naming)
+# Check protein list for valid gene names
+# Write number of transcript into the cds header
+# Write a test function that would ensure that all first exons start with ATG and all the last exons end with TGA, TAG and TAA
+# Look at Cenpa, Cenpb, Cenpc, Cenpe, Cenpf in caroli and pahari and check with ensembl cds for identity
+
+# CENP-A has UTR_3 spanning last two exons -> does not work with the current extract_exons function!
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",

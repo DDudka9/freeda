@@ -12,11 +12,12 @@ Generates a PyMOL script and runs it internally. Saves the PyMOL session per pro
 from ast import literal_eval
 import shutil
 import subprocess
+import os
 
 #wdir = os.getcwd() + "/"
 #result_path = wdir + "Results-06-13-2021-23-37/"
 
-def run_pymol(wdir, result_path):
+def run_pymol(wdir, original_species, result_path, offset):
     
     structures_path = wdir + "Structures"
     
@@ -28,22 +29,21 @@ def run_pymol(wdir, result_path):
         
        for line in file:
            protein = line.rstrip("\n")
-           protein_path = structures_path + "/" + protein + "/"
+           protein_path = structures_path + "/" + protein + "_" + original_species + "/"
         
            # obtain a pymol script based on the model
            # protein_path in Structures folder MUST EXIST !!!
-           get_pymol_script(wdir, result_path, dictionary, protein, protein_path)
+           get_pymol_script(wdir, result_path, dictionary, protein, protein_path, offset)
        
            # run that script in pymol without triggering external GUI (-cq)
            pymol_command = "pymol -cq structure_overlay.pml"
            stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE).communicate()
-           shutil.move("structure_overlay.pml", protein_path)
+           # move and overwrite if "structure_overlay.pml" exists in Structure folder for the protein
+           shutil.move(os.path.join(wdir, "structure_overlay.pml"), os.path.join(protein_path, "structure_overlay.pml"))
         
-def get_pymol_script(wdir, result_path, dictionary, protein, protein_path):
-    
-    # STILL WORKING ON THAT FUNCITON -> outputs a PyMOL script into Data folder
-    # to copy and paste into PyMOL
+        
+def get_pymol_script(wdir, result_path, dictionary, protein, protein_path, offset):
     
     matched_adaptive_sites_original = dictionary[protein]
     
@@ -54,7 +54,12 @@ def get_pymol_script(wdir, result_path, dictionary, protein, protein_path):
     
         # PyMOL command to color all resiues
         f.write("color cyan\n")
-            
+        
+        # reindex all residues in the structure based on sequence used as a model structure
+        f.write("alter (all), resi=str(int(resi)+" + str(offset) + ")\n")
+        f.write("sort\n")
+        f.write("rebuild\n")
+        
         # PyMOL command to color adaptive residues
         for site, features in matched_adaptive_sites_original.items():
             if float(features[2]) >= 0.90:
@@ -70,7 +75,6 @@ def get_pymol_script(wdir, result_path, dictionary, protein, protein_path):
                 f.write("color white, " + residue + "\n")
                 f.write("show sticks, " + residue + "\n")
                 f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
-                
         
         # PyMOL comand to mark N-term and C-term
         f.write('label (first (polymer and name CA)), "(%s)"%("N-term")\n')

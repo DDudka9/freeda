@@ -113,7 +113,9 @@ Before testing make sure that code can communicate witg files:
 # check the print screen
 
 
-# TEST
+# How come there is no contig with Cenpt coming from Spicilegus genome?
+# Make FREEDA log file more readable (indentations)
+
 
 from freeda import input_extractor
 from freeda import tblastn
@@ -147,7 +149,7 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
     user_input4 = None
     structure_overlay = True
     
-    structure_model_present = check_structure(wdir)
+    structure_model_present = check_structure(wdir, original_species)
     
     
 ######## GET USER INPUT ########
@@ -180,26 +182,30 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
         print("...WARNING... (FREEDA) I will run the pipeline skipping PyMOL\n")
         print("...WARNING... (FREEDA) You can run PyMOL later on based on these results\n")
     
+    if user_input4 == "y" and structure_model_present:
+        offset = input("(FREEDA) What is the offset used for modelling? (number)\n")
+    
     
 ######## GET ALL INPUT DATA  ########
 
+    if user_input1 == "y":
 
-    # generate a reference Genome object
-    reference_genome_present, ensembl, original_species, reference_genomes_path, reference_genome_name, \
-        reference_genome_contigs_dict, biotype = input_extractor.generate_reference_genome_object(wdir, original_species)
-    
-    if reference_genome_present == True:
-        all_proteins = open(wdir + "proteins.txt", "r").readlines()
-        for protein in all_proteins:
-            input_extractor.extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
-                  reference_genome_contigs_dict, ensembl, biotype, protein.rstrip("\n"))
-        print("\nInput data have been generated -> checking genome blast databases...\n")
+        # generate a reference Genome object
+        reference_genome_present, ensembl, original_species, reference_genomes_path, reference_genome_name, \
+            reference_genome_contigs_dict, biotype = input_extractor.generate_reference_genome_object(wdir, original_species)
+            
+        if reference_genome_present == True:
+            all_proteins = open(wdir + "proteins.txt", "r").readlines()
+            for protein in all_proteins:
+                input_extractor.extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
+                        reference_genome_contigs_dict, ensembl, biotype, protein.rstrip("\n"))
+            print("\nInput data have been generated -> checking genome blast databases...\n")
         
-    if reference_genome_present == False:
-        print("\n(FREEDA) I couldnt find the reference genome" \
+        if reference_genome_present == False:
+            print("\n(FREEDA) I couldnt find the reference genome" \
               "\n   Make sure you downloaded it into .../Data/Reference_genomes from https://www.ncbi.nlm.nih.gov/assembly (mouse: GCA_000001635.8; human: GCA_000001405.28) "\
                   "-> exiting the pipeline now...")
-        return
+            return
     
     
 ######## RUN BLAST ########
@@ -247,7 +253,7 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
                 proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, 
-                                                                                original_species, result_path, mafft_path)
+                                                                original_species, result_path, mafft_path)
                 paml_visualizer.analyse_PAML_results(wdir, result_path, 
                             proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
                 
@@ -272,13 +278,13 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
             else:
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
-                structure_builder.run_pymol(wdir, result_path)
-                
+                structure_builder.run_pymol(wdir, original_species, result_path, offset)
+    
                 # indicate that structure overlay was already run
                 structure_overlay = False
                 
     if structure_model_present and structure_overlay:
-        structure_builder.run_pymol(wdir, result_path)
+        structure_builder.run_pymol(wdir, original_species, result_path, offset)
         
     
     print("\nYou reached the end of FREEDA pipeline.")
@@ -286,7 +292,7 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
 
 
 
-def check_structure(wdir):
+def check_structure(wdir, original_species):
     
     with open("proteins.txt", "r") as f:
         file = f.readlines()
@@ -294,7 +300,7 @@ def check_structure(wdir):
         for line in file:
             protein = line.rstrip("\n")
             structures_path = wdir + "Structures"
-            model_path = structures_path + "/" + protein + "/model1.pdb"
+            model_path = structures_path + "/" + protein + "_" + original_species + "/model1.pdb"
         
             if os.path.isfile(model_path):
                 structure_model_present = True
