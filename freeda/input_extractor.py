@@ -18,9 +18,9 @@ import os
 
 # import glob
 # import shutil
-original_species = "Mm"
-wdir = os.getcwd() + "/"
-protein = "Cenpa"
+#original_species = "Mm"
+#wdir = os.getcwd() + "/"
+#protein = "Cenpa"
 
 
 # Hard code "reference_contigs_dict" for human and mouse, potentially other main species
