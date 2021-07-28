@@ -21,7 +21,7 @@ import shutil
 import glob
 
 
-def analyse_MSA(wdir, MSA_path, protein_name, genome_name, mafft_path, result_path, \
+def analyse_MSA(wdir, MSA_path, protein_name, genome_name, result_path, \
                 Mm_exons, microexons, expected_exons):
     
     final_exon_number = len(Mm_exons)
@@ -58,8 +58,7 @@ def analyse_MSA(wdir, MSA_path, protein_name, genome_name, mafft_path, result_pa
     
     # clone cds based on the most intronic contigs
     cloned_cds = cds_cloner.clone_cds(preselected_exons_overhangs, most_intronic_contigs, \
-                 protein_name, genome_name, final_exon_number, Mm_exons, MSA_path, \
-                 mafft_path, microexons)
+                 protein_name, genome_name, final_exon_number, Mm_exons, MSA_path, microexons)
 
     # check if final CDS is in frame (clone anyway)
     if (len(cloned_cds)-cloned_cds.count("-")) % 3 != 0:

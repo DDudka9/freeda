@@ -21,12 +21,9 @@ import logging
 import shutil
 
 
-def analyse_blast_results(wdir, blast_path, original_species, t, mafft_path):   
+def analyse_blast_results(wdir, blast_path, original_species, t):   
     
     start_time = time.time()
-
-    #if mafft_path == None:
-    #    mafft_path = "/Users/damian/anaconda3/bin/mafft"
     
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
     result_path = wdir + "Results" + day + "/"
@@ -56,9 +53,9 @@ def analyse_blast_results(wdir, blast_path, original_species, t, mafft_path):
         # process the final dataframe
         MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, t, result_path, protein_name, genome_name, genome_index)        
         # run MAFFT on all the MSA and write them into files
-        msa_aligner.run_MAFFT(MSA_path, mafft_path)
+        msa_aligner.run_MAFFT(MSA_path)
         # return potential exons for a current protein in current genome
-        msa_analyzer.analyse_MSA(wdir, MSA_path, protein_name, genome_name, mafft_path, result_path, Mm_exons, microexons, expected_exons)
+        msa_analyzer.analyse_MSA(wdir, MSA_path, protein_name, genome_name, result_path, Mm_exons, microexons, expected_exons)
         # mark that this blast result has been analysed
         message = "\nFinished running protein: '%s' from genome: '%s'\n" \
             % (protein_name, genome_name)
@@ -83,9 +80,6 @@ def analyse_blast_results(wdir, blast_path, original_species, t, mafft_path):
                 content = file.read()
                 file.seek(0, 0)
                 file.write(header.rstrip('\r\n') + '\n' + seq + '\n' + content)
-    
-    
-    # analyse_final_cds(original_species, result_path, mafft_path) # SHOULD BE RUN SEPARATELY
     
     # mark the end of the analysis
     message = ("Analysis completed in %s minutes or %s hours" % \

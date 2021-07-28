@@ -32,7 +32,7 @@ import subprocess
 from freeda import fasta_reader
 
 
-def analyse_final_cds(wdir, original_species, result_path, mafft_path):
+def analyse_final_cds(wdir, original_species, result_path):
     
     start_time = time.time()
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
@@ -166,7 +166,7 @@ def analyse_final_cds(wdir, original_species, result_path, mafft_path):
             shutil.copy("control_file.ctl", PAML_path + "/" + control_file)
         
             # align the final cds sequences
-            out_MAFFT = align_final_cds(protein, final_cds_file, result_path, mafft_path) 
+            out_MAFFT = align_final_cds(protein, final_cds_file, result_path) 
             shutil.move(out_MAFFT, protein_folder_path)
 
             # check and eliminate insertions that cause dashes in original species 
@@ -645,12 +645,12 @@ def run_Gblocks(final_cds_file_no_STOP, protein, result_path):
     return out_Gblocks
 
               
-def align_final_cds(protein, final_cds_file, result_path, mafft_path):
+def align_final_cds(protein, final_cds_file, result_path):
     
     in_filepath = result_path + protein + "/" + protein + "_final.fasta"
     out_MAFFT = "aligned_MAFFT_" + final_cds_file
     # run mafft
-    mafft_cline = MafftCommandline(mafft_path, input=in_filepath)
+    mafft_cline = MafftCommandline(input=in_filepath)
     # record standard output and standard error
     stdout, stderr = mafft_cline()
     # make a post-MSA file using out_filename

@@ -28,7 +28,7 @@ import shutil
 
 
 def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, \
-    genome_name, final_exon_number, Mm_exons, MSA_path, mafft_path, microexons):
+    genome_name, final_exon_number, Mm_exons, MSA_path, microexons):
     
     # get a dictionary with all the contigs and how many exons they have
     all_contigs_dict = {}
@@ -117,7 +117,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                 for exon_nr in exons:
                     total_hd_normalized += hamming_distance_to_original_species(Mm_exons, \
                         exon_nr, winner, preselected_exons_overhangs, \
-                        MSA_path, mafft_path, protein_name)
+                        MSA_path, protein_name)
                 winners_hd_normalized[winner] = total_hd_normalized
                 contigs_hd_analyzed[winner] = total_hd_normalized
 
@@ -210,7 +210,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                     # if yes, and this exon wasnt yet cloned -> run MAFFT against Mm exon
                     if contig[0] == seq[0] and cds_composition[exon] == "":
                         in_filename, out_filename = generate_single_exon_MSA(seq[1], contig[0], exon, \
-                            protein_name, Mm_exons, MSA_path, mafft_path, seq[2])
+                            protein_name, Mm_exons, MSA_path, seq[2])
                         # collect the aligned sequences
                         aligned_seqs = collect_sequences(in_filename + out_filename)
 
@@ -311,7 +311,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
 
 
 def hamming_distance_to_original_species(Mm_exons, exon_nr, winner, \
-                    preselected_exons_overhangs, MSA_path, mafft_path, protein_name):
+                    preselected_exons_overhangs, MSA_path, protein_name):
 
     # determine the name for the file to mafft
     filename = "duplicated_exon_" + str(exon_nr) + "_in_" + winner + "_hamming_distance.fasta"
@@ -330,7 +330,7 @@ def hamming_distance_to_original_species(Mm_exons, exon_nr, winner, \
     in_filename = glob.glob(os.getcwd() + "/" + filename)[0]
     out_filename = filename.rstrip(".fasta") + "_aligned.fasta"
     # run mafft
-    mafft_cline = MafftCommandline(mafft_path, input=in_filename)
+    mafft_cline = MafftCommandline(input=in_filename)
     #print(mafft_cline)
     # record standard output and standard error
     stdout, stderr = mafft_cline()
@@ -474,7 +474,7 @@ def hamming_distance_frameshift(p, q, exon_nr, original_species_exons):
     return len(mismatches)
 
 def generate_single_exon_MSA(seq, contig_name, exon_number, protein_name, Mm_exons, \
-                             MSA_path, mafft_path, genomic_locus):
+                             MSA_path, genomic_locus):
             
     filename = "exon_" + str(exon_number) + "_to_align.fasta"
     with open(filename, "w") as f:
@@ -492,14 +492,14 @@ def generate_single_exon_MSA(seq, contig_name, exon_number, protein_name, Mm_exo
     # move the file for MSA
     shutil.move(current_directory + "/" + filename, in_filepath)
     # run MAFFT and get the final filename of the aligned sequences
-    out_filename = run_single_exon_MAFFT(in_filepath, mafft_path, str(exon_number), filename)
+    out_filename = run_single_exon_MAFFT(in_filepath, str(exon_number), filename)
     return in_filepath, out_filename
 
 
-def run_single_exon_MAFFT(in_filepath, mafft_path, exon_number, filename):
+def run_single_exon_MAFFT(in_filepath, exon_number, filename):
     out_filename = "aligned_" + "exon_" + str(exon_number) + ".fasta"
     # run mafft
-    mafft_cline = MafftCommandline(mafft_path, input=in_filepath + filename)
+    mafft_cline = MafftCommandline(input=in_filepath + filename)
     #print(mafft_cline)
     # record standard output and standard error
     stdout, stderr = mafft_cline()
