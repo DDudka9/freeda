@@ -116,6 +116,8 @@ Before testing make sure that code can communicate witg files:
 # How come there is no contig with Cenpt coming from Spicilegus genome?
 # Make FREEDA log file more readable (indentations)
 
+# GET RID OF MAFFT PATH -> not needed if mafft binary in the path (with other dependecies)
+
 
 from freeda import input_extractor
 from freeda import tblastn
@@ -126,7 +128,7 @@ from freeda import structure_builder
 
 import os
 
-def freeda_pipeline(original_species=None, t=None, mafft_path=None):
+def freeda_pipeline(original_species=None, t=None):
     
     # this needs to be a path to the "Data" folder
     wdir = os.getcwd() + "/"
@@ -138,10 +140,6 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
     # initial percent identity threshold for blast matches analysis
     if t == None:
         t = 30
-    
-    # this needs to be a path where MAFFT aligner is installed
-    if mafft_path == None:
-        mafft_path = "/Users/damian/anaconda3/bin/mafft"
     
     user_input1 = None
     user_input2 = None
@@ -189,21 +187,28 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
 ######## GET ALL INPUT DATA  ########
 
     if user_input1 == "y":
-
+        reference_genome_name = input("    (FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
+        
         # generate a reference Genome object
-        reference_genome_present, ensembl, original_species, reference_genomes_path, reference_genome_name, \
-            reference_genome_contigs_dict, biotype = input_extractor.generate_reference_genome_object(wdir, original_species)
+        reference_genome_present, ensembl, original_species, reference_genomes_path, reference_genome_contigs_dict, \
+            biotype = input_extractor.generate_reference_genome_object(wdir, original_species, str(reference_genome_name))
             
         if reference_genome_present == True:
             all_proteins = open(wdir + "proteins.txt", "r").readlines()
             for protein in all_proteins:
-                input_extractor.extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
-                        reference_genome_contigs_dict, ensembl, biotype, protein.rstrip("\n"))
-            print("\nInput data have been generated -> checking genome blast databases...\n")
+                if input_extractor.extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
+                        reference_genome_contigs_dict, ensembl, biotype, protein.rstrip("\n")):
+                    print("\nInput data have been generated for protein: %s" % protein)
+                else:
+                    print("\n Input data generation FAILED for protein: %s -> exiting pipeline now...\n" % protein)
+                    return
+            print("\nAll input data have been generated -> checking genome blast databases...\n")
         
         if reference_genome_present == False:
-            print("\n(FREEDA) I couldnt find the reference genome" \
-              "\n   Make sure you downloaded it into .../Data/Reference_genomes from https://www.ncbi.nlm.nih.gov/assembly (mouse: GCA_000001635.8; human: GCA_000001405.28) "\
+            print("\n(FREEDA) I could not find the reference genome" \
+              "\n   Make sure you downloaded it into ../Data/Reference_genomes from " \
+                  " https://www.ncbi.nlm.nih.gov/assembly -> GenBank -> Genomic FASTA(.fna) " \
+                "(mouse: GCA_000001635.8; human: GCA_000001405.28) "\
                   "-> exiting the pipeline now...")
             return
     
@@ -233,7 +238,7 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
     
     if user_input2 == "y":
         result_path = exon_extractor.analyse_blast_results(wdir, blast_path, \
-                                        original_species, int(t), mafft_path)
+                                        original_species, int(t))
 
 
 
@@ -253,13 +258,13 @@ def freeda_pipeline(original_species=None, t=None, mafft_path=None):
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
                 proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, 
-                                                                original_species, result_path, mafft_path)
+                                                                original_species, result_path)
                 paml_visualizer.analyse_PAML_results(wdir, result_path, 
                             proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
                 
     if user_input3 == "y" and user_input2 == "y":
         proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, 
-                                                            original_species, result_path, mafft_path)
+                                                            original_species, result_path)
         paml_visualizer.analyse_PAML_results(wdir, result_path, 
                             proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
     
@@ -322,11 +327,9 @@ if __name__ == '__freeda_pipeline__':
     parser.add_argument("-t", "--blast_threshold", 
         help="specify percentage identity threshold for blast (ex. 30; default)", type=int,
         required=True)
-    parser.add_argument("-mafft", "--mafft_path", help="specify path to mafft aligner (ex. /Users/user/anaconda/bin/mafft)", type=str,
-        required=True)
     
     args = parser.parse_args()
-    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, mafft_path=args.mafft_path)
+    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold)
 
     
     
