@@ -377,8 +377,8 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
                 row_residues = row_residues + "\n"
                 row_features = row_features + "\n"
             
-        # mildly adaptive
-        if 0 < float(values[2]) < 0.90:
+        # mild probability of adaptive evolution
+        if 0.75 <= float(values[2]) < 0.90:
             residue = values[0]
             row_features = row_features + "."
             row_residues = row_residues + residue
@@ -386,7 +386,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
                 row_residues = row_residues + "\n"
                 row_features = row_features + "\n"
                 
-        # strongly adaptive
+        # strong probability of adaptive evolution
         if 0.90 <= float(values[2]):
             residue = values[0]
             row_features = row_features + ":"
@@ -412,7 +412,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
     
         message = ("\n\n.........................................." \
             "\n\nReference sequence for %s with adaptive sites:" \
-            "\n\n . means pr > 0.50 \n : means pr > 0.90 \n - means missing from PAML analysis\n\n") % protein_name
+            "\n\n . means pr >= 0.75 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % protein_name
         print(message)
         logging.info(message)
         

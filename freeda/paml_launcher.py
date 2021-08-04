@@ -204,6 +204,9 @@ def analyse_final_cds(wdir, original_species, result_path):
             shutil.copy(best_tree_path, PAML_path + "/gene.tree")
         
             # run PAML
+            message = "\n.........Running PAML for protein: %s.........\n" % protein
+            print(message)
+            
             M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path, control_file)
             message = "\n -> PAML p-values for protein %s : M2a v M1a - %s and M8 v M7 - %s" \
                 % (protein, str(M2a_M1a), str(M8_M7))
