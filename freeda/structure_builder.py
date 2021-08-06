@@ -20,6 +20,32 @@ import os
 #original_species = "Mm"
 #result_path = wdir + "Results-06-13-2021-23-37/"
 
+"""  
+# ERROR when running Haus2_Mm ven when taking automatic longer cds
+
+Traceback (most recent call last):
+
+  File "<ipython-input-2-883be37ae592>", line 1, in <module>
+    freeda_pipeline()
+
+  File "<ipython-input-1-1f53d32e17ad>", line 223, in freeda_pipeline
+    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
+
+  File "/Users/damian/freeda/freeda/structure_builder.py", line 43, in compare_model_with_input
+    for record in SeqIO.parse(pdb_file, 'pdb-atom'):
+
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/Bio/SeqIO/PdbIO.py", line 300, in PdbAtomIterator
+    structure = PDBParser().get_structure(None, source)
+
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/Bio/PDB/PDBParser.py", line 97, in get_structure
+    lines = handle.readlines()
+
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb0 in position 37: invalid start byte
+
+"""
 
 def compare_model_with_input(wdir, original_species, protein):
     
@@ -221,45 +247,6 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
         # PyMOL command to save the session
         f.write("save " + protein_path + protein + "_" + original_species + ".pse")
         
-        
-"""
-
-def check_structure(wdir, original_species):
-    Checks presence of a structure prediction model for all proteins
     
-    missing_structures = []
-    with open("proteins.txt", "r") as f:
-        file = f.readlines()
-        
-        for line in file:
-            protein = line.rstrip("\n")
-            structure_model_path = wdir + "Structures/" + protein + "_" + original_species
-            model_file_list = os.listdir(structure_model_path)
-            unwanted_files = [file for file in model_file_list if file.startswith(".") or not file.endswith(".pdb")]
-            
-            # check for unwanted files (hidden and non-pdb) and remove them
-            if unwanted_files != []:
-                [os.remove(structure_model_path + "/" + file) for file in unwanted_files]
-            
-            # there is exactly one pdb model
-            if len(model_file_list) == 1 and model_file_list[0].endswith(".pdb"):
-                continue
-                    
-            # there is more than one pdb model (not allowed)
-            if len(model_file_list) > 1:
-                print("There is more than one structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
-                missing_structures.append(protein)
-                continue
-            
-            if len(model_file_list) == 0:
-                print("There is no structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
-                missing_structures.append(protein)
-    
-    return missing_structures
-
-
-
-
-"""        
         
     

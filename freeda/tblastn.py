@@ -198,11 +198,6 @@ def unzip_genome(database_path, genome, genome_to_unzip):
     tar.extractall(path=database_path, members=find_packed_genome(tar, genome))
     tar.close()
     
-    # move unpacked file into the Genomes directory
-    
-    #print("Database_path: " + database_path)
-    #print("Source_directory: " + source_directory)
-    
     shutil.move(source_directory, database_path)
     # remove the now empty directory
     moved_gz_filename = source_directory.split("/")[-1]

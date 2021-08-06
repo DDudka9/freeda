@@ -12,16 +12,21 @@ Created on Fri Jul  9 22:47:43 2021
 
 from freeda.tblastn import check_genome_present
 from freeda import reference_genome_dict_generator
+from bioservices import UniProt
 import pyensembl
 import pybedtools
 import os
+import glob
+import subprocess
+import shutil
 import requests
+import tarfile
 
 # import glob
 # import shutil
-# wdir = os.getcwd() + "/"
-# original_species = "Mm"
-# protein = "Haus1"
+wdir = os.getcwd() + "/"
+original_species = "Mm"
+protein = "Haus6"
 # reference_genome_name = "MUSCULUS_genome"
 
 
@@ -47,12 +52,134 @@ import requests
 # Still there is one additional exon found.... cose exons are first aligned using CDS which still contains microexon
 # FURTHER CHECKPOINT MIGHT BE TRIGGERED IF FINAL CDS IS OUT OF FRAME (when translated???)
 
+# Think how to deal with gene_and_cds_reader module -> also detects microexons etc -> leave it in case of manual input
+# but no microexons would be detected and no warnings issued (which is a problem)
+
+# Also stucture model should be input together with the rest of the input
+
+"""
+
+# Get files without extracting? -> doesnt work 
+
+import  tarfile
+tar = tarfile.open("UP000005640_9606_HUMAN.tar")
+tar.getmembers()
+
+import  tarfile
+tar = tarfile.open("UP000005640_9606_HUMAN.tar")
+tar.getmembers()
+Traceback (most recent call last):
+
+  File "<ipython-input-1-490c2b219098>", line 2, in <module>
+    tar = tarfile.open("UP000005640_9606_HUMAN.tar")
+
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/tarfile.py", line 1573, in open
+    return func(name, "r", fileobj, **kwargs)
+
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/tarfile.py", line 1637, in gzopen
+    fileobj = GzipFile(name, mode + "b", compresslevel, fileobj)
+
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/gzip.py", line 168, in __init__
+    fileobj = self.myfileobj = builtins.open(filename, mode or 'rb')
+
+FileNotFoundError: [Errno 2] No such file or directory: 'UP000005640_9606_HUMAN.tar'
+
+After that, you can use extractfile() to extract the members as file object. Just an example
+
+import tarfile,os
+import sys
+os.chdir("/tmp/foo")
+tar = tarfile.open("test.tar")
+for member in tar.getmembers():
+    f=tar.extractfile(member)
+    content=f.read()
+    print "%s has %d newlines" %(member, content.count("\n"))
+    print "%s has %d spaces" % (member,content.count(" "))
+    print "%s has %d characters" % (member, len(content))
+    sys.exit()
+tar.close()
+
+"""
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
          "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
 
 
+def get_uniprot_id(wdir, original_species, protein):
+    """Retrieves all possible uniprot ids to be matched against structure prediction from AlphaFold"""
+    
+    if original_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+        original_species_number = "10090"
+    
+    if original_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+        original_species_number = "9606"
+    
+    possible_uniprot_ids = set()
+    
+    # generate a search for given protein
+    u = UniProt(verbose=False)
+    data = u.search(protein + "+and+taxonomy:" + original_species_number, frmt="tab", limit=5,
+             columns="genes,length,id")
+    data_list = data.split("\n")
+    for line in data_list:
+        elements = line.split("\t")
+        if protein.upper() in elements[0].upper():
+            possible_uniprot_ids.add(elements[2])
+    
+    return possible_uniprot_ids
+
+
+def fetch_structure_prediction(wdir, original_species, possible_uniprot_ids):
+    """Finds and extracts structure prediction model from AlphaFold database for the species"""
+    
+    if original_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+        handle = "MOUSE"
+    if original_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+        handle = "HUMAN"
+        
+    # make folder to host the structure prediction
+    structure_path = wdir + "Structures/" + protein + "_" + original_species
+    if not os.path.isdir(structure_path):
+        os.makedirs(structure_path)
+    
+    # find prediction model based on possible uniprot ids for the protein
+    path_to_original_species_structures = [path for path in glob.glob(wdir + "*") 
+                                                   if path.endswith(handle + ".tar")][0]
+    tar = tarfile.open(path_to_original_species_structures)
+    all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]
+    # this assumes that there is only one predicion model for a given protein in AlpghaFold
+    structure_filename = [s for s in all_structures if s.split("-")[1] in possible_uniprot_ids][0]
+    
+    # found structure
+    if structure_filename != []:
+        structure_prediction_matching = True
+        print("\nStructure prediction for protein: %s has been found\n" % protein)
+        
+        # extract a compressed model
+        path_to_tarfile = wdir + structure_filename
+        tar.extract(structure_filename)
+        print("\nExtracting prediction model for protein: %s ...\n" % protein)
+    
+        # need to use subprocess to decompress (tarfile or gunzip modules dont work directly)
+        cmd = ["gunzip", path_to_tarfile] # deletes zipped file automatically
+        subprocess.call(cmd)
+        
+        # define path to decompressed file and move to Structures folder
+        path_to_tarfile_unzipped = path_to_tarfile.replace(".gz", "")
+        shutil.move(path_to_tarfile_unzipped, structure_path)
+        
+        return structure_prediction_matching
+    
+    # didnt find structure
+    else:
+        structure_prediction_matching = False
+        print("\nStructure prediction for protein: %s HAS NOT BEEN FOUND -> cannot run PyMOL\n" % protein)
+        print("\nYou can use your own model (ex. from PDB; fragments are ok but no sequence mismatches!)\n")
+        
+        return structure_prediction_matching
+
+# THIS IS NOT NEEDED ANYMORE
 def get_prediction(wdir, original_species, protein):
     """Generates an Alpha Fold url for a given protein based on its UniProt id"""
     

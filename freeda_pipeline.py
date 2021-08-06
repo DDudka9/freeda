@@ -126,6 +126,10 @@ Before testing make sure that code can communicate witg files:
 # GET RID OF MAFFT PATH -> not needed if mafft binary in the path (with other dependecies)
 # DONE
 
+# Try downloading all models for a species into freeda code file? Zipped? Getting models without unzipping?
+
+# First check model sequence and length -> pick pyensembl transcripr based on that or longest (no user prompt)
+
 
 from freeda import input_extractor
 from freeda import tblastn
@@ -133,8 +137,8 @@ from freeda import exon_extractor
 from freeda import paml_launcher
 from freeda import paml_visualizer
 from freeda import structure_builder
-
 import os
+
 
 def freeda_pipeline(original_species=None, t=None):
     
@@ -149,15 +153,21 @@ def freeda_pipeline(original_species=None, t=None):
     if t == None:
         t = 30
     
+    user_input0 = None
     user_input1 = None
     user_input2 = None
     user_input3 = None
     user_input4 = None
+    structure_prediction_matching = False
     structure_overlay_present = False
-    
+
     
 ######## GET USER INPUT ########
     
+    while user_input0 != "y" and user_input0 != "n":
+        user_input0 = input("(FREEDA) Should I get input? (y / n)\n").lower()
+        if user_input0.lower() != "y" and user_input1.lower() != "n":
+            print("Please answer y or n\n")
     
     while user_input1 != "y" and user_input1 != "n":
         user_input1 = input("(FREEDA) Should I run blast? (y / n)\n").lower()
@@ -184,6 +194,27 @@ def freeda_pipeline(original_species=None, t=None):
     
     
 ######## GET ALL INPUT DATA  ########
+    
+    # record inputed data parameters
+    input_dictionary = {}
+    
+    if user_input0 == "y":
+        # get structure prediction model from AlphaFold
+        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+        input_dictionary[protein] = []
+        
+        for protein in all_proteins:
+            possible_uniprot_ids = input_extractor.get_uniprot_id(wdir, original_species, protein)
+            structure_prediction_matching = input_extractor.fetch_structure_prediction(wdir,
+                                                    original_species, possible_uniprot_ids)
+            input_dictionary[protein].append(structure_prediction_matching)
+            
+            
+            
+            # EXTRACT PROTEIN SEQUENCE AND LENGTH FROM PDB -> GET SAME FROM PYENSEMBL -> CHECK IF MATCH
+    
+    # WRITE INPUT DICT INTO FILE LATER REFERENCE
+    
 
     if user_input1 == "y":
         reference_genome_name = input("(FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
@@ -208,9 +239,12 @@ def freeda_pipeline(original_species=None, t=None):
                 prediction_url = input_extractor.get_prediction(wdir, original_species, protein)
                 if prediction_url == None:
                     print("AlphaFold prediction not available for: %s\n" % protein)
+                    model_equal_input = False
                     pass
                 elif prediction_url == True:
                     print("Structure prediction model for: %s already exists\n" % protein)
+                    # check if model sequence equals the blasted sequence
+                    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
                     pass
                 else:
                     print("\n(FREEDA) Please input structure prediction for protein: %s\n(copy the following url into your browser " \
@@ -218,6 +252,8 @@ def freeda_pipeline(original_species=None, t=None):
                          "%s\n\n ...WARNING... Verify protein identity (if incorrect find model in AlphaFold browser)" 
                                                      % (protein, protein + "_" + original_species, prediction_url))
                     input("\n(FREEDA) When done press ENTER\n")
+                    # check if model sequence equals the blasted sequence
+                    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
                     
             print("\nAll input data have been generated\n")
         
