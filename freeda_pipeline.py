@@ -137,7 +137,10 @@ from freeda import exon_extractor
 from freeda import paml_launcher
 from freeda import paml_visualizer
 from freeda import structure_builder
+from json import dump
+from ast import literal_eval
 import os
+import shutil
 
 
 def freeda_pipeline(original_species=None, t=None):
@@ -161,12 +164,13 @@ def freeda_pipeline(original_species=None, t=None):
     structure_prediction_matching = False
     structure_overlay_present = False
 
-    
+#----------------------------------------# 
 ######## GET USER INPUT ########
-    
+#----------------------------------------# 
+
     while user_input0 != "y" and user_input0 != "n":
         user_input0 = input("(FREEDA) Should I get input? (y / n)\n").lower()
-        if user_input0.lower() != "y" and user_input1.lower() != "n":
+        if user_input0.lower() != "y" and user_input0.lower() != "n":
             print("Please answer y or n\n")
     
     while user_input1 != "y" and user_input1 != "n":
@@ -192,96 +196,110 @@ def freeda_pipeline(original_species=None, t=None):
     #if user_input4 == "y":
     #    offset = input("(FREEDA) What is the offset used for modelling? (e.g. type 1 if full length)\n")
     
-    
+#----------------------------------------#    
 ######## GET ALL INPUT DATA  ########
+#----------------------------------------#   
     
-    # record inputed data parameters
+    # record inputed data parameters for using in later stages of the pipeline
     input_dictionary = {}
     
+    # User wants to generate input data
     if user_input0 == "y":
-        # get structure prediction model from AlphaFold
-        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
-        input_dictionary[protein] = []
-        
-        for protein in all_proteins:
-            possible_uniprot_ids = input_extractor.get_uniprot_id(wdir, original_species, protein)
-            structure_prediction_matching = input_extractor.fetch_structure_prediction(wdir,
-                                                    original_species, possible_uniprot_ids)
-            input_dictionary[protein].append(structure_prediction_matching)
-            
-            
-            
-            # EXTRACT PROTEIN SEQUENCE AND LENGTH FROM PDB -> GET SAME FROM PYENSEMBL -> CHECK IF MATCH
-    
-    # WRITE INPUT DICT INTO FILE LATER REFERENCE
-    
-
-    if user_input1 == "y":
-        reference_genome_name = input("(FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
         
         # generate a reference Genome object
+        reference_genome_name = input("(FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
         reference_genome_present, ensembl, original_species, reference_genomes_path, reference_genome_contigs_dict, \
             biotype = input_extractor.generate_reference_genome_object(wdir, original_species, str(reference_genome_name))
-            
-        if reference_genome_present == True:
-            all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
-            
-            for protein in all_proteins:
-                
-                if input_extractor.extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
-                        reference_genome_contigs_dict, ensembl, biotype, protein):
-                    print("\nInput data have been generated for protein: %s" % protein)
-                else:
-                    print("\n Input data generation FAILED for protein: %s -> exiting pipeline now...\n" % protein)
-                    return
-                
-                # get structure model using AlphaFold url request
-                prediction_url = input_extractor.get_prediction(wdir, original_species, protein)
-                if prediction_url == None:
-                    print("AlphaFold prediction not available for: %s\n" % protein)
-                    model_equal_input = False
-                    pass
-                elif prediction_url == True:
-                    print("Structure prediction model for: %s already exists\n" % protein)
-                    # check if model sequence equals the blasted sequence
-                    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
-                    pass
-                else:
-                    print("\n(FREEDA) Please input structure prediction for protein: %s\n(copy the following url into your browser " \
-                      "-> click PDB file -> save in ../Data/Structures/%s)\n\n " \
-                         "%s\n\n ...WARNING... Verify protein identity (if incorrect find model in AlphaFold browser)" 
-                                                     % (protein, protein + "_" + original_species, prediction_url))
-                    input("\n(FREEDA) When done press ENTER\n")
-                    # check if model sequence equals the blasted sequence
-                    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
-                    
-            print("\nAll input data have been generated\n")
         
+        # stop pipeline if the reference genome is absent
         if reference_genome_present == False:
-            print("\n(FREEDA) I could not find the reference genome" \
+            
+            print("\n...FATAL ERROR...: There is no reference genome detected -> exiting the pipeline now...\n" \
               "\n   Make sure you downloaded it into ../Data/Reference_genomes from " \
                   " https://www.ncbi.nlm.nih.gov/assembly -> (mouse: GCA_000001635.8; human: GCA_000001405.28) -> " \
                       "GenBank -> Genomic FASTA(.fna)")
             return
+        
+        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+        for protein in all_proteins:
+            print("\n----------- * %s * -----------" % protein)
+            
+            # get structure prediction model from AlphaFold
+            input_dictionary[protein] = []
+            possible_uniprot_ids = input_extractor.get_uniprot_id(wdir, original_species, protein)
+            model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein, possible_uniprot_ids)
+            #input_dictionary[protein].append(str(model_seq))
+            
+            # get sequence input from ensembl
+            input_correct, model_matches_input, microexon_present = input_extractor.extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
+                        reference_genome_contigs_dict, ensembl, biotype, protein, model_seq)
+            
+            if input_correct:
+                print("\nInput data have been generated for protein: %s\n\n" % protein)
+         
+            if not input_correct:
+                print("\n...FATAL ERROR...: Input data generation FAILED for protein: %s -> exiting the pipeline now...\n" % protein)
+                return
+            
+            if model_matches_input and not microexon_present:
+                # ast module requires a string
+                input_dictionary[protein] = str(model_matches_input)
+            
+            if not model_matches_input:
+                print("...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl database -> cannot run PyMOL\n" % protein)
+                print("...WARNING...: Protein will be analyzed using PAML without 3D structure overlay\n")
+                # ast module requires a string
+                input_dictionary[protein] = str(model_matches_input)
+            
+            if microexon_present:
+                model_matches_input = False
+                print("...WARNING...: Sequence for: %s found in Ensembl contains a microexon\n" % protein)
+                print("...WARNING...: Microexons are difficult to align and are removed -> cannot run PyMOL\n")
+                # ast module requires a string
+                input_dictionary[protein] = str(model_matches_input)
+                
+        # save the input dict into a file
+        with open("most_recent_input_dictionary.txt", "w") as file:
+            dump(input_dictionary, file)
+        shutil.move(wdir + "most_recent_input_dictionary.txt", wdir + "Blast_input/most_recent_input_dictionary.txt")
+        
+        print("\nAll input data have been generated\n")
     
-    # check if all models are present
-    all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
-    missing_structures = [structure_builder.check_structure(wdir, original_species, protein) for protein in all_proteins]
-    missing_structures_final = [structure for structure in missing_structures if structure != None]
+    # User doesnt want to generate input data
+    if user_input0 == "n":
+        
+        # check if input data have been generated beforehand
+        path_to_input_dict = wdir + "Blast_input/"
+        if os.path.exists(path_to_input_dict + "most_recent_input_dictionary.txt"):
+            with open(path_to_input_dict + "most_recent_input_dictionary.txt", "r") as f:
+                # ast module requires a string
+                input_dict = literal_eval(f.read())
+        else:
+            print("\n...FATAL ERROR...: You need to generate input data first -> exiting the pipeline now...")
+            return
+                
+        # DO I NEED THIS? Models are always present but shoud not be used sometimes -> input_dictionary.txt:
+        
+        # check if all models are present
+        #all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+        #missing_structures = [structure_builder.check_structure(wdir, original_species, protein) for protein in all_proteins]
+        #missing_structures_final = [structure for structure in missing_structures if structure != None]
     
-    if user_input4 == "y" and missing_structures_final != []:
-        print("...WARNING... (FREEDA) I did not find clear structure prediction models for: %s" % missing_structures_final)
-        print("...WARNING... (FREEDA) I cannot overlay adaptive sites for these proteins\n")
+    #if user_input4 == "y" and missing_structures_final != []:
+    #    print("...WARNING...: (FREEDA) I did not find clear structure prediction models for: %s" % missing_structures_final)
+    #    print("...WARNING...: (FREEDA) I cannot overlay adaptive sites for these proteins\n")
     
     
+#----------------------------------------# 
 ######## RUN BLAST ########
+#----------------------------------------# 
     
 
     if user_input1 == "y":
         print("\n -> checking genome blast databases...")
         blast_path = tblastn.run_blast(wdir, original_species)
         if blast_path == None:
-            print("\nBlast database build failed for at least one genome" \
+            print("\n...FATAL ERROR...: Blast database build failed for at least one genome" \
                   "\n   Make sure you downloaded all genomes -> exiting the pipeline now...")
             return
         
@@ -293,9 +311,9 @@ def freeda_pipeline(original_species=None, t=None):
     # ADD A CHECK FOR BLAST OUTPUT IN CASE IT WAS TEMPERED WITH OR SPECIES WERE REMOVED
 
 
-
+#----------------------------------------# 
 ######## RUN EXON FINDING ########
-
+#----------------------------------------# 
 
     
     if user_input2 == "y":
@@ -303,9 +321,9 @@ def freeda_pipeline(original_species=None, t=None):
                                         original_species, int(t))
 
 
-
+#----------------------------------------# 
 ######## RUN PAML ########
-
+#----------------------------------------# 
 
     if user_input3 == "y" and user_input2 == "n":
         nr_of_tries = 1
@@ -313,7 +331,7 @@ def freeda_pipeline(original_species=None, t=None):
             user_input4 = input("----->  Indicate folder with results (no slashes or quotes): ")
             result_path = wdir + user_input4 + "/"
             if os.path.isdir(result_path) == False:
-                print("\n(FREEDA) I couldnt find your results folder (%s/3)" % nr_of_tries)
+                print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
                 nr_of_tries += 1
             else:
                 nr_of_tries = float("inf")
@@ -329,42 +347,62 @@ def freeda_pipeline(original_species=None, t=None):
         paml_visualizer.analyse_PAML_results(wdir, result_path, 
                             proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
     
-    
+#----------------------------------------# 
 ######## RUN PyMOL ########
+#----------------------------------------#   
+
+
     
-    
+    # check_structure is obsolete cose not every model is usable -> refer to input_dictionary.txt
+    # ALSO INPUT DICT MAY NOT NEED MODEL SEQ -> remove that
+
+
+
     if user_input1 == "n" and user_input2 == "n" and user_input3 == "n" and user_input4 == "y":
         nr_of_tries = 1
         while nr_of_tries <= 3:
             user_input4 = input("----->  Indicate folder with results (no slashes or quotes): ")
             result_path = wdir + user_input4 + "/"
             if os.path.isdir(result_path) == False:
-                print("\n(FREEDA) I couldnt find your results folder (%s/3)" % nr_of_tries)
+                print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
                 nr_of_tries += 1
             else:
-                all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+                #all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
                 
+                for protein, model_equal_input in input_dict.items():
+                    # check if model seq and input seq match (from dict) and check if exactly one model exists
+                    if bool(model_equal_input) == True and structure_builder.check_structure(wdir, original_species, protein):
+                        successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
+                        if not successful:
+                            break
+                    else:
+                        print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
+                
                 # check if all models are present and run PyMOL
-                missing_structures_final = structure_builder.check_all_structures(wdir, original_species)
-                for protein in all_proteins:
+                #missing_structures_final = structure_builder.check_all_structures(wdir, original_species)
+                #for protein in all_proteins:
                     # check if model sequence equals the blasted sequence
-                    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
-                    if protein not in missing_structures_final and model_equal_input == True:
-                        structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
+                    #model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein, model_seq)
+                    #if protein not in missing_structures_final and model_equal_input == True:
+                        #structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
                         
                 # indicate that structure overlay is already present
                 structure_overlay_present = True
     
     # run PyMOL together with the rest of the pipeline
     if user_input4 == "y" and not structure_overlay_present:
-        for protein in all_proteins:
+        for protein, model_equal_input in input_dict.items():
             # check if model sequence equals the blasted sequence
-            model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
-            # exclude proteins with missing prediction models
-            if protein not in missing_structures_final and model_equal_input == True:
-                structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
+            #model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein, model_seq)
+            # check if model seq and input seq match (from dict) and check if exactly one model exists
+            if bool(model_equal_input) == True and structure_builder.check_structure(wdir, original_species, protein):
+                successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
+                if not successful:
+                    break
+            else:
+                print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
         
     print("\nYou reached the end of FREEDA pipeline.")
 
@@ -387,7 +425,31 @@ if __name__ == '__freeda_pipeline__':
     
     
     
-    
+"""
+
+ 
+                # get structure model using AlphaFold url request
+                prediction_url = input_extractor.get_prediction(wdir, original_species, protein)
+                if prediction_url == None:
+                    print("AlphaFold prediction not available for: %s\n" % protein)
+                    model_equal_input = False
+                    pass
+                elif prediction_url == True:
+                    print("Structure prediction model for: %s already exists\n" % protein)
+                    # check if model sequence equals the blasted sequence
+                    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
+                    pass
+                else:
+                    print("\n(FREEDA) Please input structure prediction for protein: %s\n(copy the following url into your browser " \
+                      "-> click PDB file -> save in ../Data/Structures/%s)\n\n " \
+                         "%s\n\n ...WARNING... Verify protein identity (if incorrect find model in AlphaFold browser)" 
+                                                     % (protein, protein + "_" + original_species, prediction_url))
+                    input("\n(FREEDA) When done press ENTER\n")
+                    # check if model sequence equals the blasted sequence
+                    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
+
+
+"""
     
     
     

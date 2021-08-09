@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['freeda/input_extractor.py', 'freeda_pipeline.py', 'freeda/structure_builder.py', 'freeda/gene_and_cds_reader.py', 'freeda/cds_cloner.py', 'freeda/tblastn.py']
+recent_files = ['freeda_pipeline.py', 'freeda/input_extractor.py', 'freeda/structure_builder.py', 'freeda/tblastn.py', 'freeda/paml_visualizer.py']
 

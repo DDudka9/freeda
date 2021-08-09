@@ -369,7 +369,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
         
         # prepare residues and features arrays
         # not adaptive
-        if float(values[2]) < 0.50 and values[3] != 0:
+        if float(values[2]) < 0.75 and values[3] != 0:
             residue = values[0]
             row_features = row_features + " "
             row_residues = row_residues + residue

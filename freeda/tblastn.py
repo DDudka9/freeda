@@ -63,7 +63,8 @@ def run_blast(wdir, original_species):
             database = database_path + genome
             query = query_path + protein + "_" + original_species + "_protein.fasta"
             output = output_path + protein + "_" + genome + ".txt"
-            to_blast = ["tblastn", "-db", database, "-query", query, "-out", output, "-outfmt", form, "-num_threads", "5"]
+            to_blast = ["tblastn", "-db", database, "-query", query, "-out", output, "-outfmt", form, "-num_threads", "8"]
+            print("\nPerforming tblast for protein: %s from genome: %s\n" % (protein, genome))
             subprocess.call(to_blast)
 
     print("\ntblastn txt files have been generated.")

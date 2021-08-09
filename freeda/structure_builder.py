@@ -47,12 +47,13 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb0 in position 37: invalid
 
 """
 
-def compare_model_with_input(wdir, original_species, protein):
+# THIS IS NOT NEEDED ANYMORE:
+def compare_model_with_input(wdir, original_species, protein, model_seq):
     
-    # silence warnings from Biopython about missing header in model
-    import warnings
-    from Bio import BiopythonWarning
-    warnings.simplefilter('ignore', BiopythonWarning)
+    # silence warnings from Biopython about missing header in model (has to follow import)
+    #import warnings
+    #from Bio import BiopythonWarning
+    #warnings.simplefilter('ignore', BiopythonWarning)
     
     # get input protein sequence used for blast
     blast_input_path = wdir + "Blast_input/"
@@ -61,31 +62,31 @@ def compare_model_with_input(wdir, original_species, protein):
         input_seq = f.readlines()[1]
 
     # get protein sequence of the model
-    structure_model_path = wdir + "Structures/" + protein + "_" + original_species
-    model_filename = [model for model in os.listdir(structure_model_path) if model.endswith(".pdb")][0]
-    model_path = structure_model_path + "/" + model_filename
+    #structure_model_path = wdir + "Structures/" + protein + "_" + original_species
+    #model_filename = [model for model in os.listdir(structure_model_path) if model.endswith(".pdb")][0]
+    #model_path = structure_model_path + "/" + model_filename
     
-    with open(model_path, 'r') as pdb_file:
-        for record in SeqIO.parse(pdb_file, 'pdb-atom'):
-            model_seq = record.seq
+    #with open(model_path, 'r') as pdb_file:
+    #    for record in SeqIO.parse(pdb_file, 'pdb-atom'):
+    #        model_seq = record.seq
 
     # compare sequences and do not allow model overlay if sequences differ
     if input_seq != model_seq:
-        print("\n...WARNING... Model prediction for %s is based on a different sequence " \
-              "than used as input -> cannot run PyMOL\n" % protein)
+        print("\n...WARNING... Protein sequence generated DOES NOT match the model for: %s\n" \
+                                              "-> cannot run PyMOL\n" % protein)
         print("Input sequence:\n%s\n" % input_seq)
         print("Model sequence:\n%s\n" % model_seq)
-        return False
+        return
     
     else:
-        return True
+        print("\nProtein sequence generated matches the model for protein: %s" % protein)
+        return
 
 
-# WARN IF THERE IS A MISMATCH BETWEEN PROTEIN SEQUENCE USED FOR BLAST AND FROM ALPHAFOLD
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCOREING (C-term label interferes?)
 # Done but NOT TESTED YET
 
-
+# THIS IS PROBABLY NOT NEEDED:
 def check_all_structures(wdir, original_species):
     """Checks presence of structure prediction models for all proteins"""
    
@@ -120,17 +121,17 @@ def check_structure(wdir, original_species, protein):
     
     # there is exactly one pdb model
     if len(model_file_list) == 1 and model_file_list[0].endswith(".pdb"):
-        return
+        return True
                     
     # there is more than one pdb model (not allowed)
     if len(model_file_list) > 1:
         print("There is more than one structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
-        return protein
+        return False
     
     # there is no pdb model (not allowed)
     if len(model_file_list) == 0:
         print("There is no structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
-        return protein
+        return False
 
 
 def run_pymol(wdir, original_species, result_path, protein, offset):
@@ -145,7 +146,8 @@ def run_pymol(wdir, original_species, result_path, protein, offset):
         dictionary = literal_eval(f.read())
     
     # obtain a pymol script based on the model
-    get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset)
+    if not get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset):
+        return False
        
     # run that script in pymol without triggering external GUI (-cq)
     pymol_command = "pymol -cq structure_overlay.pml"
@@ -155,6 +157,8 @@ def run_pymol(wdir, original_species, result_path, protein, offset):
     shutil.move(os.path.join(wdir, "structure_overlay.pml"), os.path.join(protein_path, "structure_overlay.pml"))
     # move the model with overlayed residues into Results folder
     shutil.move(protein_path + "/" + final_model_name, result_path + "/" + final_model_name)
+    
+    return True
     
 def get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset):
     
@@ -166,10 +170,10 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
 
     if len(os.listdir(structure_prediction_path)) == 0:
         print("\nNo structure predicion model is present for: %s -> cannot run PyMOL" % protein)
-        return
+        return False
     if len(os.listdir(structure_prediction_path)) > 1:
         print("\nMore than one structure predicion model is present for: %s -> cannot run PyMOL" % protein)
-        return
+        return False
     
     with open("structure_overlay.pml", "w") as f:
         
@@ -205,12 +209,12 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
                 f.write("show sticks, " + residue + "\n")
                 f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
             
-            if 0.90 > float(features[2]) >= 0.75:
-                residue = features[0] + str(site)
-                f.write("select " + residue + ", resi " + str(site) + "\n")
-                f.write("color white, " + residue + "\n")
-                f.write("show sticks, " + residue + "\n")
-                f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
+            #if 0.90 > float(features[2]) >= 0.75:
+            #    residue = features[0] + str(site)
+            #    f.write("select " + residue + ", resi " + str(site) + "\n")
+            #    f.write("color white, " + residue + "\n")
+            #    f.write("show sticks, " + residue + "\n")
+            #    f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
         
         # PyMOL comand to mark N-term and C-term:
         
@@ -246,6 +250,8 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
             
         # PyMOL command to save the session
         f.write("save " + protein_path + protein + "_" + original_species + ".pse")
+        
+    return True
         
     
         
