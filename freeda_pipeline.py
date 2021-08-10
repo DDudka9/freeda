@@ -145,6 +145,7 @@ import shutil
 
 def freeda_pipeline(original_species=None, t=None):
     # current directory must be the "Data" folder
+
     wdir = os.getcwd() + "/"
 
     # reference species sequences: protein seq, cds, exons, gene (ex. Mus musculus)
@@ -212,7 +213,7 @@ def freeda_pipeline(original_species=None, t=None):
         biotype = input_extractor.generate_reference_genome_object(wdir, original_species, str(reference_genome_name))
 
         # stop pipeline if the reference genome is absent
-        if reference_genome_present == False:
+        if not reference_genome_present:
             print("\n...FATAL ERROR...: There is no reference genome detected -> exiting the pipeline now...\n"
                   "\n   Make sure you downloaded it into ../Data/Reference_genomes from "
                   " https://www.ncbi.nlm.nih.gov/assembly -> (mouse: GCA_000001635.8; human: GCA_000001405.28) -> "
@@ -221,6 +222,8 @@ def freeda_pipeline(original_species=None, t=None):
 
         all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
         for protein in all_proteins:
+            if protein == "\n":
+                continue
             print("\n----------- * %s * -----------" % protein)
 
             # get structure prediction model from AlphaFold
@@ -253,7 +256,8 @@ def freeda_pipeline(original_species=None, t=None):
 
             if not model_matches_input:
                 print(
-                    "...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl database -> cannot run PyMOL\n" % protein)
+                    "...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl "
+                    "database -> cannot run PyMOL\n" % protein)
                 print("...WARNING...: Protein will be analyzed using PAML without 3D structure overlay\n")
                 # ast module requires a string
                 input_dictionary[protein] = str(model_matches_input)
@@ -285,7 +289,7 @@ def freeda_pipeline(original_species=None, t=None):
             print("\n...FATAL ERROR...: You need to generate input data first -> exiting the pipeline now...")
             return
 
-        # DO I NEED THIS? Models are always present but shoud not be used sometimes -> input_dictionary.txt:
+        # DO I NEED THIS? Models are always present but should not be used sometimes -> input_dictionary.txt:
 
         # check if all models are present
         # all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
@@ -318,8 +322,7 @@ def freeda_pipeline(original_species=None, t=None):
     # ----------------------------------------#
 
     if user_input2 == "y":
-        result_path = exon_extractor.analyse_blast_results(wdir, blast_path, \
-                                                           original_species, int(t))
+        result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species, int(t))
 
     # ----------------------------------------#
     ######## RUN PAML ########
@@ -356,7 +359,6 @@ def freeda_pipeline(original_species=None, t=None):
     # ----------------------------------------#
 
     # check_structure is obsolete cose not every model is usable -> refer to input_dictionary.txt
-    # ALSO INPUT DICT MAY NOT NEED MODEL SEQ -> remove that
 
     if user_input1 == "n" and user_input2 == "n" and user_input3 == "n" and user_input4 == "y":
         nr_of_tries = 1

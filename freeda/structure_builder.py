@@ -92,9 +92,9 @@ def check_all_structures(wdir, original_species):
    
     all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
     missing_structures = [check_structure(wdir, original_species, protein) for protein in all_proteins]
-    missing_structures_final = [structure for structure in missing_structures if structure != None]
+    missing_structures_final = [structure for structure in missing_structures if structure is not None]
     
-    if missing_structures_final != []:
+    if missing_structures_final:
         print("...WARNING... (FREEDA) I did not find clear structure prediction models for: %s" % missing_structures_final)
         print("...WARNING... (FREEDA) I cannot overlay adaptive sites for these proteins\n")
 
@@ -108,7 +108,7 @@ def check_structure(wdir, original_species, protein):
     unwanted_files = [file for file in model_file_list if file.startswith(".") or not file.endswith(".pdb")]
             
     # check for unwanted files (hidden and non-pdb) and remove them
-    if unwanted_files != []:
+    if unwanted_files:
         for file in unwanted_files:
             try: 
                 os.remove(structure_model_path + "/" + file)
@@ -156,7 +156,7 @@ def run_pymol(wdir, original_species, result_path, protein, offset):
     # move and overwrite if "structure_overlay.pml" exists in Structure folder for the protein
     shutil.move(os.path.join(wdir, "structure_overlay.pml"), os.path.join(protein_path, "structure_overlay.pml"))
     # move the model with overlayed residues into Results folder
-    shutil.move(protein_path + "/" + final_model_name, result_path + "/" + final_model_name)
+    shutil.move(protein_path + final_model_name, result_path + final_model_name)
     
     return True
     
@@ -165,7 +165,7 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
     matched_adaptive_sites_original = dictionary[protein]
     structure_prediction_path = wdir + "Structures/" + protein + "_" + original_species
     
-    if offset == None:
+    if offset is None:
         offset = 0
 
     if len(os.listdir(structure_prediction_path)) == 0:
