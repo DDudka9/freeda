@@ -24,9 +24,9 @@ import tarfile
 
 # import glob
 # import shutil
-original_species = "Mm"
-wdir = os.getcwd() + "/"
-protein = "Haus1"
+# original_species = "Mm"
+# wdir = os.getcwd() + "/"
+# protein = "Haus1"
 # reference_genome_name = "MUSCULUS_genome"
 
 
@@ -76,7 +76,7 @@ def get_uniprot_id(original_species, protein):
     # generate a search for given protein
     u = UniProt(verbose=False)
     print("\nExtracting valid uniprot ids for protein: %s ...\n" % protein)
-    data = u.search(protein + "+and+taxonomy:" + original_species_number, frmt="tab", limit=5,
+    data = u.search(protein + "+and+taxonomy:" + original_species_number, frmt="tab", limit=10,
                     columns="genes,length,id")
     data_list = data.split("\n")
     for line in data_list:
