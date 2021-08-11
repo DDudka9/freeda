@@ -21,14 +21,14 @@ import logging
 import shutil
 
 
-def analyse_blast_results(wdir, blast_path, original_species, t):   
+def analyse_blast_results(wdir, blast_path, original_species):
     
     start_time = time.time()
     
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
     result_path = wdir + "Results" + day + "/"
     
-    folder_generator.generate_folders(result_path, t)
+    folder_generator.generate_folders(result_path)
     
     # initiate log file to record PAML analysis by reseting the handlers
     for handler in logging.root.handlers[:]:
@@ -51,16 +51,15 @@ def analyse_blast_results(wdir, blast_path, original_species, t):
         # index given genome
         genome_index = genome_indexer.index_genome_database(wdir, genome_name)
         # generate matches dataframe
-        matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
+        matches = matches_generator.generate_matches(match_path, protein_name, genome_name, genome_index)
         # process the final dataframe
-        msa_path = matches_processor.process_matches(wdir, matches, cds, gene, t, result_path, protein_name,
+        msa_path = matches_processor.process_matches(wdir, matches, cds, gene, result_path, protein_name,
                                                      genome_name,
                                                      genome_index)
         # run MAFFT on all the MSA and write them into files
         msa_aligner.run_mafft(msa_path)
         # return potential exons for a current protein in current genome
-        msa_analyzer.analyse_msa(wdir, msa_path, protein_name, genome_name, result_path, original_exons, microexons,
-                                 expected_exons)
+        msa_analyzer.analyse_msa(wdir, msa_path, protein_name, genome_name, original_exons, microexons, expected_exons)
         # mark that this blast result has been analysed
         message = "\nFinished running protein: '%s' from genome: '%s'\n" \
             % (protein_name, genome_name)

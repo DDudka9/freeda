@@ -327,7 +327,7 @@ def freeda_pipeline(original_species=None, t=None):
     # ----------------------------------------#
 
     if user_input2 == "y":
-        result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species, int(t))
+        result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species)
 
     # ----------------------------------------#
     ######## RUN PAML ########
