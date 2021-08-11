@@ -15,9 +15,9 @@ import shutil
 import glob
 
 
-def run_MAFFT(MSA_path):
+def run_mafft(msa_path):
     # get path to all separate MSA files 
-    for in_filename in glob.glob(MSA_path + "to_align*.fasta"):
+    for in_filename in glob.glob(msa_path + "to_align*.fasta"):
         # check if its a rev_comp file
         if re.search(r"to_align_rev_comp", in_filename):
             # for each MSA path find contig name; make it a string with group method
@@ -27,11 +27,11 @@ def run_MAFFT(MSA_path):
             out_filename = "aligned_" + re.search(r"(?<=to_align_).*$", in_filename).group()        
         # run mafft
         mafft_cline = MafftCommandline(input=in_filename)
-        #print(mafft_cline)
+        # print(mafft_cline)
         # record standard output and standard error
         stdout, stderr = mafft_cline()
         # make a post-MSA file using out_filename
         with open(out_filename, "w") as f:
             f.write(stdout)
             # move the file to MSA_path
-            shutil.move(out_filename, MSA_path)
+            shutil.move(out_filename, msa_path)

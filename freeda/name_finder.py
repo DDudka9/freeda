@@ -11,8 +11,8 @@ Uses regular expression module to extract protein and genome names from blast ou
 
 import re
 
+
 def get_names(match_path):
-    
     # isolate flag names for protein and genome from blast result filename:
     # get blast result name
     path_split = re.split(r"/", match_path)[-1]

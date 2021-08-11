@@ -39,8 +39,8 @@ from json import dump
 #nr_of_species_total = 15
 
 
-def analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict, 
-                         original_species, PAML_logfile_name, day):
+def analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict,
+                         original_species, paml_logfile_name, day):
     
     all_matched_adaptive_sites_original = {}
     
@@ -54,12 +54,12 @@ def analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict,
         
         else:
             nr_of_species_total = nr_of_species_total_dict[protein_name]
-            matched_adaptive_sites_original = plot_PAML(wdir, result_path, protein_name, nr_of_species_total, 
-                                  original_species, PAML_logfile_name, proteins, day)
+            matched_adaptive_sites_original = plot_PAML(wdir, result_path, protein_name, nr_of_species_total,
+                                                        original_species, paml_logfile_name, proteins, day)
             all_matched_adaptive_sites_original[protein_name] = matched_adaptive_sites_original
         
     # prepare a dict with PAML stats
-    final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, proteins, all_matched_adaptive_sites_original)
+    final_PAML_log_dict = read_output_PAML(result_path, paml_logfile_name, proteins, all_matched_adaptive_sites_original)
     # generate a PAML result excel sheet
     output_excel_sheet(wdir, final_PAML_log_dict, result_path, day)
     

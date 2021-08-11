@@ -45,17 +45,22 @@ def analyse_blast_results(wdir, blast_path, original_species, t):
         # generate protein and genome names and make it global
         protein_name, genome_name = name_finder.get_names(match_path)
         # find cds and gene for this path (Mm_exons and microexons NOT USED HERE)
-        cds, gene, Mm_exons, microexons, expected_exons = gene_and_cds_reader.find_gene_and_cds(wdir, protein_name, original_species)
+        cds, gene, original_exons, microexons, expected_exons = gene_and_cds_reader.find_gene_and_cds(wdir,
+                                                                                                      protein_name,
+                                                                                                      original_species)
         # index given genome
         genome_index = genome_indexer.index_genome_database(wdir, genome_name)
         # generate matches dataframe
         matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
         # process the final dataframe
-        MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, t, result_path, protein_name, genome_name, genome_index)        
+        msa_path = matches_processor.process_matches(wdir, matches, cds, gene, t, result_path, protein_name,
+                                                     genome_name,
+                                                     genome_index)
         # run MAFFT on all the MSA and write them into files
-        msa_aligner.run_MAFFT(MSA_path)
+        msa_aligner.run_mafft(msa_path)
         # return potential exons for a current protein in current genome
-        msa_analyzer.analyse_MSA(wdir, MSA_path, protein_name, genome_name, result_path, Mm_exons, microexons, expected_exons)
+        msa_analyzer.analyse_msa(wdir, msa_path, protein_name, genome_name, result_path, original_exons, microexons,
+                                 expected_exons)
         # mark that this blast result has been analysed
         message = "\nFinished running protein: '%s' from genome: '%s'\n" \
             % (protein_name, genome_name)
@@ -82,7 +87,7 @@ def analyse_blast_results(wdir, blast_path, original_species, t):
                 file.write(header.rstrip('\r\n') + '\n' + seq + '\n' + content)
     
     # mark the end of the analysis
-    message = ("Analysis completed in %s minutes or %s hours" % \
+    message = ("Analysis completed in %s minutes or %s hours" %
                ((time.time() - start_time)/60, 
                 (time.time() - start_time)/60/60))
     print(message)
