@@ -27,15 +27,15 @@ from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 from json import dump
 
 
-# result_path = wdir + "Results-06-13-2021-23-37/"
-# wdir = os.getcwd() + "/"
-# proteins = ["Cenpt", "Cenph", "Cenpi", "Cenpl", "Cenpo", "Cenpu"]
+#wdir = os.getcwd() + "/"
+#result_path = wdir + "Results-08-09-2021-00-32/"
+#proteins = ["Cenph", "Cenpl", "Haus1", "Haus2", "Haus3", "Haus4", "Haus5", "Haus6", "Haus7", "Haus8"]
 # proteins = ["Cenpo"]
-# nr_of_species_total_dict = {"Cenpt" : 12, "Cenph" : 12, "Cenpi" : 15, "Cenpl" : 14, "Cenpo" : 15, "Cenpu" : 14}
+#nr_of_species_total_dict = {"Cenph" : 12, "Cenpl" : 14, "Haus1" : 12, "Haus2" : 13, "Haus3" : 15, "Hasu4" : 14, "Haus5" : 14, "Haus6" : 13, "Haus7" : 15, "Haus8" : 8}
 # nr_of_species_total_dict = {"Cenpo" : 15}
-# PAML_logfile_name = "PAML-06-14-2021-02-29_test.log"
-# original_species = "Mm"
-# day = "-06-27-2021-15-04"
+#paml_logfile_name = "PAML-08-09-2021-04-16.log"
+#original_species = "Mm"
+#day = "-08-11-2021-01-16"
 # protein_name = "Cenpo"
 # nr_of_species_total = 15
 
