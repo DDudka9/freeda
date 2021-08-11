@@ -212,7 +212,7 @@ def freeda_pipeline(original_species=None, t=None):
         reference_genome_name = input("(FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
         reference_genome_present, ensembl, original_species, reference_genomes_path, reference_genome_contigs_dict, \
             biotype = input_extractor.generate_reference_genome_object(wdir, original_species,
-                                                                   str(reference_genome_name))
+                                                                       str(reference_genome_name))
 
         # stop pipeline if the reference genome is absent
         if not reference_genome_present:
@@ -347,7 +347,7 @@ def freeda_pipeline(original_species=None, t=None):
                 proteins, nr_of_species_total_dict, paml_logfile_name, day = paml_launcher.analyse_final_cds(wdir,
                                                                                                              original_species,
                                                                                                              result_path)
-                paml_visualizer.analyse_PAML_results(wdir, result_path,
+                paml_visualizer.analyse_paml_results(wdir, result_path,
                                                      proteins, nr_of_species_total_dict, original_species,
                                                      paml_logfile_name, day)
 
@@ -355,7 +355,7 @@ def freeda_pipeline(original_species=None, t=None):
         proteins, nr_of_species_total_dict, paml_logfile_name, day = paml_launcher.analyse_final_cds(wdir,
                                                                                                      original_species,
                                                                                                      result_path)
-        paml_visualizer.analyse_PAML_results(wdir, result_path,
+        paml_visualizer.analyse_paml_results(wdir, result_path,
                                              proteins, nr_of_species_total_dict, original_species, paml_logfile_name,
                                              day)
 

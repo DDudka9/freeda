@@ -182,7 +182,7 @@ def generate_reference_genome_object(wdir, original_species, reference_genome_na
     biotype = "Protein coding"
 
     return reference_genome_present, ensembl, original_species, reference_genomes_path, \
-           reference_genome_contigs_dict, biotype
+        reference_genome_contigs_dict, biotype
 
 
 def extract_input(wdir, original_species, reference_genome_name, reference_genomes_path,
@@ -340,7 +340,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
 
         if len(exon_sequence) < 20:
             microexon_present = True
-            print("\n...WARNING...:Exon %s in: %s is a microexon (%sbp; hard to align) " \
+            print("\n...WARNING...:Exon %s in: %s is a microexon (%sbp; hard to align) "
                   "-> eliminated from exons and cds\n" % (str(nr), protein, len(exon_sequence)))
             # check if the last exon (microexon) had a stop codon before its trimmed (ex. Pot1a)
             if nr == 1 and exon_sequence.startswith("ATG"):
