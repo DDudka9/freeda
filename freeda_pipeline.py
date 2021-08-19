@@ -130,6 +130,7 @@ Before testing make sure that code can communicate witg files:
 
 # First check model sequence and length -> pick pyensembl transcripr based on that or longest (no user prompt)
 
+# CURRENTLY (08_15_2021) running PAML and PyMOL only does not give structure model
 
 from freeda import input_extractor
 from freeda import tblastn
@@ -194,6 +195,21 @@ def freeda_pipeline(original_species=None, t=None):
         if user_input4.lower() != "y" and user_input4.lower() != "n":
             print("Please answer y or n\n")
 
+    # check if the user had previously obtained data for given list of proteins
+    if user_input0 == "n":
+        input_present = True
+        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+        for protein in all_proteins:
+            structure_path = wdir + "Structures/" + protein + "_" + original_species
+            if "model_compatible.txt" in os.listdir(structure_path) or "model_incompatible.txt" in os.listdir(structure_path):
+                print("All input data and structure model for : %s are present." % protein)
+            else:
+                input_present = False
+                print("\n...WARNING... Data are missing for : %s" % protein)
+        if not input_present:
+            print("\n...FATAL_ERROR... Input data for at least one protein are missing -> exiting the pipeline now...")
+            return
+
     # if user_input4 == "y":
     #    offset = input("(FREEDA) What is the offset used for modelling? (e.g. type 1 if full length)\n")
 
@@ -202,7 +218,7 @@ def freeda_pipeline(original_species=None, t=None):
     # ----------------------------------------#
 
     # record inputed data parameters for using in later stages of the pipeline
-    input_dictionary = {}
+    #input_dictionary = {}
 
     # User wants to generate input data
     if user_input0 == "y":
@@ -227,7 +243,7 @@ def freeda_pipeline(original_species=None, t=None):
             print("\n----------- * %s * -----------" % protein)
 
             # get structure prediction model from AlphaFold
-            input_dictionary[protein] = []
+            #input_dictionary[protein] = []
             possible_uniprot_ids = input_extractor.get_uniprot_id(wdir, original_species, protein)
             model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein,
                                                                    possible_uniprot_ids)
@@ -250,44 +266,46 @@ def freeda_pipeline(original_species=None, t=None):
                     "\n...FATAL ERROR...: Input data generation FAILED for protein: %s -> exiting the pipeline now...\n" % protein)
                 return
 
-            if model_matches_input and not microexon_present:
+            #if model_matches_input and not microexon_present:
                 # ast module requires a string
-                input_dictionary[protein] = str(model_matches_input)
+                #input_dictionary[protein] = str(model_matches_input)
 
             if not model_matches_input:
                 print(
                     "...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl "
                     "database -> cannot run PyMOL\n" % protein)
-                print("...WARNING...: Protein will be analyzed using PAML without 3D structure overlay\n")
+                print("...WARNING...: Protein may still be analyzed using PAML but without 3D structure overlay\n")
                 # ast module requires a string
-                input_dictionary[protein] = str(model_matches_input)
+                #input_dictionary[protein] = str(model_matches_input)
 
             if microexon_present:
                 model_matches_input = False
                 print("...WARNING...: Sequence for: %s found in Ensembl contains a microexon\n" % protein)
                 print("...WARNING...: Microexons are difficult to align and are removed -> cannot run PyMOL\n")
+                with open(wdir + "Structures/" + protein + "_" + original_species + "/model_incompatible.txt", "w") as f:
+                    f.write("Microexon was detected in the input exons file and was removed. Cannot run PyMOL.")
                 # ast module requires a string
-                input_dictionary[protein] = str(model_matches_input)
+                #input_dictionary[protein] = str(model_matches_input)
 
         # save the input dict into a file
-        with open("most_recent_input_dictionary.txt", "w") as file:
-            dump(input_dictionary, file)
-        shutil.move(wdir + "most_recent_input_dictionary.txt", wdir + "Blast_input/most_recent_input_dictionary.txt")
+        #with open("most_recent_input_dictionary.txt", "w") as file:
+        #    dump(input_dictionary, file)
+        #shutil.move(wdir + "most_recent_input_dictionary.txt", wdir + "Blast_input/most_recent_input_dictionary.txt")
 
-        print("\nAll input data have been generated\n")
+        #print("\nAll input data have been generated\n")
 
     # User doesnt want to generate input data
-    if user_input0 == "n":
+    #if user_input0 == "n":
 
         # check if input data have been generated beforehand
-        path_to_input_dict = wdir + "Blast_input/"
-        if os.path.exists(path_to_input_dict + "most_recent_input_dictionary.txt"):
-            with open(path_to_input_dict + "most_recent_input_dictionary.txt", "r") as f:
+        #path_to_input_dict = wdir + "Blast_input/"
+        #if os.path.exists(path_to_input_dict + "most_recent_input_dictionary.txt"):
+        #    with open(path_to_input_dict + "most_recent_input_dictionary.txt", "r") as f:
                 # ast module requires a string
-                input_dictionary = literal_eval(f.read())
-        else:
-            print("\n...FATAL ERROR...: You need to generate input data first -> exiting the pipeline now...")
-            return
+        #        input_dictionary = literal_eval(f.read())
+        #else:
+        #    print("\n...FATAL ERROR...: You need to generate input data first -> exiting the pipeline now...")
+        #    return
 
         # DO I NEED THIS? Models are always present but should not be used sometimes -> input_dictionary.txt:
 
@@ -369,14 +387,13 @@ def freeda_pipeline(original_species=None, t=None):
                 print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
                 nr_of_tries += 1
             else:
-                # all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+                all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
 
-                for protein, model_equal_input in input_dictionary.items():
-                    # check if model seq and input seq match (from dict) and check if exactly one model exists
-                    if bool(model_equal_input) == True and structure_builder.check_structure(wdir, original_species,
-                                                                                             protein):
+                for protein in all_proteins:
+                    # check if model seq and input seq match and check if exactly one model exists
+                    if structure_builder.check_structure(wdir, original_species, protein):
                         successful = structure_builder.run_pymol(wdir, original_species, result_path, protein,
                                                                  offset=None)
                         if not successful:
@@ -398,11 +415,12 @@ def freeda_pipeline(original_species=None, t=None):
 
     # run PyMOL together with the rest of the pipeline
     if user_input4 == "y" and not structure_overlay_present:
-        for protein, model_equal_input in input_dictionary.items():
+        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+        for protein in all_proteins:
             # check if model sequence equals the blasted sequence
             # model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein, model_seq)
             # check if model seq and input seq match (from dict) and check if exactly one model exists
-            if bool(model_equal_input) == True and structure_builder.check_structure(wdir, original_species, protein):
+            if structure_builder.check_structure(wdir, original_species, protein):
                 successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
                 if not successful:
                     break

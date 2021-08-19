@@ -25,9 +25,9 @@ import tarfile
 
 # import glob
 # import shutil
-original_species = "Mm"
-wdir = os.getcwd() + "/"
-protein = "Haus1"
+#original_species = "Mm"
+#wdir = os.getcwd() + "/"
+#protein = "Haus1"
 #reference_genome_name = "MUSCULUS_genome"
 
 
@@ -77,7 +77,7 @@ def get_uniprot_id(wdir, original_species, protein):
     # generate a search for given protein
     u = UniProt(verbose=False)
     print("\nExtracting valid uniprot ids for protein: %s ...\n" % protein)
-    data = u.search(protein + "+and+taxonomy:" + original_species_number, frmt="tab", limit=5,
+    data = u.search(protein + "+and+taxonomy:" + original_species_number, frmt="tab", limit=10,
              columns="genes,length,id")
     data_list = data.split("\n")
     for line in data_list:
@@ -148,54 +148,10 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
     except IndexError:
         print("...WARNING...: Structure prediction for protein: %s HAS NOT BEEN FOUND -> cannot run PyMOL\n" % protein)
         print("...SUGGESTION...: You can use your own model (ex. from PDB; fragments are ok but no sequence mismatches!)\n")
-        
+        with open(structure_path + "/model_incompatible.txt", "w") as f:
+            f.write("No model has been found in AlphaFold database. Cannot run PyMOL.")
+
         return False
-
-# THIS IS NOT NEEDED ANYMORE
-def get_prediction(wdir, original_species, protein):
-    """Generates an Alpha Fold url for a given protein based on its UniProt id"""
-    
-    # check if the protein structure folder exists
-    structure_dir = wdir + "Structures/" + protein + "_" + original_species
-    if os.path.isdir(structure_dir):
-        # if structure prediction already exists - skip it
-        if len(os.listdir(structure_dir)) != 0:
-            return True
-        else:
-            pass
-    else:  
-        os.makedirs(wdir + "Structures/" + protein + "_" + original_species)
-    
-    supported_species_names = {"Mm" : "mouse", "Hs" : "human"}
-    organism = supported_species_names.get(original_species) 
-    
-    url = "https://www.uniprot.org/uniprot/?query=" + protein + "+organism:" + organism + "&sort=score&columns=id,reviewed,genes,organism&format=tab" 
-    downloaded_obj = requests.get(url)
-    filename = protein + ".txt"
-
-    with open(filename, "wb") as file:
-        file.write(downloaded_obj.content)
-    
-    with open(filename, "r") as file:
-        f = file.readlines()
-        for line in f:
-            columns = line.split("\t")
-            list_of_names = columns[2].split(" ")
-            # in case there are multiple gene names
-            if len(list_of_names) > 1 and protein in list_of_names:
-                uniprot_id = line.split("\t")[0]
-                break
-            else:
-                # take the most likely id (reviewed are favored)
-                if protein in list_of_names:
-                    uniprot_id = columns[0]
-                    break
-
-    prediction_url = "https://www.alphafold.ebi.ac.uk/entry/" + str(uniprot_id)
-        
-    os.remove(filename)
-    
-    return prediction_url
         
 
 def generate_reference_genome_object(wdir, original_species, reference_genome_name):
@@ -253,7 +209,7 @@ def extract_input(wdir, original_species, reference_genome_name, reference_genom
     transcript, selected_transcript_id, gene_id, contig, strand, UTR_5, UTR_3, cds_sequence_expected, matching_length = extract_cds(ensembl, 
                 original_species, coding_sequence_input_path, protein, biotype, model_seq)
     # find protein sequence
-    model_matches_input = extract_protein(original_species, blast_input_path, protein, strand, transcript, model_seq, matching_length)
+    model_matches_input = extract_protein(wdir, original_species, blast_input_path, protein, strand, transcript, model_seq, matching_length)
     # find gene sequence
     extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
                 reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein, transcript)
@@ -264,10 +220,11 @@ def extract_input(wdir, original_species, reference_genome_name, reference_genom
     return input_correct, model_matches_input, microexon_present
     
 
-def extract_protein(original_species, blast_input_path, protein, strand, transcript, model_seq, matching_length):
-    """Extracts protein sequence based on Transcript object"""
+def extract_protein(wdir, original_species, blast_input_path, protein, strand, transcript, model_seq, matching_length):
+    """Extracts protein sequence based on Transcript object and compares with structure model sequence"""
     
     model_matches_input = False
+    structure_path = wdir + "Structures/" + protein + "_" + original_species
     
     # find proteins sequence
     protein_sequence = transcript.protein_sequence
@@ -278,10 +235,16 @@ def extract_protein(original_species, blast_input_path, protein, strand, transcr
     if matching_length == True:
         if model_seq == protein_sequence:
             model_matches_input = True
-            
+            with open(structure_path + "/model_compatible.txt", "w") as f:
+                f.write("Model is based on an identical protein sequence as blast input.")
+
+    else:
+        with open(structure_path + "/model_incompatible.txt", "w") as f:
+            f.write("Model sequence does not match the protein sequence used for blast input. Cannot run PyMOL.")
+
     return model_matches_input
-    
-    
+
+
 def extract_exons(wdir, original_species, protein, exons_input_path, reference_genomes_path, reference_genome_name, 
                   contig, strand, transcript, reference_genome_contigs_dict, UTR_5, UTR_3, cds_sequence_expected):
     """Extracts exoms sequence based on Transcript object"""
@@ -583,31 +546,6 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
         length = len(cds_sequence_expected)
         all_transcripts_dict[t].append(length)
     
-    # ask user if they have any preference
-    #user_dict = {}
-    #for t, features in all_transcripts_dict.items():
-    #    length = (features[-1]-3) * 3
-    #    if length > 0:
-    #        user_dict[features[3]] = str(int((features[-1]-3) / 3)) + " aa"
-    
-    #tries = 3
-    #preference = ""
-    #while tries > 0:
-    #    tries -= 1
-    #    preference = str(input("Choose best transcript for your analysis (strongly recommended) or press ENTER (longest cds):\n %s\n" 
-    #                       % user_dict))
-    #    if preference in user_dict or preference == "":
-    #        tries = 0
-    
-    # pick the trancript of preference (recommended)
-    #if preference in user_dict:
-    #    for t, features in user_dict.items():
-    #        if t == preference:
-    #            for t, features in all_transcripts_dict.items():
-    #                if features[3] == preference:
-    #                    longest_transcript_id = t
-    #                    length = features[-1]
-    
     # compare length of translated coding sequence with model amino acid seuqence length
     matching_length = False
     for t, features in all_transcripts_dict.items():
@@ -648,3 +586,81 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
     else:
         print("Chosen transcript for protein: %s does not have START and STOP annotated" % protein)
         
+
+"""
+
+# THIS IS NOT NEEDED ANYMORE
+def get_prediction(wdir, original_species, protein):
+    Generates an Alpha Fold url for a given protein based on its UniProt id
+
+    # check if the protein structure folder exists
+    structure_dir = wdir + "Structures/" + protein + "_" + original_species
+    if os.path.isdir(structure_dir):
+        # if structure prediction already exists - skip it
+        if len(os.listdir(structure_dir)) != 0:
+            return True
+        else:
+            pass
+    else:
+        os.makedirs(wdir + "Structures/" + protein + "_" + original_species)
+
+    supported_species_names = {"Mm" : "mouse", "Hs" : "human"}
+    organism = supported_species_names.get(original_species)
+
+    url = "https://www.uniprot.org/uniprot/?query=" + protein + "+organism:" + organism + "&sort=score&columns=id,reviewed,genes,organism&format=tab"
+    downloaded_obj = requests.get(url)
+    filename = protein + ".txt"
+
+    with open(filename, "wb") as file:
+        file.write(downloaded_obj.content)
+
+    with open(filename, "r") as file:
+        f = file.readlines()
+        for line in f:
+            columns = line.split("\t")
+            list_of_names = columns[2].split(" ")
+            # in case there are multiple gene names
+            if len(list_of_names) > 1 and protein in list_of_names:
+                uniprot_id = line.split("\t")[0]
+                break
+            else:
+                # take the most likely id (reviewed are favored)
+                if protein in list_of_names:
+                    uniprot_id = columns[0]
+                    break
+
+    prediction_url = "https://www.alphafold.ebi.ac.uk/entry/" + str(uniprot_id)
+
+    os.remove(filename)
+
+    return prediction_url
+
+
+
+
+# ask user if they have any preference
+#user_dict = {}
+#for t, features in all_transcripts_dict.items():
+#    length = (features[-1]-3) * 3
+#    if length > 0:
+#        user_dict[features[3]] = str(int((features[-1]-3) / 3)) + " aa"
+
+#tries = 3
+#preference = ""
+#while tries > 0:
+#    tries -= 1
+#    preference = str(input("Choose best transcript for your analysis (strongly recommended) or press ENTER (longest cds):\n %s\n"
+#                       % user_dict))
+#    if preference in user_dict or preference == "":
+#        tries = 0
+
+# pick the trancript of preference (recommended)
+#if preference in user_dict:
+#    for t, features in user_dict.items():
+#        if t == preference:
+#            for t, features in all_transcripts_dict.items():
+#                if features[3] == preference:
+#                    longest_transcript_id = t
+#                    length = features[-1]
+
+"""
