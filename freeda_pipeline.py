@@ -161,38 +161,29 @@ def freeda_pipeline(original_species=None, t=None):
     user_input1 = None
     user_input2 = None
     user_input3 = None
-    user_input4 = None
-    structure_prediction_matching = False
-    structure_overlay_present = False
 
     # ----------------------------------------#
     ######## GET USER INPUT ########
     # ----------------------------------------#
 
     while user_input0 != "y" and user_input0 != "n":
-        user_input0 = input("(FREEDA) Should I get input? (y / n)\n").lower()
+        user_input0 = input("(FREEDA) Should I get input data automatically? (y / n)\n").lower()
         if user_input0.lower() != "y" and user_input0.lower() != "n":
             print("Please answer y or n\n")
 
     while user_input1 != "y" and user_input1 != "n":
-        user_input1 = input("(FREEDA) Should I run blast? (y / n)\n").lower()
+        user_input1 = input("(FREEDA) Should I run blast with the input data? (y / n)\n").lower()
         if user_input1.lower() != "y" and user_input1.lower() != "n":
             print("Please answer y or n\n")
 
     while user_input2 != "y" and user_input2 != "n":
-        user_input2 = input("(FREEDA) Should I find exons? (y / n)\n").lower()
+        user_input2 = input("(FREEDA) Should I find exons based on the blast results? (y / n)\n").lower()
         if user_input2.lower() != "y" and user_input2.lower() != "n":
             print("Please answer y or n\n")
 
     while user_input3 != "y" and user_input3 != "n":
         user_input3 = input("(FREEDA) Should I perform molecular evolution analysis (PAML)? (y / n)\n").lower()
         if user_input3.lower() != "y" and user_input3.lower() != "n":
-            print("Please answer y or n\n")
-
-    while user_input4 != "y" and user_input4 != "n":
-        user_input4 = input(
-            "(FREEDA) Should I overlay putative adaptive sites onto 3D structure (PyMOL)? (y / n)\n").lower()
-        if user_input4.lower() != "y" and user_input4.lower() != "n":
             print("Please answer y or n\n")
 
     # check if the user had previously obtained data for given list of proteins
@@ -210,15 +201,9 @@ def freeda_pipeline(original_species=None, t=None):
             print("\n...FATAL_ERROR... Input data for at least one protein are missing -> exiting the pipeline now...")
             return
 
-    # if user_input4 == "y":
-    #    offset = input("(FREEDA) What is the offset used for modelling? (e.g. type 1 if full length)\n")
-
     # ----------------------------------------#
     ######## GET ALL INPUT DATA  ########
     # ----------------------------------------#
-
-    # record inputed data parameters for using in later stages of the pipeline
-    #input_dictionary = {}
 
     # User wants to generate input data
     if user_input0 == "y":
@@ -243,12 +228,8 @@ def freeda_pipeline(original_species=None, t=None):
             print("\n----------- * %s * -----------" % protein)
 
             # get structure prediction model from AlphaFold
-            #input_dictionary[protein] = []
             possible_uniprot_ids = input_extractor.get_uniprot_id(wdir, original_species, protein)
-            model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein,
-                                                                   possible_uniprot_ids)
-            # input_dictionary[protein].append(str(model_seq))
-
+            model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein, possible_uniprot_ids)
             # get sequence input from ensembl
             input_correct, model_matches_input, microexon_present = input_extractor.extract_input(wdir,
                                                                                                   original_species,
@@ -257,66 +238,37 @@ def freeda_pipeline(original_species=None, t=None):
                                                                                                   reference_genome_contigs_dict,
                                                                                                   ensembl, biotype,
                                                                                                   protein, model_seq)
-
             if input_correct:
                 print("\nInput data have been generated for protein: %s\n\n" % protein)
 
             if not input_correct:
-                print(
-                    "\n...FATAL ERROR...: Input data generation FAILED for protein: %s -> exiting the pipeline now...\n" % protein)
+                print("\n...FATAL ERROR...: Input data generation FAILED for protein: %s -> exiting the pipeline now...\n" % protein)
                 return
 
-            #if model_matches_input and not microexon_present:
-                # ast module requires a string
-                #input_dictionary[protein] = str(model_matches_input)
-
             if not model_matches_input:
-                print(
-                    "...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl "
-                    "database -> cannot run PyMOL\n" % protein)
+                print("...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl "
+                        "database -> cannot run PyMOL\n" % protein)
                 print("...WARNING...: Protein may still be analyzed using PAML but without 3D structure overlay\n")
-                # ast module requires a string
-                #input_dictionary[protein] = str(model_matches_input)
 
             if microexon_present:
-                model_matches_input = False
                 print("...WARNING...: Sequence for: %s found in Ensembl contains a microexon\n" % protein)
                 print("...WARNING...: Microexons are difficult to align and are removed -> cannot run PyMOL\n")
                 with open(wdir + "Structures/" + protein + "_" + original_species + "/model_incompatible.txt", "w") as f:
                     f.write("Microexon was detected in the input exons file and was removed. Cannot run PyMOL.")
-                # ast module requires a string
-                #input_dictionary[protein] = str(model_matches_input)
 
-        # save the input dict into a file
-        #with open("most_recent_input_dictionary.txt", "w") as file:
-        #    dump(input_dictionary, file)
-        #shutil.move(wdir + "most_recent_input_dictionary.txt", wdir + "Blast_input/most_recent_input_dictionary.txt")
+    # ----------------------------------------#
+    ######## NOT ALLOWED ########
+    # ----------------------------------------#
 
-        #print("\nAll input data have been generated\n")
+    # forgot about blast
+    if user_input0 == "y" and user_input1 == "n" and user_input2 == "y" and user_input3 == "n":
+        print("\n...FATAL ERROR... You need to perform blast before exon finding.")
+        return
 
-    # User doesnt want to generate input data
-    #if user_input0 == "n":
-
-        # check if input data have been generated beforehand
-        #path_to_input_dict = wdir + "Blast_input/"
-        #if os.path.exists(path_to_input_dict + "most_recent_input_dictionary.txt"):
-        #    with open(path_to_input_dict + "most_recent_input_dictionary.txt", "r") as f:
-                # ast module requires a string
-        #        input_dictionary = literal_eval(f.read())
-        #else:
-        #    print("\n...FATAL ERROR...: You need to generate input data first -> exiting the pipeline now...")
-        #    return
-
-        # DO I NEED THIS? Models are always present but should not be used sometimes -> input_dictionary.txt:
-
-        # check if all models are present
-        # all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
-        # missing_structures = [structure_builder.check_structure(wdir, original_species, protein) for protein in all_proteins]
-        # missing_structures_final = [structure for structure in missing_structures if structure != None]
-
-    # if user_input4 == "y" and missing_structures_final != []:
-    #    print("...WARNING...: (FREEDA) I did not find clear structure prediction models for: %s" % missing_structures_final)
-    #    print("...WARNING...: (FREEDA) I cannot overlay adaptive sites for these proteins\n")
+    # forgot about blast or exon finding
+    if user_input0 == "y" and (user_input1 == "n" or user_input2 == "n") or user_input3 == "y":
+        print("\n...FATAL ERROR... You need to perform blast and exon finding before molecular evolution analysis.")
+        return
 
     # ----------------------------------------#
     ######## RUN BLAST ########
@@ -325,15 +277,12 @@ def freeda_pipeline(original_species=None, t=None):
     if user_input1 == "y":
         print("\n -> checking genome blast databases...")
         blast_path = tblastn.run_blast(wdir, original_species)
-        if blast_path == None:
+        if blast_path is None:
             print("\n...FATAL ERROR...: Blast database build failed for at least one genome"
                   "\n   Make sure you downloaded all genomes -> exiting the pipeline now...")
             return
-
     else:
         blast_path = wdir + "Blast_output/"
-
-    # ADD A CHECK FOR BLAST OUTPUT IN CASE IT WAS TEMPERED WITH OR SPECIES WERE REMOVED
 
     # ----------------------------------------#
     ######## RUN EXON FINDING ########
@@ -343,7 +292,7 @@ def freeda_pipeline(original_species=None, t=None):
         result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species, int(t))
 
     # ----------------------------------------#
-    ######## RUN PAML ########
+    ######## RUN PAML and PyMOL ########
     # ----------------------------------------#
 
     if user_input3 == "y" and user_input2 == "n":
@@ -351,83 +300,51 @@ def freeda_pipeline(original_species=None, t=None):
         while nr_of_tries <= 3:
             user_input4 = input("----->  Indicate folder with results (no slashes or quotes): ")
             result_path = wdir + user_input4 + "/"
-            if os.path.isdir(result_path) == False:
+            if os.path.isdir(result_path) is False:
                 print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
                 nr_of_tries += 1
             else:
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
-                proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir,
-                                                                                                             original_species,
-                                                                                                             result_path)
-                paml_visualizer.analyse_PAML_results(wdir, result_path,
-                                                     proteins, nr_of_species_total_dict, original_species,
-                                                     PAML_logfile_name, day)
-
-    if user_input3 == "y" and user_input2 == "y":
-        proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir,
-                                                                                                     original_species,
-                                                                                                     result_path)
-        paml_visualizer.analyse_PAML_results(wdir, result_path,
-                                             proteins, nr_of_species_total_dict, original_species, PAML_logfile_name,
-                                             day)
-
-    # ----------------------------------------#
-    ######## RUN PyMOL ########
-    # ----------------------------------------#
-
-    # check_structure is obsolete cose not every model is usable -> refer to input_dictionary.txt
-
-    if user_input1 == "n" and user_input2 == "n" and user_input3 == "n" and user_input4 == "y":
-        nr_of_tries = 1
-        while nr_of_tries <= 3:
-            user_input4 = input("----->  Indicate folder with results (no slashes or quotes): ")
-            result_path = wdir + user_input4 + "/"
-            if os.path.isdir(result_path) == False:
-                print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
-                nr_of_tries += 1
-            else:
+                # run PAML
+                proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path)
+                # visualize PAML result
+                paml_visualizer.analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
+                # run PyMOL
                 all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
-                nr_of_tries = float("inf")
-                result_path = wdir + user_input4 + "/"
-
                 for protein in all_proteins:
                     # check if model seq and input seq match and check if exactly one model exists
                     if structure_builder.check_structure(wdir, original_species, protein):
-                        successful = structure_builder.run_pymol(wdir, original_species, result_path, protein,
-                                                                 offset=None)
+                        successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
                         if not successful:
+                            print("\nThe structure for : %s was not built successfuly." % protein)
                             break
                     else:
-                        print(
-                            "\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
+                        print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
 
-                # check if all models are present and run PyMOL
-                # missing_structures_final = structure_builder.check_all_structures(wdir, original_species)
-                # for protein in all_proteins:
-                # check if model sequence equals the blasted sequence
-                # model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein, model_seq)
-                # if protein not in missing_structures_final and model_equal_input == True:
-                # structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
-
-                # indicate that structure overlay is already present
-                structure_overlay_present = True
-
-    # run PyMOL together with the rest of the pipeline
-    if user_input4 == "y" and not structure_overlay_present:
+    if user_input3 == "y" and user_input2 == "y":
+        # run PAML
+        proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path)
+        # visualize PAML result
+        paml_visualizer.analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
+        # run PyMOL
         all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
         for protein in all_proteins:
-            # check if model sequence equals the blasted sequence
-            # model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein, model_seq)
-            # check if model seq and input seq match (from dict) and check if exactly one model exists
+            # check if model seq and input seq match and check if exactly one model exists
             if structure_builder.check_structure(wdir, original_species, protein):
                 successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
                 if not successful:
+                    print("\nThe structure for : %s was not built successfuly." % protein)
                     break
             else:
                 print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
 
     print("\nYou reached the end of FREEDA pipeline.")
+
+
+# ----------------------------------------#
+######## RUN as command line ??? ######## -> not tested
+# ----------------------------------------#
 
 
 if __name__ == '__freeda_pipeline__':
