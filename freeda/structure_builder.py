@@ -42,7 +42,7 @@ def check_structure(wdir, original_species, protein):
             try:
                 os.remove(structure_model_path + "/" + file)
             except FileNotFoundError:
-                print("FileNotFoundError was triggered for: &s" % file)
+                print("FileNotFoundError was triggered for: %s" % file)
                 pass
 
     # regenerate list of files -> should contain one file exactly
@@ -78,7 +78,7 @@ def run_pymol(wdir, original_species, result_path, protein, offset):
     if not get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset):
         return False
 
-    # run that script in pymol without triggering external GUI (-cq)
+    # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
     pymol_command = "pymol -cq structure_overlay.pml"
     stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE).communicate()

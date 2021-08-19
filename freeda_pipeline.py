@@ -86,10 +86,11 @@ from freeda import structure_builder
 import os
 
 
-def freeda_pipeline(original_species=None, t=None):
+def freeda_pipeline(original_species=None, t=None, wdir=None):
     # current directory must be the "Data" folder
 
-    wdir = os.getcwd() + "/"
+    if wdir is None:
+        wdir = os.getcwd() + "/"
 
     # reference species sequences: protein seq, cds, exons, gene (ex. Mus musculus)
     if original_species is None:
@@ -242,6 +243,8 @@ def freeda_pipeline(original_species=None, t=None):
     ######## RUN PAML and PyMOL ########
     # ----------------------------------------#
 
+    # DOES NOT CREATE A PYMOL pse session !!!
+
     if user_input3 == "y" and user_input2 == "n":
         nr_of_tries = 1
         while nr_of_tries <= 3:
@@ -290,23 +293,29 @@ def freeda_pipeline(original_species=None, t=None):
 
 
 # ----------------------------------------#
-######## RUN as command line ??? ######## -> not tested
+######## RUN as command line ########
 # ----------------------------------------#
 
+# THIS DOESNT WORK COSE FREEDA PACKAGE DOES NOT LIVE IN THE WORKING DIRECTORY
+# this will not work cose files are being generated in the directory of the code not the working directory as it is in the console
+# raises FileNotFoundError -> probably some larger files are called on before they manage to get transfered into the hard drive?
+# SOLUTION: putting freeda package into the Data folder -> let Brian test it
+# otherwise the command line specification works
 
-if __name__ == '__freeda_pipeline__':
+
+if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description="Run FREEDA pipeline")
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-os", "--original_species",
-                        help="specify reference organism (ex. Mm for Mus musculus)", type=str,
-                        required=False)
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (ex. 30; default)", type=int,
-                        required=True)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
+    parser.add_argument("-d", "--wdir",
+                        help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str, default=None)
 
     args = parser.parse_args()
-    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold)
+    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
 
 """
 
