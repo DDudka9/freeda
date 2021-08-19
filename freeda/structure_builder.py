@@ -32,7 +32,7 @@ def check_structure(wdir, original_species, protein):
     model_file_list = os.listdir(structure_model_path)
     unwanted_files = [file for file in model_file_list if file.startswith(".") or not file.endswith(".pdb")]
 
-    # model does not match blat input sequence
+    # model does not match blast input sequence
     if "model_incompatible.txt" in unwanted_files:
         return False
 

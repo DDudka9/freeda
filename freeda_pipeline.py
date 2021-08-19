@@ -4,133 +4,78 @@
 Created on Wed Mar 24 16:36:16 2021
 
 @author: damian
-
-Before testing make sure that code can communicate witg files:
-    1) Make sure that genomes are called from a separate folder
-    2) Check generate folders module
-    3) Change directories of Output files for blast
+Main module of the freeda package. Takes user input and performs automatic input extraction, tblastn, exon finding
+and molecular evolution analysis (PAML) followed by overlay of putative adaptive sites onto 3D structure (PyMOL).
 
 """
-# 06/17/2021
-# IMPORTANT -> check matches generator module -> does it sort matches before chopping into smaller?
-# check on nomleu3 genome CD46 chr5_rev -> compare to gorGor6 chr1_6_for
-# try changing min threshold for matches from 40 to 60
-# I think the problem is in sorting matches and the fact that two domains in CD46 are quite repeated
-# so broken large contigs do not align well and distant exons 10-13 are not found on later contigs
-# this is speific to exons remote by over 13kb
-# consider increasing suffix and prefix to 15kb? But this will not help with repeated domains
-# even if exon 10 will be found then exon 11 will not be aligned properly 
-# WRITE WARNING FOR PROTEINS WITH REPEATED DOMAINS (ex. TACC3, CD46)
 
-# 03_28_2021
-# Cenpt Caroli chr19__rev somehow sees only 12 exons (not 13) and final
-# exon count is set as 12 not 13 (even if the right contig picked chr8__rev has 13 exons)
-# its clear that cloner depends on the last contig analysed which is wrong
-# but mainly its a failure of the find_exons function
-# try to get exons dictionary once and then use try/except to avoid KeyError
-# when cloning exons (and potentially having different number)
-# SOLUTION: find_exons doesnt output final exon count anymore (FIXED)
-# and find_exons function requires more fixes (in progress)
-
-# Cenpt runs well with the packaged FREEDA (almost the same M2a and M8)
-
-# Generating names for folders from genomes names is defective
-# I think its cose "lstrip" that strips "Acomys_Rus -> Acomys_Ru" and "Neomys_lepida" -> "Neomys_lepid"
-
-# VERSION CONTROL:
-# 1) Go to /Volumes/DamianEx/FREEDA_v01/src (or ...src/FREEDA)
-# 2) In IPython console type:
-# 3) !git add "main.py" (or whatever the module you changed)
-# 4) !git commit -m "My commit"
-# 5) !git push origin main (need to make another brunch except main)
-
-# !git commit -m 'Initial commit'
-# !git add forgotten_file
-# !git commit --amend
-
-# !git branch <newbranchname> (create a new branch)
-# !git checkout -b <newbranchname> (create and got to new branch)
-# !git checkout main (go to a branch)
-# !git checkout - (go back to pewviously checkedout branch)
-# always have clear staging area (all commited) before switching branches
-# !git merge <newbranchname> (merge the new branch with main)
-# !git branch -d <newbranchname> (delete the new branch cose main points already at the same place)
-# dont modify the same place in two different branches!!!!
-
-# Thre is a problem in recognising the first exon in Terf2 Apodemus sylv contig LIPJ01013670.1__rev
-# leading hypothesis is that the exon does not fall into any of the "callings"
-# dissect it and run separately with printing functions
-
-
-# Define a modeule for tweaking parameters ex.
-#   - duplication restriction (switches on the duplication score)
-#   - blast threshold
-#   - homology threshold
-#   - synteny threshold
-#   - coverage threshold
-#   - non_ACGT corrector (to mirror CDS position)
-
-# I ADDED DELE&ION TO INSERTION CHECK
-# I ALSO DISABLED FRAMESHIFT CHECK in cds_cloner-py 
-# UNLESS ITS A DUPLICATED EXON (primates seem to have legit indels)
-
-# HAUS2 ponAbe3 -> chr2A has many more exons cose cds != genpmic in alignment (pieces)
-# enforce that exon needs to not onlx != "-" but also be equal to ake exon
-# also HAUS3 genomic sequence from ensembl is missing the last exon !?!? (download again)
-# FIXED -> made a mistake providing genomic sequence (shorter)
-
-
-# Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
-
-# Cloner module needs revision to get hamming distance duplication comparison compare
-# the actual duplicated exons and not only the number of exon they carry
-# test on Aurkc Ap
-
-# Last bp in Anapc16 is plotted as red on graph -> why?
-# Gblocks seems to not like the last codon for some reason (last after STOP removal)
-
-# Showcase STOP_remover function using Cenol -> Pd has an early STOP
-# which is followed by a mutation in the original STOP suggesting a rescue that way
-# in the same time Mc also has a mutation in the STOP but doesnt have an early STOP rescue
-# suggesting that there is another later STOP that FREEDA does not capture (WHICH THERE ISNT!!!)
-
-# Single non_ACGT bases currently lead to whol exon loss
-# SOLUTION: THINK ABOUT FLIPPING non_ACGT INTO CORRESPONDING CDS POSITION (conservative)
-# this could save these exons!
-
-# THERE IS AN ISSUE WITH: if earlier STOP present in other species then
-# original species gets translated normally and final_original_dict is +1
-# which leads to ValueError in get_omegas function 
-# SOLUTION: enabled the STOP_remover function( FIXED?)
-# TO FIX: dashes in the MAFFT alignment (need to remove these positions before
-# counting codons -> test on Haus8)
-
-# Think about giving 0.5 RETRO score value for Retro at one end and introny at another
-# to allow hamming distance function to kick in (not sure about this)
-
-
-# THERE IS AN ERROR IN HAUS8 CORRECTION function -> not same lengths?
-# check the print screen
-
-
-# How come there is no contig with Cenpt coming from Spicilegus genome?
-# Make FREEDA log file more readable (indentations)
-
-# How come "Contig too short to check C-term synteny 0bp aligned" for contig 81143 in genome11 Ap2m1
-# SOLUTION: Probably connected to exon4 being a 6bp microexon and NOT deleted from exon input but
-# There are 13 exons expected instead of 11 -> exon 12 is skipped for some reason; alignment looks good
-# Also alignment of single exons from exon 7 is messed up (linux default file order problem again?)
-# early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
-# but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
-
-# GET RID OF MAFFT PATH -> not needed if mafft binary in the path (with other dependecies)
-# DONE
-
-# Try downloading all models for a species into freeda code file? Zipped? Getting models without unzipping?
-
-# First check model sequence and length -> pick pyensembl transcripr based on that or longest (no user prompt)
-
-# CURRENTLY (08_15_2021) running PAML and PyMOL only does not give structure model
+# TODO:
+#    1)  ISSUE with not finding CD46 C-term in nomLeu3 genome as oppose to gorilla
+#           check matches generator module -> does it sort matches before chopping into smaller?
+#           -> check on nomleu3 genome CD46 chr5_rev -> compare to gorGor6 chr1_6_for
+#            I think the problem is in sorting matches and the fact that two domains in CD46 are quite repeated
+#            so broken large contigs do not align well and distant exons 10-13 are not found on later contigs
+#            this is speific to exons remote by over 13kb
+#            consider increasing suffix and prefix to 15kb? But this will not help with repeated domains
+#            even if exon 10 will be found then exon 11 will not be aligned properly
+#            WRITE WARNING FOR PROTEINS WITH REPEATED DOMAINS (ex. TACC3, CD46)
+#    2)  ISSUE with testing run time for same protein using higher blast thresholds (50 and 70)
+#    3)  ISSUE with testing exon_finding function:
+#           Cenpt Caroli chr19__rev somehow sees only 12 exons (not 13) and final
+#           exon count is set as 12 not 13 (even if the right contig picked chr8__rev has 13 exons)
+#           its clear that cloner depends on the last contig analysed which is wrong
+#           but mainly its a failure of the find_exons function
+#           try to get exons dictionary once and then use try/except to avoid KeyError
+#           when cloning exons (and potentially having different number)
+#           SOLUTION: find_exons doesnt output final exon count anymore (FIXED)
+#           and find_exons function requires more fixes (in progress)
+#    4)  ISSUE with folder_generator:
+#           Generating names for folders from genomes names is defective
+#           I think its cose "lstrip" that strips "Acomys_Rus -> Acomys_Ru" and "Neomys_lepida" -> "Neomys_lepid"
+#    5)  ISSUE with exon_finding function:
+#           There is a problem in recognising the first exon in Terf2 Apodemus sylv contig LIPJ01013670.1__rev
+#           leading hypothesis is that the exon does not fall into any of the "callings"
+#           dissect it and run separately with printing functions
+#    6) ISSUE with defining parameters (NOT SURE IF ITS A GOOD IDEA ANYMORE):
+#           Define a modeule for tweaking parameters ex.
+#               - duplication restriction (switches on the duplication score)
+#               - blast threshold
+#               - homology threshold
+#               - synteny threshold
+#               - coverage threshold
+#               - non_ACGT corrector (to mirror CDS position)
+#    7) ISSUE with BEB restuls for non-adaptive proteins:
+#            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
+#            Same with Cenp-W
+#    8) ISSUE with the cds_cloner functon (requires refactoring):
+#           Cloner module needs revision to get hamming distance duplication comparison compare
+#           the actual duplicated exons and not only the number of exon they carry
+#           test on Aurkc Ap
+#    9) ISSUE with exon_finding function:
+#           Single non_ACGT bases currently lead to whol exon loss
+#           SOLUTION: THINK ABOUT FLIPPING non_ACGT INTO CORRESPONDING CDS POSITION (conservative)
+#           this could save these exons!
+#    10) ISSUE with early SROP codons :
+#           THERE IS AN ISSUE WITH: if earlier STOP present in other species then
+#           original species gets translated normally and final_original_dict is +1
+#           which leads to ValueError in get_omegas function
+#           SOLUTION: enabled the STOP_remover function( FIXED?)
+#           TO FIX: dashes in the MAFFT alignment (need to remove these positions before
+#           counting codons -> test on Haus8)
+#    11) ISSUE with correction:
+#           THERE IS AN ERROR IN HAUS8 CORRECTION function -> not same lengths?
+#           check the print screen
+#    12) ISSUE with Cenpt missing in spicilegus genome:
+#           How come there is no contig with Cenpt coming from Spicilegus genome?
+#    13) ISSUE with the log files:
+#           Make FREEDA log file more readable (indentations)
+#    14) ISSUE with running Ap2m1:
+#           How come "Contig too short to check C-term synteny 0bp aligned" for contig 81143 in genome11 Ap2m1
+#           SOLUTION: Probably connected to exon4 being a 6bp microexon and NOT deleted from exon input but
+#           There are 13 exons expected instead of 11 -> exon 12 is skipped for some reason; alignment looks good
+#           Also alignment of single exons from exon 7 is messed up (linux default file order problem again?)
+#           early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
+#           but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
 
 from freeda import input_extractor
 from freeda import tblastn
@@ -138,10 +83,7 @@ from freeda import exon_extractor
 from freeda import paml_launcher
 from freeda import paml_visualizer
 from freeda import structure_builder
-from json import dump
-from ast import literal_eval
 import os
-import shutil
 
 
 def freeda_pipeline(original_species=None, t=None):
@@ -202,6 +144,25 @@ def freeda_pipeline(original_species=None, t=None):
             return
 
     # ----------------------------------------#
+    ######## CONDITIONS NOT ALLOWED ########
+    # ----------------------------------------#
+
+    # forgot about blast
+    if user_input0 == "y" and user_input1 == "n" and user_input2 == "y" and user_input3 == "n":
+        print("\n...FATAL ERROR... You need to perform blast before exon finding.")
+        return
+
+    # forgot about blast or exon finding
+    if user_input0 == "y" and (user_input1 == "n" or user_input2 == "n") and user_input3 == "y":
+        print("\n...FATAL ERROR... You need to perform blast and exon finding before molecular evolution analysis.")
+        return
+
+    # forgot about exon finding
+    if user_input0 == "n" and user_input1 == "y" and user_input2 == "n" and user_input3 == "y":
+        print("\n...FATAL ERROR... You need to perform exon finding before molecular evolution analysis.")
+        return
+
+    # ----------------------------------------#
     ######## GET ALL INPUT DATA  ########
     # ----------------------------------------#
 
@@ -257,20 +218,6 @@ def freeda_pipeline(original_species=None, t=None):
                     f.write("Microexon was detected in the input exons file and was removed. Cannot run PyMOL.")
 
     # ----------------------------------------#
-    ######## NOT ALLOWED ########
-    # ----------------------------------------#
-
-    # forgot about blast
-    if user_input0 == "y" and user_input1 == "n" and user_input2 == "y" and user_input3 == "n":
-        print("\n...FATAL ERROR... You need to perform blast before exon finding.")
-        return
-
-    # forgot about blast or exon finding
-    if user_input0 == "y" and (user_input1 == "n" or user_input2 == "n") or user_input3 == "y":
-        print("\n...FATAL ERROR... You need to perform blast and exon finding before molecular evolution analysis.")
-        return
-
-    # ----------------------------------------#
     ######## RUN BLAST ########
     # ----------------------------------------#
 
@@ -318,7 +265,7 @@ def freeda_pipeline(original_species=None, t=None):
                         successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
                         if not successful:
                             print("\nThe structure for : %s was not built successfuly." % protein)
-                            break
+                            continue
                     else:
                         print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
 
@@ -335,7 +282,7 @@ def freeda_pipeline(original_species=None, t=None):
                 successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
                 if not successful:
                     print("\nThe structure for : %s was not built successfuly." % protein)
-                    break
+                    continue
             else:
                 print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
 
