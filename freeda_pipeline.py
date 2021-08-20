@@ -86,7 +86,7 @@ from freeda import structure_builder
 import os
 
 
-def freeda_pipeline(original_species=None, t=None, wdir=None):
+def freeda_pipeline(wdir=None, original_species=None, t=None):
     # current directory must be the "Data" folder
 
     if wdir is None:
@@ -296,26 +296,29 @@ def freeda_pipeline(original_species=None, t=None, wdir=None):
 ######## RUN as command line ########
 # ----------------------------------------#
 
-# THIS DOESNT WORK COSE FREEDA PACKAGE DOES NOT LIVE IN THE WORKING DIRECTORY
-# this will not work cose files are being generated in the directory of the code not the working directory as it is in the console
-# raises FileNotFoundError -> probably some larger files are called on before they manage to get transfered into the hard drive?
-# SOLUTION: putting freeda package into the Data folder -> let Brian test it
-# otherwise the command line specification works
-
+# need to provide an absolute path to the main when running in command line:
+# (py37) python /Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py -d /Volumes/DamianEx_2/Data/ -os "Mm" -t 30
+# you can get abs path using:
+# (base) brew install coreutils
+# (base) realpath freeda_pipeline.py
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-d", "--wdir",
+                        help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
+                        default=None)
     parser.add_argument("-os", "--original_species",
                         help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
-    parser.add_argument("-d", "--wdir",
-                        help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str, default=None)
+
 
     args = parser.parse_args()
     freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
+
+
 
 """
 

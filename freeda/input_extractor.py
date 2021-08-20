@@ -20,7 +20,6 @@ import os
 import glob
 import subprocess
 import shutil
-import requests
 import tarfile
 
 # import glob
@@ -107,7 +106,7 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
     tar = tarfile.open(path_to_original_species_structures)
     print("Looking for structure in AlphaFold database for: %s ...\n" % protein)
     all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]
-    # this assumes that there is only one predicion model for a given protein in AlpghaFold
+    # this assumes that there is only one predicion model for a given protein in AlphaFold
     all_structures_compressed = [s for s in all_structures if s.split("-")[1] in possible_uniprot_ids]
 
     
