@@ -21,14 +21,14 @@ import logging
 import shutil
 
 
-def analyse_blast_results(wdir, blast_path, original_species, t):   
+def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
     
     start_time = time.time()
     
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
     result_path = wdir + "Results" + day + "/"
     
-    folder_generator.generate_folders(result_path, t)
+    folder_generator.generate_folders(result_path, all_proteins)
     
     # initiate log file to record PAML analysis by reseting the handlers
     for handler in logging.root.handlers[:]:
@@ -66,10 +66,6 @@ def analyse_blast_results(wdir, blast_path, original_species, t):
     from os import listdir
     from os.path import isfile, join
     all_files = [f for f in listdir(wdir) if isfile(join(wdir, f))]
-    
-    # generate a list of all protein names
-    with open("proteins.txt", "r") as f:
-        all_proteins = [protein.rstrip("\n") for protein in f.readlines()]
     
     # add original_species cds for a give protein
     for protein in all_proteins:

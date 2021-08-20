@@ -39,12 +39,15 @@ from json import dump
 #nr_of_species_total = 15
 
 
-def analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict, 
+# ADD LEGEND BOX TO PYMOL SCRIPT -> pymol.cgo module
+
+
+def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict,
                          original_species, PAML_logfile_name, day):
     
     all_matched_adaptive_sites_original = {}
     
-    for protein_name in proteins:
+    for protein_name in all_proteins:
         
         protein_folder = result_path + protein_name + "/"
         if os.path.exists(protein_folder + protein_name + "_PAML_analysis.tif"):

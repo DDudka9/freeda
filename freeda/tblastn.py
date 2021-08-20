@@ -30,19 +30,16 @@ import shutil
 import gzip
 
 
-def run_blast(wdir, original_species):
+def run_blast(wdir, original_species, all_proteins):
     """Runs tblastn based on NCBI makedatabase routine."""
 
-    genomes_file_dir = wdir + "genomes.txt" 
-    proteins_file_dir = wdir + "proteins.txt" 
-    
+    genomes_file_dir = wdir + "genomes.txt"
     database_path = wdir + "Genomes/"
     query_path = wdir + "Blast_input/"
     output_path = wdir + "Blast_output/"
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means bitscore length means pident means mismatch means gapopen means qlen means slen means"
     
     genomes = [genome.rstrip("\n") for genome in open(genomes_file_dir, "r").readlines()]
-    proteins = open(proteins_file_dir, "r").readlines()
     
     # clear Blast_output folder
     all_old_blast_output_files = glob.glob(os.path.join(output_path, "*.txt"))
@@ -58,8 +55,7 @@ def run_blast(wdir, original_species):
     # perform blast
     for genome in genomes:
     
-        for protein in proteins:
-            protein = protein.lstrip("\n").rstrip("\n")
+        for protein in all_proteins:
             database = database_path + genome
             query = query_path + protein + "_" + original_species + "_protein.fasta"
             output = output_path + protein + "_" + genome + ".txt"

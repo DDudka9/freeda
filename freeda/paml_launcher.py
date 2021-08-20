@@ -32,7 +32,7 @@ import subprocess
 from freeda import fasta_reader
 
 
-def analyse_final_cds(wdir, original_species, result_path):
+def analyse_final_cds(wdir, original_species, result_path, all_proteins):
     
     start_time = time.time()
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
@@ -56,16 +56,9 @@ def analyse_final_cds(wdir, original_species, result_path):
         for species in f.readlines():
             all_species[species.rstrip("\n")] = ""
     
-    # make list of final cds
-    proteins = []
-    with open("proteins.txt", "r") as f:
-        for protein in f.readlines():
-            proteins.append(protein.rstrip("\n"))
-    
     nr_of_species_total_dict = {} 
-    
-    
-    for protein in proteins:
+
+    for protein in all_proteins:
         
         # check it this protein was already analysed
         if os.path.isdir(result_path + protein + "/" + "PAML_" + protein):
@@ -236,7 +229,7 @@ def analyse_final_cds(wdir, original_species, result_path):
     print(message)
     logging.info(message)
     
-    return proteins, nr_of_species_total_dict, PAML_logfile_name, day
+    return nr_of_species_total_dict, PAML_logfile_name, day
 
 
 def eliminate_all_insertions(protein_folder_path, out_MAFFT):

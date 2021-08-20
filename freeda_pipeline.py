@@ -44,6 +44,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #               - synteny threshold
 #               - coverage threshold
 #               - non_ACGT corrector (to mirror CDS position)
+#                - pymol residues
 #    7) ISSUE with BEB restuls for non-adaptive proteins:
 #            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
 #            Same with Cenp-W
@@ -77,6 +78,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #           early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
 #           but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
 
+print("\nImporting all modules and libraries...\n")
+
 from freeda import input_extractor
 from freeda import tblastn
 from freeda import exon_extractor
@@ -109,6 +112,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     ######## GET USER INPUT ########
     # ----------------------------------------#
 
+    print("Choose which parts of the pipeline you would like to run (all 'y' is a good strategy for single poteins) : ")
     while user_input0 != "y" and user_input0 != "n":
         user_input0 = input("\n(FREEDA) Should I get input data automatically? (y / n)\n").lower()
         if user_input0.lower() != "y" and user_input0.lower() != "n":
@@ -132,7 +136,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     # check if the user had previously obtained data for given list of proteins
     if user_input0 == "n":
         input_present = True
-        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines() if protein != "\n"]
         for protein in all_proteins:
             structure_path = wdir + "Structures/" + protein + "_" + original_species
             if "model_compatible.txt" in os.listdir(structure_path) or "model_incompatible.txt" in os.listdir(structure_path):
@@ -183,12 +187,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                   "GenBank -> Genomic FASTA(.fna)")
             return
 
-        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
+        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines() if protein != "\n"]
         for protein in all_proteins:
-            if protein == "\n":
-                continue
-            print("\n----------- * %s * -----------" % protein)
 
+            print("\n----------- * %s * -----------" % protein)
             # get structure prediction model from AlphaFold
             possible_uniprot_ids = input_extractor.get_uniprot_id(wdir, original_species, protein)
             model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein, possible_uniprot_ids)
@@ -224,7 +226,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
 
     if user_input1 == "y":
         print("\n -> checking genome blast databases...")
-        blast_path = tblastn.run_blast(wdir, original_species)
+        blast_path = tblastn.run_blast(wdir, original_species, all_proteins)
         if blast_path is None:
             print("\n...FATAL ERROR...: Blast database build failed for at least one genome"
                   "\n   Make sure you downloaded all genomes -> exiting the pipeline now...")
@@ -237,13 +239,11 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     # ----------------------------------------#
 
     if user_input2 == "y":
-        result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species, int(t))
+        result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species, int(t), all_proteins)
 
     # ----------------------------------------#
     ######## RUN PAML and PyMOL ########
     # ----------------------------------------#
-
-    # DOES NOT CREATE A PYMOL pse session !!!
 
     if user_input3 == "y" and user_input2 == "n":
         nr_of_tries = 1
@@ -257,11 +257,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
                 # run PAML
-                proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path)
+                nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
                 # visualize PAML result
-                paml_visualizer.analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
+                paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
                 # run PyMOL
-                all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
                 for protein in all_proteins:
                     # check if model seq and input seq match and check if exactly one model exists
                     if structure_builder.check_structure(wdir, original_species, protein):
@@ -274,11 +273,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
 
     if user_input3 == "y" and user_input2 == "y":
         # run PAML
-        proteins, nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path)
+        nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
         # visualize PAML result
-        paml_visualizer.analyse_PAML_results(wdir, result_path, proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
+        paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day)
         # run PyMOL
-        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
         for protein in all_proteins:
             # check if model seq and input seq match and check if exactly one model exists
             if structure_builder.check_structure(wdir, original_species, protein):

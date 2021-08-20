@@ -8,11 +8,11 @@ Created on Wed Mar 24 17:04:31 2021
 
 import os
 
-def generate_folders(result_path, t):
+def generate_folders(result_path, all_proteins):
     
     # make protein folders
-    for protein in open("proteins.txt", "r").readlines():
-       os.makedirs(result_path + str(protein.rstrip("\n")))
+    for protein in all_proteins:
+       os.makedirs(result_path + str(protein))
         
     # name genome folder for each protein folder
     all_protein_folders = os.listdir(result_path)
