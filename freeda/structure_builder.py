@@ -24,6 +24,8 @@ import os
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCOREING (C-term label interferes?)
 # Done but NOT TESTED YET
 
+# Do not overlay sites that are "not likely" to avoid confusion
+
 
 def check_structure(wdir, original_species, protein):
     """Checks presence of a structure prediction model for a given protein"""
@@ -140,14 +142,12 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
                 f.write("show sticks, " + residue + "\n")
                 f.write('label (resi ' + str(site) + ' and name CA), "%s" % ("' + residue + '")\n')
 
-            # if 0.90 > float(features[2]) >= 0.75:
-            #    residue = features[0] + str(site)
-            #    f.write("select " + residue + ", resi " + str(site) + "\n")
-            #    f.write("color white, " + residue + "\n")
-            #    f.write("show sticks, " + residue + "\n")
-            #    f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
-
-        # PyMOL comand to mark N-term and C-term:
+            if 0.90 > float(features[2]) >= 0.75:
+                residue = features[0] + str(site)
+                f.write("select " + residue + ", resi " + str(site) + "\n")
+                f.write("color yellow, " + residue + "\n")
+                f.write("show sticks, " + residue + "\n")
+                f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
 
         # special case, first residue adaptive
         if float(matched_adaptive_sites_original["1"][2]) >= 0.75:

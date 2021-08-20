@@ -95,7 +95,7 @@ def read_output_PAML(result_path, PAML_logfile_name, proteins, all_matched_adapt
         for line in file:
             
             # record protein name
-            if line.startswith(" ---") and "PAML" not in line:
+            if line.startswith("--------- *"):
                 protein = line.replace("-","").replace(" ","").replace("*","").rstrip("\n")
                 PAML_log_dict["Protein name"].append(protein)
                 start_recording = True 
@@ -185,7 +185,7 @@ def read_output_PAML(result_path, PAML_logfile_name, proteins, all_matched_adapt
                     PAML_log_dict["Sites with pr < 0.90"].append(mild_sites_to_append)
                     PAML_log_dict["Sites with pr >= 0.90"].append(strong_sites_to_append)
 
-                # finish recoring loop through the log file   
+                # finish recording loop through the log file
                 start_recording = False
                 
         final_PAML_log_dict = PAML_log_dict
@@ -741,7 +741,7 @@ def make_graphs(final_dict_to_plot, result_path, protein_name, nr_of_species_tot
     plt.savefig(figure_name + ".tif", dpi=300, bbox_inches="tight")
     plt.savefig(figure_name + ".svg", dpi=300, bbox_inches="tight")
     
-    shutil.move(figure_name + ".tif", protein_path)
+    shutil.move(figure_name + ".tif", result_path)
     shutil.move(figure_name + ".svg", protein_path)
 
     

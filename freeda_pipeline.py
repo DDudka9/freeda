@@ -110,7 +110,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     # ----------------------------------------#
 
     while user_input0 != "y" and user_input0 != "n":
-        user_input0 = input("(FREEDA) Should I get input data automatically? (y / n)\n").lower()
+        user_input0 = input("\n(FREEDA) Should I get input data automatically? (y / n)\n").lower()
         if user_input0.lower() != "y" and user_input0.lower() != "n":
             print("Please answer y or n\n")
 
