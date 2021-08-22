@@ -13,18 +13,21 @@ from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import pairwise2
+
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl import Workbook
+from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
+from json import dump
+
 import re
 import os
 import shutil
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
-
 import pandas as pd
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl import Workbook
-from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
-from json import dump
+import math
+
 
 #result_path = wdir + "Results-06-13-2021-23-37/"
 #wdir = os.getcwd() + "/"
@@ -685,12 +688,22 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
     omegas = []
     probabilities = []
     analyzed = []
+    # these will determine omega graph y axis
+    roof = 1
+    floor = 1
+
     for site, features in final_dict_to_plot.items():
         sites.append(site)
         residues.append(features[0])
         
         if features[3] == 1:
             omegas.append(float(features[1]))
+            if features[1] > roof:
+                roof = math.ceil(features[1])
+            elif 0.5 <= features[1] <= floor:
+                floor = 0.5
+            elif 0 < features[1] < 0.5:
+                floor = 0
             probabilities.append(float(features[2]))
             
         # mark missing values as impossibly high omegas and probabilities
@@ -707,11 +720,11 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
     plt.subplot(311, title="PAML analysis - %s (%s species analyzed)" % (protein, nr_of_species_total))
     plt.ylabel("dN/dS\n")
     # I should fix max omega better
-    plt.axis([0, sites[-1], 0, 4])
-    plt.ylim(0,4)
-    plt.yticks(np.arange(0.0, 4.1, 2.0))
+    plt.axis([0.5, sites[-1], 0, roof])
+    plt.ylim(0.5, roof)
+    plt.yticks(np.arange(0.5, roof + 0.1, 0.5))
     # mark the missing values for the plot
-    clrs1 = ["black" if s == 1 else "red" for s in analyzed]
+    clrs1 = ["black" if s == 1 else "gainsboro" for s in analyzed]
     plt.bar(sites, omegas, color=clrs1)
     #plt.bar(sites, omegas, color=(0.1, 0.1, 0.1))
 
@@ -721,7 +734,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
     plt.ylabel("Prob. positive\n selection")
     plt.axis([0, sites[-1], 0.5, 1.0])
     # mark the missing values for the plot
-    clrs2 = ["cornflowerblue" if s == 1 else "red" for s in analyzed]
+    clrs2 = ["cornflowerblue" if s == 1 else "gainsboro" for s in analyzed]
     plt.bar(sites, probabilities, color=clrs2)
     
     # This is pretty ok
@@ -731,7 +744,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
     plt.axis([0, sites[-1], 0.9, 1.0])
     plt.yticks(np.arange(0.9, 1.01, 0.05))
     # mark the missing values for the plot
-    clrs3 = ["cornflowerblue" if s == 1 else "red" for s in analyzed]
+    clrs3 = ["magenta" if s == 1 else "gainsboro" for s in analyzed]
     plt.bar(sites, probabilities, color=clrs3)
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     

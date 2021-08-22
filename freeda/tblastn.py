@@ -5,16 +5,13 @@ Created on Wed Mar 24 16:21:53 2021
 
 @author: damian
 
-Runs blast using NCBI tblastn. 
-Requires protein database built using queried genomes:
-https://www.ncbi.nlm.nih.gov/books/NBK279688/
+Runs blast using NCBI tblastn.
+
 Fasta genome names need to be stored in "genomes.txt" file one per line using one underscore:
-    
     xxxxx_xxxxx.fasta
     yyyyy_yyyyy.fasta
     
 Protein names need to be stored in "proteins.txt" file one per line:
-    
     aaaaa
     bbbbb
 
@@ -60,7 +57,7 @@ def run_blast(wdir, original_species, all_proteins):
             query = query_path + protein + "_" + original_species + "_protein.fasta"
             output = output_path + protein + "_" + genome + ".txt"
             to_blast = ["tblastn", "-db", database, "-query", query, "-out", output, "-outfmt", form, "-num_threads", "8"]
-            print("\nPerforming tblast for protein: %s from genome: %s\n" % (protein, genome))
+            print("\nPerforming tblastn for protein: %s from genome: %s\n" % (protein, genome))
             subprocess.call(to_blast)
 
     print("\ntblastn txt files have been generated.")
@@ -70,9 +67,7 @@ def run_blast(wdir, original_species, all_proteins):
 
 def check_genome_present(database_path, genome, reference_genome=False):
     """Checks if a given genome is present. Unpacks and unzips genomes downloaded from NCBI Assembly.
-    
     Non-ncbi assemblies must be prepared as ".fasta" files conform with "genomes.txt" names.
-    
     It also looks for reference genome if key-only argument reference_genome is invoked."""
 
     genome_file_database = True

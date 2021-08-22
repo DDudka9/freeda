@@ -10,42 +10,25 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 """
 
 # TODO:
-#    1)  ISSUE with not finding CD46 C-term in nomLeu3 genome as oppose to gorilla
-#           check matches generator module -> does it sort matches before chopping into smaller?
-#           -> check on nomleu3 genome CD46 chr5_rev -> compare to gorGor6 chr1_6_for
-#            I think the problem is in sorting matches and the fact that two domains in CD46 are quite repeated
-#            so broken large contigs do not align well and distant exons 10-13 are not found on later contigs
-#            this is speific to exons remote by over 13kb
-#            consider increasing suffix and prefix to 15kb? But this will not help with repeated domains
-#            even if exon 10 will be found then exon 11 will not be aligned properly
-#            WRITE WARNING FOR PROTEINS WITH REPEATED DOMAINS (ex. TACC3, CD46)
-#    2)  ISSUE with testing run time for same protein using higher blast thresholds (50 and 70)
-#    3)  ISSUE with testing exon_finding function:
-#           Cenpt Caroli chr19__rev somehow sees only 12 exons (not 13) and final
-#           exon count is set as 12 not 13 (even if the right contig picked chr8__rev has 13 exons)
-#           its clear that cloner depends on the last contig analysed which is wrong
-#           but mainly its a failure of the find_exons function
-#           try to get exons dictionary once and then use try/except to avoid KeyError
-#           when cloning exons (and potentially having different number)
-#           SOLUTION: find_exons doesnt output final exon count anymore (FIXED)
-#           and find_exons function requires more fixes (in progress)
-#    4)  ISSUE with folder_generator:
-#           Generating names for folders from genomes names is defective
-#           I think its cose "lstrip" that strips "Acomys_Rus -> Acomys_Ru" and "Neomys_lepida" -> "Neomys_lepid"
-#    5)  ISSUE with exon_finding function:
-#           There is a problem in recognising the first exon in Terf2 Apodemus sylv contig LIPJ01013670.1__rev
-#           leading hypothesis is that the exon does not fall into any of the "callings"
-#           dissect it and run separately with printing functions
-#    6) ISSUE with defining parameters (NOT SURE IF ITS A GOOD IDEA ANYMORE):
-#           Define a modeule for tweaking parameters ex.
+#   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021)
+#    1) ISSUE with Haus8 -> Gs -> SRMG01015959.1__for -> part of exon 4 does not align (the other one does), there is insertion as well
+#                           it created a frameshift at the beginning of the sequence (22aa) present in translated alignment
+#                           it might skew the PAML result for Haus8
+#                           SOLUTION : drop Gs from Haus8 analysis
+#                           Generally Haus8 rat has some very divergent regions but they match the rat uniprot sequence
+#                           Haus8 is a weird protein -> possibly many duplications, retrotranspositions
+#    2)  TESTING run time for same protein using higher blast thresholds (50 and 70)
+#    6) ISSUE with defining parameters:
+#           Define a module for tweaking parameters (advanced_parameters.py)
 #               - duplication restriction (switches on the duplication score)
+#               - flanking arms (default 10kb)
 #               - blast threshold
 #               - homology threshold
 #               - synteny threshold
 #               - coverage threshold
 #               - non_ACGT corrector (to mirror CDS position)
-#                - pymol residues
-#    7) ISSUE with BEB restuls for non-adaptive proteins:
+#               - pymol residues
+#    7) ISSUE with BEB results for non-adaptive proteins:
 #            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
 #            Same with Cenp-W
 #    8) ISSUE with the cds_cloner functon (requires refactoring):
@@ -63,11 +46,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #           SOLUTION: enabled the STOP_remover function( FIXED?)
 #           TO FIX: dashes in the MAFFT alignment (need to remove these positions before
 #           counting codons -> test on Haus8)
+#           08_21_2021 -> I dont really know what this comment mean
 #    11) ISSUE with correction:
 #           THERE IS AN ERROR IN HAUS8 CORRECTION function -> not same lengths?
 #           check the print screen
-#    12) ISSUE with Cenpt missing in spicilegus genome:
-#           How come there is no contig with Cenpt coming from Spicilegus genome?
 #    13) ISSUE with the log files:
 #           Make FREEDA log file more readable (indentations)
 #    14) ISSUE with running Ap2m1:
@@ -77,6 +59,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #           Also alignment of single exons from exon 7 is messed up (linux default file order problem again?)
 #           early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
 #           but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
+#    15)  ISSUE with CD55:
+#           Runs blast for forever...
+#           Fixed : probably an issue with a blast database, no problem currently
+#    16)  TESTING: download genomes of more primates and try reproducing Schuler 2010 MBE paper
 
 print("\nImporting all modules and libraries...\n")
 
@@ -133,14 +119,18 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
         if user_input3.lower() != "y" and user_input3.lower() != "n":
             print("Please answer y or n\n")
 
+    # generate basic folders for input if not present
+    input_extractor.generate_basic_folders(wdir)
+    # get all proteins to be analysed (these are gene names)
+    all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines() if protein != "\n"]
+
     # check if the user had previously obtained data for given list of proteins
     if user_input0 == "n":
         input_present = True
-        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines() if protein != "\n"]
         for protein in all_proteins:
             structure_path = wdir + "Structures/" + protein + "_" + original_species
             if "model_compatible.txt" in os.listdir(structure_path) or "model_incompatible.txt" in os.listdir(structure_path):
-                print("All input data and structure model for : %s are present." % protein)
+                print("\nAll input data and structure model for : %s are present." % protein)
             else:
                 input_present = False
                 print("\n...WARNING... Data are missing for : %s" % protein)
@@ -187,12 +177,11 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                   "GenBank -> Genomic FASTA(.fna)")
             return
 
-        all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines() if protein != "\n"]
         for protein in all_proteins:
 
             print("\n----------- * %s * -----------" % protein)
             # get structure prediction model from AlphaFold
-            possible_uniprot_ids = input_extractor.get_uniprot_id(wdir, original_species, protein)
+            possible_uniprot_ids = input_extractor.get_uniprot_id(original_species, protein)
             model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein, possible_uniprot_ids)
             # get sequence input from ensembl
             input_correct, model_matches_input, microexon_present = input_extractor.extract_input(wdir,

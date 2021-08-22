@@ -21,8 +21,7 @@ import shutil
 import glob
 
 
-def analyse_MSA(wdir, MSA_path, protein_name, genome_name, result_path, \
-                Mm_exons, microexons, expected_exons):
+def analyse_MSA(wdir, MSA_path, protein_name, genome_name, Mm_exons, microexons, expected_exons):
     
     final_exon_number = len(Mm_exons)
     cloned_exons_overhangs = []
@@ -43,7 +42,7 @@ def analyse_MSA(wdir, MSA_path, protein_name, genome_name, result_path, \
         cds, locus, gene = index_positions(seqs)
         # find all exons in contig locus if no retrotransposition was detected
         exons, possible_retrotransposition, synteny, RETRO_score, duplication_score \
-            = exon_finder.find_exons(cds, locus, gene, seqs, contig_name, Mm_exons, expected_exons, microexons)
+            = exon_finder.find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexons)
         # skip this contig if possible retrotransposition event was detected
         # likelihood of false positive RETRO is more than 1 per 3 intronic exons
         # skip also contigs that are likely duplications
@@ -57,7 +56,7 @@ def analyse_MSA(wdir, MSA_path, protein_name, genome_name, result_path, \
     most_intronic_contigs = find_contigs_with_most_intronic_exons(preselected_exons_overhangs)
     
     # clone cds based on the most intronic contigs
-    cloned_cds = cds_cloner.clone_cds(preselected_exons_overhangs, most_intronic_contigs, \
+    cloned_cds = cds_cloner.clone_cds(preselected_exons_overhangs, most_intronic_contigs,
                  protein_name, genome_name, final_exon_number, Mm_exons, MSA_path, microexons)
 
     # check if final CDS is in frame (clone anyway)

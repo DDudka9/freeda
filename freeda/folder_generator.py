@@ -45,4 +45,4 @@ def generate_folders(result_path, all_proteins):
                         + "/" + str(genome.rstrip(".fasta\n"))
                         + "/" + "Fasta/above_threshold/MSA/Single_exons_MSA")
                 
-    print("Folders have been generated.\n")
+    print("\nFolders have been generated.\n")

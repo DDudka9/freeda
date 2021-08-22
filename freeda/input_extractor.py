@@ -62,7 +62,31 @@ rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
 
 
-def get_uniprot_id(wdir, original_species, protein):
+def generate_basic_folders(wdir):
+    """Checks if folders for input are present in working directory, generates if not"""
+
+    path_to_blast_input = wdir + "Blast_input/"
+    path_to_blast_output = wdir + "Blast_output/"
+    path_to_cds = wdir + "Coding_sequences/"
+    path_to_genes = wdir + "Genes/"
+    path_to_exons = wdir + "Exons/"
+    path_to_structures = wdir + "Structures/"
+
+    if not os.path.isdir(path_to_blast_input):
+        os.makedirs(path_to_blast_input)
+    if not os.path.isdir(path_to_blast_output):
+        os.makedirs(path_to_blast_output)
+    if not os.path.isdir(path_to_cds):
+        os.makedirs(path_to_cds)
+    if not os.path.isdir(path_to_exons):
+        os.makedirs(path_to_exons)
+    if not os.path.isdir(path_to_genes):
+        os.makedirs(path_to_genes)
+    if not os.path.isdir(path_to_structures):
+        os.makedirs(path_to_structures)
+
+
+def get_uniprot_id(original_species, protein):
     """Retrieves all possible uniprot ids to be matched against structure prediction from AlphaFold"""
     
     if original_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
@@ -362,7 +386,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
             
         else:
             cds_from_exons += exon_sequence
-        
+
             if nr == 1 and exon_sequence.startswith("ATG"):
                 start_codon_present = True
             if nr == len(coding_exons) and exon_sequence[-3:] in ["TGA", "TAG", "TAA"]:
