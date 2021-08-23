@@ -108,6 +108,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
 
                 # ALLOWED EXON 1 TO BE DIVERGENT ON 08_21_2021 -> Terf2 looses exon 1 in Ay because of this -> keep testing
                 # exon_number != 1
+                # note from 08_22_2021 -> this does not allow first exons to be divergent cose of the previous statement
 
                 elif homology_check(position, last_bp, cds, locus, gene) == True:
                     divergent_introns = True

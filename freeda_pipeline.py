@@ -9,6 +9,33 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 """
 
+"""
+
+ Final species cloned and aligned (+ original) for CD46 : 3 ['Hs', 'Pb', 'Mu']
+['Original alignment: 1176 positions', 'Gblocks alignment:  1125 positions (95 %) in 1 selected block(s)']
+Read and write (return) sequences
+
+ Phylip format was created for protein : CD46 
+
+RAxML can't, parse the alignment file as phylip file 
+it will now try to parse it as FASTA file
+
+TOO FEW SPECIES
+
+ PROBLEM with making gene tree for protein : CD46 
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 306, in <module>
+    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 265, in freeda_pipeline
+    nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 196, in analyse_final_cds
+    best_tree_path = run_RAxML(protein, protein_folder_path, translated_path)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 381, in run_RAxML
+    with open(best_tree_path, "r") as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/DamianEx_2/Data/Results-08-21-2021-23-35/CD46/RAxML_bestTree.CD46_Tree'
+
+"""
+
 # TODO:
 #   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021)
 #    1) ISSUE with Haus8 -> Gs -> SRMG01015959.1__for -> part of exon 4 does not align (the other one does), there is insertion as well
@@ -18,10 +45,14 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                           Generally Haus8 rat has some very divergent regions but they match the rat uniprot sequence
 #                           Haus8 is a weird protein -> possibly many duplications, retrotranspositions
 #    2)  TESTING run time for same protein using higher blast thresholds (50 and 70)
+#    3)  ISSUE with CD46 primates -> 10-13 exons found only in mulatta -> check blast file
+#                       Consider running a blastn (nucleotide) instead of tblastn (protein)
+#                       Consider extending the arms above 10kb to 30kb to check if thats the issue (probably same as CD55)
+#    4)  ISSUE with RAxML "FileNotFoundError when too few species (check snippet above) -> make check for minimum species
 #    6) ISSUE with defining parameters:
 #           Define a module for tweaking parameters (advanced_parameters.py)
 #               - duplication restriction (switches on the duplication score)
-#               - flanking arms (default 10kb)
+#               - flanking arms (default 10kb) -> recommend for large introns (ex. primate default to 30kb)
 #               - blast threshold
 #               - homology threshold
 #               - synteny threshold
