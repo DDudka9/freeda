@@ -18,12 +18,11 @@ retrotransposition. It also calls synteny and duplications.
 
 import logging
 
-def find_exons(cds, locus, gene, seqs, contig_name, Mm_exons, expected_exons, microexons): # works well
+def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexons): # works well
 
     exons = {}
     exon = ""
     exon_start = 0
-    exon_end = 0
     exon_number = 0
     exon_checked = False
     introny = False
@@ -106,7 +105,12 @@ def find_exons(cds, locus, gene, seqs, contig_name, Mm_exons, expected_exons, mi
             
                 # check for very divergent introns (will be counted intronic)
                 # does not allow the first exon to have divergent introns (possibly not-syntenic exon)
-                elif exon_number != 1 and homology_check(position, last_bp, cds, locus, gene) == True:
+
+                # ALLOWED EXON 1 TO BE DIVERGENT ON 08_21_2021 -> Terf2 looses exon 1 in Ay because of this -> keep testing
+                # exon_number != 1
+                # note from 08_22_2021 -> this does not allow first exons to be divergent cose of the previous statement
+
+                elif homology_check(position, last_bp, cds, locus, gene) == True:
                     divergent_introns = True
             
             # this exon seems to be missing from the contig          

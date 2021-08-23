@@ -21,15 +21,15 @@ import logging
 import shutil
 
 
-def analyse_blast_results(wdir, blast_path, original_species, t):   
-    
+def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
+
     start_time = time.time()
-    
+
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
     result_path = wdir + "Results" + day + "/"
-    
-    folder_generator.generate_folders(result_path, t)
-    
+
+    folder_generator.generate_folders(result_path, all_proteins)
+
     # initiate log file to record PAML analysis by reseting the handlers
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
@@ -38,7 +38,7 @@ def analyse_blast_results(wdir, blast_path, original_species, t):
 
     # make a list of paths with blast tables
     all_blasts = [blast for blast in glob.glob(blast_path + "*.txt")]
-    
+
     # get path for a single blast table while removing it from the list
     for path in all_blasts:
         match_path = path
@@ -51,26 +51,22 @@ def analyse_blast_results(wdir, blast_path, original_species, t):
         # generate matches dataframe
         matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
         # process the final dataframe
-        MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, t, result_path, protein_name, genome_name, genome_index)        
+        MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, t, result_path, protein_name, genome_name, genome_index)
         # run MAFFT on all the MSA and write them into files
         msa_aligner.run_MAFFT(MSA_path)
         # return potential exons for a current protein in current genome
-        msa_analyzer.analyse_MSA(wdir, MSA_path, protein_name, genome_name, result_path, Mm_exons, microexons, expected_exons)
+        msa_analyzer.analyse_MSA(wdir, MSA_path, protein_name, genome_name, Mm_exons, microexons, expected_exons)
         # mark that this blast result has been analysed
         message = "\nFinished running protein: '%s' from genome: '%s'\n" \
             % (protein_name, genome_name)
         logging.info(message)
         print(message)
-        
+
     # generate a list of all files in the working directory
     from os import listdir
     from os.path import isfile, join
     all_files = [f for f in listdir(wdir) if isfile(join(wdir, f))]
-    
-    # generate a list of all protein names
-    with open("proteins.txt", "r") as f:
-        all_proteins = [protein.rstrip("\n") for protein in f.readlines()]
-    
+
     # add original_species cds for a give protein
     for protein in all_proteins:
         if protein + ".fasta" in all_files:
@@ -80,17 +76,17 @@ def analyse_blast_results(wdir, blast_path, original_species, t):
                 content = file.read()
                 file.seek(0, 0)
                 file.write(header.rstrip('\r\n') + '\n' + seq + '\n' + content)
-    
+
     # mark the end of the analysis
-    message = ("Analysis completed in %s minutes or %s hours" % \
-               ((time.time() - start_time)/60, 
+    message = ("Analysis completed in %s minutes or %s hours" %
+               ((time.time() - start_time)/60,
                 (time.time() - start_time)/60/60))
     print(message)
     logging.info(message)
-    
+
     # move the log file into result folder
     shutil.move(log_filename, result_path)
-    
+
     return result_path
 
 

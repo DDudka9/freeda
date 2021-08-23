@@ -38,14 +38,16 @@ def process_matches(wdir, matches, cds, gene, t, result_path, protein_name, geno
         # expand exons
         expanded_exons = expand_exons(sorted_exons)
         # make a bed file with expanded exons or original exons if cannot expand
-        bed_object, expanded_bed_object = make_bed_file(sorted_exons, \
-                        expanded_exons, bed_name, t, result_path, protein_name, genome_name)
+        bed_object, expanded_bed_object = make_bed_file(sorted_exons, expanded_exons, bed_name, t, result_path, protein_name, genome_name)
         # convert the bed file into fasta file
         make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_name)
         fasta_path = process_fasta_file(fasta_name, contig, t, result_path, protein_name, genome_name)
-        get_contig_locus(contig, protein_name, genome_name, fasta_name, \
-                        fasta_path, start, end, genome_index)
+        get_contig_locus(contig, protein_name, genome_name, fasta_name, fasta_path, start, end, genome_index)
         MSA_path = generate_files_to_MSA(contig, cds, gene, fasta_path)
+
+    message = "\nAnalysing all contigs ..."
+    print(message)
+    logging.info(message)
         
     return MSA_path
 
@@ -55,8 +57,9 @@ def get_exons(base_name, matches, contig):
     grouped = matches.groupby(matches.sseqid)
     # make contig name a string
     contig = str(contig)
-    print("contig:" + contig)
-    logging.info("Getting exons from contig:" + contig)
+    message = "\nMatches found on contig : " + contig
+    print(message)
+    logging.info(message)
     # make a dataframe from these entries
     exons = grouped.get_group(contig)
     # bring back original name of the contig for each match in exons (base_name)
@@ -225,7 +228,7 @@ def write_seq_rev_comp(header, complement, protein_name, genome_name, contig):
     # check and log if "N" bases are present
     non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
     if [n for n in complement if n in non_ACGT] != []:
-        side_note = "         non-ACGT base present in the reverse complemented sequence."
+        side_note = "      ...WARNING... non-ACGT bases in the reverse complemented sequence."
         print(side_note)
         logging.info(side_note)
     o = open("Rev_comp_" + contig + ".fasta", "w")
@@ -244,7 +247,7 @@ def write_seq(header, seq, protein_name, genome_name, fasta_name):
     # check and log if "N" bases are present
     non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
     if [n for n in seq if n in non_ACGT] != []:
-        side_note = "         non-ACGT base present in the sequence."
+        side_note = "    ...WARNING... non-ACGT bases in the sequence."
         print(side_note)
         logging.info(side_note)
     o = open(fasta_name, "w")

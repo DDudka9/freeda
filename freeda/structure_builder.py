@@ -15,35 +15,177 @@ import shutil
 import subprocess
 import os
 
-#wdir = os.getcwd() + "/"
-#protein = "Haus1"
-#original_species = "Mm"
-#result_path = wdir + "Results-06-13-2021-23-37/"
 
-"""  
-# ERROR when running Haus2_Mm ven when taking automatic longer cds
+# wdir = os.getcwd() + "/"
+# protein = "Haus1"
+# original_species = "Mm"
+# result_path = wdir + "Results-06-13-2021-23-37/"
 
-Traceback (most recent call last):
+# LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCOREING (C-term label interferes?)
+# Done but NOT TESTED YET
 
-  File "<ipython-input-2-883be37ae592>", line 1, in <module>
-    freeda_pipeline()
+# Do not overlay sites that are "not likely" to avoid confusion
 
-  File "<ipython-input-1-1f53d32e17ad>", line 223, in freeda_pipeline
-    model_equal_input = structure_builder.compare_model_with_input(wdir, original_species, protein)
 
-  File "/Users/damian/freeda/freeda/structure_builder.py", line 43, in compare_model_with_input
-    for record in SeqIO.parse(pdb_file, 'pdb-atom'):
+def check_structure(wdir, original_species, protein):
+    """Checks presence of a structure prediction model for a given protein"""
 
-  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/Bio/SeqIO/PdbIO.py", line 300, in PdbAtomIterator
-    structure = PDBParser().get_structure(None, source)
+    structure_model_path = wdir + "Structures/" + protein + "_" + original_species
+    model_file_list = os.listdir(structure_model_path)
+    unwanted_files = [file for file in model_file_list if file.startswith(".") or not file.endswith(".pdb")]
 
-  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/Bio/PDB/PDBParser.py", line 97, in get_structure
-    lines = handle.readlines()
+    # model does not match blast input sequence
+    if "model_incompatible.txt" in unwanted_files:
+        return False
 
-  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/codecs.py", line 322, in decode
-    (result, consumed) = self._buffer_decode(data, self.errors, final)
+    # check for unwanted files (hidden and non-pdb) and remove them
+    if unwanted_files:
+        for file in unwanted_files:
+            try:
+                os.remove(structure_model_path + "/" + file)
+            except FileNotFoundError:
+                print("FileNotFoundError was triggered for: %s" % file)
+                pass
 
-UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb0 in position 37: invalid start byte
+    # regenerate list of files -> should contain one file exactly
+    model_file_list = os.listdir(structure_model_path)
+
+    # there is exactly one pdb model
+    if len(model_file_list) == 1 and model_file_list[0].endswith(".pdb"):
+        return True
+
+    # there is more than one pdb model (not allowed)
+    if len(model_file_list) > 1:
+        print("There is more than one structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
+        return False
+
+    # there is no pdb model (not allowed)
+    if len(model_file_list) == 0:
+        print("There is no structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
+        return False
+
+
+def run_pymol(wdir, original_species, result_path, protein, offset):
+    """Runs PyMOL with overlayed adaptive sites"""
+
+    structures_path = wdir + "Structures"
+    protein_path = structures_path + "/" + protein + "_" + original_species + "/"
+    final_model_name = protein + "_" + original_species + ".pse"
+
+    # get dict of adaptives sites matched to input sequence
+    with open(result_path + "all_matched_adaptive_sites_original.txt", "r") as f:
+        dictionary = literal_eval(f.read())
+
+    # obtain a pymol script based on the model
+    if not get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset):
+        return False
+
+    # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
+    pymol_command = "pymol -cq structure_overlay.pml"
+    stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE).communicate()
+    # move and overwrite if "structure_overlay.pml" exists in Structure folder for the protein
+    shutil.move(os.path.join(wdir, "structure_overlay.pml"), os.path.join(protein_path, "structure_overlay.pml"))
+    # move the model with overlayed residues into Results folder
+    shutil.move(protein_path + final_model_name, result_path + final_model_name)
+
+    return True
+
+
+def get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset):
+    """Gets a PyMOL script that will be passed into PyMOL automatically"""
+
+    matched_adaptive_sites_original = dictionary[protein]
+    structure_prediction_path = wdir + "Structures/" + protein + "_" + original_species
+
+    if offset is None:
+        offset = 0
+
+    if len(os.listdir(structure_prediction_path)) == 0:
+        print("\nNo structure predicion model is present for: %s -> cannot run PyMOL" % protein)
+        return False
+    if len(os.listdir(structure_prediction_path)) > 1:
+        print("\nMore than one structure predicion model is present for: %s -> cannot run PyMOL" % protein)
+        return False
+
+    with open("structure_overlay.pml", "w") as f:
+
+        # PyMOL command to load model
+        structure_model_path = wdir + "Structures/" + protein + "_" + original_species
+
+        # select the model (check_structure function removed all hidden files)
+        model = os.listdir(structure_model_path)[0]
+
+        # start pymol script by loading the model
+        f.write("load " + protein_path + model + "\n")
+
+        # PyMOL command to color all resiues
+        f.write("color cyan\n")
+
+        # reindex all residues in the structure based on sequence used as a model structure
+        f.write("alter (all), resi=str(int(resi)+" + str(offset) + ")\n")
+        f.write("sort\n")
+        f.write("rebuild\n")
+
+        # PyMOL command to color adaptive residues
+        for site, features in matched_adaptive_sites_original.items():
+
+            if float(features[3]) == 0.00:
+                residue = features[0] + str(site)
+                f.write("select " + residue + ", resi " + str(site) + "\n")
+                f.write("color gray40, " + residue + "\n")
+
+            if float(features[2]) >= 0.90:
+                residue = features[0] + str(site)
+                f.write("select " + residue + ", resi " + str(site) + "\n")
+                f.write("color magenta, " + residue + "\n")
+                f.write("show sticks, " + residue + "\n")
+                f.write('label (resi ' + str(site) + ' and name CA), "%s" % ("' + residue + '")\n')
+
+            if 0.90 > float(features[2]) >= 0.75:
+                residue = features[0] + str(site)
+                f.write("select " + residue + ", resi " + str(site) + "\n")
+                f.write("color yellow, " + residue + "\n")
+                f.write("show sticks, " + residue + "\n")
+                f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
+
+        # special case, first residue adaptive
+        if float(matched_adaptive_sites_original["1"][2]) >= 0.75:
+            site = [site for site, features in matched_adaptive_sites_original.items() if site == "1"][0]
+            residue = matched_adaptive_sites_original[site][0] + str(site)
+            f.write('label (first (polymer and name CA)), "(%s; ' + residue + ')"%("N-term")\n')
+
+        if float(matched_adaptive_sites_original["1"][2]) < 0.75:
+            f.write('label (first (polymer and name CA)), "(%s)"%("N-term")\n')
+
+        # special case, last residue adaptive
+        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) >= 0.75:
+            site = [site for site, features in matched_adaptive_sites_original.items() if
+                    site == str(len(matched_adaptive_sites_original))][0]
+            residue = matched_adaptive_sites_original[site][0] + str(site)
+            f.write('label (last (polymer and name CA)), "(%s; ' + residue + ')"%("C-term")\n')
+
+        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) < 0.75:
+            f.write('label (last (polymer and name CA)), "(%s)"%("C-term")\n')
+
+        # PyMOL command to set label size
+        f.write("set label_size, 20\n")
+
+        # PyMOL command to set label positions
+        f.write("set label_position, (2,2,2)\n")
+
+        # PyMOL command to set background color for saved output file
+        f.write("set ray_opaque_background, on\n")
+
+        # PyMOL command to save as figure (NO LICENSE PRINTS A NO LICENSE ON IMAGE)
+        f.write(
+            "png " + protein_path + protein + "_" + original_species + ".png, width=12cm, height=8cm, dpi=300, ray=1\n")
+
+        # PyMOL command to save the session
+        f.write("save " + protein_path + protein + "_" + original_species + ".pse")
+
+    return True
+
 
 """
 
@@ -83,12 +225,9 @@ def compare_model_with_input(wdir, original_species, protein, model_seq):
         return
 
 
-# LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCOREING (C-term label interferes?)
-# Done but NOT TESTED YET
-
 # THIS IS PROBABLY NOT NEEDED:
 def check_all_structures(wdir, original_species):
-    """Checks presence of structure prediction models for all proteins"""
+    Checks presence of structure prediction models for all proteins
    
     all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
     missing_structures = [check_structure(wdir, original_species, protein) for protein in all_proteins]
@@ -100,159 +239,4 @@ def check_all_structures(wdir, original_species):
 
     return missing_structures_final
 
-def check_structure(wdir, original_species, protein):
-    """Checks presence of a structure prediction model for a given protein"""
-    
-    structure_model_path = wdir + "Structures/" + protein + "_" + original_species
-    model_file_list = os.listdir(structure_model_path)
-    unwanted_files = [file for file in model_file_list if file.startswith(".") or not file.endswith(".pdb")]
-            
-    # check for unwanted files (hidden and non-pdb) and remove them
-    if unwanted_files:
-        for file in unwanted_files:
-            try: 
-                os.remove(structure_model_path + "/" + file)
-            except FileNotFoundError:
-                print("FileNotFoundError was triggered for: &s" % file)
-                pass
-                
-    # regenerate list of files -> should contain one file exactly
-    model_file_list = os.listdir(structure_model_path)
-    
-    # there is exactly one pdb model
-    if len(model_file_list) == 1 and model_file_list[0].endswith(".pdb"):
-        return True
-                    
-    # there is more than one pdb model (not allowed)
-    if len(model_file_list) > 1:
-        print("There is more than one structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
-        return False
-    
-    # there is no pdb model (not allowed)
-    if len(model_file_list) == 0:
-        print("There is no structure prediction model for: %s -> skipping PyMOL for this protein" % protein)
-        return False
-
-
-def run_pymol(wdir, original_species, result_path, protein, offset):
-    """Runs PyMOL with overlayed adaptive sites"""
-    
-    structures_path = wdir + "Structures"
-    protein_path = structures_path + "/" + protein + "_" + original_species + "/"
-    final_model_name = protein + "_" + original_species + ".pse"
-    
-    # get dict of adaptives sites matched to input sequence
-    with open(result_path + "all_matched_adaptive_sites_original.txt", "r") as f:
-        dictionary = literal_eval(f.read())
-    
-    # obtain a pymol script based on the model
-    if not get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset):
-        return False
-       
-    # run that script in pymol without triggering external GUI (-cq)
-    pymol_command = "pymol -cq structure_overlay.pml"
-    stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE).communicate()
-    # move and overwrite if "structure_overlay.pml" exists in Structure folder for the protein
-    shutil.move(os.path.join(wdir, "structure_overlay.pml"), os.path.join(protein_path, "structure_overlay.pml"))
-    # move the model with overlayed residues into Results folder
-    shutil.move(protein_path + final_model_name, result_path + final_model_name)
-    
-    return True
-    
-def get_pymol_script(wdir, original_species, result_path, dictionary, protein, protein_path, offset):
-    
-    matched_adaptive_sites_original = dictionary[protein]
-    structure_prediction_path = wdir + "Structures/" + protein + "_" + original_species
-    
-    if offset is None:
-        offset = 0
-
-    if len(os.listdir(structure_prediction_path)) == 0:
-        print("\nNo structure predicion model is present for: %s -> cannot run PyMOL" % protein)
-        return False
-    if len(os.listdir(structure_prediction_path)) > 1:
-        print("\nMore than one structure predicion model is present for: %s -> cannot run PyMOL" % protein)
-        return False
-    
-    with open("structure_overlay.pml", "w") as f:
-        
-        # PyMOL command to load model
-        structure_model_path = wdir + "Structures/" + protein + "_" + original_species
-        
-        # select the model (check_structure function removed all hidden files)
-        model = os.listdir(structure_model_path)[0]
-        
-        # start pymol script by loading the model
-        f.write("load " + protein_path + model + "\n")
-    
-        # PyMOL command to color all resiues
-        f.write("color cyan\n")
-        
-        # reindex all residues in the structure based on sequence used as a model structure
-        f.write("alter (all), resi=str(int(resi)+" + str(offset) + ")\n")
-        f.write("sort\n")
-        f.write("rebuild\n")
-        
-        # PyMOL command to color adaptive residues
-        for site, features in matched_adaptive_sites_original.items():
-            
-            if float(features[3]) == 0.00:
-                residue = features[0] + str(site)
-                f.write("select " + residue + ", resi " + str(site) + "\n")
-                f.write("color gray40, " + residue + "\n")
-            
-            if float(features[2]) >= 0.90:
-                residue = features[0] + str(site)
-                f.write("select " + residue + ", resi " + str(site) + "\n")
-                f.write("color magenta, " + residue + "\n")
-                f.write("show sticks, " + residue + "\n")
-                f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
-            
-            #if 0.90 > float(features[2]) >= 0.75:
-            #    residue = features[0] + str(site)
-            #    f.write("select " + residue + ", resi " + str(site) + "\n")
-            #    f.write("color white, " + residue + "\n")
-            #    f.write("show sticks, " + residue + "\n")
-            #    f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
-        
-        # PyMOL comand to mark N-term and C-term:
-        
-        # special case, first residue adaptive
-        if float(matched_adaptive_sites_original["1"][2]) >= 0.75:  
-            site = [site for site, features in matched_adaptive_sites_original.items() if site == "1"][0]
-            residue = matched_adaptive_sites_original[site][0] + str(site)
-            f.write('label (first (polymer and name CA)), "(%s; ' + residue + ')"%("N-term")\n')
-        
-        if float(matched_adaptive_sites_original["1"][2]) < 0.75:
-            f.write('label (first (polymer and name CA)), "(%s)"%("N-term")\n')
-        
-        # special case, last residue adaptive
-        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) >= 0.75:
-            site = [site for site, features in matched_adaptive_sites_original.items() if site == str(len(matched_adaptive_sites_original))][0]
-            residue = matched_adaptive_sites_original[site][0] + str(site)
-            f.write('label (last (polymer and name CA)), "(%s; ' + residue + ')"%("C-term")\n')
-        
-        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) < 0.75:    
-            f.write('label (last (polymer and name CA)), "(%s)"%("C-term")\n')
-            
-        # PyMOL command to set label size
-        f.write("set label_size, 20\n")
-            
-        # PyMOL command to set label positions
-        f.write("set label_position, (2,2,2)\n")
-            
-        # PyMOL command to set background color for saved output file
-        f.write("set ray_opaque_background, on\n")
-        
-        # PyMOL command to save as figure (NO LICENSE PRINTS A NO LICENSE ON IMAGE)
-        f.write("png " + protein_path + protein + "_" + original_species + ".png, width=12cm, height=8cm, dpi=300, ray=1\n")
-            
-        # PyMOL command to save the session
-        f.write("save " + protein_path + protein + "_" + original_species + ".pse")
-        
-    return True
-        
-    
-        
-    
+"""

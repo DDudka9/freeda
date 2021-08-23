@@ -13,6 +13,8 @@ from Bio.Align.Applications import MafftCommandline
 import re
 import shutil
 import glob
+import time
+import logging
 
 
 def run_MAFFT(MSA_path):
@@ -25,11 +27,21 @@ def run_MAFFT(MSA_path):
         elif re.search(r"to_align_", in_filename):
             # for each MSA path find contig name; make it a string with group method
             out_filename = "aligned_" + re.search(r"(?<=to_align_).*$", in_filename).group()        
-        # run mafft
+
         mafft_cline = MafftCommandline(input=in_filename)
-        #print(mafft_cline)
-        # record standard output and standard error
+        handle = in_filename.split("/")[-1].replace("to_align_", "").replace("rev_comp_", "").replace(".fasta", "")
+        message = "\nAligning contig : %s with cds and gene from reference species... " % handle
+        print(message)
+        logging.info(message)
+
+        # run mafft and record standard output and standard error
+        start_time = time.time()
         stdout, stderr = mafft_cline()
+        stop_time = time.time()
+        message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
+        print(message)
+        logging.info(message)
+
         # make a post-MSA file using out_filename
         with open(out_filename, "w") as f:
             f.write(stdout)

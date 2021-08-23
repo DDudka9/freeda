@@ -32,7 +32,7 @@ import subprocess
 from freeda import fasta_reader
 
 
-def analyse_final_cds(wdir, original_species, result_path):
+def analyse_final_cds(wdir, original_species, result_path, all_proteins):
     
     start_time = time.time()
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
@@ -56,16 +56,9 @@ def analyse_final_cds(wdir, original_species, result_path):
         for species in f.readlines():
             all_species[species.rstrip("\n")] = ""
     
-    # make list of final cds
-    proteins = []
-    with open("proteins.txt", "r") as f:
-        for protein in f.readlines():
-            proteins.append(protein.rstrip("\n"))
-    
     nr_of_species_total_dict = {} 
-    
-    
-    for protein in proteins:
+
+    for protein in all_proteins:
         
         # check it this protein was already analysed
         if os.path.isdir(result_path + protein + "/" + "PAML_" + protein):
@@ -90,7 +83,7 @@ def analyse_final_cds(wdir, original_species, result_path):
             # read each cds fasta file and put them into the empty final_species dict
             cds_file = protein + ".fasta"
         
-            if os.path.isfile(cds_file) == False:
+            if os.path.isfile(cds_file) is False:
                 message = "\nThis file has not been found : %s." % cds_file
                 print(message)
                 logging.info(message)
@@ -133,7 +126,7 @@ def analyse_final_cds(wdir, original_species, result_path):
                
             # log species
             final_species_headers.insert(0, original_species)
-            nr_of_species = len((final_species_headers))
+            nr_of_species = len(final_species_headers)
             nr_of_species_total_dict[protein] = nr_of_species
             message = "\n --------- * %s * --------- \n\n Final species cloned and aligned (+ original) for %s : %s %s" \
                 % (protein, protein, str(nr_of_species), str(final_species_headers))
@@ -171,7 +164,7 @@ def analyse_final_cds(wdir, original_species, result_path):
 
             # check and eliminate insertions that cause dashes in original species 
             correction, corrected_filename = eliminate_all_insertions(protein_folder_path, out_MAFFT)
-            if correction == True:
+            if correction is True:
                 side_note = " \n---- Insertions detected in " + protein + " alignment -> " \
                     "these bp positions were removed in all species forcing conserved alignment\n"
                 print(side_note)
@@ -190,7 +183,7 @@ def analyse_final_cds(wdir, original_species, result_path):
             
             # double check for artificial STOP codons introduced by Gblocks -> force conserved alignment
             # it overwrites the previous out_Gblocks file (same name)
-            post_Gblocks_STOP_remover(wdir, protein_folder_path, out_Gblocks, protein)
+            post_Gblocks_STOP_remover(protein_folder_path, out_Gblocks, protein)
             
             # translate all sequences (inside of the protein folder)
             translated_path = translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, original_species)
@@ -236,7 +229,7 @@ def analyse_final_cds(wdir, original_species, result_path):
     print(message)
     logging.info(message)
     
-    return proteins, nr_of_species_total_dict, PAML_logfile_name, day
+    return nr_of_species_total_dict, PAML_logfile_name, day
 
 
 def eliminate_all_insertions(protein_folder_path, out_MAFFT):
@@ -466,7 +459,7 @@ def translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, original_
     # doesnt work if pairwise2 doesnt return alignement (Clasp1)
     
     translated_frameshift, frameshift_positions = translated_frameshift_checkpoint(wdir, seqs, protein, original_species)
-    if translated_frameshift == True:
+    if translated_frameshift is True:
         side_note = " WARNING : Frameshift in original cds post-Gblocks detected: \n%s" % frameshift_positions
         print(side_note)
         logging.info(side_note)
@@ -558,7 +551,7 @@ def STOP_remover(protein_folder_path, no_dashes_out_MAFFT, protein_name):
     return final_cds_file_no_STOP
 
 
-def post_Gblocks_STOP_remover(wdir, protein_folder_path, out_Gblocks, protein): 
+def post_Gblocks_STOP_remover(protein_folder_path, out_Gblocks, protein):
     # checks if artificial STOP was formed after Gblocks
     
     post_Gblocks_path = protein_folder_path + "/" + out_Gblocks
