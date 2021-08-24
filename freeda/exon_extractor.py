@@ -51,7 +51,7 @@ def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
         # generate matches dataframe
         matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
         # process the final dataframe
-        MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, t, result_path, protein_name, genome_name, genome_index)
+        MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, result_path, protein_name, genome_name, genome_index)
         # run MAFFT on all the MSA and write them into files
         msa_aligner.run_MAFFT(MSA_path)
         # return potential exons for a current protein in current genome

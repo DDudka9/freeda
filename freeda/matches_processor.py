@@ -19,7 +19,7 @@ import pybedtools
 import glob
 
 
-def process_matches(wdir, matches, cds, gene, t, result_path, protein_name, genome_name, genome_index):
+def process_matches(wdir, matches, cds, gene, result_path, protein_name, genome_name, genome_index):
     # make a no-duplicates list of contig names
     sseqids = set(matches["sseqid"].tolist())
     # for a give contig:
@@ -38,11 +38,11 @@ def process_matches(wdir, matches, cds, gene, t, result_path, protein_name, geno
         # expand exons
         expanded_exons = expand_exons(sorted_exons)
         # make a bed file with expanded exons or original exons if cannot expand
-        bed_object, expanded_bed_object = make_bed_file(sorted_exons, expanded_exons, bed_name, t, result_path, protein_name, genome_name)
+        bed_object, expanded_bed_object = make_bed_file(sorted_exons, expanded_exons, bed_name, result_path, protein_name, genome_name)
         # convert the bed file into fasta file
         make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_name)
-        fasta_path = process_fasta_file(fasta_name, contig, t, result_path, protein_name, genome_name)
-        get_contig_locus(contig, protein_name, genome_name, fasta_name, fasta_path, start, end, genome_index)
+        fasta_path = process_fasta_file(fasta_name, contig, result_path, protein_name, genome_name)
+        get_contig_locus(contig, protein_name, genome_name, fasta_path, start, end, genome_index)
         MSA_path = generate_files_to_MSA(contig, cds, gene, fasta_path)
 
     message = "\nAnalysing all contigs ..."
@@ -154,7 +154,7 @@ def expand_exons(exons):
     return expanded_exons
 
 
-def make_bed_file(exons, expanded_exons, bed_name, t, result_path, protein_name, genome_name):  
+def make_bed_file(exons, expanded_exons, bed_name, result_path, protein_name, genome_name):
     
     # make bed file
     expanded_bed_object = pybedtools.BedTool(bed_name)
@@ -186,7 +186,7 @@ def make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_na
         fasta_file = fasta_file.save_seqs(fasta_name)
 
 
-def process_fasta_file(fasta_name, contig, t, result_path, protein_name, genome_name):
+def process_fasta_file(fasta_name, contig, result_path, protein_name, genome_name):
 
     # reverse complement if "sstart" > "send" (marked as rev == True)
     global rev
@@ -270,8 +270,7 @@ def reverseComplement(fasta_name, protein_name, genome_name, contig):
     write_seq_rev_comp(header, complement, protein_name, genome_name, contig)
 
 
-def get_contig_locus(contig, protein_name, genome_name, fasta_name, fasta_path, \
-                    start, end, genome_index):
+def get_contig_locus(contig, protein_name, genome_name, fasta_path, start, end, genome_index):
     global rev
     # naming of the file and header will depend on if contig was rev_comp or not
     if rev == False:
@@ -287,7 +286,7 @@ def get_contig_locus(contig, protein_name, genome_name, fasta_name, fasta_path, 
     base_name = contig.split("__")[0]
     #print(base_name)
     seq = genome_index[str(base_name)].seq
-    prefix, suffix = get_prefix_suffix(start, end, len(seq))
+    prefix, suffix = get_prefix_suffix(start, len(seq))
     # try trim contig and add 100bp overhangs for later introny check
     seq = seq[start-prefix : end+suffix]
     # if full contig lacks enough bp on either end, the Seq object
@@ -310,7 +309,7 @@ def get_contig_locus(contig, protein_name, genome_name, fasta_name, fasta_path, 
     shutil.move(file_name, fasta_path)
 
 
-def get_prefix_suffix(start, end, seq_length):
+def get_prefix_suffix(start, seq_length):
     prefix = 0
     longest_prefix = prefix
     while prefix < start and prefix < 10000:
