@@ -29,17 +29,15 @@ import pandas as pd
 import math
 
 
-#result_path = wdir + "Results-06-13-2021-23-37/"
-#wdir = os.getcwd() + "/"
-#proteins = ["Cenpt", "Cenph", "Cenpi", "Cenpl", "Cenpo", "Cenpu"]
-#proteins = ["Cenpo"]
-#nr_of_species_total_dict = {"Cenpt" : 12, "Cenph" : 12, "Cenpi" : 15, "Cenpl" : 14, "Cenpo" : 15, "Cenpu" : 14} 
-#nr_of_species_total_dict = {"Cenpo" : 15} 
-#PAML_logfile_name = "PAML-06-14-2021-02-29_test.log"
-#original_species = "Mm"
-#day = "-06-27-2021-15-04"
-#protein_name = "Cenpo"
-#nr_of_species_total = 15
+wdir = "/Volumes/DamianEx_2/Data/"
+result_path = wdir + "Results-08-23-2021-00-24/"
+all_proteins = ["CD46"]
+nr_of_species_total_dict = {"CD46" : 9}
+PAML_logfile_name = "PAML-08-23-2021-00-53.log"
+original_species = "Hs"
+day = "-06-27-2021-15-04"
+protein_name = "CD46"
+nr_of_species_total = 9
 
 
 # ADD LEGEND BOX TO PYMOL SCRIPT -> pymol.cgo module
@@ -120,13 +118,26 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
             # record LRTs
             if start_recording is True and line.startswith(" PAML LRTs"):
                 
-                M2a_vs_M1a_LRT = line.split(":")[1].split("and")[0].split("-")[1].replace(" ","")
+                LRT1 = line.split(":")[1].split("and")[0].split("-")
+                if LRT1[1].endswith("e") is True:
+                    M2a_vs_M1a_LRT = LRT1[1].replace(" ", "") + "-" + LRT1[2]
+                if LRT1[1].endswith("e") is False:
+                    M2a_vs_M1a_LRT = LRT1[1].replace(" ", "")
                 if M2a_vs_M1a_LRT != "None":
                     M2a_vs_M1a_LRT = round(float(M2a_vs_M1a_LRT), 4)
-            
-                M8_vs_M7_LRT = line.split(":")[1].split("and")[1].split("-")[1].replace(" ","").replace("\n","")
+                    if M2a_vs_M1a_LRT == 0.0:
+                        M2a_vs_M1a_LRT = 0.0001
+
+                LRT2 = line.split(":")[1].split("and")[1].split("-")
+                # catch "e-" notation because it gets split
+                if LRT2[1].endswith("e") is True:
+                    M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2]
+                if LRT2[1].endswith("e") is False:
+                    M8_vs_M7_LRT = LRT2[1].replace(" ", "")
                 if M8_vs_M7_LRT != "None":
                     M8_vs_M7_LRT = round(float(M8_vs_M7_LRT), 4)
+                    if M8_vs_M7_LRT == 0.0:
+                        M8_vs_M7_LRT = 0.0001
                     
                 PAML_log_dict["M2a vs M1a (LRT)"].append(M2a_vs_M1a_LRT)
                 PAML_log_dict["M8 vs M7 (LRT)"].append(M8_vs_M7_LRT)
@@ -722,7 +733,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
     # I should fix max omega better
     plt.axis([0.5, sites[-1], 0, roof])
     plt.ylim(0.5, roof)
-    plt.yticks(np.arange(0.5, roof + 0.1, 0.5))
+    plt.yticks(np.arange(0.5, roof + 0.1, 1.0))
     # mark the missing values for the plot
     clrs1 = ["black" if s == 1 else "gainsboro" for s in analyzed]
     plt.bar(sites, omegas, color=clrs1)
@@ -756,189 +767,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
     shutil.move(figure_name + ".tif", result_path)
     shutil.move(figure_name + ".svg", protein_path)
 
-    
-    
-"""   
 
-def record_adaptive_sites_old(final_dict_to_plot, protein_name):
-
-    missing_codon = False
-    sequence_breakdown = ""
-    for positions, values in final_dict_to_plot.items():
-        
-        # check if residue is adaptive
-        if float(values[2]) == 0:
-            residue = values[0]
-        
-        if 0 < float(values[2]) < 0.90:
-            residue = values[0] + "*"
-                
-        if 0.90 < float(values[2]):
-            residue = values[0] + "**"
-        
-        
-        # record the residue and mark if adaptive
-        if values[3] == 0 and missing_codon == False:
-            sequence_breakdown = sequence_breakdown + " [" + residue
-            missing_codon = True
-            continue
-        
-        if values[3] == 0 and missing_codon == True:
-            sequence_breakdown = sequence_breakdown + residue
-            continue
-    
-        if values[3] == 1 and missing_codon == True:
-            missing_codon = False
-            sequence_breakdown = sequence_breakdown + "] " + residue
-            continue
-            
-        if values[3] == 1 and missing_codon == False:
-            sequence_breakdown = sequence_breakdown + residue
-            continue
-    
-    # close parentheses if ending on missing residue
-    if missing_codon == True:
-        sequence_breakdown = sequence_breakdown + "]"
-    
-    message = ("\n\n.........................................." \
-            "\n\nReference sequence for %s with adaptive sites:" \
-            " \n\n" + sequence_breakdown + "\n\n(* means pr > 0.50; ** means pr > 0.90; [] means missing)") % protein_name
-    print(message)
-    logging.info(message)
-    
-
-    z = pd.DataFrame({"Sites":sites,
-                      "Residues":residues,
-                      "Omega":omegas,
-                      "probabilities":probabilities,
-                      "Analyzed":analyzed})
-
-
-    ax = plt.subplot(313)
-    ax.set_facecolor("beige")
-
-
-    plt.legend(labels=[protein_name])
-    # tightens the margins for titles of plot and axes
-    plt.savefig('test2png.tif', dpi=300, bbox_inches="tight")
-    plt.savefig('test2png.svg', dpi=300, bbox_inches="tight")
-    
-    
-    penguins = sns.load_dataset("penguins")
-    
-    
-    
-    b = pd.DataFrame(data=d, index=sites)
-    
-    
-    a = pd.Series(d)
-    b = pd.DataFrame(omega_dict, index=["Omega"])
-
-
-
-
-    figure(figsize=(8, 6), dpi=80)
-
-    # x axis values
-    x = [residue for residue, omega in omega_dict.items()]
-    
-    # corresponding y axis values
-    y = [float(omega) for residue, omega in omega_dict.items()]
-  
-    # plotting the points
-    plt.style.use("dark_background")
-    plt.bar(x, y, tick_label = x, color = ['green'])
-    plt.xticks(np.arange(min(x), max(x)+1, 10))
-    fig = plt.gcf()
-    fig.set_size_inches(18.5, 10.5)
-    fig.savefig('test2png.png', dpi=100)
-    
-    # naming the x axis
-    plt.xlabel("Residues")
-    # naming the y axis
-    plt.ylabel("Omegas")
-
-    # giving a title to my graph
-    plt.title("Omega distribution")
-  
-    # function to show the plot
-    plt.show()
-    
-    
- """ 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     

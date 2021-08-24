@@ -37,6 +37,13 @@ FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/DamianEx_2/Dat
 """
 
 # TODO:
+#    TESTING > 10kb flanks on CD46 and CD55 with 70 t and 30kb flanks (08_22_2021)
+#                   -> ISSUE -> flanks are as big as the split_large_contigs function -> might be getting same matches on artificially different contigs???
+#                               -> requires testing but probably not (CD46)
+#           -> CD46 C-terminus was successfully recovered!!! (so larger flanks help -> need to be paired with higher thresholds though)
+#           -> Try dynamic flanking -> 10kb if gene < 30kb and 30kb if gene > 30kb
+#           -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree? (but the gene tree looks fine)
+#           -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
 #   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021)
 #    1) ISSUE with Haus8 -> Gs -> SRMG01015959.1__for -> part of exon 4 does not align (the other one does), there is insertion as well
 #                           it created a frameshift at the beginning of the sequence (22aa) present in translated alignment
@@ -112,9 +119,13 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     if wdir is None:
         wdir = os.getcwd() + "/"
 
-    # reference species sequences: protein seq, cds, exons, gene (ex. Mus musculus)
     if original_species is None:
         original_species = "Mm"
+
+    # reference species sequences: protein seq, cds, exons, gene (ex. Mus musculus)
+    if original_species != "Mm" and original_species != "Hs":
+        print("\nSupported reference species are mouse : %s and human : %s" % ('"Mm"', '"Hs"'))
+        return
 
     # initial percent identity threshold for blast matches analysis
     if t is None:
@@ -328,7 +339,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-os", "--original_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 

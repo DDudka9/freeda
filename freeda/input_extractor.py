@@ -30,23 +30,6 @@ import tarfile
 #reference_genome_name = "MUSCULUS_genome"
 
 
-# Hard code "reference_contigs_dict" for human and mouse, potentially other main species
-# Cose you need the user to have it with the packcage without digging to instal folder
-# Done
-
-# Check protein list for valid gene names
-# DONE
-
-# Write number of transcript into the cds header
-# DONE
-
-# Write a test function that would ensure that all first exons start with ATG and all the last exons end with TGA, TAG and TAA
-# DONE
-
-# Look at Cenpa, Cenpb, Cenpc, Cenpe, Cenpf in caroli and pahari and check with ensembl cds for identity
-
-# Make a function that aligns protein sequence from pyensembl and from AlphaFold
-
 # Make a function deleting microexon from exons
 # DONE -> remove microexons check from further functions? -> exon finder doesnt know one exon was skipped!!!
 # Still there is one additional exon found.... cose exons are first aligned using CDS which still contains microexon
@@ -54,8 +37,6 @@ import tarfile
 
 # Think how to deal with gene_and_cds_reader module -> also detects microexons etc -> leave it in case of manual input
 # but no microexons would be detected and no warnings issued (which is a problem)
-
-# Also stucture model should be input together with the rest of the input
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
@@ -105,8 +86,10 @@ def get_uniprot_id(original_species, protein):
     data_list = data.split("\n")
     for line in data_list:
         elements = line.split("\t")
-        if protein.upper() in elements[0].upper():
-            possible_uniprot_ids.add(elements[2])
+        names = elements[0].split(" ")
+        for n in names:
+            if protein.upper() == n.upper():
+                possible_uniprot_ids.add(elements[2])
     
     return possible_uniprot_ids
 
@@ -372,7 +355,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
 
     for nr, exon_sequence in coding_exons.items():
         
-        if len(exon_sequence) < 20:
+        if len(exon_sequence) < 15: # changed from 20 08_23_2021 -> testing CENP-X primates
             microexon_present = True
             print("\n...WARNING...:Exon %s in: %s is a microexon (%sbp; hard to align) " \
                     "-> eliminated from exons and cds\n" % (str(nr), protein, len(exon_sequence)))
