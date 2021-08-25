@@ -43,6 +43,19 @@ rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
 
 
+def check_microexons(wdir, protein_name, original_species):
+    """Checks if microexons were found during automatic input extraction"""
+
+    path_to_model_info = wdir + "Structures/" + protein_name + "_" + original_species
+    if os.path.isfile(path_to_model_info + "/model_incompatible.txt"):
+        with open(path_to_model_info + "/model_incompatible.txt", "r") as f:
+            file = f.readlines()
+            microexons = [exon.split("[")[1].split("]")[0] for exon in file if "microexon" in exon]
+    else:
+        microexons = []
+
+    return microexons
+
 def generate_basic_folders(wdir):
     """Checks if folders for input are present in working directory, generates if not"""
 
@@ -152,10 +165,10 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
     
     # didnt find structure
     except IndexError:
-        print("...WARNING...: Structure prediction for protein: %s HAS NOT BEEN FOUND -> cannot run PyMOL\n" % protein)
+        print("...WARNING...: Structure prediction for protein: %s HAS NOT BEEN FOUND -> Cannot overlay FREEDA results onto a 3D structure\n" % protein)
         print("...SUGGESTION...: You can use your own model (ex. from PDB; fragments are ok but no sequence mismatches!)\n")
         with open(structure_path + "/model_incompatible.txt", "w") as f:
-            f.write("No model has been found in AlphaFold database. Cannot run PyMOL.")
+            f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
 
         return False
         
@@ -220,10 +233,10 @@ def extract_input(wdir, original_species, reference_genome_name, reference_genom
     extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
                 reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein, transcript)
     # find exons sequence
-    input_correct, microexon_present = extract_exons(wdir, original_species, protein, exons_input_path, reference_genomes_path, reference_genome_name, 
+    input_correct, microexon_present, microexons = extract_exons(wdir, original_species, protein, exons_input_path, reference_genomes_path, reference_genome_name,
                   contig, strand, transcript, reference_genome_contigs_dict, UTR_5, UTR_3, cds_sequence_expected)
     
-    return input_correct, model_matches_input, microexon_present
+    return input_correct, model_matches_input, microexon_present, microexons
     
 
 def extract_protein(wdir, original_species, blast_input_path, protein, strand, transcript, model_seq, matching_length):
@@ -243,10 +256,9 @@ def extract_protein(wdir, original_species, blast_input_path, protein, strand, t
             model_matches_input = True
             with open(structure_path + "/model_compatible.txt", "w") as f:
                 f.write("Model is based on an identical protein sequence as blast input.")
-
     else:
         with open(structure_path + "/model_incompatible.txt", "w") as f:
-            f.write("Model sequence does not match the protein sequence used for blast input. Cannot run PyMOL.")
+            f.write("Model sequence does not match the protein sequence used for blast input. Cannot overlay FREEDA results onto a 3D structure.")
 
     return model_matches_input
 
@@ -277,6 +289,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
     cds_from_exons = ""
     microexon_present = False
     input_correct = True
+    microexons = []
     
     # make a true copy of exon coordinates
     exon_intervals_copy = exon_intervals[::]
@@ -355,9 +368,10 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
 
     for nr, exon_sequence in coding_exons.items():
         
-        if len(exon_sequence) < 15: # changed from 20 08_23_2021 -> testing CENP-X primates
+        if len(exon_sequence) < 20: # changed from 20 08_23_2021 -> testing CENP-X primates
             microexon_present = True
-            print("\n...WARNING...:Exon %s in: %s is a microexon (%sbp; hard to align) " \
+            microexons.append(nr)
+            print("\n...WARNING...: Exon %s in: %s is a microexon (%sbp; hard to align) " \
                     "-> eliminated from exons and cds\n" % (str(nr), protein, len(exon_sequence)))
             # check if the last exon (microexon) had a stop codon before its trimmed (ex. Pot1a)
             if nr == 1 and exon_sequence.startswith("ATG"):
@@ -399,7 +413,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
         
     exons_file.close()
 
-    return input_correct, microexon_present
+    return input_correct, microexon_present, microexons
 
 def get_single_exon(original_species, protein, reference_genome_contigs_dict, reference_genomes_path, 
                     reference_genome_name, rules, contig, strand, number, exon, start, stop):

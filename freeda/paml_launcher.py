@@ -454,13 +454,10 @@ def translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, original_
     translated_path = filepath_to_translate.rstrip(".fasta") + "_translated.fasta"
     
     # check frameshifts in the original species aa seq post-Gblocks
-    
-    
     # doesnt work if pairwise2 doesnt return alignement (Clasp1)
-    
     translated_frameshift, frameshift_positions = translated_frameshift_checkpoint(wdir, seqs, protein, original_species)
     if translated_frameshift is True:
-        side_note = " WARNING : Frameshift in original cds post-Gblocks detected: \n%s" % frameshift_positions
+        side_note = "...WARNING... : Frameshift in original cds post-Gblocks detected: \n%s" % frameshift_positions
         print(side_note)
         logging.info(side_note)
     

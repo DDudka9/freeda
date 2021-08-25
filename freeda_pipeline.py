@@ -226,7 +226,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
             possible_uniprot_ids = input_extractor.get_uniprot_id(original_species, protein)
             model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein, possible_uniprot_ids)
             # get sequence input from ensembl
-            input_correct, model_matches_input, microexon_present = input_extractor.extract_input(wdir,
+            input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(wdir,
                                                                                                   original_species,
                                                                                                   reference_genome_name,
                                                                                                   reference_genomes_path,
@@ -242,14 +242,14 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
 
             if not model_matches_input:
                 print("...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl "
-                        "database -> cannot run PyMOL\n" % protein)
+                        "database -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
                 print("...WARNING...: Protein may still be analyzed using PAML but without 3D structure overlay\n")
 
             if microexon_present:
                 print("...WARNING...: Sequence for: %s found in Ensembl contains a microexon\n" % protein)
-                print("...WARNING...: Microexons are difficult to align and are removed -> cannot run PyMOL\n")
+                print("...WARNING...: Microexons are difficult to align and are removed -> cannot overlay FREEDA results onto a 3D structure\n")
                 with open(wdir + "Structures/" + protein + "_" + original_species + "/model_incompatible.txt", "w") as f:
-                    f.write("Microexon was detected in the input exons file and was removed. Cannot run PyMOL.")
+                    f.write("Exon nr %s is a microexon and was removed from input reference sequence. Cannot overlay FREEDA results onto a 3D structure." % microexons)
 
     # ----------------------------------------#
     ######## RUN BLAST ########
@@ -300,7 +300,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                             print("\nThe structure for : %s was not built successfuly." % protein)
                             continue
                     else:
-                        print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
+                        print("\nPrediction model for : %s DOES NOT match input sequence -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
 
     if user_input3 == "y" and user_input2 == "y":
         # run PAML
@@ -316,7 +316,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                     print("\nThe structure for : %s was not built successfuly." % protein)
                     continue
             else:
-                print("\nPrediction model for : %s DOES NOT match input sequence -> cannot run PyMOL\n" % protein)
+                print("\nPrediction model for : %s DOES NOT match input sequence -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
 
     print("\nYou reached the end of FREEDA pipeline.")
 
@@ -341,7 +341,7 @@ if __name__ == '__main__':
     parser.add_argument("-os", "--original_species",
                         help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=70)
 
 
     args = parser.parse_args()

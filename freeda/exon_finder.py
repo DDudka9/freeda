@@ -23,7 +23,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
     exons = {}
     exon = ""
     exon_start = 0
-    exon_number = 0
+    exon_number = min(list(map(int, expected_exons))) - 1 # gets the smallest exon number expected - 1 (usually 0)
     exon_checked = False
     introny = False
     introny_at_Nterm = False
@@ -67,7 +67,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
             exon_number += 1
             
             # checkpoint for potentially skipped microexons
-            if exon_number not in expected_exons:
+            if str(exon_number) not in expected_exons:
                 exon_number += 1
 
             exon = cds[position]
@@ -503,15 +503,15 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
         print(message)
         logging.info(message)
         
-    if exon_number != len(Mm_exons):
+    if exon_number != len(Mm_exons) + len(microexons):
         message = "\nFREEDA could not find all exons in contig %s " % (contig_name)
         print(message)
         logging.info(message)
         
-        if microexons != []:
-            message = "\nFREEDA skipped microexons: %s " % (microexons)
-            print(message)
-            logging.info(message)
+        #if microexons != []:
+        #    message = "\nFREEDA skipped microexons: %s " % (microexons)
+        #    print(message)
+        #    logging.info(message)
         
     # assess likelihood of this contig carrying a duplication
     if duplication_score_parameter == True:

@@ -44,8 +44,8 @@ def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
         match_path = path
         # generate protein and genome names and make it global
         protein_name, genome_name = name_finder.get_names(match_path)
-        # find cds and gene for this path (Mm_exons and microexons NOT USED HERE)
-        cds, gene, Mm_exons, microexons, expected_exons = gene_and_cds_reader.find_gene_and_cds(wdir, protein_name, original_species)
+        # find cds and gene for this path (Mm_exons NOT USED HERE)
+        cds, gene, Mm_exons, expected_exons, microexons = gene_and_cds_reader.find_gene_and_cds(wdir, protein_name, original_species)
         # index given genome
         genome_index = genome_indexer.index_genome_database(wdir, genome_name)
         # generate matches dataframe
@@ -55,7 +55,7 @@ def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
         # run MAFFT on all the MSA and write them into files
         msa_aligner.run_MAFFT(MSA_path)
         # return potential exons for a current protein in current genome
-        msa_analyzer.analyse_MSA(wdir, MSA_path, protein_name, genome_name, Mm_exons, microexons, expected_exons)
+        msa_analyzer.analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons, microexons)
         # mark that this blast result has been analysed
         message = "\nFinished running protein: '%s' from genome: '%s'\n" \
             % (protein_name, genome_name)

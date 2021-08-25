@@ -14,6 +14,7 @@ from Bio import AlignIO
 from freeda import fasta_reader
 from freeda import exon_finder
 from freeda import cds_cloner
+from freeda import input_extractor
 import operator
 import logging
 import re
@@ -21,7 +22,7 @@ import shutil
 import glob
 
 
-def analyse_MSA(wdir, MSA_path, protein_name, genome_name, Mm_exons, microexons, expected_exons):
+def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons, microexons):
     
     final_exon_number = len(Mm_exons)
     cloned_exons_overhangs = []
@@ -51,13 +52,13 @@ def analyse_MSA(wdir, MSA_path, protein_name, genome_name, Mm_exons, microexons,
         # clone all exons WITH OVERHANGS
         cloned_exons_overhangs.append((contig_name, clone_exons_overhangs(seqs, exons)))
         # select only contigs carrying intronic exons
-    preselected_exons_overhangs = preselect_exons_overhangs(cloned_exons_overhangs, final_exon_number, expected_exons)
+    preselected_exons_overhangs = preselect_exons_overhangs(wdir, protein_name, original_species, cloned_exons_overhangs, expected_exons)
     # find contigs containing most intronic exons
     most_intronic_contigs = find_contigs_with_most_intronic_exons(preselected_exons_overhangs)
     
     # clone cds based on the most intronic contigs
     cloned_cds = cds_cloner.clone_cds(preselected_exons_overhangs, most_intronic_contigs,
-                 protein_name, genome_name, final_exon_number, Mm_exons, MSA_path, microexons)
+                 protein_name, genome_name, final_exon_number, Mm_exons, MSA_path)
 
     # check if final CDS is in frame (clone anyway)
     if (len(cloned_cds)-cloned_cds.count("-")) % 3 != 0:
@@ -141,7 +142,7 @@ def clone_exons_overhangs(seqs, exons): # works well
     return cloned_exons_overhangs
 
 
-def preselect_exons_overhangs(cloned_exons_overhangs, final_exon_number, expected_exons):
+def preselect_exons_overhangs(wdir, protein_name, original_species, cloned_exons_overhangs, expected_exons):
     intronic_exons = []
     preselected_exons_overhangs = {}
     sorted_exons = []
@@ -171,9 +172,10 @@ def preselect_exons_overhangs(cloned_exons_overhangs, final_exon_number, expecte
             
         sorted_exons = sorted([entry for entry in intronic_exons if entry != []])
     
-    # make a dictionary with exon number as key and sequences, names as values
-    for number in expected_exons:
-
+    # make a dictionary with exon number as key and sequences, names as values -> inclue microexons as empty lists
+    microexons = input_extractor.check_microexons(wdir, protein_name, original_species)
+    all_exons = microexons + list(expected_exons)
+    for number in range(1, len(all_exons) + 1):
         preselected_exons_overhangs[number] = []
         for exons in sorted_exons:
             for exon_nr, contig_name, exon, genomic in exons:

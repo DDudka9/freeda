@@ -28,7 +28,7 @@ import shutil
 
 
 def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, \
-    genome_name, final_exon_number, Mm_exons, MSA_path, microexons):
+    genome_name, final_exon_number, Mm_exons, MSA_path):
     
     # get a dictionary with all the contigs and how many exons they have
     all_contigs_dict = {}
@@ -41,8 +41,8 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
     duplicated_exons = {}
     for e in range(1, len(preselected_exons_overhangs)+1):
         # microexons are not expected in the preselected exons
-        if e in microexons:
-            continue
+        #if e in microexons:
+        #    continue
         
         # if an exon is missing, add it to missing exons
         if preselected_exons_overhangs[e] == []:
@@ -473,8 +473,8 @@ def hamming_distance_frameshift(p, q, exon_nr, original_species_exons):
 
     return len(mismatches)
 
-def generate_single_exon_MSA(seq, contig_name, exon_number, protein_name, Mm_exons, \
-                             MSA_path, genomic_locus):
+
+def generate_single_exon_MSA(seq, contig_name, exon_number, protein_name, Mm_exons, MSA_path, genomic_locus):
             
     filename = "exon_" + str(exon_number) + "_to_align.fasta"
     with open(filename, "w") as f:
