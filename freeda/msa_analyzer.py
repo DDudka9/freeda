@@ -22,7 +22,7 @@ import shutil
 import glob
 
 
-def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons, microexons):
+def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons):
     
     final_exon_number = len(Mm_exons)
     cloned_exons_overhangs = []
@@ -43,7 +43,7 @@ def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_
         cds, locus, gene = index_positions(seqs)
         # find all exons in contig locus if no retrotransposition was detected
         exons, possible_retrotransposition, synteny, RETRO_score, duplication_score \
-            = exon_finder.find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexons)
+            = exon_finder.find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons)
         # skip this contig if possible retrotransposition event was detected
         # likelihood of false positive RETRO is more than 1 per 3 intronic exons
         # skip also contigs that are likely duplications

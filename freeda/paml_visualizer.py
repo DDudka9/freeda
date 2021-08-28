@@ -29,22 +29,22 @@ import pandas as pd
 import math
 
 
-wdir = "/Volumes/DamianEx_2/Data/"
-result_path = wdir + "Results-08-23-2021-00-24/"
-all_proteins = ["CD46"]
-nr_of_species_total_dict = {"CD46" : 9}
-PAML_logfile_name = "PAML-08-23-2021-00-53.log"
-original_species = "Hs"
-day = "-06-27-2021-15-04"
-protein_name = "CD46"
-nr_of_species_total = 9
+#wdir = "/Volumes/DamianEx_2/Data/"
+#result_path = wdir + "Results-08-23-2021-00-24/"
+#all_proteins = ["CD46"]
+#nr_of_species_total_dict = {"CD46" : 9}
+#PAML_logfile_name = "PAML-08-23-2021-00-53.log"
+#original_species = "Hs"
+#day = "-06-27-2021-15-04"
+#protein_name = "CD46"
+#nr_of_species_total = 9
 
 
 # ADD LEGEND BOX TO PYMOL SCRIPT -> pymol.cgo module
 
 
 def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict,
-                         original_species, PAML_logfile_name, day):
+                         original_species, PAML_logfile_name, day, failed_paml):
     
     all_matched_adaptive_sites_original = {}
     
@@ -297,7 +297,7 @@ def plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species)
     original_sequence_record, final_sequence_record = get_original_and_final_seqs(wdir, protein, result_path, original_species)
     # organise them into easy to search dictionaries
     original_species_dict, final_original_species_dict, final_length = organise_original_and_final_seqs(original_sequence_record, final_sequence_record)
-    # map the aa residues between the original and final sequnces
+    # map the aa residues between the original and final sequences
     mapped_original_and_final_residues_dict = map_original_and_final_residues(original_sequence_record, final_sequence_record)
     # find dN/dS omega ratio per site based on "rst" file (final only for now)
     omega_dict = get_omegas(protein, result_path, final_length)
@@ -385,7 +385,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
         
         # prepare residues and features arrays
         # not adaptive
-        if float(values[2]) < 0.75 and values[3] != 0:
+        if float(values[2]) < 0.70 and values[3] != 0:
             residue = values[0]
             row_features = row_features + " "
             row_residues = row_residues + residue
@@ -394,7 +394,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
                 row_features = row_features + "\n"
             
         # mild probability of adaptive evolution
-        if 0.75 <= float(values[2]) < 0.90:
+        if 0.70 <= float(values[2]) < 0.90:
             residue = values[0]
             row_features = row_features + "."
             row_residues = row_residues + residue
@@ -428,7 +428,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
     
         message = ("\n\n.........................................."
             "\n\nReference sequence for %s with adaptive sites:"
-            "\n\n . means pr >= 0.75 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % protein_name
+            "\n\n . means pr >= 0.70 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % protein_name
         print(message)
         logging.info(message)
         

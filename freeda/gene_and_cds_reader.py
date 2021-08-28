@@ -16,7 +16,7 @@ import logging
 
 def find_gene_and_cds(wdir, protein_name, original_species): # USEFUL IF MANUAL (non-one line) INPUT
     
-    Mm_exons, expected_exons, microexons = get_Mm_exons(wdir, protein_name, original_species)
+    Mm_exons, expected_exons = get_Mm_exons(wdir, protein_name, original_species)
 
     # open according cds fasta file
     with open(wdir + "Coding_sequences/" + protein_name + "_" + original_species + "_cds.fasta", "r") as f:
@@ -42,7 +42,7 @@ def find_gene_and_cds(wdir, protein_name, original_species): # USEFUL IF MANUAL 
     with open(wdir + "Genes/" + protein_name + "_" + original_species + "_gene.fasta", "r") as f:
         gene = f.read()
         
-    return cds, gene, Mm_exons, expected_exons, microexons
+    return cds, gene, Mm_exons, expected_exons
 
 
 def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for cloning after synteny check
@@ -141,10 +141,11 @@ def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for 
 
         # flag potential microexons
         microexons = input_extractor.check_microexons(wdir, protein_name, original_species)
-        message = "\n...WARNING...: Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
-        print(message)
-        logging.info(message)
+        if microexons:
+            message = "\n...WARNING...: Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
+            print(message)
+            logging.info(message)
 
         
-    return Mm_exons, expected_exons, microexons
+    return Mm_exons, expected_exons
 

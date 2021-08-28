@@ -50,11 +50,12 @@ def check_microexons(wdir, protein_name, original_species):
     if os.path.isfile(path_to_model_info + "/model_incompatible.txt"):
         with open(path_to_model_info + "/model_incompatible.txt", "r") as f:
             file = f.readlines()
-            microexons = [exon.split("[")[1].split("]")[0] for exon in file if "microexon" in exon]
+            microexons = [exon.replace("'", "").split("[")[1].split("]")[0] for exon in file if "microexon" in exon]
     else:
         microexons = []
 
     return microexons
+
 
 def generate_basic_folders(wdir):
     """Checks if folders for input are present in working directory, generates if not"""
@@ -254,7 +255,7 @@ def extract_protein(wdir, original_species, blast_input_path, protein, strand, t
     if matching_length == True:
         if model_seq == protein_sequence:
             model_matches_input = True
-            with open(structure_path + "/model_compatible.txt", "w") as f:
+            with open(structure_path + "/model_matches_input_seq.txt", "w") as f:
                 f.write("Model is based on an identical protein sequence as blast input.")
     else:
         with open(structure_path + "/model_incompatible.txt", "w") as f:
@@ -277,6 +278,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
     exons_file = open(exons_input_path + exons_filename, "w")
     
     number = 0
+    header = ">"
     coding_exons = {}
     UTR_5_length = len(UTR_5)
     UTR_3_length = len(UTR_3)
@@ -332,7 +334,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
         
         if number == 1 and strand == "+":
             # WORKS OK? (tested on Cenpa)
-            if removed_on_coding_from_start == False:
+            if removed_on_coding_from_start is False:
                 start = start + start_codon_offset
             # WORKS OK? (tested on Cenpi)
             else:
@@ -340,7 +342,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
         
         if number == 1 and strand == "-":
             # WORKS OK? (tested on Cenpr -> Itgb3bp)
-            if removed_on_coding_from_start == False:
+            if removed_on_coding_from_start is False:
                 stop = stop - start_codon_offset
             # WORKS OK? (tested on Cenpo)
             else:
@@ -348,7 +350,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
         
         if number == len(exon_intervals) and strand == "+":
             # WORKS OK? (tested on Cenpi)
-            if removed_on_coding_from_end == False:
+            if removed_on_coding_from_end is False:
                 stop = stop - UTR_3_length
             # WORKS OK? (tested on Cenpa)
             else:
@@ -356,21 +358,21 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
         
         if number == len(exon_intervals) and strand == "-":
             # WORKS OK? (tested on Cenpo)
-            if removed_on_coding_from_end == False:
+            if removed_on_coding_from_end is False:
                 start = start + UTR_3_length
             # WORKS OK? (tested on Cenpr -> Itgb3bp)
             else:
                 start = start + UTR_3_length - 1
 
         exon_fasta_sequence = get_single_exon(original_species, protein, reference_genome_contigs_dict, 
-                reference_genomes_path, reference_genome_name, rules, contig, strand, number, exon, start, stop)
+                reference_genomes_path, reference_genome_name, rules, contig, strand, number, start, stop)
         coding_exons[number] = exon_fasta_sequence
 
     for nr, exon_sequence in coding_exons.items():
         
         if len(exon_sequence) < 20: # changed from 20 08_23_2021 -> testing CENP-X primates
             microexon_present = True
-            microexons.append(nr)
+            microexons.append((nr, str(len(exon_sequence)) + "bp"))
             print("\n...WARNING...: Exon %s in: %s is a microexon (%sbp; hard to align) " \
                     "-> eliminated from exons and cds\n" % (str(nr), protein, len(exon_sequence)))
             # check if the last exon (microexon) had a stop codon before its trimmed (ex. Pot1a)
@@ -394,20 +396,20 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
         exons_file.write(exon_sequence + "\n")
         
         
-    if start_codon_present == False:
+    if start_codon_present is False:
         print("\nFirst exon in: %s in missing a START codon!!!\n" % header.split("_")[0].replace(">",""))
         input_correct = False
         
-    if stop_codon_present == False:
+    if stop_codon_present is False:
         print("\nLast exon in: %s in missing a STOP codon!!!\n" % header.split("_")[0].replace(">",""))
         input_correct = False
     
     # use the coding sequence assembled from exons to overwrite the cds_expected_sequence
-    if microexon_present == True:
+    if microexon_present is True:
         output_path = wdir + "Coding_sequences/"
         parse_sequence(original_species, output_path, cds_from_exons, protein, transcript, strand, sequence_type="cds")
 
-    if microexon_present == False and cds_from_exons != cds_sequence_expected:
+    if microexon_present is False and cds_from_exons != cds_sequence_expected:
         print("\nExons FAILED to assemble expected CDS for: %s\n" % header.split("_")[0].replace(">",""))
         input_correct = False
         
@@ -416,7 +418,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
     return input_correct, microexon_present, microexons
 
 def get_single_exon(original_species, protein, reference_genome_contigs_dict, reference_genomes_path, 
-                    reference_genome_name, rules, contig, strand, number, exon, start, stop):
+                    reference_genome_name, rules, contig, strand, number, start, stop):
     """Returns a header and a string representation of a current exon."""
 
     header = protein + "_" + original_species + "_exon_" + str(number)
@@ -486,7 +488,10 @@ def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gen
 
 def parse_sequence(original_species, output_path, fasta_sequence, protein, transcript, strand, sequence_type):
     """Parses either a pybedtools.bedtool.BedTool object or string into a file"""
-    
+
+    sequence = ""
+    header = ""
+
     # check if its a bedtool object
     if isinstance(fasta_sequence, pybedtools.bedtool.BedTool):
         file = open(fasta_sequence.seqfn)
@@ -554,6 +559,7 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
             contig, start, end, strand, biotype, gene_id, ensembl, support_level=None)
         
         # try to get cds -> if "start_codon" does not exist -> KeyError and then ValueError occur
+        cds_sequence_expected = ""
         try:
             cds_sequence_expected = transcript.coding_sequence
         except ValueError:
@@ -566,7 +572,7 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
         length = len(cds_sequence_expected)
         all_transcripts_dict[t].append(length)
     
-    # compare length of translated coding sequence with model amino acid seuqence length
+    # compare length of translated coding sequence with model amino acid sequence length
     matching_length = False
     for t, features in all_transcripts_dict.items():
         cds_length_aa = (features[-1]-3)/3
@@ -575,7 +581,7 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
             matching_length = True
     
     # if there is no transcript of preference, pick the one with longest cds (not recommended)
-    if matching_length == False:
+    if matching_length is False:
         selected_transcript_id = None
         length = 0
         for t, features in all_transcripts_dict.items():

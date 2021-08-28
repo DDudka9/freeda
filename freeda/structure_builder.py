@@ -142,7 +142,7 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
                 f.write("show sticks, " + residue + "\n")
                 f.write('label (resi ' + str(site) + ' and name CA), "%s" % ("' + residue + '")\n')
 
-            if 0.90 > float(features[2]) >= 0.75:
+            if 0.90 > float(features[2]) >= 0.70:
                 residue = features[0] + str(site)
                 f.write("select " + residue + ", resi " + str(site) + "\n")
                 f.write("color yellow, " + residue + "\n")
@@ -150,22 +150,22 @@ def get_pymol_script(wdir, original_species, result_path, dictionary, protein, p
                 f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
 
         # special case, first residue adaptive
-        if float(matched_adaptive_sites_original["1"][2]) >= 0.75:
+        if float(matched_adaptive_sites_original["1"][2]) >= 0.70:
             site = [site for site, features in matched_adaptive_sites_original.items() if site == "1"][0]
             residue = matched_adaptive_sites_original[site][0] + str(site)
             f.write('label (first (polymer and name CA)), "(%s; ' + residue + ')"%("N-term")\n')
 
-        if float(matched_adaptive_sites_original["1"][2]) < 0.75:
+        if float(matched_adaptive_sites_original["1"][2]) < 0.70:
             f.write('label (first (polymer and name CA)), "(%s)"%("N-term")\n')
 
         # special case, last residue adaptive
-        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) >= 0.75:
+        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) >= 0.70:
             site = [site for site, features in matched_adaptive_sites_original.items() if
                     site == str(len(matched_adaptive_sites_original))][0]
             residue = matched_adaptive_sites_original[site][0] + str(site)
             f.write('label (last (polymer and name CA)), "(%s; ' + residue + ')"%("C-term")\n')
 
-        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) < 0.75:
+        if float(matched_adaptive_sites_original[str(len(matched_adaptive_sites_original))][2]) < 0.70:
             f.write('label (last (polymer and name CA)), "(%s)"%("C-term")\n')
 
         # PyMOL command to set label size

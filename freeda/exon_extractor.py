@@ -19,9 +19,11 @@ import glob
 import time
 import logging
 import shutil
+import os
 
 
-def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
+def analyse_blast_results(wdir, blast_output_path, original_species, t, all_proteins):
+    """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
 
@@ -37,7 +39,12 @@ def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
     logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(message)s")
 
     # make a list of paths with blast tables
-    all_blasts = [blast for blast in glob.glob(blast_path + "*.txt")]
+    all_blasts = [blast for blast in glob.glob(blast_output_path + "*.txt")]
+
+    # remove previous fasta files for these proteins (unfinished runs)
+    for protein in all_proteins:
+        if os.path.isfile(wdir + protein + ".fasta"):
+            os.remove(wdir + protein + ".fasta")
 
     # get path for a single blast table while removing it from the list
     for path in all_blasts:
@@ -45,7 +52,7 @@ def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
         # generate protein and genome names and make it global
         protein_name, genome_name = name_finder.get_names(match_path)
         # find cds and gene for this path (Mm_exons NOT USED HERE)
-        cds, gene, Mm_exons, expected_exons, microexons = gene_and_cds_reader.find_gene_and_cds(wdir, protein_name, original_species)
+        cds, gene, Mm_exons, expected_exons = gene_and_cds_reader.find_gene_and_cds(wdir, protein_name, original_species)
         # index given genome
         genome_index = genome_indexer.index_genome_database(wdir, genome_name)
         # generate matches dataframe
@@ -55,7 +62,7 @@ def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
         # run MAFFT on all the MSA and write them into files
         msa_aligner.run_MAFFT(MSA_path)
         # return potential exons for a current protein in current genome
-        msa_analyzer.analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons, microexons)
+        msa_analyzer.analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons)
         # mark that this blast result has been analysed
         message = "\nFinished running protein: '%s' from genome: '%s'\n" \
             % (protein_name, genome_name)
@@ -90,7 +97,24 @@ def analyse_blast_results(wdir, blast_path, original_species, t, all_proteins):
     return result_path
 
 
+def check_blast_output(blast_output_path, t):
+    """Checks if at least one blast output matche for a given protein passes the blast threshold picked by the user"""
+
+    blast_output_files = os.listdir(blast_output_path)
+    genome_names = [file for file in blast_output_files if not file.startswith(".")]
+
+    for genome_name in genome_names:
+        with open(blast_output_path + genome_name, "r") as f:
+            file = f.readlines()
+            if not [match for match in file if float(match.split("\t")[9]) > t]:
+                print("\nNo matches above threshold : %s found in blast output file : %s" % (t, genome_name))
+                return False
+
+    return True
+
+
 def get_original_cds(wdir, protein_name, original_species):
+    """Reads cds for the protein in the reference species (from "Coding_sequences" folder"""
 
     # open according cds fasta file
     with open(wdir + "Coding_sequences/" + protein_name + "_" + original_species + "_cds.fasta", "r") as f:

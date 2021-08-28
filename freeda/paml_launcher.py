@@ -33,7 +33,8 @@ from freeda import fasta_reader
 
 
 def analyse_final_cds(wdir, original_species, result_path, all_proteins):
-    
+
+    failed_paml = []
     start_time = time.time()
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
         
@@ -193,7 +194,17 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
             shutil.copy(phylip_path, PAML_path + "/input.phy")
             
             # run RAxML (and move all the RAxML files to protein folder)
-            best_tree_path = run_RAxML(protein, protein_folder_path, translated_path)
+            try:
+                best_tree_path = run_RAxML(protein, protein_folder_path, translated_path)
+
+            except FileNotFoundError:
+                failed_paml.append(protein)
+                message = "...FATAL ERROR... : The best gene tree was NOT found for %s -> likely too few cds pass coverage" \
+                      "threshold (90% default) -> check PAML log file or just lower the threshold to e.g. 70%"
+                print(message)
+                logging.info(message)
+                continue
+
             shutil.copy(best_tree_path, PAML_path + "/gene.tree")
         
             # run PAML
@@ -205,20 +216,8 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
                 % (protein, str(M2a_M1a), str(M8_M7))
             print(message)
             logging.info(message)
-    
-    # THERE IS NO POINT OF MARKING THIS DUPLICATION???? EACH TIME ITS DUPLICATED
-    
-    #if os.path.exists(PAML_logfile_name) == True:
-    #    message = "\n(FREEDA) This log file: %s already exists." % PAML_logfile_name
-    #    print(message)
-    #    logging.info(message)
-    #    new_PAML_logfile_name = PAML_logfile_name.rstrip(".log") + "_duplicated.log"
-    #    os.rename(PAML_logfile_name, new_PAML_logfile_name)
-    shutil.move(wdir + PAML_logfile_name, result_path)
 
-    #else:
-    #    shutil.move(wdir + PAML_logfile_name, result_path)
-    
+    shutil.move(wdir + PAML_logfile_name, result_path)
     
     # for now final analysis complete message logs into the PAML log file -> change that later
     
@@ -229,7 +228,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
     print(message)
     logging.info(message)
     
-    return nr_of_species_total_dict, PAML_logfile_name, day
+    return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml
 
 
 def eliminate_all_insertions(protein_folder_path, out_MAFFT):
@@ -356,7 +355,7 @@ def run_PAML(wdir, protein, PAML_path, control_file):
 
 def run_RAxML(protein, protein_folder_path, translated_path):
     tree_name =  protein + "_Tree"
-    RAxML_cline = ["raxmlHPC", "-f", "a", "-s", translated_path, "-n", tree_name, \
+    RAxML_cline = ["raxmlHPC", "-f", "a", "-s", translated_path, "-n", tree_name,
                    "-m", "PROTGAMMAAUTO", "-p", "1985", "-x", "2020", "-#", "100"]
     result = subprocess.call(RAxML_cline)
     all_tree_files = glob.glob("RAxML*")
@@ -379,13 +378,14 @@ def run_RAxML(protein, protein_folder_path, translated_path):
     
     # remove dashes from the tree to match species names in phylip file
     with open(best_tree_path, "r") as f:
-        tree = f.read()   
+        tree = f.read()
         tree_no_dashes = tree.replace("_", "")
     
     with open(best_tree_path, "w") as f:
         f.write(tree_no_dashes)
     
     return best_tree_path
+
 
 def get_original_cds(wdir, protein_name, original_species):
 
@@ -396,6 +396,7 @@ def get_original_cds(wdir, protein_name, original_species):
         for line in cds[1:]:
             sequence = sequence + line.rstrip("\n")
     return sequence
+
 
 def translated_frameshift_checkpoint(wdir, seqs, protein, original_species):
     from Bio import pairwise2
@@ -419,8 +420,7 @@ def translated_frameshift_checkpoint(wdir, seqs, protein, original_species):
     original_cds_record = SeqRecord(original_cds_seq_object)
 
     # perform pairwise alignment
-    aln = pairwise2.align.globalxx(record_post_Gblocks.seq, \
-                                        original_cds_record.seq)
+    aln = pairwise2.align.globalxx(record_post_Gblocks.seq, original_cds_record.seq)
     
     # make a dict storing the alignments
     d = {}
@@ -482,7 +482,7 @@ def translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, original_
 def run_seqret(protein, protein_folder_path, out_Gblocks):
     in_filepath = protein_folder_path + "/" + out_Gblocks
     phylip_path = in_filepath + ".phy"
-    seqret_cline = ["seqret", "-sequence", in_filepath, \
+    seqret_cline = ["seqret", "-sequence", in_filepath,
                     "-osformat2", "phylipnon", "-outseq", phylip_path]
     result = subprocess.call(seqret_cline)
     if result == 0:
@@ -534,9 +534,12 @@ def STOP_remover(protein_folder_path, no_dashes_out_MAFFT, protein_name):
     
     final_cds_no_STOP = {}
     for species, cds in to_trim.items():
-        # subtract number of dashes to remove longer more bases
-        final_cds_no_STOP[species] = cds[:-c_term_bp_to_trim]
-        
+        # subtract number of dashes to remove longer more bases (if STOP detected)
+        if c_term_bp_to_trim != 0:
+            final_cds_no_STOP[species] = cds[:-c_term_bp_to_trim]
+        # no STOP codon detected in any species (ex. C-term tip missing; CENPX last exon (5) is microexon in primates)
+        else:
+            final_cds_no_STOP[species] = cds
 
     final_cds_file_no_STOP = "aligned_MAFFT_" + protein_name + "_final_no_STOP.fasta"
     with open(final_cds_file_no_STOP, "w") as f:
@@ -610,8 +613,8 @@ def post_Gblocks_STOP_remover(protein_folder_path, out_Gblocks, protein):
         
         STOP_positions = sorted([(position * 3) + 1 for position in artificial_STOP_codon_positions])
         
-        message = "\n !!! WARNING !!! - CDS for: %s contains early STOP codons "\
-        "starting at nucleotide position in Gblocks_final_no_STOP alignment: %s in species: %s \n           "\
+        message = "\n !!! WARNING !!! - CDS for: %s contains early STOP codons " \
+        "starting at nucleotide position in Gblocks_final_no_STOP alignment: %s in species: %s \n           " \
         "----> they were removed in each species forcing conserved alignment" \
                 % (protein, STOP_positions, species_with_STOP) 
         print(message)
@@ -621,6 +624,7 @@ def post_Gblocks_STOP_remover(protein_folder_path, out_Gblocks, protein):
 
 
 def run_Gblocks(final_cds_file_no_STOP, protein, result_path):
+
     in_filepath = result_path + protein + "/" + final_cds_file_no_STOP
     out_Gblocks = "aligned_MAFFT_Gblocks_" + protein + "_final_no_STOP.fasta"
     # run Gblocks with options: codon ("-t=c") and dont save html file ("-p=n")

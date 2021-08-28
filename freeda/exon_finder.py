@@ -18,7 +18,7 @@ retrotransposition. It also calls synteny and duplications.
 
 import logging
 
-def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexons): # works well
+def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works well
 
     exons = {}
     exon = ""
@@ -67,7 +67,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
             exon_number += 1
             
             # checkpoint for potentially skipped microexons
-            if str(exon_number) not in expected_exons:
+            if exon_number not in expected_exons:
                 exon_number += 1
 
             exon = cds[position]
@@ -266,7 +266,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
                     nr_of_RETRO_exons += 1
                     if introny_at_Nterm == True:
                         introny = True
-                        
+
                         # check insertions
                         big_insertion = check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_with_N)
                         #message = "insertion: %s" % str(insertion)
@@ -503,7 +503,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
         print(message)
         logging.info(message)
         
-    if exon_number != len(Mm_exons) + len(microexons):
+    if exon_number != len(Mm_exons): # removed "+ len(microexons)" 08_26_2021 (cose microexons are list of tuples)
         message = "\nFREEDA could not find all exons in contig %s " % (contig_name)
         print(message)
         logging.info(message)

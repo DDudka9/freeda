@@ -57,7 +57,7 @@ def get_exons(base_name, matches, contig):
     grouped = matches.groupby(matches.sseqid)
     # make contig name a string
     contig = str(contig)
-    message = "\nMatches found on contig : " + contig
+    message = "Matches found on contig : " + contig
     print(message)
     logging.info(message)
     # make a dataframe from these entries
