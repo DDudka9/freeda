@@ -133,9 +133,9 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 LRT2 = line.split(":")[1].split("and")[1].split("-")
                 # catch "e-" notation because it gets split
                 if LRT2[1].endswith("e") is True:
-                    M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2]
+                    M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2].rstrip("\n")
                 if LRT2[1].endswith("e") is False:
-                    M8_vs_M7_LRT = LRT2[1].replace(" ", "")
+                    M8_vs_M7_LRT = LRT2[1].replace(" ", "").rstrip("\n")
                 if M8_vs_M7_LRT != "None":
                     M8_vs_M7_LRT = round(float(M8_vs_M7_LRT), 4)
                     if M8_vs_M7_LRT == 0.0:

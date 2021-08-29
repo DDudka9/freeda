@@ -23,10 +23,9 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #           -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree? (but the gene tree looks fine)
 #           -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
 #   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
-#    0) ISSUE -> autodelete proteins from proteins.txt in Data folder if running exon finding (to prevent half-finished runs interfere) -> DONE
 #    0) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25) so its missing but finder thinks there is a STOP in 24 (which there is not)
-#           -> also C-term synteny check should not run if last exon is missing (currently exon 24 in Gorilla is syntenic)
-#           -> also add bp number to microexon info in model_incompatible.txt file and log it in exon finder
+#           -> also C-term synteny check should not run if last exon is missing (currently exon 24 in Gorilla is syntenic) -> probably DONE
+#           -> also add bp number to microexon info in model_incompatible.txt file and log it in exon finder -> DONE
 #    1) ISSUE with Haus8 -> Gs -> SRMG01015959.1__for -> part of exon 4 does not align (the other one does), there is insertion as well
 #                           it created a frameshift at the beginning of the sequence (22aa) present in translated alignment
 #                           it might skew the PAML result for Haus8
@@ -35,11 +34,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                           Haus8 is a weird protein -> possibly many duplications, retrotranspositions
 #    2)  TESTING run time for same protein using higher blast thresholds (50 and 70)
 #    3)  ISSUE with CD46 primates -> 10-13 exons found only in mulatta -> check blast file
-#                       Consider running a blastn (nucleotide) instead of tblastn (protein)
+#                       Consider running a blastn (nucleotide) instead of tblastn (protein) -> tried that, still doesnt find all exons
 #                       Consider extending the arms above 10kb to 30kb to check if thats the issue (probably same as CD55)
-#    4)  ISSUE with RAxML "FileNotFoundError when too few species (check snippet above) -> make check for minimum species
-#    5) ISSUE with potential cases of no matches for given treshold (ex. Gorilla CENPX has only one match -> at 40% (so no matches at 70%)
-#                   -> leads to a concat traceback call (see above)
 #    6) ISSUE with defining parameters:
 #           Define a module for tweaking parameters (advanced_parameters.py)
 #               - duplication restriction (switches on the duplication score)
@@ -53,6 +49,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #    7) ISSUE with BEB results for non-adaptive proteins:
 #            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
 #            Same with Cenp-W
+#            Not sure what the solution is -> I made sure proteins that do not score in M8 vs M7 are not visualized
 #    8) ISSUE with the cds_cloner functon (requires refactoring):
 #           Cloner module needs revision to get hamming distance duplication comparison compare
 #           the actual duplicated exons and not only the number of exon they carry
@@ -81,9 +78,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #           Also alignment of single exons from exon 7 is messed up (linux default file order problem again?)
 #           early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
 #           but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
-#    15)  ISSUE with CD55:
-#           Runs blast for forever...
-#           Fixed : probably an issue with a blast database, no problem currently
 #    16)  TESTING: download genomes of more primates and try reproducing Schuler 2010 MBE paper
 
 print("\nImporting all modules and libraries...\n")

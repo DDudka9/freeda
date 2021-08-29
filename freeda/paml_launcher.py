@@ -214,7 +214,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
             
             M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path, control_file)
 
-            if M8_M7 < 0.05:
+            if M8_M7 is not None and M8_M7 < 0.05:
                 proteins_under_positive_selection.append(protein)
 
             message = "\n -> PAML p-values for protein %s : M2a v M1a - %s and M8 v M7 - %s" \
