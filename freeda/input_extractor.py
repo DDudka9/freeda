@@ -43,20 +43,6 @@ rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
 
 
-def check_microexons(wdir, protein_name, original_species):
-    """Checks if microexons were found during automatic input extraction"""
-
-    path_to_model_info = wdir + "Structures/" + protein_name + "_" + original_species
-    if os.path.isfile(path_to_model_info + "/model_incompatible.txt"):
-        with open(path_to_model_info + "/model_incompatible.txt", "r") as f:
-            file = f.readlines()
-            microexons = [exon.replace("'", "").split("[")[1].split("]")[0] for exon in file if "microexon" in exon]
-    else:
-        microexons = []
-
-    return microexons
-
-
 def generate_basic_folders(wdir):
     """Checks if folders for input are present in working directory, generates if not"""
 
@@ -97,6 +83,7 @@ def get_uniprot_id(original_species, protein):
     print("\nExtracting valid uniprot ids for protein: %s ...\n" % protein)
     data = u.search(protein + "+and+taxonomy:" + original_species_number, frmt="tab", limit=10,
              columns="genes,length,id")
+
     data_list = data.split("\n")
     for line in data_list:
         elements = line.split("\t")
@@ -115,22 +102,24 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
         handle = "MOUSE"
     if original_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
         handle = "HUMAN"
-        
+
     # make folder to host the structure prediction
     structure_path = wdir + "Structures/" + protein + "_" + original_species
     if not os.path.isdir(structure_path):
         os.makedirs(structure_path)
-    
+
+    # remove all non pdb files and all hidden files
+    clear_structure_files(structure_path)
+
     # find prediction model based on possible uniprot ids for the protein
     path_to_original_species_structures = [path for path in glob.glob(wdir + "*") 
                                                    if path.endswith(handle + ".tar")][0]
     tar = tarfile.open(path_to_original_species_structures)
     print("Looking for structure in AlphaFold database for: %s ...\n" % protein)
     all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]
-    # this assumes that there is only one predicion model for a given protein in AlphaFold
+    # this assumes that there is only one prediction model for a given protein in AlphaFold
     all_structures_compressed = [s for s in all_structures if s.split("-")[1] in possible_uniprot_ids]
 
-    
     # try finding the structure
     try:
         structure_filename_compressed = all_structures_compressed[0]
@@ -140,7 +129,7 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
         path_to_tarfile = wdir + structure_filename_compressed
         tar.extract(structure_filename_compressed)
         
-        # need to use subprocess to decompress (tarfile or gunzip modules dont work directly)
+        # need to use subprocess to decompress (tarfile or gunzip modules don't work directly)
         cmd = ["gunzip", path_to_tarfile] # deletes zipped file automatically
         subprocess.call(cmd)
         
@@ -166,8 +155,8 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
     
     # didnt find structure
     except IndexError:
-        print("...WARNING...: Structure prediction for protein: %s HAS NOT BEEN FOUND -> Cannot overlay FREEDA results onto a 3D structure\n" % protein)
-        print("...SUGGESTION...: You can use your own model (ex. from PDB; fragments are ok but no sequence mismatches!)\n")
+        print("...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND -> Cannot overlay FREEDA results onto a 3D structure\n" % protein)
+        print("...SUGGESTION... : You can use your own model (ex. from PDB; fragments are ok but no sequence mismatches!)\n")
         with open(structure_path + "/model_incompatible.txt", "w") as f:
             f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
 
@@ -222,14 +211,14 @@ def extract_input(wdir, original_species, reference_genome_name, reference_genom
     all_genes = {g for g in ensembl.gene_names()}
     if protein not in all_genes:
         input_correct = False
-        print("\n...WARNING...: Reference genome lacks gene name: "'%s'"\n" % protein)
+        print("\n...WARNING... : Reference genome lacks gene name: "'%s'"\n" % protein)
         return input_correct, model_matches_input, microexon_present
     
     # find coding sequence
     transcript, selected_transcript_id, gene_id, contig, strand, UTR_5, UTR_3, cds_sequence_expected, matching_length = extract_cds(ensembl, 
                 original_species, coding_sequence_input_path, protein, biotype, model_seq)
     # find protein sequence
-    model_matches_input = extract_protein(wdir, original_species, blast_input_path, protein, strand, transcript, model_seq, matching_length)
+    model_matches_input = extract_protein(wdir, original_species, blast_input_path, protein, transcript, model_seq, matching_length)
     # find gene sequence
     extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
                 reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein, transcript)
@@ -240,7 +229,7 @@ def extract_input(wdir, original_species, reference_genome_name, reference_genom
     return input_correct, model_matches_input, microexon_present, microexons
     
 
-def extract_protein(wdir, original_species, blast_input_path, protein, strand, transcript, model_seq, matching_length):
+def extract_protein(wdir, original_species, blast_input_path, protein, transcript, model_seq, matching_length):
     """Extracts protein sequence based on Transcript object and compares with structure model sequence"""
     
     model_matches_input = False
@@ -370,7 +359,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
 
     for nr, exon_sequence in coding_exons.items():
         
-        if len(exon_sequence) < 20: # changed from 20 08_23_2021 -> testing CENP-X primates
+        if len(exon_sequence) < 15: # changed from 20 08_23_2021 -> testing CENP-X primates
             microexon_present = True
             microexons.append((nr, str(len(exon_sequence)) + "bp"))
             print("\n...WARNING...: Exon %s in: %s is a microexon (%sbp; hard to align) " \
@@ -417,6 +406,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
 
     return input_correct, microexon_present, microexons
 
+
 def get_single_exon(original_species, protein, reference_genome_contigs_dict, reference_genomes_path, 
                     reference_genome_name, rules, contig, strand, number, start, stop):
     """Returns a header and a string representation of a current exon."""
@@ -449,6 +439,7 @@ def get_single_exon(original_species, protein, reference_genome_contigs_dict, re
     os.remove(exon_fasta_filename)
     
     return exon_fasta_sequence
+
 
 def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
         reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein, transcript):
@@ -612,6 +603,37 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
     else:
         print("Chosen transcript for protein: %s does not have START and STOP annotated" % protein)
         
+
+def clear_structure_files(structure_path):
+    """Clears all files that are not pdb"""
+
+    model_file_list = os.listdir(structure_path)
+    all_files = [file for file in model_file_list]
+
+    # remove all files
+    for file in all_files:
+        try:
+            os.remove(structure_path + "/" + file)
+        except FileNotFoundError:
+            print("FileNotFoundError was triggered for: %s" % file)
+            pass
+
+    return
+
+
+def check_microexons(wdir, protein_name, original_species):
+    """Checks if microexons were found during automatic input extraction"""
+
+    path_to_model_info = wdir + "Structures/" + protein_name + "_" + original_species
+    if os.path.isfile(path_to_model_info + "/model_incompatible.txt"):
+        with open(path_to_model_info + "/model_incompatible.txt", "r") as f:
+            file = f.readlines()
+            microexons = [exon.replace("'", "").split("[")[1].split("]")[0] for exon in file if "microexon" in exon]
+    else:
+        microexons = []
+
+    return microexons
+
 
 """
 

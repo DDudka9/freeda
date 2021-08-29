@@ -11,54 +11,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 """
 
-SOME ISSUE WITH RAxML sometimes (CENPX primates):
-
-    Partition No Name Provided number 0 has a problem, the number of expected states is 20 the number of states that are present is 17.
-    Please go and fix your data!
-
-
-TOO FEW SPECIES
-
-Final species cloned and aligned (+ original) for CD46 : 3 ['Hs', 'Pb', 'Mu']
-['Original alignment: 1176 positions', 'Gblocks alignment:  1125 positions (95 %) in 1 selected block(s)']
-Read and write (return) sequences
-
- Phylip format was created for protein : CD46 
-
-RAxML can't, parse the alignment file as phylip file 
-it will now try to parse it as FASTA file
-
- PROBLEM with making gene tree for protein : CD46 
-Traceback (most recent call last):
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 306, in <module>
-    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 265, in freeda_pipeline
-    nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 196, in analyse_final_cds
-    best_tree_path = run_RAxML(protein, protein_folder_path, translated_path)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 381, in run_RAxML
-    with open(best_tree_path, "r") as f:
-FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/DamianEx_2/Data/Results-08-21-2021-23-35/CD46/RAxML_bestTree.CD46_Tree'
-
-NO MATCHES
-
-PROBLEM with no matches at a given treshold (Gorilla CENPX)
-Traceback (most recent call last):
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 348, in <module>
-    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 273, in freeda_pipeline
-    result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species, int(t), all_proteins)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/exon_extractor.py", line 52, in analyse_blast_results
-    matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/matches_generator.py", line 39, in generate_matches
-    concatenated_matches = split_large_contigs(dataframes).reset_index(drop=True)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/matches_generator.py", line 151, in split_large_contigs
-    concatenated_matches = pd.concat([i for i in list_new_matches])
-  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 284, in concat
-    sort=sort,
-  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 331, in __init__
-    raise ValueError("No objects to concatenate")
-
 
 """
 
@@ -70,7 +22,7 @@ Traceback (most recent call last):
 #           -> Try dynamic flanking -> 10kb if gene < 30kb and 30kb if gene > 30kb
 #           -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree? (but the gene tree looks fine)
 #           -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
-#   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021)
+#   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
 #    0) ISSUE -> autodelete proteins from proteins.txt in Data folder if running exon finding (to prevent half-finished runs interfere) -> DONE
 #    0) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25) so its missing but finder thinks there is a STOP in 24 (which there is not)
 #           -> also C-term synteny check should not run if last exon is missing (currently exon 24 in Gorilla is syntenic)
@@ -203,13 +155,13 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
         input_present = True
         for protein in all_proteins:
             structure_path = wdir + "Structures/" + protein + "_" + original_species
-            if "model_compatible.txt" in os.listdir(structure_path) or "model_incompatible.txt" in os.listdir(structure_path):
+            if "model_matches_input_seq.txt" in os.listdir(structure_path) or "model_incompatible.txt" in os.listdir(structure_path):
                 print("\nAll input data and structure model for : %s are present." % protein)
             else:
                 input_present = False
-                print("\n...WARNING... Data are missing for : %s" % protein)
+                print("\n...WARNING... : Data are missing for : %s" % protein)
         if not input_present:
-            print("\n...FATAL_ERROR... Input data for at least one protein are missing -> exiting the pipeline now...")
+            print("\n...FATAL_ERROR... : Input data for at least one protein are missing -> exiting the pipeline now...")
             return
 
     # ----------------------------------------#
@@ -218,17 +170,17 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
 
     # forgot about blast
     if user_input0 == "y" and user_input1 == "n" and user_input2 == "y" and user_input3 == "n":
-        print("\n...FATAL ERROR... You need to perform blast before exon finding.")
+        print("\n...FATAL ERROR... : You need to perform blast before exon finding.")
         return
 
     # forgot about blast or exon finding
     if user_input0 == "y" and (user_input1 == "n" or user_input2 == "n") and user_input3 == "y":
-        print("\n...FATAL ERROR... You need to perform blast and exon finding before molecular evolution analysis.")
+        print("\n...FATAL ERROR... : You need to perform blast and exon finding before molecular evolution analysis.")
         return
 
     # forgot about exon finding
     if user_input0 == "n" and user_input1 == "y" and user_input2 == "n" and user_input3 == "y":
-        print("\n...FATAL ERROR... You need to perform exon finding before molecular evolution analysis.")
+        print("\n...FATAL ERROR... : You need to perform exon finding before molecular evolution analysis.")
         return
 
     # ----------------------------------------#
@@ -245,7 +197,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
 
         # stop pipeline if the reference genome is absent
         if not reference_genome_present:
-            print("\n...FATAL ERROR...: There is no reference genome detected -> exiting the pipeline now...\n"
+            print("\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n"
                   "\n   Make sure you downloaded it into ../Data/Reference_genomes from "
                   " https://www.ncbi.nlm.nih.gov/assembly -> (mouse: GCA_000001635.8; human: GCA_000001405.28) -> "
                   "GenBank -> Genomic FASTA(.fna)")
@@ -269,17 +221,17 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                 print("\nInput data have been generated for protein: %s\n\n" % protein)
 
             if not input_correct:
-                print("\n...FATAL ERROR...: Input data generation FAILED for protein: %s -> exiting the pipeline now...\n" % protein)
+                print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s -> exiting the pipeline now...\n" % protein)
                 return
 
             if not model_matches_input:
-                print("...WARNING...: Structure prediction for protein: %s DOES NOT have a match in available ensembl "
+                print("...WARNING... : Structure prediction for protein: %s DOES NOT have a match in available ensembl "
                         "database -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
-                print("...WARNING...: Protein may still be analyzed using PAML but without 3D structure overlay\n")
+                print("...WARNING... : Protein may still be analyzed using PAML but without 3D structure overlay\n")
 
             if microexon_present:
-                print("...WARNING...: Sequence for: %s found in Ensembl contains a microexon\n" % protein)
-                print("...WARNING...: Microexons are difficult to align and are removed -> cannot overlay FREEDA results onto a 3D structure\n")
+                print("...WARNING... : Sequence for: %s found in Ensembl contains a microexon\n" % protein)
+                print("...WARNING... : Microexons are difficult to align and are removed -> cannot overlay FREEDA results onto a 3D structure\n")
                 with open(wdir + "Structures/" + protein + "_" + original_species + "/model_incompatible.txt", "w") as f:
                     f.write("Exon %s is a microexon and was removed from input reference sequence. Cannot overlay FREEDA results onto a 3D structure." % microexons)
 
@@ -290,8 +242,8 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     if user_input1 == "y":
         print("\n -> checking genome blast databases...")
         blast_output_path = tblastn.run_blast(wdir, original_species, all_proteins)
-        if blast_path is None:
-            print("\n...FATAL ERROR...: Blast database build failed for at least one genome"
+        if blast_output_path is None:
+            print("\n...FATAL ERROR... : Blast database build failed for at least one genome"
                   "\n   Make sure you downloaded all genomes -> exiting the pipeline now...")
             return
     else:
@@ -325,9 +277,9 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
                 # run PAML
-                nr_of_species_total_dict, PAML_logfile_name, day, failed_paml = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+                nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
                 # visualize PAML result
-                paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, failed_paml)
+                paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, proteins_under_positive_selection)
                 # run PyMOL
                 for protein in all_proteins:
                     # do not allow further analysis of failed paml runs
@@ -335,7 +287,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                         continue
                     # check if model seq and input seq match and check if exactly one model exists
                     elif structure_builder.check_structure(wdir, original_species, protein):
-                        successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
+                        successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, proteins_under_positive_selection, offset=None)
                         if not successful:
                             print("\nThe structure for : %s was not built successfully." % protein)
                             continue
@@ -344,9 +296,9 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
 
     if user_input3 == "y" and user_input2 == "y":
         # run PAML
-        nr_of_species_total_dict, PAML_logfile_name, day, failed_paml = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+        nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
         # visualize PAML result
-        paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, failed_paml)
+        paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, proteins_under_positive_selection)
         # run PyMOL
         for protein in all_proteins:
             # do not allow further analysis of failed paml runs
@@ -354,7 +306,7 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                 continue
             # check if model seq and input seq match and check if exactly one model exists
             elif structure_builder.check_structure(wdir, original_species, protein):
-                successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, offset=None)
+                successful = structure_builder.run_pymol(wdir, original_species, result_path, protein, proteins_under_positive_selection, offset=None)
                 if not successful:
                     print("\nThe structure for : %s was not built successfully." % protein)
                     continue
@@ -384,7 +336,7 @@ if __name__ == '__main__':
     parser.add_argument("-os", "--original_species",
                         help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=40)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 
 
     args = parser.parse_args()

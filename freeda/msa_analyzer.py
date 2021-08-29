@@ -23,13 +23,18 @@ import glob
 
 
 def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons):
-    
+    """Analyses MSA per contig -> finds exons, clones them into cds"""
+
+    # make a dictionary with exon number as key and sequences, names as values -> inclue microexons as empty lists
+    microexons = input_extractor.check_microexons(wdir, protein_name, original_species)
+
     final_exon_number = len(Mm_exons)
     cloned_exons_overhangs = []
     # define pattern of all aligned fasta files
     pattern = "aligned*.fasta"
     # make a list of paths containins the aligned fasta files
     paths = glob.glob(MSA_path + "/" + pattern)
+
     for path in paths:
         # define contig name
         contig_name = re.search(r"(?<=aligned_).*$", path).group().replace("rev_comp_", "")
@@ -52,7 +57,7 @@ def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_
         # clone all exons WITH OVERHANGS
         cloned_exons_overhangs.append((contig_name, clone_exons_overhangs(seqs, exons)))
         # select only contigs carrying intronic exons
-    preselected_exons_overhangs = preselect_exons_overhangs(wdir, protein_name, original_species, cloned_exons_overhangs, expected_exons)
+    preselected_exons_overhangs = preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons)
     # find contigs containing most intronic exons
     most_intronic_contigs = find_contigs_with_most_intronic_exons(preselected_exons_overhangs)
     
@@ -142,7 +147,7 @@ def clone_exons_overhangs(seqs, exons): # works well
     return cloned_exons_overhangs
 
 
-def preselect_exons_overhangs(wdir, protein_name, original_species, cloned_exons_overhangs, expected_exons):
+def preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons):
     intronic_exons = []
     preselected_exons_overhangs = {}
     sorted_exons = []
@@ -171,9 +176,7 @@ def preselect_exons_overhangs(wdir, protein_name, original_species, cloned_exons
                              if introny == True and big_insertion == False]) 
             
         sorted_exons = sorted([entry for entry in intronic_exons if entry != []])
-    
-    # make a dictionary with exon number as key and sequences, names as values -> inclue microexons as empty lists
-    microexons = input_extractor.check_microexons(wdir, protein_name, original_species)
+
     all_exons = microexons + list(expected_exons)
     for number in range(1, len(all_exons) + 1):
         preselected_exons_overhangs[number] = []

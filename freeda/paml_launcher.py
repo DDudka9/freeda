@@ -57,7 +57,8 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         for species in f.readlines():
             all_species[species.rstrip("\n")] = ""
     
-    nr_of_species_total_dict = {} 
+    nr_of_species_total_dict = {}
+    proteins_under_positive_selection = []
 
     for protein in all_proteins:
         
@@ -212,6 +213,10 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
             print(message)
             
             M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path, control_file)
+
+            if M8_M7 < 0.05:
+                proteins_under_positive_selection.append(protein)
+
             message = "\n -> PAML p-values for protein %s : M2a v M1a - %s and M8 v M7 - %s" \
                 % (protein, str(M2a_M1a), str(M8_M7))
             print(message)
@@ -228,7 +233,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
     print(message)
     logging.info(message)
     
-    return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml
+    return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection
 
 
 def eliminate_all_insertions(protein_folder_path, out_MAFFT):

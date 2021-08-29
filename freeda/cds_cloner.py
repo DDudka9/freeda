@@ -233,7 +233,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                         # if frameshift detected and not last exon
                         if frameshift == True and exon != list(Mm_exons.keys())[-1]:
                             # log the frameshift
-                            message = "\n   FRAMESHIFT detected in contig " \
+                            message = "   ...WARNING... : FRAMESHIFT detected in contig " \
                                     + contig[0] + " in exon nr: %s" % str(exon)
                             print(message)
                             logging.info(message)
@@ -256,7 +256,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                             if frameshift == True:
                                 exons_with_frameshifts.append(exon)
                                 # log the frameshift
-                                message = "\n   FRAMESHIFT detected in contig " \
+                                message = "   ...WARNING... : FRAMESHIFT detected in contig " \
                                     + contig[0] + " in the LAST exon nr: %s (allowed)" % str(exon)
                                 print(message)
                                 logging.info(message)
@@ -348,8 +348,8 @@ def hamming_distance_to_original_species(Mm_exons, exon_nr, winner, \
     # check if there is no frame shift in the given exon
     frameshift = check_frameshift(original_exon, compared_exon)
     if frameshift == True:
-        message = "\n   FRAMESHIFT detected in contig " + winner + \
-            " in exon nr: %s\n" % str(exon_nr)
+        message = "   ...WARNING... : FRAMESHIFT detected in contig " + winner + \
+            " in exon nr: %s" % str(exon_nr)
         print(message)
         logging.info(message)
     
