@@ -10,6 +10,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 """
 
 """
+ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, model was found so whats the problem? -> gene_name issue?guerin
 
 
 """
@@ -23,6 +24,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #           -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree? (but the gene tree looks fine)
 #           -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
 #   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
+#    0) Figure out how to overlay sequences with microexons
+#    0) AP2M1 -> cannot overlay on 3D structure cose of microexon but should still show model
 #    0) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25) so its missing but finder thinks there is a STOP in 24 (which there is not)
 #           -> also C-term synteny check should not run if last exon is missing (currently exon 24 in Gorilla is syntenic) -> probably DONE
 #           -> also add bp number to microexon info in model_incompatible.txt file and log it in exon finder -> DONE
@@ -328,7 +331,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-os", "--original_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Hs")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 
