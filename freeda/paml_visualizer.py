@@ -29,23 +29,24 @@ import pandas as pd
 import math
 
 
-wdir = "/Volumes/DamianEx_2/Data/"
-result_path = wdir + "Results-08-23-2021-00-24/"
-all_proteins = ["CD46"]
-nr_of_species_total_dict = {"CD46" : 9}
-PAML_logfile_name = "PAML-08-23-2021-00-53.log"
-original_species = "Hs"
-day = "-06-27-2021-15-04"
-protein_name = "CD46"
-nr_of_species_total = 9
+#wdir = "/Volumes/DamianEx_2/Data/"
+#result_path = wdir + "Results-08-23-2021-00-24/"
+#all_proteins = ["CD46"]
+#nr_of_species_total_dict = {"CD46" : 9}
+#PAML_logfile_name = "PAML-08-23-2021-00-53.log"
+#original_species = "Hs"
+#day = "-06-27-2021-15-04"
+#protein_name = "CD46"
+#nr_of_species_total = 9
 
 
 # ADD LEGEND BOX TO PYMOL SCRIPT -> pymol.cgo module
 
 
 def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict,
-                         original_species, PAML_logfile_name, day):
-    
+                         original_species, PAML_logfile_name, day, proteins_under_positive_selection):
+    """Analyses PAML results for each protein"""
+
     all_matched_adaptive_sites_original = {}
     
     for protein in all_proteins:
@@ -58,7 +59,7 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
         
         else:
             nr_of_species_total = nr_of_species_total_dict[protein]
-            matched_adaptive_sites_original = plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species)
+            matched_adaptive_sites_original = plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species, proteins_under_positive_selection)
             all_matched_adaptive_sites_original[protein] = matched_adaptive_sites_original
         
     # prepare a dict with PAML stats
@@ -74,6 +75,7 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
 
 
 def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_original):
+    """Reads the output PAML and finds LRTs and computes p-values for M2a-M1a and M8-M7 models"""
 
     # prepare the dict storing the PAML result
     PAML_log_dict = {"Protein name":[],
@@ -131,9 +133,9 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 LRT2 = line.split(":")[1].split("and")[1].split("-")
                 # catch "e-" notation because it gets split
                 if LRT2[1].endswith("e") is True:
-                    M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2]
+                    M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2].rstrip("\n")
                 if LRT2[1].endswith("e") is False:
-                    M8_vs_M7_LRT = LRT2[1].replace(" ", "")
+                    M8_vs_M7_LRT = LRT2[1].replace(" ", "").rstrip("\n")
                 if M8_vs_M7_LRT != "None":
                     M8_vs_M7_LRT = round(float(M8_vs_M7_LRT), 4)
                     if M8_vs_M7_LRT == 0.0:
@@ -210,6 +212,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
 
 
 def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
+    """Makes an excel sheet with most important PAML results"""
 
     # make an empty excel sheet using openpyxl library
     wb = Workbook()
@@ -291,13 +294,14 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
 
 
 
-def plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species):
+def plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species, proteins_under_positive_selection):
+    """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
     
     # get original and final aa sequence for a protein
     original_sequence_record, final_sequence_record = get_original_and_final_seqs(wdir, protein, result_path, original_species)
     # organise them into easy to search dictionaries
     original_species_dict, final_original_species_dict, final_length = organise_original_and_final_seqs(original_sequence_record, final_sequence_record)
-    # map the aa residues between the original and final sequnces
+    # map the aa residues between the original and final sequences
     mapped_original_and_final_residues_dict = map_original_and_final_residues(original_sequence_record, final_sequence_record)
     # find dN/dS omega ratio per site based on "rst" file (final only for now)
     omega_dict = get_omegas(protein, result_path, final_length)
@@ -309,15 +313,16 @@ def plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species)
     # mark the sites that were not analyzed by PAML
     final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_original, mapped_original_and_final_residues_dict)
     # record and write breakdown of adaptive sites overlay to original cds
-    record_adaptive_sites(final_dict_to_plot, protein)
+    record_adaptive_sites(final_dict_to_plot, protein, proteins_under_positive_selection)
     # plot omegas and probabilities
-    make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total)
+    make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection)
 
     return matched_adaptive_sites_original
 
+
 def mark_skipped_sites(matched_adaptive_sites_original, mapped_original_and_final_residues_dict):
-    
-    # mark the sites that were not analyzed by PAML    
+    """Marks sites that were not analyzed by PAML"""
+
     for site in mapped_original_and_final_residues_dict:
         if mapped_original_and_final_residues_dict[site][0] != "-":
             matched_adaptive_sites_original[site].append(1)
@@ -327,8 +332,13 @@ def mark_skipped_sites(matched_adaptive_sites_original, mapped_original_and_fina
     return matched_adaptive_sites_original
 
 
-def record_adaptive_sites(final_dict_to_plot, protein_name):
-    
+def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_positive_selection):
+    """Makes a uniprot format representation of each residue in aa seq of reference species (number, selection, presence)"""
+
+    annotate_selection = False
+    if protein_name in proteins_under_positive_selection:
+        annotate_selection = True
+
     # row_residues and row_features are well set
     row_positions = ""
     row_residues = ""
@@ -383,34 +393,8 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
                 else:
                     row_positions = row_positions + str(position_marker) + 7 * " "
         
-        # prepare residues and features arrays
-        # not adaptive
-        if float(values[2]) < 0.75 and values[3] != 0:
-            residue = values[0]
-            row_features = row_features + " "
-            row_residues = row_residues + residue
-            if position % 50 == 0:
-                row_residues = row_residues + "\n"
-                row_features = row_features + "\n"
-            
-        # mild probability of adaptive evolution
-        if 0.75 <= float(values[2]) < 0.90:
-            residue = values[0]
-            row_features = row_features + "."
-            row_residues = row_residues + residue
-            if position % 50 == 0:
-                row_residues = row_residues + "\n"
-                row_features = row_features + "\n"
-                
-        # strong probability of adaptive evolution
-        if 0.90 <= float(values[2]):
-            residue = values[0]
-            row_features = row_features + ":"
-            row_residues = row_residues + residue
-            if position % 50 == 0:
-                row_residues = row_residues + "\n"
-                row_features = row_features + "\n"
-        
+        # Prepare residues and features arrays :
+
         # residue absent in PAML analysis
         if values[3] == 0:
             residue = values[0]
@@ -419,6 +403,45 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
             if position % 50 == 0:
                 row_residues = row_residues + "\n"
                 row_features = row_features + "\n"
+            continue
+
+        # do not annotate probabilities if protein not under positive selection
+        if not annotate_selection:
+            residue = values[0]
+            row_features = row_features + " "
+            row_residues = row_residues + residue
+            if position % 50 == 0:
+                row_residues = row_residues + "\n"
+                row_features = row_features + "\n"
+            continue
+
+        # residue not adaptive
+        if float(values[2]) < 0.70 and values[3] != 0:
+            residue = values[0]
+            row_features = row_features + " "
+            row_residues = row_residues + residue
+            if position % 50 == 0:
+                row_residues = row_residues + "\n"
+                row_features = row_features + "\n"
+            
+        # residue with mild probability of adaptive evolution
+        if 0.70 <= float(values[2]) < 0.90:
+            residue = values[0]
+            row_features = row_features + "."
+            row_residues = row_residues + residue
+            if position % 50 == 0:
+                row_residues = row_residues + "\n"
+                row_features = row_features + "\n"
+                
+        # residue with strong probability of adaptive evolution
+        if 0.90 <= float(values[2]):
+            residue = values[0]
+            row_features = row_features + ":"
+            row_residues = row_residues + residue
+            if position % 50 == 0:
+                row_residues = row_residues + "\n"
+                row_features = row_features + "\n"
+
 
     positions = row_positions.split("\n")
     features = row_features.split("\n")
@@ -428,7 +451,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
     
         message = ("\n\n.........................................."
             "\n\nReference sequence for %s with adaptive sites:"
-            "\n\n . means pr >= 0.75 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % protein_name
+            "\n\n . means pr >= 0.70 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % protein_name
         print(message)
         logging.info(message)
         
@@ -461,6 +484,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name):
     
 
 def get_original_and_final_seqs(wdir, protein_name, result_path, original_species):
+    """Recovers aa seq of reference species from input and a final one after Gblocks"""
     
     protein_path = result_path + "/" + protein_name
 
@@ -488,8 +512,9 @@ def get_original_and_final_seqs(wdir, protein_name, result_path, original_specie
     
 
 def organise_original_and_final_seqs(original_sequence_record, final_sequence_record):
-    
-    # organise residues into easy to search dict
+    """Organises residues in aa seq of reference species from input and post Gblocks into an easy to search dict"""
+
+    # aa seq from input
     original_species_dict = {}    
     total_length = 0
     for index, aa in enumerate(original_sequence_record.seq, start=1):
@@ -497,8 +522,8 @@ def organise_original_and_final_seqs(original_sequence_record, final_sequence_re
             break
         original_species_dict[index] = aa
         total_length += 1
-    
-    # organise residues into easy to search dict
+
+    # aa seq post Gblocks
     final_original_species_dict = {}
     final_length = 0
     for index, aa in enumerate(final_sequence_record.seq, start=1):
@@ -511,6 +536,7 @@ def organise_original_and_final_seqs(original_sequence_record, final_sequence_re
 
 
 def map_original_and_final_residues(original_sequence_record, final_sequence_record):
+    """Maps residues between the aa seq of reference species and post Gblocks"""
     
     # perform pairwise alignment (multiple alignments of the same sequences)
     aln = pairwise2.align.globalxx(final_sequence_record.seq, original_sequence_record.seq)
@@ -539,6 +565,7 @@ def map_original_and_final_residues(original_sequence_record, final_sequence_rec
     
 
 def match_adaptive_sites_to_original(final_original_species_dict, mapped_original_and_final_residues_dict, adaptive_sites_dict, omega_dict):
+    """Matches sites under positive selection from seq post Gblocks onto thw one used for blast input"""
     
     # overlay the final residue dictionary with probability for positive selection
     matched_adaptive_sites_final = {}
@@ -591,6 +618,7 @@ def match_adaptive_sites_to_original(final_original_species_dict, mapped_origina
 
 
 def get_omegas(protein_name, result_path, final_length):
+    """Gets Dn/Ds ratio (omega) for each site in aa seq of reference species"""
     
     PAML_output_file_path = result_path + "/" + protein_name + "/PAML_" + protein_name
     
@@ -650,6 +678,7 @@ def get_omegas(protein_name, result_path, final_length):
 
 
 def get_adaptive_sites(result_path, protein):
+    """Reads the PAML output files and finds which sites are likely under positive selection (BEB)"""
     
     PAML_output_file_path = result_path + "/" + protein + "/PAML_" + protein
     with open(PAML_output_file_path + "/output_PAML", "r") as f:
@@ -692,7 +721,8 @@ def get_adaptive_sites(result_path, protein):
     return adaptive_sites_dict
 
 
-def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
+def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection):
+    """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites under positive selection"""
 
     sites = []
     residues = []
@@ -719,36 +749,39 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
             
         # mark missing values as impossibly high omegas and probabilities
         else:
-            omegas.append(float(10.00))
-            probabilities.append(float(10.00))
+            omegas.append(float(20.00))
+            probabilities.append(float(20.00))
     
         analyzed.append(features[3])
-    
-    # This is pretty ok
+
+    # reset probabilities for proteins unlikely under positive selection
+    if protein not in proteins_under_positive_selection:
+        for i in range(len(probabilities)):
+            probabilities[i] = 0
+
     plt.figure()
 
-    # This is pretty ok
+    # plot all omegas
     plt.subplot(311, title="PAML analysis - %s (%s species analyzed)" % (protein, nr_of_species_total))
     plt.ylabel("dN/dS\n")
-    # I should fix max omega better
     plt.axis([0.5, sites[-1], 0, roof])
     plt.ylim(0.5, roof)
     plt.yticks(np.arange(0.5, roof + 0.1, 1.0))
     # mark the missing values for the plot
     clrs1 = ["black" if s == 1 else "gainsboro" for s in analyzed]
     plt.bar(sites, omegas, color=clrs1)
-    #plt.bar(sites, omegas, color=(0.1, 0.1, 0.1))
 
-    
-    # This is pretty ok
+    # plot posterior probabilities from BEB analysis (pr >= 0.70)
     plt.subplot(312)
     plt.ylabel("Prob. positive\n selection")
-    plt.axis([0, sites[-1], 0.5, 1.0])
+    plt.axis([0, sites[-1], 0.7, 1.0])
+    plt.ylim(0.7, 1.0)
+    plt.yticks(np.arange(0.7, 1.0, 0.1))
     # mark the missing values for the plot
-    clrs2 = ["cornflowerblue" if s == 1 else "gainsboro" for s in analyzed]
+    clrs2 = ["lightblue" if s == 1 else "gainsboro" for s in analyzed]
     plt.bar(sites, probabilities, color=clrs2)
     
-    # This is pretty ok
+    # plot residues with highest posterior probabilities from BEB analysis (pr >= 0.90)
     plt.subplot(313)
     plt.xlabel("Codons (mapped to CDS used as reference)")
     plt.ylabel("High prob. \n positive selection")
@@ -762,10 +795,10 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total):
     figure_name = protein + "_PAML_analysis"
     protein_path = result_path + "/" + protein
     plt.savefig(figure_name + ".tif", dpi=300, bbox_inches="tight")
-    plt.savefig(figure_name + ".svg", dpi=300, bbox_inches="tight")
+    #plt.savefig(figure_name + ".svg", dpi=300, bbox_inches="tight")
     
     shutil.move(figure_name + ".tif", result_path)
-    shutil.move(figure_name + ".svg", protein_path)
+    #shutil.move(figure_name + ".svg", protein_path)
 
 
     

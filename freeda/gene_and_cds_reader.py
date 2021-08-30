@@ -9,12 +9,14 @@ Finds and parses a cds and gene sequences for a given protein from the original 
 
 """
 
+from freeda import input_extractor
 import re
 import logging
 
+
 def find_gene_and_cds(wdir, protein_name, original_species): # USEFUL IF MANUAL (non-one line) INPUT
     
-    Mm_exons, expected_exons, microexons, microexons_seqs = get_Mm_exons(wdir, protein_name, original_species)
+    Mm_exons, expected_exons = get_Mm_exons(wdir, protein_name, original_species)
 
     # open according cds fasta file
     with open(wdir + "Coding_sequences/" + protein_name + "_" + original_species + "_cds.fasta", "r") as f:
@@ -27,31 +29,30 @@ def find_gene_and_cds(wdir, protein_name, original_species): # USEFUL IF MANUAL 
     
     cds = cds_linear
                 
-    if microexons != []:
+    #if microexons != []:
         # grab sequence of each microexom
-        to_delete = [seq for seq in microexons_seqs]
+    #    to_delete = [seq for seq in microexons_seqs]
             
         # remove these sequenses from the coding sequence
-        for seq in to_delete:
-            cds_edited = cds_linear.replace(seq, "")
-            cds = cds_edited
+    #    for seq in to_delete:
+    #        cds_edited = cds_linear.replace(seq, "")
+    #        cds = cds_edited
 
     # open according gene fasta file
     with open(wdir + "Genes/" + protein_name + "_" + original_species + "_gene.fasta", "r") as f:
         gene = f.read()
         
-    return cds, gene, Mm_exons, microexons, expected_exons
+    return cds, gene, Mm_exons, expected_exons
 
 
 def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for cloning after synteny check
     # get path to the exons for given protein
     
     Mm_exons = {}
-    count = 0
     seq_recorded = False
     header = ""
     seq = ""
-    microexons = []
+    #microexons = []
     
     with open(wdir + "Exons/" + protein_name + "_" + original_species + "_exons.fasta", "r") as f:
         file = f.read()
@@ -61,15 +62,15 @@ def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for 
             # this statement executes last
             if line.startswith(">") and seq_recorded == True:
                 # record header, sequence and length of the exon
-                Mm_exons[count] = (header, seq, len(seq))
+                Mm_exons[nr] = (header, seq, len(seq))
                 seq_recorded = False
                 seq = ""
             
             # this statement executes first
             if line.startswith(">") and seq_recorded == False:
-                count += 1
+                nr = int(line.split("_")[-1])
                 head = line.lstrip(">").rstrip("\n")
-                header = ">_" + "exon_" + str(count) + "_" + head
+                header = ">_" + "exon_" + str(nr) + "_" + head
                 seq_recorded = True
             
             # this statement executes next
@@ -77,7 +78,7 @@ def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for 
                 seq = seq + line.rstrip("\n").upper()
             
         # record the last exon
-        Mm_exons[count] = (header, seq, len(seq))
+        Mm_exons[nr] = (header, seq, len(seq))
         
         # double check if all exons together are in frame (they should be)
         exon_total_length = 0
@@ -85,47 +86,50 @@ def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for 
             exon_total_length += v[2]
             
         if exon_total_length % 3 != 0:
-            message = "\nCDS of %s in original species is NOT in frame."\
+            message = "\n...WARNING... : CDS of %s in original species is NOT in frame."\
                 % protein_name
             print(message)
             logging.info(message)
          
+
+
+
         # detect possible microexons (hardcoded 20bp limit) -> too difficult to align
         
-        microexons = []
-        microexons_seqs = []
-        minimum_exon_length = 20
-        editing_threshold = 9
-        for exon in Mm_exons:
-            length = len(Mm_exons[exon][1])
-            if length < minimum_exon_length:
-                microexons_seqs.append(Mm_exons[exon][1])
-                if exon != list(Mm_exons)[-1]:
-                    microexons.append(exon)
-                    message = "**** Exon nr " + str(exon) + " is a microexon: " + str(length) + \
-                        " bp (min. length = %sbp)" % minimum_exon_length
-                    print(message)
-                    logging.info(message)
+        #microexons = []
+        #microexons_seqs = []
+        #minimum_exon_length = 20
+        #editing_threshold = 9
+        #for exon in Mm_exons:
+        #    length = len(Mm_exons[exon][1])
+        #    if length < minimum_exon_length:
+        #        microexons_seqs.append(Mm_exons[exon][1])
+        #        if exon != list(Mm_exons)[-1]:
+        #            microexons.append(exon)
+        #            message = "**** Exon nr " + str(exon) + " is a microexon: " + str(length) + \
+        #                " bp (min. length = %sbp)" % minimum_exon_length
+        #            print(message)
+        #            logging.info(message)
                 
-                else:
-                    message = "**** Last exon nr " + str(exon) + " is a microexon: " + str(length) + \
-                        " bp -> allowed in last exons (min. length for other exons = %sbp)" % minimum_exon_length
-                    print(message)
-                    logging.info(message)
+        #        else:
+        #            message = "**** Last exon nr " + str(exon) + " is a microexon: " + str(length) + \
+        #                " bp -> allowed in last exons (min. length for other exons = %sbp)" % minimum_exon_length
+        #            print(message)
+        #            logging.info(message)
                     
-            if length < editing_threshold:
-                message = "**** CAUTION - Exon nr " + str(exon) + " is a VERY SHORT microexon: " + str(length) + \
-                    " bp (please manually remove it from the original species CDS; automatic editing advised >= %sbp)" % editing_threshold
-                print(message)
-                logging.info(message)
+        #    if length < editing_threshold:
+        #        message = "**** CAUTION - Exon nr " + str(exon) + " is a VERY SHORT microexon: " + str(length) + \
+        #            " bp (please manually remove it from the original species CDS; automatic editing advised >= %sbp)" % editing_threshold
+        #        print(message)
+        #        logging.info(message)
                 
         # eliminate microexons
-        if microexons != []:
-            for microexon in microexons:
-                del Mm_exons[microexon]
-                message = "**** Exon nr " + str(microexon) + " was skipped to ease alignment"
-                print(message)
-                logging.info(message)        
+        #if microexons != []:
+        #    for microexon in microexons:
+        #        del Mm_exons[microexon]
+        #        message = "**** Exon nr " + str(microexon) + " was skipped to ease alignment"
+        #        print(message)
+        #        logging.info(message)
         
         expected_exons = tuple(e for e, features in Mm_exons.items())
         message = "........................................................................\n\n" \
@@ -134,6 +138,14 @@ def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for 
                 "Expected exons : %s" % (protein_name, str(expected_exons))
         print(message)
         logging.info(message)
+
+        # flag potential microexons
+        microexons = input_extractor.check_microexons(wdir, protein_name, original_species)
+        if microexons:
+            message = "\n...WARNING...: Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
+            print(message)
+            logging.info(message)
+
         
-    return Mm_exons, expected_exons, microexons, microexons_seqs
+    return Mm_exons, expected_exons
 

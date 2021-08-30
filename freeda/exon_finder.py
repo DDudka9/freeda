@@ -18,12 +18,15 @@ retrotransposition. It also calls synteny and duplications.
 
 import logging
 
-def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexons): # works well
 
+def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works well
+    """Finds and calls exons based on the cds and exon make-up from reference species"""
+
+    last_exon = expected_exons[-1]
     exons = {}
     exon = ""
     exon_start = 0
-    exon_number = 0
+    exon_number = min(list(map(int, expected_exons))) - 1 # gets the smallest exon number expected - 1 (usually 0)
     exon_checked = False
     introny = False
     introny_at_Nterm = False
@@ -82,14 +85,14 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
             if locus[position] in "ACTG":
 
                 # check if this exon is intronic at N-term
-                if check_introny(position, last_bp, cds, locus, gene) == True:
+                if check_introny(position, last_bp, cds, locus, gene) is True:
                     introny_at_Nterm = True
                     
                     # check if its the first exon based on original species cds
                     if exon_number == 1:
                         
                         # check synteny
-                        if check_synteny_Nterm(position, locus, gene) == True:
+                        if check_synteny_Nterm(position, locus, gene) is True:
                             N_term_synteny = True
 
                         # do not allow introny in first exon if not syntenic (often RETRO have 5UTR)
@@ -110,7 +113,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
                 # exon_number != 1
                 # note from 08_22_2021 -> this does not allow first exons to be divergent cose of the previous statement
 
-                elif homology_check(position, last_bp, cds, locus, gene) == True:
+                elif homology_check(position, last_bp, cds, locus, gene) is True:
                     divergent_introns = True
             
             # this exon seems to be missing from the contig          
@@ -174,11 +177,11 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
                 introny_at_Cterm = True
                     
             # check if its the last exon based on original species cds
-            if exon_number == list(Mm_exons.keys())[-1]:
+            if exon_number == last_exon:
                         
                 # check synteny
                 # WARNING: average 800bp 3'UTRs in mammals make synteny check at C-term not very efficient (most contigs too short)
-                C_term_synteny, Cterm_synteny_message = check_synteny_Cterm(position, locus, gene, contig_name, exon_number)
+                C_term_synteny, Cterm_synteny_message = check_synteny_Cterm(position, locus, gene)
                 if C_term_synteny == False:
                     
                     # do not allow introny in last exon if not syntenic (often RETRO have 5UTR)
@@ -266,7 +269,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
                     nr_of_RETRO_exons += 1
                     if introny_at_Nterm == True:
                         introny = True
-                        
+
                         # check insertions
                         big_insertion = check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_with_N)
                         #message = "insertion: %s" % str(insertion)
@@ -503,15 +506,15 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons, microexo
         print(message)
         logging.info(message)
         
-    if exon_number != len(Mm_exons):
+    if exon_number != len(Mm_exons): # removed "+ len(microexons)" 08_26_2021 (cose microexons are list of tuples)
         message = "\nFREEDA could not find all exons in contig %s " % (contig_name)
         print(message)
         logging.info(message)
         
-        if microexons != []:
-            message = "\nFREEDA skipped microexons: %s " % (microexons)
-            print(message)
-            logging.info(message)
+        #if microexons != []:
+        #    message = "\nFREEDA skipped microexons: %s " % (microexons)
+        #    print(message)
+        #    logging.info(message)
         
     # assess likelihood of this contig carrying a duplication
     if duplication_score_parameter == True:
@@ -952,7 +955,7 @@ def check_synteny_Nterm(starting_position, locus, gene):
     return synteny
 
 
-def check_synteny_Cterm(starting_position, locus, gene, contig_name, exon_number):
+def check_synteny_Cterm(starting_position, locus, gene):
     
     synteny = False
     UTR_length = 200
