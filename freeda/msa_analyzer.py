@@ -177,7 +177,7 @@ def preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons
             
         sorted_exons = sorted([entry for entry in intronic_exons if entry != []])
 
-    all_exons = microexons + list(expected_exons)
+    all_exons = sorted(microexons + list(expected_exons))
     for number in range(1, len(all_exons) + 1):
         preselected_exons_overhangs[number] = []
         for exons in sorted_exons:

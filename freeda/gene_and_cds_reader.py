@@ -15,6 +15,7 @@ import logging
 
 
 def find_gene_and_cds(wdir, protein_name, original_species): # USEFUL IF MANUAL (non-one line) INPUT
+    """Reads exons, CDS and gene of reference species making sure CDS is a one-liner"""
     
     Mm_exons, expected_exons = get_Mm_exons(wdir, protein_name, original_species)
 
@@ -45,7 +46,9 @@ def find_gene_and_cds(wdir, protein_name, original_species): # USEFUL IF MANUAL 
     return cds, gene, Mm_exons, expected_exons
 
 
-def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for cloning after synteny check
+def get_Mm_exons(wdir, protein_name, original_species, at_input=False):
+    """Reads reference species exons from input exons file into a dict used to cloned each single exon from MSA"""
+
     # get path to the exons for given protein
     
     Mm_exons = {}
@@ -70,7 +73,7 @@ def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for 
             if line.startswith(">") and seq_recorded == False:
                 nr = int(line.split("_")[-1])
                 head = line.lstrip(">").rstrip("\n")
-                header = ">_" + "exon_" + str(nr) + "_" + head
+                header = ">" + head
                 seq_recorded = True
             
             # this statement executes next
@@ -130,21 +133,27 @@ def get_Mm_exons(wdir, protein_name, original_species): # works well -> use for 
         #        message = "**** Exon nr " + str(microexon) + " was skipped to ease alignment"
         #        print(message)
         #        logging.info(message)
-        
+
         expected_exons = tuple(e for e, features in Mm_exons.items())
-        message = "........................................................................\n\n" \
+
+        # dont print and log it if function used by input extractor module
+        if at_input is False:
+            message = "........................................................................\n\n" \
                 "ANALYZING PROTEIN: %s \n\n" \
                 "........................................................................\n\n" \
                 "Expected exons : %s" % (protein_name, str(expected_exons))
-        print(message)
-        logging.info(message)
+            print(message)
+            logging.info(message)
 
         # flag potential microexons
         microexons = input_extractor.check_microexons(wdir, protein_name, original_species)
-        if microexons:
-            message = "\n...WARNING...: Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
-            print(message)
-            logging.info(message)
+
+        # dont print and log it if function used by input extractor module
+        if at_input is False:
+            if microexons:
+                message = "\n...WARNING...: Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
+                print(message)
+                logging.info(message)
 
         
     return Mm_exons, expected_exons

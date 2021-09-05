@@ -38,7 +38,7 @@ def check_structure(wdir, original_species, protein):
             try:
                 os.remove(structure_model_path + "/" + file)
             except FileNotFoundError:
-                print("FileNotFoundError was triggered for: %s" % file)
+                #print("FileNotFoundError was triggered for: %s" % file)
                 pass
 
     # regenerate list of files -> should contain one file exactly
@@ -133,12 +133,12 @@ def get_pymol_script(wdir, original_species, dictionary, protein, protein_path, 
         structure_model_path = wdir + "Structures/" + protein + "_" + original_species
 
         # select the model (check_structure function removed all hidden files)
-        model = os.listdir(structure_model_path)[0]
+        model = [file for file in os.listdir(structure_model_path) if file.endswith(".pdb")][0]
 
         # start pymol script by loading the model
         f.write("load " + protein_path + model + "\n")
 
-        # PyMOL command to color all resiues
+        # PyMOL command to color all residues
         f.write("color cyan\n")
 
         # reindex all residues in the structure based on sequence used as a model structure

@@ -64,7 +64,6 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         
         # check it this protein was already analysed
         if os.path.isdir(result_path + protein + "/" + "PAML_" + protein):
-            
            message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % protein
            print(message)
            logging.info(message)
@@ -77,21 +76,20 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
            
         # otherwise proceed with the analysis
         else:
-        
             # need to use deepcopy function to make an actual dictionary copy
             final_species = copy.deepcopy(all_species)
             final_species_headers = []
         
             # read each cds fasta file and put them into the empty final_species dict
-            cds_file = protein + ".fasta"
+            cds_file_path = result_path + protein + ".fasta"
         
-            if os.path.isfile(cds_file) is False:
-                message = "\nThis file has not been found : %s." % cds_file
+            if os.path.isfile(cds_file_path) is False:
+                message = "\nThis file has not been found : %s." % cds_file_path
                 print(message)
                 logging.info(message)
                 continue
         
-            with open(cds_file, "r") as f:
+            with open(cds_file_path, "r") as f:
                 file = f.readlines()
             
                 # count lines
@@ -149,7 +147,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         
             protein_folder_path = result_path + protein
             
-            shutil.move(protein + ".fasta", protein_folder_path)
+            shutil.move(cds_file_path, protein_folder_path)
             shutil.move(final_cds_file, protein_folder_path)
         
             # generate a PAML folder for a given protein
