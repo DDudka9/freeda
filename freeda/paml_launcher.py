@@ -179,6 +179,15 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         
             # run gBLOCK
             out_Gblocks = run_Gblocks(final_cds_file_no_STOP, protein, result_path)
+            # Gblocks will fail if not enough species in alignment
+            if out_Gblocks is None:
+                nr_of_species_total_dict = False
+                PAML_logfile_name = False
+                day = False
+                failed_paml = True
+                proteins_under_positive_selection = False
+                return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection
+
             shutil.move(out_Gblocks, protein_folder_path)
             
             # double check for artificial STOP codons introduced by Gblocks -> force conserved alignment
@@ -639,7 +648,13 @@ def run_Gblocks(final_cds_file_no_STOP, protein, result_path):
     print(message)
     logging.info(message)
     # add fasta extension
-    os.rename(in_filepath + "-gb", out_Gblocks)
+    try:
+        os.rename(in_filepath + "-gb", out_Gblocks)
+    except FileNotFoundError:
+        message = "\n...FATAL_ERROR... : Failed removing indels (Gblocks) -> probably not enough species in the alignment -> exiting the pipeline now ..."
+        print(message)
+        logging.info(message)
+        return
     
     # returns the filename after Gblocks
     return out_Gblocks

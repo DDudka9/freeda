@@ -24,10 +24,7 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 #           -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree? (but the gene tree looks fine)
 #           -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
 #   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
-#    0) N-term synteny is not called in non-intronic exons -> why?
 #    0) Use Apbb1 - Ay -> contig LIPJ01008178.1__rev -> exon 11 has one single N and it gets thrown out -> fix conservatively? -> or more conservative would be to delete that base -> gBlocks will take care of the frameshift
-#    0) Check Apbb1 protein in rodents -> no 5UTR present in ensembl -> OK
-#    0) Figure out how to overlay sequences with microexons
 #    0) AP2M1 -> cannot overlay on 3D structure cose of microexon but should still show model
 #    0) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25) so its missing but finder thinks there is a STOP in 24 (which there is not)
 #           -> also C-term synteny check should not run if last exon is missing (currently exon 24 in Gorilla is syntenic) -> probably DONE
@@ -278,6 +275,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                 result_path = wdir + user_input4 + "/"
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+                if not all([nr_of_species_total_dict]):
+                    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
+                    return
+
                 # visualize PAML result
                 paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, proteins_under_positive_selection)
                 # run PyMOL
@@ -297,6 +298,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     if user_input3 == "y" and user_input2 == "y":
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+        if not all([nr_of_species_total_dict]):
+            print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
+            return
+
         # visualize PAML result
         paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, proteins_under_positive_selection)
         # run PyMOL
