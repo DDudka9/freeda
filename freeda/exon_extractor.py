@@ -70,9 +70,7 @@ def analyse_blast_results(wdir, blast_output_path, original_species, t, all_prot
         print(message)
 
     # generate a list of all files in the working directory
-    from os import listdir
-    from os.path import isfile, join
-    all_files = [f for f in listdir(wdir) if isfile(join(wdir, f))]
+    all_files = [f for f in os.listdir(wdir) if os.path.isfile(os.path.join(wdir, f))]
 
     # add original_species cds for a give protein
     for protein in all_proteins:
@@ -83,6 +81,7 @@ def analyse_blast_results(wdir, blast_output_path, original_species, t, all_prot
                 content = file.read()
                 file.seek(0, 0)
                 file.write(header.rstrip('\r\n') + '\n' + seq + '\n' + content)
+        shutil.move(protein + ".fasta", result_path)
 
     # mark the end of the analysis
     message = ("Analysis completed in %s minutes or %s hours" %

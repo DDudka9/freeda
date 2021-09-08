@@ -64,7 +64,6 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         
         # check it this protein was already analysed
         if os.path.isdir(result_path + protein + "/" + "PAML_" + protein):
-            
            message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % protein
            print(message)
            logging.info(message)
@@ -77,21 +76,20 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
            
         # otherwise proceed with the analysis
         else:
-        
             # need to use deepcopy function to make an actual dictionary copy
             final_species = copy.deepcopy(all_species)
             final_species_headers = []
         
             # read each cds fasta file and put them into the empty final_species dict
-            cds_file = protein + ".fasta"
+            cds_file_path = result_path + protein + ".fasta"
         
-            if os.path.isfile(cds_file) is False:
-                message = "\nThis file has not been found : %s." % cds_file
+            if os.path.isfile(cds_file_path) is False:
+                message = "\nThis file has not been found : %s." % cds_file_path
                 print(message)
                 logging.info(message)
                 continue
         
-            with open(cds_file, "r") as f:
+            with open(cds_file_path, "r") as f:
                 file = f.readlines()
             
                 # count lines
@@ -149,7 +147,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         
             protein_folder_path = result_path + protein
             
-            shutil.move(protein + ".fasta", protein_folder_path)
+            shutil.move(cds_file_path, protein_folder_path)
             shutil.move(final_cds_file, protein_folder_path)
         
             # generate a PAML folder for a given protein
@@ -181,6 +179,15 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         
             # run gBLOCK
             out_Gblocks = run_Gblocks(final_cds_file_no_STOP, protein, result_path)
+            # Gblocks will fail if not enough species in alignment
+            if out_Gblocks is None:
+                nr_of_species_total_dict = False
+                PAML_logfile_name = False
+                day = False
+                failed_paml = True
+                proteins_under_positive_selection = False
+                return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection
+
             shutil.move(out_Gblocks, protein_folder_path)
             
             # double check for artificial STOP codons introduced by Gblocks -> force conserved alignment
@@ -641,7 +648,13 @@ def run_Gblocks(final_cds_file_no_STOP, protein, result_path):
     print(message)
     logging.info(message)
     # add fasta extension
-    os.rename(in_filepath + "-gb", out_Gblocks)
+    try:
+        os.rename(in_filepath + "-gb", out_Gblocks)
+    except FileNotFoundError:
+        message = "\n...FATAL_ERROR... : Failed removing indels (Gblocks) -> probably not enough species in the alignment -> exiting the pipeline now ..."
+        print(message)
+        logging.info(message)
+        return
     
     # returns the filename after Gblocks
     return out_Gblocks

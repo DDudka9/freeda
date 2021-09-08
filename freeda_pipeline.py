@@ -24,7 +24,7 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 #           -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree? (but the gene tree looks fine)
 #           -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
 #   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
-#    0) Figure out how to overlay sequences with microexons
+#    0) Use Apbb1 - Ay -> contig LIPJ01008178.1__rev -> exon 11 has one single N and it gets thrown out -> fix conservatively? -> or more conservative would be to delete that base -> gBlocks will take care of the frameshift
 #    0) AP2M1 -> cannot overlay on 3D structure cose of microexon but should still show model
 #    0) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25) so its missing but finder thinks there is a STOP in 24 (which there is not)
 #           -> also C-term synteny check should not run if last exon is missing (currently exon 24 in Gorilla is syntenic) -> probably DONE
@@ -208,12 +208,12 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
             model_seq = input_extractor.fetch_structure_prediction(wdir, original_species, protein, possible_uniprot_ids)
             # get sequence input from ensembl
             input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(wdir,
-                                                                                                  original_species,
-                                                                                                  reference_genome_name,
-                                                                                                  reference_genomes_path,
-                                                                                                  reference_genome_contigs_dict,
-                                                                                                  ensembl, biotype,
-                                                                                                  protein, model_seq)
+                                                                                                            original_species,
+                                                                                                            reference_genome_name,
+                                                                                                            reference_genomes_path,
+                                                                                                            reference_genome_contigs_dict,
+                                                                                                            ensembl, biotype,
+                                                                                                            protein, model_seq)
             if input_correct:
                 print("\nInput data have been generated for protein: %s\n\n" % protein)
 
@@ -227,10 +227,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                 print("...WARNING... : Protein may still be analyzed using PAML but without 3D structure overlay\n")
 
             if microexon_present:
-                print("...WARNING... : Sequence for: %s found in Ensembl contains a microexon\n" % protein)
-                print("...WARNING... : Microexons are difficult to align and are removed -> cannot overlay FREEDA results onto a 3D structure\n")
-                with open(wdir + "Structures/" + protein + "_" + original_species + "/model_incompatible.txt", "w") as f:
-                    f.write("Exon %s is a microexon and was removed from input reference sequence. Cannot overlay FREEDA results onto a 3D structure." % microexons)
+                print("...WARNING... : Sequence for: %s found in Ensembl contains a microexon : %s\n" % (protein, microexons))
+                print("...WARNING... : Microexons are difficult to align and are removed\n")
+            #    with open(wdir + "Structures/" + protein + "_" + original_species + "/model_incompatible.txt", "w") as f:
+           #         f.write("Exon %s is a microexon and was removed from input reference sequence. Cannot overlay FREEDA results onto a 3D structure." % microexons)
 
     # ----------------------------------------#
     ######## RUN BLAST ########
@@ -275,6 +275,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
                 result_path = wdir + user_input4 + "/"
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+                if not all([nr_of_species_total_dict]):
+                    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
+                    return
+
                 # visualize PAML result
                 paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, proteins_under_positive_selection)
                 # run PyMOL
@@ -294,6 +298,10 @@ def freeda_pipeline(wdir=None, original_species=None, t=None):
     if user_input3 == "y" and user_input2 == "y":
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+        if not all([nr_of_species_total_dict]):
+            print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
+            return
+
         # visualize PAML result
         paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, original_species, PAML_logfile_name, day, proteins_under_positive_selection)
         # run PyMOL

@@ -71,7 +71,7 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
     with open("all_matched_adaptive_sites_original.txt", "w") as file:
         dump(all_matched_adaptive_sites_original, file)
     
-    shutil.move("all_matched_adaptive_sites_original.txt", result_path)
+    shutil.move(wdir + "all_matched_adaptive_sites_original.txt", result_path + "all_matched_adaptive_sites_original.txt")
 
 
 def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_original):
@@ -315,7 +315,7 @@ def plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species,
     # record and write breakdown of adaptive sites overlay to original cds
     record_adaptive_sites(final_dict_to_plot, protein, proteins_under_positive_selection)
     # plot omegas and probabilities
-    make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection)
+    make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection)
 
     return matched_adaptive_sites_original
 
@@ -478,9 +478,18 @@ def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_posit
         logging.info(positions)
         logging.info(features)
         logging.info(residues)
-    
-    
 
+
+def get_original_protein_seq(wdir, protein_name, original_species):
+    """Gets the protein sequenced used for blast"""
+
+    # open according cds fasta file
+    with open(wdir + "Blast_input/" + protein_name + "_" + original_species + "_protein.fasta", "r") as f:
+        sequence = ""
+        cds = f.readlines()
+        for line in cds[1:]:
+            sequence = sequence + line.rstrip("\n")
+    return sequence
     
 
 def get_original_and_final_seqs(wdir, protein_name, result_path, original_species):
@@ -488,11 +497,11 @@ def get_original_and_final_seqs(wdir, protein_name, result_path, original_specie
     
     protein_path = result_path + "/" + protein_name
 
-    # get record onject for the iriginal protein sequence
-    original_sequence = paml_launcher.get_original_cds(wdir, protein_name, original_species)
-    original_sequence_Seq = Seq(original_sequence)
-    original_original_Seq_object = original_sequence_Seq.translate()
-    original_sequence_record = SeqRecord(original_original_Seq_object)
+    # get record object for the original protein sequence
+    original_sequence = get_original_protein_seq(wdir, protein_name, original_species)
+    original_sequence_Seq_object = Seq(original_sequence)
+    #original_original_Seq_object = original_sequence_Seq.translate()
+    original_sequence_record = SeqRecord(original_sequence_Seq_object)
     
     # get record onject for the final protein sequence
     pattern = "translated.fasta"
@@ -543,7 +552,7 @@ def map_original_and_final_residues(original_sequence_record, final_sequence_rec
     
     # make a dict storing the alignments
     mapped_original_and_final_residues_dict = {}
-    for i in range(1, len(aln[0][0])):
+    for i in range(1, len(aln[0][0]) + 1): # added "+1" on 09_04_2021
         mapped_original_and_final_residues_dict[i] = []
 
     # fill the dict with paired positions (need to subtract 1 cose aln starts at 0)
@@ -721,14 +730,14 @@ def get_adaptive_sites(result_path, protein):
     return adaptive_sites_dict
 
 
-def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection):
+def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection):
     """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites under positive selection"""
 
     sites = []
     residues = []
     omegas = []
     probabilities = []
-    analyzed = []
+    present = []
     # these will determine omega graph y axis
     roof = 1
     floor = 1
@@ -752,12 +761,17 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, p
             omegas.append(float(20.00))
             probabilities.append(float(20.00))
     
-        analyzed.append(features[3])
+        present.append(features[3])
 
     # reset probabilities for proteins unlikely under positive selection
     if protein not in proteins_under_positive_selection:
         for i in range(len(probabilities)):
-            probabilities[i] = 0
+            # mark missing residues
+            if present[i] == 0:
+                probabilities[i] = 20
+            # dont show any probabilities for present residues
+            else:
+                probabilities[i] = 0
 
     plt.figure()
 
@@ -768,7 +782,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, p
     plt.ylim(0.5, roof)
     plt.yticks(np.arange(0.5, roof + 0.1, 1.0))
     # mark the missing values for the plot
-    clrs1 = ["black" if s == 1 else "gainsboro" for s in analyzed]
+    clrs1 = ["black" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, omegas, color=clrs1)
 
     # plot posterior probabilities from BEB analysis (pr >= 0.70)
@@ -778,7 +792,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, p
     plt.ylim(0.7, 1.0)
     plt.yticks(np.arange(0.7, 1.0, 0.1))
     # mark the missing values for the plot
-    clrs2 = ["lightblue" if s == 1 else "gainsboro" for s in analyzed]
+    clrs2 = ["lightblue" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, probabilities, color=clrs2)
     
     # plot residues with highest posterior probabilities from BEB analysis (pr >= 0.90)
@@ -788,7 +802,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, p
     plt.axis([0, sites[-1], 0.9, 1.0])
     plt.yticks(np.arange(0.9, 1.01, 0.05))
     # mark the missing values for the plot
-    clrs3 = ["magenta" if s == 1 else "gainsboro" for s in analyzed]
+    clrs3 = ["magenta" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, probabilities, color=clrs3)
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     
@@ -797,7 +811,7 @@ def make_graphs(final_dict_to_plot, result_path, protein, nr_of_species_total, p
     plt.savefig(figure_name + ".tif", dpi=300, bbox_inches="tight")
     #plt.savefig(figure_name + ".svg", dpi=300, bbox_inches="tight")
     
-    shutil.move(figure_name + ".tif", result_path)
+    shutil.move(wdir + figure_name + ".tif", result_path + figure_name + ".tif")
     #shutil.move(figure_name + ".svg", protein_path)
 
 
