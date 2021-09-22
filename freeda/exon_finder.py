@@ -19,7 +19,7 @@ retrotransposition. It also calls synteny and duplications.
 import logging
 
 
-def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works well
+def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # works well
     """Finds and calls exons based on the cds and exon make-up from reference species"""
 
     last_exon = expected_exons[-1]
@@ -57,13 +57,13 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
 
     for position in cds:
         
-        # NON-CODING REGION IN ORIGINAL SPECIES
+        # NON-CODING REGION IN REF SPECIES
                 
         if exon_checked == False and cds[position] == "-":
             continue
         
         
-        # EXON STARTS IN ORIGINAL SPECIES -> define N-term for contig locus
+        # EXON STARTS IN REF SPECIES -> define N-term for contig locus
         
         if exon_checked == False and cds[position] == gene[position]:
             
@@ -88,7 +88,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
                 if check_introny(position, last_bp, cds, locus, gene) is True:
                     introny_at_Nterm = True
                     
-                    # check if its the first exon based on original species cds
+                    # check if its the first exon based on ref species cds
                     if exon_number == 1:
                         
                         # check synteny
@@ -120,7 +120,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
             else:
                 exon_missing = True
         
-        # EXON CONTINUES IN ORIGINAL SPECIES (includes first bp)
+        # EXON CONTINUES IN REF SPECIES (includes first bp)
     
         if exon_checked == True and cds[position] == gene[position]:
             
@@ -164,7 +164,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
             continue
         
         
-        # EXON ENDS IN ORIGINAL SPECIES -> define C-term
+        # EXON ENDS IN REF SPECIES -> define C-term
         
         if exon_checked == True and cds[position] == "-" and gene[position] != "-":
             
@@ -176,7 +176,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
             if check_introny(position, last_bp, cds, locus, gene) == True:
                 introny_at_Cterm = True
                     
-            # check if its the last exon based on original species cds
+            # check if its the last exon based on ref species cds
             if exon_number == last_exon:
                         
                 # check synteny
@@ -197,7 +197,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
             
             # check for very divergent introns (will be counted intronic) -> does not allow divergent introns in last exon
             elif introny_at_Cterm == False \
-                and exon_number != list(Mm_exons.keys())[-1] \
+                and exon_number != list(ref_exons.keys())[-1] \
                 and homology_check(position, last_bp, cds, locus, gene) == True:
                 divergent_introns = True
                 
@@ -248,7 +248,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
                         introny = True
                         
                         # check insertions
-                        big_insertion = check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_with_N)
+                        big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
                         #message = "insertion: %s" % str(insertion)
                         #print(message)
                         #logging.info(message)
@@ -271,7 +271,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
                         introny = True
 
                         # check insertions
-                        big_insertion = check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_with_N)
+                        big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
                         #message = "insertion: %s" % str(insertion)
                         #print(message)
                         #logging.info(message)
@@ -354,7 +354,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
                                                 and single_exon == False:
                 introny = True
                 
-                big_insertion = check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_with_N)
+                big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
                 #message = "insertion: %s" % str(insertion)
                 #print(message)
                 #logging.info(message)
@@ -431,7 +431,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
                 nr_of_intronic_exons += 1
                 
                 # check insertions
-                big_insertion = check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_with_N)
+                big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
                 #message = "insertion: %s" % str(insertion)
                 #print(message)
                 #logging.info(message)
@@ -506,7 +506,7 @@ def find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons): # works
         print(message)
         logging.info(message)
         
-    if exon_number != len(Mm_exons): # removed "+ len(microexons)" 08_26_2021 (cose microexons are list of tuples)
+    if exon_number != len(ref_exons): # removed "+ len(microexons)" 08_26_2021 (cose microexons are list of tuples)
         message = "\nFREEDA could not find all exons in contig %s " % (contig_name)
         print(message)
         logging.info(message)
@@ -554,7 +554,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
     
     # for testing introny at the beginning of an exon
     if last_bp == False:
-        # mark the original posisiton to be used for homology_check
+        # mark the ref position to be used for homology_check
         starting_position = position
         # start from previous position
         position -= 1
@@ -578,7 +578,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
     
     
     if last_bp == True:
-        # mark the original posisiton to be used for homology_check
+        # mark the ref position to be used for homology_check
         starting_position = position
         offset = 1
         
@@ -1038,7 +1038,7 @@ def reset_exon_parameters():
          introny, exon_missing, last_bp, big_insertion, insertion_with_N
 
 
-def check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_with_N):
+def check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N):
     big_insertion = False
     
     # do not allow Ns in insertions to avoid misalignment
@@ -1051,7 +1051,7 @@ def check_insertion(contig_name, insertion, exon_number, Mm_exons, insertion_wit
         return big_insertion
     
     # allow insertions (even frameshifts) in last exons
-    if exon_number == list(Mm_exons.keys())[-1] and (insertion >= 180 or (insertion >= 10 and insertion % 3 != 0)):
+    if exon_number == list(ref_exons.keys())[-1] and (insertion >= 180 or (insertion >= 10 and insertion % 3 != 0)):
         insertion_message = ">>>>> Contig %s exon %s contains %s bp insertion (LAST EXON -> allowed) <<<<< \n" \
             % (contig_name, exon_number, str(insertion))
         print(insertion_message)

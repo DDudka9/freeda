@@ -3,5 +3,5 @@ class AdvancedParameter:
 
 def advanced_parameters():
 
-    dict = {}
+    dict = {ref_species}
 

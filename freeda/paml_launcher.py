@@ -17,6 +17,8 @@ Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 
 """
 
+from freeda import fasta_reader
+from freeda import genomes_preprocessing
 from Bio.Align.Applications import MafftCommandline
 from Bio import AlignIO
 from Bio.Seq import Seq
@@ -28,11 +30,10 @@ import os
 import logging
 import shutil
 import subprocess
+import copy
 
-from freeda import fasta_reader
 
-
-def analyse_final_cds(wdir, original_species, result_path, all_proteins):
+def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
 
     failed_paml = []
     start_time = time.time()
@@ -50,12 +51,17 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
     #                        "M2a vs M1a"})
     
     # make an empty template for all possible species
-    import copy
-    all_species = {}
-    with open("species.txt", "r") as f:
-        all_species[original_species] = ""
-        for species in f.readlines():
-            all_species[species.rstrip("\n")] = ""
+    all_names = genomes_preprocessing.get_names(ref_species)
+    all_species = [names[0] for names in all_names]
+
+    final_species = {}
+    for species in all_species:
+        final_species[species] = ""
+
+    #with open("species.txt", "r") as f:
+    #    all_species[ref_species] = ""
+    #    for species in f.readlines():
+    #        all_species[species.rstrip("\n")] = ""
     
     nr_of_species_total_dict = {}
     proteins_under_positive_selection = []
@@ -77,7 +83,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
         # otherwise proceed with the analysis
         else:
             # need to use deepcopy function to make an actual dictionary copy
-            final_species = copy.deepcopy(all_species)
+            final_species = copy.deepcopy(final_species)
             final_species_headers = []
         
             # read each cds fasta file and put them into the empty final_species dict
@@ -97,17 +103,17 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
                 for line in file:
                     line_nr += 1
                 
-                    # first line is always the original species header
+                    # first line is always the ref species header
                     if line_nr == 1:
-                        original_head = line.split(protein + "_")[1].rstrip("\n")
+                        ref_head = line.split(protein + "_")[1].rstrip("\n")
                         continue
                 
-                    # second line is always the original species sequence
+                    # second line is always the ref species sequence
                     if line_nr == 2:
                         # remove STOP codon if present
-                        # original_seq = STOP_remover(line.rstrip("\n"))
-                        original_seq = line.rstrip("\n")
-                        final_species[original_head] = original_seq
+                        # ref_seq = STOP_remover(line.rstrip("\n"))
+                        ref_seq = line.rstrip("\n")
+                        final_species[ref_head] = ref_seq
                         continue
                 
                     # next lines are headers and sequences of cloned cds
@@ -120,15 +126,15 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
                         # seq = STOP_remover(line.rstrip("\n"))
                         seq = line.rstrip("\n")
                         seq_no_dashes = seq.replace("-", "")
-                        if len(seq_no_dashes) / len(original_seq) >= 0.90: 
+                        if len(seq_no_dashes) / len(ref_seq) >= 0.90:
                             final_species[head] = seq
                             final_species_headers.append(head)
                
             # log species
-            final_species_headers.insert(0, original_species)
+            final_species_headers.insert(0, ref_species)
             nr_of_species = len(final_species_headers)
             nr_of_species_total_dict[protein] = nr_of_species
-            message = "\n --------- * %s * --------- \n\n Final species cloned and aligned (+ original) for %s : %s %s" \
+            message = "\n --------- * %s * --------- \n\n Final species cloned and aligned (+ ref) for %s : %s %s" \
                 % (protein, protein, str(nr_of_species), str(final_species_headers))
             print(message)
             logging.info(message)
@@ -162,7 +168,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
             out_MAFFT = align_final_cds(protein, final_cds_file, result_path) 
             shutil.move(out_MAFFT, protein_folder_path)
 
-            # check and eliminate insertions that cause dashes in original species 
+            # check and eliminate insertions that cause dashes in ref species
             correction, corrected_filename = eliminate_all_insertions(protein_folder_path, out_MAFFT)
             if correction is True:
                 side_note = " \n---- Insertions detected in " + protein + " alignment -> " \
@@ -195,7 +201,7 @@ def analyse_final_cds(wdir, original_species, result_path, all_proteins):
             post_Gblocks_STOP_remover(protein_folder_path, out_Gblocks, protein)
             
             # translate all sequences (inside of the protein folder)
-            translated_path = translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, original_species)
+            translated_path = translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, ref_species)
         
             # run seqret (file is already in protein folder)
             phylip_path = run_seqret(protein, protein_folder_path, out_Gblocks)
@@ -251,7 +257,7 @@ def eliminate_all_insertions(protein_folder_path, out_MAFFT):
     alignment = AlignIO.read(protein_folder_path + "/" + out_MAFFT, "fasta")
     seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
     
-    # check if original species contains dashes
+    # check if ref species contains dashes
     if "-" in seqs[0][1]:
         
         positions = [p.start() for p in re.finditer("-", seqs[0][1])]
@@ -280,11 +286,11 @@ def eliminate_all_insertions(protein_folder_path, out_MAFFT):
             
             # these positions are confusingly printing index+1 (change that -> make positions start with 1)
             
-        side_note = " \n WARNING : Insertions in positions in original MSA deleted: %s" % str(positions)
+        side_note = " \n WARNING : Insertions in positions in ref MSA deleted: %s" % str(positions)
         print(side_note)
         logging.info(side_note)
                     
-    # if there are no dashes in original species sequence
+    # if there are no dashes in ref species sequence
     else:
         return correction, out_MAFFT
     
@@ -399,10 +405,10 @@ def run_RAxML(protein, protein_folder_path, translated_path):
     return best_tree_path
 
 
-def get_original_cds(wdir, protein_name, original_species):
+def get_ref_cds(wdir, protein_name, ref_species):
 
     # open according cds fasta file
-    with open(wdir + "Coding_sequences/" + protein_name + "_" + original_species + "_cds.fasta", "r") as f:
+    with open(wdir + "Coding_sequences/" + protein_name + "_" + ref_species + "_cds.fasta", "r") as f:
         sequence = ""
         cds = f.readlines()
         for line in cds[1:]:
@@ -410,29 +416,29 @@ def get_original_cds(wdir, protein_name, original_species):
     return sequence
 
 
-def translated_frameshift_checkpoint(wdir, seqs, protein, original_species):
+def translated_frameshift_checkpoint(wdir, seqs, protein, ref_species):
     from Bio import pairwise2
     
-    # take the cds of original species post-Gblocks (always the first one)
-    original_post_Gblocks = seqs[0][1]
+    # take the cds of ref species post-Gblocks (always the first one)
+    ref_post_Gblocks = seqs[0][1]
     # make a Seq object
-    original_post_Gblocks_seq = Seq(original_post_Gblocks)
+    ref_post_Gblocks_seq = Seq(ref_post_Gblocks)
     # translate the Seq object
-    original_post_Gblocks_seq_object = original_post_Gblocks_seq.translate()
+    ref_post_Gblocks_seq_object = ref_post_Gblocks_seq.translate()
     # make SeqRecord
-    record_post_Gblocks = SeqRecord(original_post_Gblocks_seq_object)
+    record_post_Gblocks = SeqRecord(ref_post_Gblocks_seq_object)
 
     # take the cds coming from ensembl
-    original_cds = get_original_cds(wdir, protein, original_species)
+    ref_cds = get_ref_cds(wdir, protein, ref_species)
     # make a Seq object
-    original_cds_seq = Seq(original_cds)
+    ref_cds_seq = Seq(ref_cds)
     # translate the Seq object
-    original_cds_seq_object = original_cds_seq.translate()
+    ref_cds_seq_object = ref_cds_seq.translate()
     # make SeqRecord
-    original_cds_record = SeqRecord(original_cds_seq_object)
+    ref_cds_record = SeqRecord(ref_cds_seq_object)
 
     # perform pairwise alignment
-    aln = pairwise2.align.globalxx(record_post_Gblocks.seq, original_cds_record.seq)
+    aln = pairwise2.align.globalxx(record_post_Gblocks.seq, ref_cds_record.seq)
     
     # make a dict storing the alignments
     d = {}
@@ -455,7 +461,7 @@ def translated_frameshift_checkpoint(wdir, seqs, protein, original_species):
     return translated_frameshift, frameshift_positions
     
 
-def translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, original_species):
+def translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, ref_species):
     
     filepath_to_translate = protein_folder_path + "/" + out_Gblocks
     # read the fasta alignment file 
@@ -465,11 +471,11 @@ def translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, original_
     # make a filepath
     translated_path = filepath_to_translate.rstrip(".fasta") + "_translated.fasta"
     
-    # check frameshifts in the original species aa seq post-Gblocks
+    # check frameshifts in the ref species aa seq post-Gblocks
     # doesnt work if pairwise2 doesnt return alignement (Clasp1)
-    translated_frameshift, frameshift_positions = translated_frameshift_checkpoint(wdir, seqs, protein, original_species)
+    translated_frameshift, frameshift_positions = translated_frameshift_checkpoint(wdir, seqs, protein, ref_species)
     if translated_frameshift is True:
-        side_note = "...WARNING... : Frameshift in original cds post-Gblocks detected: \n%s" % frameshift_positions
+        side_note = "...WARNING... : Frameshift in ref cds post-Gblocks detected: \n%s" % frameshift_positions
         print(side_note)
         logging.info(side_note)
     

@@ -10,9 +10,10 @@ Created on Fri Jul  9 22:47:43 2021
     # pyensembl install --species mouse --release 100
     # pyensembl install --species human --release 100
 
-from freeda.tblastn import check_genome_present
-from freeda import reference_genome_dict_generator
-from freeda import gene_and_cds_reader
+
+from freeda import tblastn
+from freeda import genomes_preprocessing
+from freeda import fasta_reader
 from bioservices import UniProt
 from Bio import SeqIO
 import pyensembl
@@ -25,7 +26,7 @@ import tarfile
 
 # import glob
 # import shutil
-#original_species = "Mm"
+#ref_species = "Mm"
 #wdir = os.getcwd() + "/"
 #protein = "Haus1"
 #reference_genome_name = "MUSCULUS_genome"
@@ -44,7 +45,7 @@ rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
 
 
-def correct_for_microexons(wdir, original_species, protein, microexons, missing_bp, transcript):
+def correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp, transcript):
     """Corrects the automatic input - exons, cds, protein. IT CANNOT HANDLE TWO MICROEXONS ONE AFTER THE OTHER"""
 
     correction_successful = True
@@ -54,13 +55,13 @@ def correct_for_microexons(wdir, original_species, protein, microexons, missing_
     #path_to_blast_input = wdir + "Blast_input/"
 
     # these exons dont have a microexon anymore
-    original_exons, expected_exons = gene_and_cds_reader.get_Mm_exons(wdir, protein, original_species, at_input=True) # expected_exons not used here
+    ref_exons, expected_exons = fasta_reader.get_ref_exons(wdir, protein, ref_species, at_input=True) # expected_exons not used here
 
     microexon_nr = [m[0] for m in microexons]
     corrected_cds = ""
     bp_count = 0
 
-    with open(path_to_exons + protein + "_" + original_species + "_exons.fasta", "w") as f:
+    with open(path_to_exons + protein + "_" + ref_species + "_exons.fasta", "w") as f:
 
         microexon = microexon_nr.pop()
         missing_bp = missing_bp.pop()
@@ -68,10 +69,10 @@ def correct_for_microexons(wdir, original_species, protein, microexons, missing_
         if microexon == 1:
             bp_count += missing_bp
 
-        for exon in original_exons:
+        for exon in ref_exons:
 
-            # original_exons dict does not have microexons !!!
-            header, seq, length = original_exons[exon]
+            # ref_exons dict does not have microexons !!!
+            header, seq, length = ref_exons[exon]
 
             # find the exon preceding a microexon
             if exon == microexon - 1:
@@ -139,8 +140,8 @@ def correct_for_microexons(wdir, original_species, protein, microexons, missing_
         return correction_successful
 
     # correct cds (but not the protein -> better to get micrexon matches to extend contig)
-    with open(path_to_cds + protein + "_" + original_species + "_cds.fasta", "w") as f:
-        f.write(">" + transcript.name + "_" + original_species + "_cds.fasta\n")
+    with open(path_to_cds + protein + "_" + ref_species + "_cds.fasta", "w") as f:
+        f.write(">" + transcript.name + "_" + ref_species + "_cds.fasta\n")
         f.write(corrected_cds + "\n")
 
     return correction_successful
@@ -170,21 +171,21 @@ def generate_basic_folders(wdir):
         os.makedirs(path_to_structures)
 
 
-def get_uniprot_id(original_species, protein):
+def get_uniprot_id(ref_species, protein):
     """Retrieves all possible uniprot ids to be matched against structure prediction from AlphaFold"""
     
-    if original_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
-        original_species_number = "10090"
+    if ref_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+        ref_species_number = "10090"
     
-    if original_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
-        original_species_number = "9606"
+    if ref_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+        ref_species_number = "9606"
     
     possible_uniprot_ids = set()
     
     # generate a search for given protein
     u = UniProt(verbose=False)
     print("\nExtracting valid uniprot ids for protein: %s ...\n" % protein)
-    data = u.search(protein + "+and+taxonomy:" + original_species_number, frmt="tab", limit=10,
+    data = u.search(protein + "+and+taxonomy:" + ref_species_number, frmt="tab", limit=10,
              columns="genes,length,id")
 
     data_list = data.split("\n")
@@ -198,16 +199,16 @@ def get_uniprot_id(original_species, protein):
     return possible_uniprot_ids
 
 
-def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot_ids):
+def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids):
     """Finds and extracts structure prediction model from AlphaFold database for the species"""
     
-    if original_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+    if ref_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
         handle = "MOUSE"
-    if original_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+    if ref_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
         handle = "HUMAN"
 
     # make folder to host the structure prediction
-    structure_path = wdir + "Structures/" + protein + "_" + original_species
+    structure_path = wdir + "Structures/" + protein + "_" + ref_species
     if not os.path.isdir(structure_path):
         os.makedirs(structure_path)
 
@@ -215,9 +216,9 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
     clear_structure_files(structure_path)
 
     # find prediction model based on possible uniprot ids for the protein
-    path_to_original_species_structures = [path for path in glob.glob(wdir + "*") 
+    path_to_ref_species_structures = [path for path in glob.glob(wdir + "*")
                                                    if path.endswith(handle + ".tar")][0]
-    tar = tarfile.open(path_to_original_species_structures)
+    tar = tarfile.open(path_to_ref_species_structures)
     print("Looking for structure in AlphaFold database for: %s ...\n" % protein)
     all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]
     # this assumes that there is only one prediction model for a given protein in AlphaFold
@@ -266,42 +267,46 @@ def fetch_structure_prediction(wdir, original_species, protein, possible_uniprot
         return False
         
 
-def generate_reference_genome_object(wdir, original_species, reference_genome_name):
+def generate_ref_genome_object(wdir, ref_species, ref_genome_name):
     """Generates a reference Genome object using pyensembl as a wrapper for ensembl database"""
 
-    mouse_names = {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}
+    #mouse_names = {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}
     human_names = {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}
     
-    if original_species in human_names:
+    if ref_species in human_names:
         species = "homo sapiens"
         release = 100
-        reference_genome_contigs_dict = reference_genome_dict_generator.get_reference_genome_contigs_dict(original_species)
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
     
     # default is mouse for now
     else:
         species = "mus musculus"
         release = 100
-        reference_genome_contigs_dict = reference_genome_dict_generator.get_reference_genome_contigs_dict(original_species)
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
     
     
-    # make sure original species genome (reference genome) is present
-    reference_genomes_path = wdir + "Reference_genomes/"
+    # make sure ref species genome (reference genome) is present
+    ref_genomes_path = wdir + "Reference_genomes/"
     # check if reference genome is present -> exit 
-    reference_genome_present = check_genome_present(reference_genomes_path, reference_genome_name, reference_genome=True)
+    ref_genome_present = tblastn.check_genome_present(wdir,
+                                                            ref_species,
+                                                            ref_genomes_path,
+                                                            ref_genome_name,
+                                                            ref_genome=True)
 
     # get assembly database
     ensembl = pyensembl.EnsemblRelease(release, species)
     # define biotype (FREEDA deals only with protein coding sequences)
     biotype = "Protein coding"
     
-    return reference_genome_present, ensembl, original_species, reference_genomes_path, \
-            reference_genome_contigs_dict, biotype
+    return ref_genome_present, ensembl, ref_species, ref_genomes_path, \
+            ref_genome_contigs_dict, biotype
 
 
-def extract_input(wdir, original_species, reference_genome_name, reference_genomes_path, 
-                  reference_genome_contigs_dict, ensembl, biotype, protein, model_seq):
-    """Extracts all input sequences required by FREEDA from the indicated reference genome (original_species)"""
-    
+def extract_input(wdir, ref_species, ref_genome_name, ref_genomes_path,
+                  ref_genome_contigs_dict, ensembl, biotype, protein, model_seq):
+    """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
+
     model_matches_input = False
     microexon_present = False
     microexons = []
@@ -320,33 +325,33 @@ def extract_input(wdir, original_species, reference_genome_name, reference_genom
     
     # find coding sequence
     transcript, selected_transcript_id, gene_id, contig, strand, UTR_5, UTR_3, cds_sequence_expected, matching_length = extract_cds(ensembl, 
-                original_species, coding_sequence_input_path, protein, biotype, model_seq)
+                ref_species, coding_sequence_input_path, protein, biotype, model_seq)
     # find protein sequence
-    model_matches_input = extract_protein(wdir, original_species, blast_input_path, protein, transcript, model_seq, matching_length)
+    model_matches_input = extract_protein(wdir, ref_species, blast_input_path, protein, transcript, model_seq, matching_length)
     # find gene sequence
-    extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
-                reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein, transcript)
+    extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
+                ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript)
     # find exons sequence
-    input_correct, microexon_present, microexons, missing_bp = extract_exons(wdir, original_species, protein, exons_input_path,
-                reference_genomes_path, reference_genome_name, contig, strand, transcript, reference_genome_contigs_dict, UTR_5, UTR_3, cds_sequence_expected)
+    input_correct, microexon_present, microexons, missing_bp = extract_exons(wdir, ref_species, protein, exons_input_path,
+                ref_genomes_path, ref_genome_name, contig, strand, transcript, ref_genome_contigs_dict, UTR_5, UTR_3, cds_sequence_expected)
 
     # trim all input sequences if microexons were detected
     if microexon_present:
-        correct_for_microexons(wdir, original_species, protein, microexons, missing_bp, transcript)
+        correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp, transcript)
 
     return input_correct, model_matches_input, microexon_present, microexons
     
 
-def extract_protein(wdir, original_species, blast_input_path, protein, transcript, model_seq, matching_length):
+def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, model_seq, matching_length):
     """Extracts protein sequence based on Transcript object and compares with structure model sequence"""
     
     model_matches_input = False
-    structure_path = wdir + "Structures/" + protein + "_" + original_species
+    structure_path = wdir + "Structures/" + protein + "_" + ref_species
     
     # find protein sequence
     protein_sequence = transcript.protein_sequence
     # get and save the sequence
-    parse_sequence(original_species, blast_input_path, protein_sequence, 
+    parse_sequence(ref_species, blast_input_path, protein_sequence,
                    protein, transcript, strand = None, sequence_type = "protein")
     # check if protein length and sequence match that of the model
     if matching_length == True:
@@ -361,8 +366,8 @@ def extract_protein(wdir, original_species, blast_input_path, protein, transcrip
     return model_matches_input
 
 
-def extract_exons(wdir, original_species, protein, exons_input_path, reference_genomes_path, reference_genome_name, 
-                  contig, strand, transcript, reference_genome_contigs_dict, UTR_5, UTR_3, cds_sequence_expected):
+def extract_exons(wdir, ref_species, protein, exons_input_path, ref_genomes_path, ref_genome_name,
+                  contig, strand, transcript, ref_genome_contigs_dict, UTR_5, UTR_3, cds_sequence_expected):
     """Extracts exoms sequence based on Transcript object"""
     
     # get start and stop for each exon
@@ -371,7 +376,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
     start_codon_offset = transcript.first_start_codon_spliced_offset
    
     # get sequence of each exon
-    exons_filename = protein + "_" + original_species + "_exons.fasta"
+    exons_filename = protein + "_" + ref_species + "_exons.fasta"
     exons_file = open(exons_input_path + exons_filename, "w")
     
     number = 0
@@ -462,14 +467,14 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
             else:
                 start = start + UTR_3_length - 1
 
-        exon_fasta_sequence = get_single_exon(original_species, protein, reference_genome_contigs_dict, 
-                reference_genomes_path, reference_genome_name, rules, contig, strand, number, start, stop)
+        exon_fasta_sequence = get_single_exon(ref_species, protein, ref_genome_contigs_dict,
+                ref_genomes_path, ref_genome_name, rules, contig, strand, number, start, stop)
         coding_exons[number] = exon_fasta_sequence
 
     for nr, exon_sequence in coding_exons.items():
         
         if len(exon_sequence) < 20: # changed from 20 08_23_2021 -> testing CENP-X primates
-            with open(wdir + "Structures/" + protein + "_" + original_species + "/microexons.txt", "a") as f:
+            with open(wdir + "Structures/" + protein + "_" + ref_species + "/microexons.txt", "a") as f:
                 f.write(str(nr) + "\n")
             microexon_present = True
             missing_bp.append(len(exon_sequence))
@@ -492,7 +497,7 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
             if nr == len(coding_exons) and exon_sequence[-3:] in ["TGA", "TAG", "TAA"]:
                 stop_codon_present = True
         
-        header = ">" + transcript.name + "_" + original_species + "_exon_" + str(nr)
+        header = ">" + transcript.name + "_" + ref_species + "_exon_" + str(nr)
         exons_file.write(header + "\n")
         exons_file.write(exon_sequence + "\n")
         
@@ -504,11 +509,6 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
     if stop_codon_present is False:
         print("\nLast exon in: %s in missing a STOP codon!!!\n" % header.split("_")[0].replace(">",""))
         input_correct = False
-    
-    # use the coding sequence assembled from exons to overwrite the cds_expected_sequence
-    #if microexon_present is True:
-    #    output_path = wdir + "Coding_sequences/"
-    #    parse_sequence(original_species, output_path, cds_from_exons, protein, transcript, strand, sequence_type="cds")
 
     if microexon_present is False and cds_from_exons != cds_sequence_expected:
         print("\nExons FAILED to assemble expected CDS for: %s\n" % header.split("_")[0].replace(">",""))
@@ -519,21 +519,20 @@ def extract_exons(wdir, original_species, protein, exons_input_path, reference_g
     return input_correct, microexon_present, microexons, missing_bp
 
 
-def get_single_exon(original_species, protein, reference_genome_contigs_dict, reference_genomes_path, 
-                    reference_genome_name, rules, contig, strand, number, start, stop):
+def get_single_exon(ref_species, protein, ref_genome_contigs_dict, ref_genomes_path,
+                    ref_genome_name, rules, contig, strand, number, start, stop):
     """Returns a header and a string representation of a current exon."""
 
-    header = protein + "_" + original_species + "_exon_" + str(number)
+    header = protein + "_" + ref_species + "_exon_" + str(number)
     exon_bed_filename = header + ".bed"
     exon_fasta_filename = header + ".fasta"
     with open(exon_bed_filename, "w") as b:
-        b.write(reference_genome_contigs_dict[contig] + "\t")
+        b.write(ref_genome_contigs_dict[contig] + "\t")
         b.write(str(start) + "\t")
         b.write(str(stop))
         
     bed_object = pybedtools.BedTool(exon_bed_filename)
-    bed_object = bed_object.sequence(fi = reference_genomes_path + \
-                        reference_genome_name + ".fasta")
+    bed_object = bed_object.sequence(fi = ref_genomes_path + ref_genome_name + ".fasta")
     # makes a file and writes a fasta seq into it
     exon_fasta_sequence = bed_object.save_seqs(exon_fasta_filename)
     
@@ -553,8 +552,8 @@ def get_single_exon(original_species, protein, reference_genome_contigs_dict, re
     return exon_fasta_sequence
 
 
-def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gene_id, 
-        reference_genomes_path, reference_genome_name, reference_genome_contigs_dict, protein, transcript):
+def extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
+        ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript):
     """Extracts gene sequence based on Genome object"""
     
     # list all genes in contig
@@ -572,7 +571,7 @@ def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gen
     # make a bed and fasta file for gene (add underscore to differenciate from other handles)
     gene_bed_filename = "_" + gene_name + ".bed"
         
-    matched_contig = reference_genome_contigs_dict[str(contig)]
+    matched_contig = ref_genome_contigs_dict[str(contig)]
     
     # make a bedtool file
     with open(gene_bed_filename, "w") as b:
@@ -580,16 +579,15 @@ def extract_gene(original_species, gene_input_path, ensembl, contig, strand, gen
     
     # parse that bedtool file using BedTools object
     bed_object = pybedtools.BedTool(gene_bed_filename)
-    gene_fasta_sequence = bed_object.sequence(fi = reference_genomes_path + \
-                            reference_genome_name + ".fasta")
+    gene_fasta_sequence = bed_object.sequence(fi = ref_genomes_path + ref_genome_name + ".fasta")
         
     os.remove(gene_bed_filename)
         
-    parse_sequence(original_species, gene_input_path, gene_fasta_sequence, 
+    parse_sequence(ref_species, gene_input_path, gene_fasta_sequence,
                    protein, transcript, strand, sequence_type="gene")
 
 
-def parse_sequence(original_species, output_path, fasta_sequence, protein, transcript, strand, sequence_type):
+def parse_sequence(ref_species, output_path, fasta_sequence, protein, transcript, strand, sequence_type):
     """Parses either a pybedtools.bedtool.BedTool object or string into a file"""
 
     sequence = ""
@@ -599,13 +597,13 @@ def parse_sequence(original_species, output_path, fasta_sequence, protein, trans
     if isinstance(fasta_sequence, pybedtools.bedtool.BedTool):
         file = open(fasta_sequence.seqfn)
         content = file.readlines()
-        header = ">" + transcript.name + "_" + original_species + "_" + sequence_type
+        header = ">" + transcript.name + "_" + ref_species + "_" + sequence_type
         sequence = content[1].upper().rstrip("\n")
         file.close()
     
     # or its a plain string
     if not isinstance(fasta_sequence, pybedtools.bedtool.BedTool):
-        header = ">" + transcript.name + "_" + original_species + "_" + sequence_type
+        header = ">" + transcript.name + "_" + ref_species + "_" + sequence_type
         sequence = fasta_sequence
     
     # or plain sting on reverse string (gene only)
@@ -616,13 +614,13 @@ def parse_sequence(original_species, output_path, fasta_sequence, protein, trans
         sequence = complement
     
     # write it into a file
-    filename = protein + "_" + original_species + "_" + sequence_type
+    filename = protein + "_" + ref_species + "_" + sequence_type
     with open(output_path + filename + ".fasta", "w") as f:
         f.write(header + "\n")
         f.write(sequence)
 
 
-def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, biotype, model_seq):
+def extract_cds(ensembl, ref_species, coding_sequence_input_path, protein, biotype, model_seq):
     """Extracts coding sequence by creating Transcript object"""
     
     all_transcripts_ids = ensembl.transcript_ids_of_gene_name(protein)
@@ -707,7 +705,7 @@ def extract_cds(ensembl, original_species, coding_sequence_input_path, protein, 
     # get 3'UTR sequence
     UTR_3 = transcript.three_prime_utr_sequence.upper()
     # get and save the sequence
-    parse_sequence(original_species, coding_sequence_input_path, cds_sequence_expected, 
+    parse_sequence(ref_species, coding_sequence_input_path, cds_sequence_expected,
                    protein, transcript, strand, sequence_type="cds")
     
     if start_codon_present and stop_codon_present:
@@ -732,10 +730,10 @@ def clear_structure_files(structure_path):
 
     return
 
-def check_microexons(wdir, protein_name, original_species):
+def check_microexons(wdir, protein_name, ref_species):
     """Checks if microexons were found during automatic input extraction"""
 
-    path_to_model_info = wdir + "Structures/" + protein_name + "_" + original_species
+    path_to_model_info = wdir + "Structures/" + protein_name + "_" + ref_species
     if os.path.isfile(path_to_model_info + "/microexons.txt"):
         with open(path_to_model_info + "/microexons.txt", "r") as f:
             file = f.readlines()
@@ -748,10 +746,10 @@ def check_microexons(wdir, protein_name, original_species):
 
 """
 
-def check_microexons(wdir, protein_name, original_species):
+def check_microexons(wdir, protein_name, ref_species):
     Checks if microexons were found during automatic input extraction
 
-    path_to_model_info = wdir + "Structures/" + protein_name + "_" + original_species
+    path_to_model_info = wdir + "Structures/" + protein_name + "_" + ref_species
     if os.path.isfile(path_to_model_info + "/model_incompatible.txt"):
         with open(path_to_model_info + "/model_incompatible.txt", "r") as f:
             file = f.readlines()
@@ -762,11 +760,11 @@ def check_microexons(wdir, protein_name, original_species):
     return microexons
 
 # THIS IS NOT NEEDED ANYMORE
-def get_prediction(wdir, original_species, protein):
+def get_prediction(wdir, ref_species, protein):
     Generates an Alpha Fold url for a given protein based on its UniProt id
 
     # check if the protein structure folder exists
-    structure_dir = wdir + "Structures/" + protein + "_" + original_species
+    structure_dir = wdir + "Structures/" + protein + "_" + ref_species
     if os.path.isdir(structure_dir):
         # if structure prediction already exists - skip it
         if len(os.listdir(structure_dir)) != 0:
@@ -774,10 +772,10 @@ def get_prediction(wdir, original_species, protein):
         else:
             pass
     else:
-        os.makedirs(wdir + "Structures/" + protein + "_" + original_species)
+        os.makedirs(wdir + "Structures/" + protein + "_" + ref_species)
 
     supported_species_names = {"Mm" : "mouse", "Hs" : "human"}
-    organism = supported_species_names.get(original_species)
+    organism = supported_species_names.get(ref_species)
 
     url = "https://www.uniprot.org/uniprot/?query=" + protein + "+organism:" + organism + "&sort=score&columns=id,reviewed,genes,organism&format=tab"
     downloaded_obj = requests.get(url)
@@ -834,5 +832,103 @@ def get_prediction(wdir, original_species, protein):
 #                if features[3] == preference:
 #                    longest_transcript_id = t
 #                    length = features[-1]
+
+
+def get_assemblies():
+
+    
+
+    import sys
+    import zipfile
+    import pandas as pd
+    from pprint import pprint
+    from datetime import datetime
+    from collections import defaultdict, Counter
+    from IPython.display import display
+
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+
+    try:
+        import ncbi.datasets
+    except ImportError:
+        print('ncbi.datasets module not found. To install, run `pip install ncbi-datasets-pylib`.')
+
+def start(accession_nr):
+    import time
+    import ncbi.datasets.openapi
+    from pprint import pprint
+    from ncbi.datasets.openapi.api import gene_api
+    from ncbi.datasets.openapi.model.rpc_status import RpcStatus
+    from ncbi.datasets.openapi.model.v1_download_summary import V1DownloadSummary
+    from ncbi.datasets.openapi.model.v1_fasta import V1Fasta
+    from ncbi.datasets.openapi.model.v1_gene_dataset_request import V1GeneDatasetRequest
+    from ncbi.datasets.openapi.model.v1_gene_dataset_request_content_type import V1GeneDatasetRequestContentType
+    from ncbi.datasets.openapi.model.v1_gene_dataset_request_sort_field import V1GeneDatasetRequestSortField
+    from ncbi.datasets.openapi.model.v1_gene_match import V1GeneMatch
+    from ncbi.datasets.openapi.model.v1_gene_metadata import V1GeneMetadata
+    from ncbi.datasets.openapi.model.v1_organism import V1Organism
+    from ncbi.datasets.openapi.model.v1_organism_query_request_tax_rank_filter import \
+        V1OrganismQueryRequestTaxRankFilter
+    from ncbi.datasets.openapi.model.v1_ortholog_request_content_type import V1OrthologRequestContentType
+    from ncbi.datasets.openapi.model.v1_ortholog_set import V1OrthologSet
+    from ncbi.datasets.openapi.model.v1_sci_name_and_ids import V1SciNameAndIds
+    from ncbi.datasets.openapi.model.v1_sort_direction import V1SortDirection
+    # Defining the host is optional and defaults to https://api.ncbi.nlm.nih.gov/datasets/v1
+    # See configuration.py for a list of all supported configuration parameters.
+    configuration = ncbi.datasets.openapi.Configuration(
+        host="https://api.ncbi.nlm.nih.gov/datasets/v1"
+    )
+
+    # The client must configure the authentication and authorization parameters
+    # in accordance with the API server security policy.
+    # Examples for each auth method are provided below, use the example that
+    # satisfies your auth use case.
+
+    # Configure API key authorization: ApiKeyAuthHeader
+    configuration.api_key['ApiKeyAuthHeader'] = 'YOUR_API_KEY'
+
+    # Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+    # configuration.api_key_prefix['ApiKeyAuthHeader'] = 'Bearer'
+
+    # Enter a context with an instance of the API client
+    with ncbi.datasets.openapi.ApiClient(configuration) as api_client:
+        # Create an instance of the API class
+        api_instance = gene_api.GeneApi(api_client)
+        gene_ids = [
+            59067,
+        ]  # [int] | NCBI gene ids
+    include_annotation_type = [
+        V1Fasta("FASTA_UNSPECIFIED"),
+    ]  # [V1Fasta] | Select additional types of annotation to include in the data package.  If unset, no annotation is provided. (optional)
+    fasta_filter = [
+        "fasta_filter_example",
+    ]  # [str] | Limit the FASTA sequences in the datasets package to these transcript and protein accessions (optional)
+    filename = "ncbi_dataset.zip"  # str | Output file name. (optional) (default to "ncbi_dataset.zip")
+
+    try:
+        # Get a gene dataset by gene ID
+        api_response = api_instance.download_gene_package(gene_ids, include_annotation_type=include_annotation_type,
+                                                          fasta_filter=fasta_filter, filename=filename)
+        pprint(api_response)
+    except ncbi.datasets.openapi.ApiException as e:
+        print("Exception when calling GeneApi->download_gene_package: %s\n" % e)
+
+    api_instance = ncbi.datasets.GenomeApi(ncbi.datasets.ApiClient())
+
+    # get genome5
+    assembly_accessions = [accession_nr]
+    exclude_sequence = False
+    include_annotation_type = ['PROT_FASTA']
+    api_response = api_instance.download_assembly_package(
+        assembly_accessions,
+        exclude_sequence=exclude_sequence,
+        include_annotation_type=include_annotation_type,
+        # Because we are streaming back the results to disk,
+        # we should defer reading/decoding the response
+        _preload_content=False
+    )
+    with open('genome5_assembly.zip', 'wb') as f:
+        f.write(api_response.data)
 
 """

@@ -11,21 +11,9 @@ import re
 
 wdir = os.getcwd() + "/"
 
-error_message = StringVar()
-message = "Invalid gene name (follow pattern: Cenpo)"
-
 def make_proteins_file(*args):
     with open(wdir + "proteins_new.txt", "a") as f:
         f.write("\n" + value)
-
-
-def check_gene_name(gene_name, op):
-    """Checks if user provided a valid gene name"""
-    error_message.set("")
-    valid = re.match(r"^[A-Z]{1}([A-Za-z0-9]+$)", gene_name) is not None
-    btn.state(["!disabled"] if valid else ["disabled"])
-    if op=="key":
-        ok_so_far = re.match
 
 
 root = Tk()
@@ -42,6 +30,28 @@ mainframe.grid(column=5, row=20, sticky=(N, W, E, S))
 #mainframe["borderwidth"] = 2
 #mainframe["relief"] = "sunken"
 
+error_message = StringVar()
+message = "Invalid gene name (follow pattern: Cenpo for rodents and : CENPO for primates)"
+
+def check_gene_name(gene_name, op):
+    """Checks if user provided a valid gene name"""
+    error_message.set("")
+    # accept only entry starting with one capital letter followed by small or big letters or numbers
+    valid = re.match(r"^[A-Z]{1}([A-Za-z0-9]+$)", gene_name) is not None
+    # button can be clicked only if gene names are valid
+    button.state(["!disabled"] if valid else ["disabled"])
+    # keystroke validation
+    if op=="key":
+        ok_so_far = re.match(r"[A-Za-z0-9]+$", gene_name) is not None
+        if not ok_so_far:
+            error_message.set(message)
+        return ok_so_far
+    elif op=="focusout":
+        if not valid:
+            error_message.set(message)
+    return valid
+
+
 # this will be a gene name provided by the user
 #protein = StringVar()
 #protein_to_analyze = ttk.Label(mainframe, width=20, text="Gene name :", justify="left", textvariable=protein)
@@ -54,9 +64,9 @@ mainframe.grid(column=5, row=20, sticky=(N, W, E, S))
 
 t = IntVar()
 ttk.Label(mainframe, text="Blast threshold").grid(column=1, row=1, sticky=(E))
-low = ttk.Radiobutton(mainframe, text="30%", variable=t, value="low").grid(column=2, row=2, sticky=(W))
+low = ttk.Radiobutton(mainframe, text="30% (recommended for rodents)", variable=t, value="low").grid(column=2, row=2, sticky=(W))
 medium = ttk.Radiobutton(mainframe, text="50%", variable=t, value="medium").grid(column=2, row=3, sticky=(W))
-high = ttk.Radiobutton(mainframe, text="70%", variable=t, value="high").grid(column=2, row=4, sticky=(W))
+high = ttk.Radiobutton(mainframe, text="70% (recommended for primates)", variable=t, value="high").grid(column=2, row=4, sticky=(W))
 
 # user chooses which clade to analyze
 
@@ -65,29 +75,41 @@ ttk.Label(mainframe, text="Clade").grid(column=1, row=5, sticky=(E))
 rodents = ttk.Radiobutton(mainframe, text="rodents", variable=clade, value="rodents").grid(column=2, row=6, sticky=(W))
 primates = ttk.Radiobutton(mainframe, text="primates", variable=clade, value="primates").grid(column=2, row=7, sticky=(W))
 
+check_gene_name_wrapper = (mainframe.register(check_gene_name), "%P", "%V")
+
 # user inputs up to 5 gene names to analyse
 
 gene_name1 = StringVar()
-ttk.Label(mainframe, text="Gene name").grid(column=1, row=8, sticky=(E))
-protein1 = ttk.Entry(mainframe, textvariable=gene_name1).grid(column=2, row=8, sticky=(W))
+ttk.Label(mainframe, text="Gene name").grid(column=1, row=9, sticky=(E))
+protein1 = ttk.Entry(mainframe, textvariable=gene_name1, validate="all", validatecommand=check_gene_name_wrapper)
+protein1.grid(column=2, row=9, padx=5, pady=5, sticky=(W))
 
 gene_name2 = StringVar()
-ttk.Label(mainframe, text="Gene name").grid(column=1, row=9, sticky=(E))
-protein2 = ttk.Entry(mainframe, textvariable=gene_name2).grid(column=2, row=9, sticky=(W))
+ttk.Label(mainframe, text="Gene name").grid(column=1, row=10, sticky=(E))
+protein2 = ttk.Entry(mainframe, textvariable=gene_name2, validate="all", validatecommand=check_gene_name_wrapper)
+protein2.grid(column=2, row=10, padx=5, pady=5, sticky=(W))
 
 gene_name3 = StringVar()
-ttk.Label(mainframe, text="Gene name").grid(column=1, row=10, sticky=(E))
-protein3 = ttk.Entry(mainframe, textvariable=gene_name3).grid(column=2, row=10, sticky=(W))
+ttk.Label(mainframe, text="Gene name").grid(column=1, row=11, sticky=(E))
+protein3 = ttk.Entry(mainframe, textvariable=gene_name3, validate="all", validatecommand=check_gene_name_wrapper)
+protein3.grid(column=2, row=11, padx=5, pady=5, sticky=(W))
 
 gene_name4 = StringVar()
-ttk.Label(mainframe, text="Gene name").grid(column=1, row=11, sticky=(E))
-protein4 = ttk.Entry(mainframe, textvariable=gene_name4).grid(column=2, row=11, sticky=(W))
+ttk.Label(mainframe, text="Gene name").grid(column=1, row=12, sticky=(E))
+protein4 = ttk.Entry(mainframe, textvariable=gene_name4, validate="all", validatecommand=check_gene_name_wrapper)
+protein4.grid(column=2, row=12, padx=5, pady=5, sticky=(W))
 
 gene_name5 = StringVar()
-ttk.Label(mainframe, text="Gene name").grid(column=1, row=12, sticky=(E))
-protein5 = ttk.Entry(mainframe, textvariable=gene_name5).grid(column=2, row=12, sticky=(W))
+ttk.Label(mainframe, text="Gene name").grid(column=1, row=13, sticky=(E))
+protein5 = ttk.Entry(mainframe, textvariable=gene_name5, validate="all", validatecommand=check_gene_name_wrapper)
+protein5.grid(column=2, row=13, padx=5, pady=5, sticky=(W))
 
-button = ttk.Button(mainframe, text="Analyze", default="active").grid(column=5, row=20, sticky=(W)) #, command=freeda.freeda_pipeline)
+button = ttk.Button(mainframe, text="Analyze") # default="active"
+button.grid(column=5, row=20, padx=5, pady=5, sticky=(W)) #, command=freeda.freeda_pipeline)
+button.state(["disabled"])
+
+error_label = ttk.Label(mainframe, font="TkSmallCaptionFont", foreground="red", textvariable=error_message)
+error_label.grid(column=2, row=8, padx=5, pady=5, sticky="w")
 
 #threshold = StringVar()
 #threshold_label = ttk.Label(mainframe, textvariable=threshold).grid(column=1, row=1, sticky=(E))

@@ -7,8 +7,7 @@ Created on Fri Mar 26 11:00:54 2021
 """
 
 from freeda import folder_generator
-from freeda import name_finder
-from freeda import gene_and_cds_reader
+from freeda import fasta_reader
 from freeda import genome_indexer
 from freeda import matches_generator
 from freeda import matches_processor
@@ -20,9 +19,10 @@ import time
 import logging
 import shutil
 import os
+import re
 
 
-def analyse_blast_results(wdir, blast_output_path, original_species, t, all_proteins):
+def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins):
     """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
@@ -50,9 +50,9 @@ def analyse_blast_results(wdir, blast_output_path, original_species, t, all_prot
     for path in all_blasts:
         match_path = path
         # generate protein and genome names and make it global
-        protein_name, genome_name = name_finder.get_names(match_path)
-        # find cds and gene for this path (Mm_exons NOT USED HERE)
-        cds, gene, Mm_exons, expected_exons = gene_and_cds_reader.find_gene_and_cds(wdir, protein_name, original_species)
+        protein_name, genome_name = get_names(match_path)
+        # find cds and gene for this path (ref_exons NOT USED HERE)
+        cds, gene, ref_exons, expected_exons = fasta_reader.find_gene_and_cds(wdir, protein_name, ref_species)
         # index given genome
         genome_index = genome_indexer.index_genome_database(wdir, genome_name)
         # generate matches dataframe
@@ -62,7 +62,7 @@ def analyse_blast_results(wdir, blast_output_path, original_species, t, all_prot
         # run MAFFT on all the MSA and write them into files
         msa_aligner.run_MAFFT(MSA_path)
         # return potential exons for a current protein in current genome
-        msa_analyzer.analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons)
+        msa_analyzer.analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons)
         # mark that this blast result has been analysed
         message = "\nFinished running protein: '%s' from genome: '%s'\n" \
             % (protein_name, genome_name)
@@ -72,11 +72,11 @@ def analyse_blast_results(wdir, blast_output_path, original_species, t, all_prot
     # generate a list of all files in the working directory
     all_files = [f for f in os.listdir(wdir) if os.path.isfile(os.path.join(wdir, f))]
 
-    # add original_species cds for a give protein
+    # add ref_species cds for a give protein
     for protein in all_proteins:
         if protein + ".fasta" in all_files:
-            seq = get_original_cds(wdir, protein, original_species)
-            header = ">" + protein + "_" + original_species
+            seq = get_ref_cds(wdir, protein, ref_species)
+            header = ">" + protein + "_" + ref_species
             with open(protein + ".fasta", "r+") as file:
                 content = file.read()
                 file.seek(0, 0)
@@ -112,13 +112,26 @@ def check_blast_output(blast_output_path, t):
     return True
 
 
-def get_original_cds(wdir, protein_name, original_species):
+def get_ref_cds(wdir, protein_name, ref_species):
     """Reads cds for the protein in the reference species (from "Coding_sequences" folder"""
 
     # open according cds fasta file
-    with open(wdir + "Coding_sequences/" + protein_name + "_" + original_species + "_cds.fasta", "r") as f:
+    with open(wdir + "Coding_sequences/" + protein_name + "_" + ref_species + "_cds.fasta", "r") as f:
         sequence = ""
         cds = f.readlines()
         for line in cds[1:]:
             sequence = sequence + line.rstrip("\n")
     return sequence
+
+
+def get_names(match_path):
+    # isolate flag names for protein and genome from blast result filename:
+    # get blast result name
+    path_split = re.split(r"/", match_path)[-1]
+    # get protein name
+    protein_name = re.split(r"_", path_split)[0]
+    # get genome name (in 3 steps)
+    genome_file_name = re.split(r"_", path_split)[1:3]
+    genome_suffix = re.split(r"\.", genome_file_name[1])[0]
+    genome_name = genome_file_name[0] + "_" + genome_suffix
+    return protein_name, genome_name

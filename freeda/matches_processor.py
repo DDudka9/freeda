@@ -6,7 +6,7 @@ Created on Wed Mar 24 17:40:58 2021
 @author: damian
 
 Extracts fasta sequence based on the matches dataframe and writes it into 
-a fasta file together with cds and genomic locus of the protein from original species. 
+a fasta file together with cds and genomic locus of the protein from ref species.
 Ready to MSA.
 
 """
@@ -37,7 +37,7 @@ def process_matches(wdir, matches, cds, gene, result_path, protein_name, genome_
         sorted_exons = sort_exons(validated_exons)
         # expand exons
         expanded_exons = expand_exons(sorted_exons)
-        # make a bed file with expanded exons or original exons if cannot expand
+        # make a bed file with expanded exons or ref exons if cannot expand
         bed_object, expanded_bed_object = make_bed_file(sorted_exons, expanded_exons, bed_name, result_path, protein_name, genome_name)
         # convert the bed file into fasta file
         make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_name)
@@ -62,7 +62,7 @@ def get_exons(base_name, matches, contig):
     logging.info(message)
     # make a dataframe from these entries
     exons = grouped.get_group(contig)
-    # bring back original name of the contig for each match in exons (base_name)
+    # bring back ref name of the contig for each match in exons (base_name)
     for i in exons.index:
         exons.at[i, "sseqid"] = base_name
     # prepare bed and fasta file names and path directories for the contig:

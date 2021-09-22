@@ -6,7 +6,20 @@ Created on Mon Jul 19 20:57:13 2021
 @author: damian
 """
 
-musculus_dict = {'1': 'CM000994.2',
+
+def get_ref_genome_contigs_dict(ref_species):
+    """Returns a dictionary of contigs in Genome object (ensembl 100; GRCm38.p6) as keys and 
+    Sequence-Name or GeneBank-Accn of GCA_000001635.8 mouse genome as values
+    
+    or
+    
+    Returns a dictionary of contigs in Genome object (ensembl 100; GRCh38.p13) as keys and 
+    Sequence-Name or GeneBank-Accn of GCA_000001405.28 human genome as values"""
+    
+    mouse_names = {"Mm", "mouse", "Mus musculus", "mus musculus"}
+    human_names = {"Hs", "human", "Homo sapiens", "homo sapiens"}
+
+    musculus_dict = {'1': 'CM000994.2',
                      '10': 'CM001003.2',
                      '11': 'CM001004.2',
                      '12': 'CM001005.2',
@@ -51,8 +64,8 @@ musculus_dict = {'1': 'CM000994.2',
                      'MT': 'AY172335.1',
                      'X': 'CM001013.2',
                      'Y': 'CM001014.2'}
-    
-sapiens_dict = {'1': 'CM000663.2',
+
+    sapiens_dict = {'1': 'CM000663.2',
                     '10': 'CM000672.2',
                     '11': 'CM000673.2',
                     '12': 'CM000674.2',
@@ -100,28 +113,58 @@ sapiens_dict = {'1': 'CM000663.2',
                     'X': 'CM000685.2',
                     'Y': 'CM000686.2'}
 
-def get_reference_genome_contigs_dict(original_species):
-    """Returns a dictionary of contigs in Genome object (ensembl 100; GRCm38.p6) as keys and 
-    Sequence-Name or GeneBank-Accn of GCA_000001635.8 mouse genome as values
-    
-    or
-    
-    Returns a dictionary of contigs in Genome object (ensembl 100; GRCh38.p13) as keys and 
-    Sequence-Name or GeneBank-Accn of GCA_000001405.28 human genome as values"""
-    
-    mouse_names = {"Mm", "mouse", "Mus musculus", "mus musculus"}
-    human_names = {"Hs", "human", "Homo sapiens", "homo sapiens"}
-    
     # default is mouse
-    if original_species in mouse_names:
-        reference_genome_contigs_dict = musculus_dict
+    if ref_species in mouse_names:
+        ref_genome_contigs_dict = musculus_dict
     
-    elif original_species in human_names:
-        reference_genome_contigs_dict = sapiens_dict
+    elif ref_species in human_names:
+        ref_genome_contigs_dict = sapiens_dict
         
-    return reference_genome_contigs_dict
+    return ref_genome_contigs_dict
 
 
+def get_names(ref_species, ref_genome=False):
+    """Gets species, genomes names and accession numbers used for FREEDA analysis"""
+
+    genomes = {"Mm": (("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
+                      ("Ms", "SPRETUS_genome", "GCA_000001635.2"),
+                      ("Mc", "CAROLI_genome", "GCA_900094665.2"),
+                      ("Mp", "PAHARI_genome", "GCA_900095145.2"),
+                      ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
+                      ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
+                      ("Ha", "ALLENI_genome", "GCA_019843855.1"),
+                      ("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
+                      ("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
+                      ("Mo", "COUCHA_genome", "GCA_008632895.1"),
+                      ("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),
+                      ("Gs", "SURDASTER_genome", "GCA_004785775.1"),
+                      ("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
+                      ("Rd", "DILECTUS_genome", "GCA_019844195.1"),
+                      ("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
+                      ("Rn", "RATTUS_genome", "GCA_015227675.2")),
+
+               "Hs": (("Pt", "TROGLODYTES_genome", "GCA_002880755.3"),
+                      ("Gg", "GORILLA_genome", "GCA_008122165.1"),
+                      ("Pb", "ABELII_genome", "GCA_002880775.3"),
+                      ("Ne", "LEUCOGENYS_genome", "GCA_006542625.1"),
+                      ("Mu", "MULATTA_genome.fasta", "GCA_008058575.1"),
+                      ("Pu", "ANUBIS_genome.fasta", "GCA_008728515.1"),
+                      ("Cs", "SABAEUS_genome.fasta", "GCA_015252025.1"),
+                      ("Cj", "JACCHUS_genome.fasta", "GCA_011100535.2"))}
+
+    ref_genomes = {"Mm": (("Mm", "MUSCULUS_genome", "GCA_000001635.8")),
+                   "Hs": (("Hs", "SAPIENS_genome", "GCA_000001405.28"))}
+
+    if ref_genome is True:
+        genomes = ref_genomes
+
+    all_genomes = []
+    for ref, species in genomes.items():
+        if ref == ref_species:
+            for genome in species:
+                all_genomes.append(genome)
+
+    return all_genomes
 
 
 

@@ -22,13 +22,13 @@ import shutil
 import glob
 
 
-def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_exons, expected_exons):
+def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons):
     """Analyses MSA per contig -> finds exons, clones them into cds"""
 
     # make a dictionary with exon number as key and sequences, names as values -> inclue microexons as empty lists
-    microexons = input_extractor.check_microexons(wdir, protein_name, original_species)
+    microexons = input_extractor.check_microexons(wdir, protein_name, ref_species)
 
-    final_exon_number = len(Mm_exons)
+    final_exon_number = len(ref_exons)
     cloned_exons_overhangs = []
     # define pattern of all aligned fasta files
     pattern = "aligned*.fasta"
@@ -48,7 +48,7 @@ def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_
         cds, locus, gene = index_positions(seqs)
         # find all exons in contig locus if no retrotransposition was detected
         exons, possible_retrotransposition, synteny, RETRO_score, duplication_score \
-            = exon_finder.find_exons(cds, locus, gene, contig_name, Mm_exons, expected_exons)
+            = exon_finder.find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons)
         # skip this contig if possible retrotransposition event was detected
         # likelihood of false positive RETRO is more than 1 per 3 intronic exons
         # skip also contigs that are likely duplications
@@ -63,7 +63,7 @@ def analyse_MSA(wdir, original_species, MSA_path, protein_name, genome_name, Mm_
     
     # clone cds based on the most intronic contigs
     cloned_cds = cds_cloner.clone_cds(preselected_exons_overhangs, most_intronic_contigs,
-                 protein_name, genome_name, final_exon_number, Mm_exons, MSA_path)
+                 protein_name, genome_name, final_exon_number, ref_exons, MSA_path)
 
     # check if final CDS is in frame (clone anyway)
     if (len(cloned_cds)-cloned_cds.count("-")) % 3 != 0:
