@@ -55,6 +55,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
     all_species = [names[0] for names in all_names]
 
     final_species = {}
+    final_species[ref_species] = ""
     for species in all_species:
         final_species[species] = ""
 
@@ -68,7 +69,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
 
     for protein in all_proteins:
         
-        # check it this protein was already analysed
+        # check if this protein was already analysed
         if os.path.isdir(result_path + protein + "/" + "PAML_" + protein):
            message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % protein
            print(message)
@@ -76,7 +77,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
            
            # get how many species were analysed
            path_to_final_species = result_path + protein + "/" + protein + "_final.fasta"
-           with open(path_to_final_species) as f:
+           with open(path_to_final_species, "r") as f:
                nr_of_species = f.read().count(">")
                nr_of_species_total_dict[protein] = nr_of_species
            
@@ -220,6 +221,9 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
                 continue
 
             shutil.copy(best_tree_path, PAML_path + "/gene.tree")
+
+            # rename and copy the final protein alignment into results
+            shutil.copy(translated_path, result_path + protein + "_protein_alignment.fasta")
         
             # run PAML
             message = "\n.........Running PAML for protein: %s.........\n" % protein
@@ -236,7 +240,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
             logging.info(message)
 
     shutil.move(wdir + PAML_logfile_name, result_path)
-    
+
     # for now final analysis complete message logs into the PAML log file -> change that later
     
     # mark the end of the analysis
@@ -492,7 +496,7 @@ def translate_Gblocks(wdir, protein_folder_path, out_Gblocks, protein, ref_speci
             # get a translated string using format method (only for SeqRecords)
             translated = record.format("fasta").lstrip("><unknown id> <unknown description\n")
             # write headers and sequences
-            f.write(s[0] + "\n")
+            f.write(s[0].replace("_", "") + "\n")
             f.write(translated)
     # return the path to the translated alignment
     return translated_path

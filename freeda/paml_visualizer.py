@@ -59,7 +59,9 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
         
         else:
             nr_of_species_total = nr_of_species_total_dict[protein]
-            matched_adaptive_sites_ref = plot_PAML(wdir, result_path, protein, nr_of_species_total, ref_species, proteins_under_positive_selection)
+            matched_adaptive_sites_ref = plot_PAML(wdir, result_path, protein,
+                                                   nr_of_species_total, ref_species,
+                                                   proteins_under_positive_selection)
             all_matched_adaptive_sites_ref[protein] = matched_adaptive_sites_ref
         
     # prepare a dict with PAML stats
@@ -503,7 +505,7 @@ def get_ref_and_final_seqs(wdir, protein_name, result_path, ref_species):
     #ref_ref_Seq_object = ref_sequence_Seq.translate()
     ref_sequence_record = SeqRecord(ref_sequence_Seq_object)
     
-    # get record onject for the final protein sequence
+    # get record object for the final protein sequence
     pattern = "translated.fasta"
     all_files = os.listdir(protein_path)
     
@@ -518,7 +520,7 @@ def get_ref_and_final_seqs(wdir, protein_name, result_path, ref_species):
     final_sequence_record = SeqRecord(final_sequence_Seq_object)
     
     return ref_sequence_record, final_sequence_record
-    
+
 
 def organise_ref_and_final_seqs(ref_sequence_record, final_sequence_record):
     """Organises residues in aa seq of reference species from input and post Gblocks into an easy to search dict"""

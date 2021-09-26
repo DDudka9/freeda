@@ -155,7 +155,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
 
     # get all species and genome names
-    #all_names = genomes_preprocessing.get_names(ref_species)
+    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(ref_species, ref_genome=False)]
+
     #all_species = [names[0] for names in all_names]
     #all_genome_names = [names[1] for names in all_names]
 
@@ -201,9 +202,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     if user_input0 == "y":
 
         # generate a reference Genome object
-        ref_genome_name = input("(FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
+        #ref_genome_name = input("(FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
         ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
-        biotype = input_extractor.generate_ref_genome_object(wdir, ref_species, str(ref_genome_name))
+                                                biotype = input_extractor.generate_ref_genome_object(wdir, ref_species)
 
         # stop pipeline if the reference genome is absent
         if not ref_genome_present:
@@ -223,7 +224,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
             input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
                                                                                         wdir,
                                                                                         ref_species,
-                                                                                        ref_genome_name,
                                                                                         ref_genomes_path,
                                                                                         ref_genome_contigs_dict,
                                                                                         ensembl,
@@ -253,7 +253,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     # ----------------------------------------#
 
     if user_input1 == "y":
-        print("\n -> checking genome blast databases...")
+        print(" -> checking genome blast databases...")
         blast_output_path = tblastn.run_blast(wdir, ref_species, all_proteins)
         if blast_output_path is None:
             print("\n...FATAL ERROR... : Blast database build failed for at least one genome"
@@ -268,7 +268,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
     if user_input2 == "y":
         if exon_extractor.check_blast_output(blast_output_path, t):
-            result_path = exon_extractor.analyse_blast_results(wdir, blast_output_path, ref_species, int(t), all_proteins)
+            result_path = exon_extractor.analyse_blast_results(wdir, blast_output_path,
+                                                               ref_species, int(t), all_proteins, all_genomes)
         else:
             print("\n   Genome of at least one species contains no matches above the identity threshold used : %s -> use a lower one " 
                     "-> exiting the pipeline now..." % t)
@@ -355,7 +356,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 

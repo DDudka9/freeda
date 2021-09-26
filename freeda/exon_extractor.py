@@ -22,7 +22,7 @@ import os
 import re
 
 
-def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins):
+def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins, all_genomes):
     """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
@@ -30,7 +30,7 @@ def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins)
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
     result_path = wdir + "Results" + day + "/"
 
-    folder_generator.generate_folders(result_path, all_proteins)
+    folder_generator.generate_folders(result_path, all_proteins, all_genomes)
 
     # initiate log file to record PAML analysis by reseting the handlers
     for handler in logging.root.handlers[:]:

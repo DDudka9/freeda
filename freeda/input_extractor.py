@@ -269,19 +269,21 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
         return False
         
 
-def generate_ref_genome_object(wdir, ref_species, ref_genome_name):
+def generate_ref_genome_object(wdir, ref_species):
     """Generates a reference Genome object using pyensembl as a wrapper for ensembl database"""
 
     #mouse_names = {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}
     human_names = {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}
     
     if ref_species in human_names:
+        ref_genome_name = "SAPIENS_genome"
         species = "homo sapiens"
         release = 100
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
     
     # default is mouse for now
     else:
+        ref_genome_name = "MUSCULUS_genome"
         species = "mus musculus"
         release = 100
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
@@ -291,10 +293,10 @@ def generate_ref_genome_object(wdir, ref_species, ref_genome_name):
     ref_genomes_path = wdir + "Reference_genomes/"
     # check if reference genome is present -> exit 
     ref_genome_present = tblastn.check_genome_present(wdir,
-                                                            ref_species,
-                                                            ref_genomes_path,
-                                                            ref_genome_name,
-                                                            ref_genome=True)
+                                                ref_species,
+                                                ref_genomes_path,
+                                                ref_genome_name,
+                                                ref_genome=True)
 
     # get assembly database
     ensembl = pyensembl.EnsemblRelease(release, species)
@@ -305,9 +307,13 @@ def generate_ref_genome_object(wdir, ref_species, ref_genome_name):
             ref_genome_contigs_dict, biotype
 
 
-def extract_input(wdir, ref_species, ref_genome_name, ref_genomes_path,
-                  ref_genome_contigs_dict, ensembl, biotype, protein, model_seq):
+def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict, ensembl, biotype, protein, model_seq):
     """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
+
+    if ref_species == "Mm":
+        ref_genome_name = "MUSCULUS_genome"
+    if ref_species == "Hs":
+        ref_genome_name = "SAPIENS_genome"
 
     model_matches_input = False
     microexon_present = False

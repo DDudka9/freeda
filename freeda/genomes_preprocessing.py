@@ -148,10 +148,10 @@ def get_names(ref_species, ref_genome=False):
                       ("Gg", "GORILLA_genome", "GCA_008122165.1"),
                       ("Pb", "ABELII_genome", "GCA_002880775.3"),
                       ("Ne", "LEUCOGENYS_genome", "GCA_006542625.1"),
-                      ("Mu", "MULATTA_genome.fasta", "GCA_008058575.1"),
-                      ("Pu", "ANUBIS_genome.fasta", "GCA_008728515.1"),
-                      ("Cs", "SABAEUS_genome.fasta", "GCA_015252025.1"),
-                      ("Cj", "JACCHUS_genome.fasta", "GCA_011100535.2"))}
+                      ("Mu", "MULATTA_genome", "GCA_008058575.1"),
+                      ("Pu", "ANUBIS_genome", "GCA_008728515.1"),
+                      ("Cs", "SABAEUS_genome", "GCA_015252025.1"),
+                      ("Cj", "JACCHUS_genome", "GCA_011100535.2"))}
 
     mouse_ref_dict = {"Mm": (("Mm", "MUSCULUS_genome", "GCF_000001635.26"))}, # GenBank GCA_000001635.8; GRCm38.p6
     human_ref_dict = {"Hs": (("Hs", "SAPIENS_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39

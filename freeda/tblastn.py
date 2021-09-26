@@ -244,7 +244,8 @@ def download_genome(genome, accession_nr, database_path):
     #print("         Downloading and unzipping genome : %s - it might take a couple of min ..." % genome)
     start_time = time.time()
     filepath_1 = database_path + genome + ".zip"
-    cmd1 = ["datasets", "download", "genome", "accession", accession_nr, "--filename", filepath_1]
+    # need to exclude genomic cds because its also ".fna" which confuses the concatenation
+    cmd1 = ["datasets", "download", "genome", "accession", accession_nr, "--exclude-genomic-cds", "--filename", filepath_1]
     subprocess.call(cmd1, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb')) # mute output and cautions
 
     # unzip all chromosomes into single file
