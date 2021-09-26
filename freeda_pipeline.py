@@ -154,15 +154,10 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines() if protein != "\n"]
 
 
-
-
     # get all species and genome names
     #all_names = genomes_preprocessing.get_names(ref_species)
     #all_species = [names[0] for names in all_names]
     #all_genome_names = [names[1] for names in all_names]
-
-
-
 
 
     # check if the user had previously obtained data for given list of proteins

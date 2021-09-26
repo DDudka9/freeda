@@ -20,7 +20,7 @@ Outputs tabulated text files per protein per genomes.
 """
 from zipfile import BadZipFile
 
-import genomes_preprocessing
+from freeda import genomes_preprocessing
 import subprocess
 import os
 import glob
