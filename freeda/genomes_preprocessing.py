@@ -19,51 +19,52 @@ def get_ref_genome_contigs_dict(ref_species):
     mouse_names = {"Mm", "mouse", "Mus musculus", "mus musculus"}
     human_names = {"Hs", "human", "Homo sapiens", "homo sapiens"}
 
-    musculus_dict = {'1': 'CM000994.2',
-                     '10': 'CM001003.2',
-                     '11': 'CM001004.2',
-                     '12': 'CM001005.2',
-                     '13': 'CM001006.2',
-                     '14': 'CM001007.2',
-                     '15': 'CM001008.2',
-                     '16': 'CM001009.2',
-                     '17': 'CM001010.2',
-                     '18': 'CM001011.2',
-                     '19': 'CM001012.2',
-                     '2': 'CM000995.2',
-                     '3': 'CM000996.2',
-                     '4': 'CM000997.2',
-                     '5': 'CM000998.2',
-                     '6': 'CM000999.2',
-                     '7': 'CM001000.2',
-                     '8': 'CM001001.2',
-                     '9': 'CM001002.2',
-                     'GL456210.1': 'GL456210.1',
-                     'GL456211.1': 'GL456211.1',
-                     'GL456212.1': 'GL456212.1',
-                     'GL456216.1': 'GL456216.1',
-                     'GL456219.1': 'GL456219.1',
-                     'GL456221.1': 'GL456221.1',
-                     'GL456233.1': 'GL456233.1',
-                     'GL456239.1': 'GL456239.1',
-                     'GL456350.1': 'GL456350.1',
-                     'GL456354.1': 'GL456354.1',
-                     'GL456372.1': 'GL456372.1',
-                     'GL456381.1': 'GL456381.1',
-                     'GL456385.1': 'GL456385.1',
-                     'JH584292.1': 'JH584292.1',
-                     'JH584293.1': 'JH584293.1',
-                     'JH584294.1': 'JH584294.1',
-                     'JH584295.1': 'JH584295.1',
-                     'JH584296.1': 'JH584296.1',
-                     'JH584297.1': 'JH584297.1',
-                     'JH584298.1': 'JH584298.1',
-                     'JH584299.1': 'JH584299.1',
-                     'JH584303.1': 'JH584303.1',
-                     'JH584304.1': 'JH584304.1',
-                     'MT': 'AY172335.1',
-                     'X': 'CM001013.2',
-                     'Y': 'CM001014.2'}
+
+    musculus_dict = {'1': 'NC_000067.6',
+                '10': 'NC_000076.6',
+                '11': 'NC_000077.6',
+                '12': 'NC_000078.6',
+                '13': 'NC_000079.6',
+                '14': 'NC_000080.6',
+                '15': 'NC_000081.6',
+                '16': 'NC_000082.6',
+                '17': 'NC_000083.6',
+                '18': 'NC_000084.6',
+                '19': 'NC_000085.6',
+                '2': 'NC_000068.7',
+                '3': 'NC_000069.6',
+                '4': 'NC_000070.6',
+                '5': 'NC_000071.6',
+                '6': 'NC_000072.6',
+                '7': 'NC_000073.6',
+                '8': 'NC_000074.6',
+                '9': 'NC_000075.6',
+                'GL456210.1': 'NT_166280.1',
+                'GL456211.1': 'NT_166281.1',
+                'GL456212.1': 'NT_166282.1',
+                'GL456216.1': 'NT_166291.1',
+                'GL456219.1': 'NT_166307.1',
+                'GL456221.1': 'NT_162750.1',
+                'GL456233.1': 'NT_165789.2',
+                'GL456239.1': 'NT_166338.1',
+                'GL456350.1': 'NT_166434.1',
+                'GL456354.1': 'NT_166438.1',
+                'GL456372.1': 'NT_166456.1',
+                'GL456381.1': 'NT_166465.1',
+                'GL456385.1': 'NT_166469.1',
+                'JH584292.1': 'NT_187052.1',
+                'JH584293.1': 'NT_187053.1',
+                'JH584294.1': 'NT_187054.1',
+                'JH584295.1': 'NT_187055.1',
+                'JH584296.1': 'NT_187056.1',
+                'JH584297.1': 'NT_187057.1',
+                'JH584298.1': 'NT_187058.1',
+                'JH584299.1': 'NT_187059.1',
+                'JH584303.1': 'NT_187063.1',
+                'JH584304.1': 'NT_187064.1',
+                'MT': 'NC_005089.1',
+                'X': 'NC_000086.7',
+                'Y': 'NC_000087.7'}
 
     sapiens_dict = {'1': 'CM000663.2',
                     '10': 'CM000672.2',
@@ -126,8 +127,8 @@ def get_ref_genome_contigs_dict(ref_species):
 def get_names(ref_species, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
 
-    genomes = {"Mm": (("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
-                      ("Ms", "SPRETUS_genome", "GCA_000001635.2"),
+    mouse_dict = {"Mm": (("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
+                      ("Ms", "SPRETUS_genome", "GCA_001624865.1"),
                       ("Mc", "CAROLI_genome", "GCA_900094665.2"),
                       ("Mp", "PAHARI_genome", "GCA_900095145.2"),
                       ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
@@ -141,9 +142,9 @@ def get_names(ref_species, ref_genome=False):
                       ("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
                       ("Rd", "DILECTUS_genome", "GCA_019844195.1"),
                       ("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
-                      ("Rn", "RATTUS_genome", "GCA_015227675.2")),
+                      ("Rn", "RATTUS_genome", "GCA_015227675.2"))}
 
-               "Hs": (("Pt", "TROGLODYTES_genome", "GCA_002880755.3"),
+    human_dict = {"Hs": (("Pt", "TROGLODYTES_genome", "GCA_002880755.3"),
                       ("Gg", "GORILLA_genome", "GCA_008122165.1"),
                       ("Pb", "ABELII_genome", "GCA_002880775.3"),
                       ("Ne", "LEUCOGENYS_genome", "GCA_006542625.1"),
@@ -152,38 +153,97 @@ def get_names(ref_species, ref_genome=False):
                       ("Cs", "SABAEUS_genome.fasta", "GCA_015252025.1"),
                       ("Cj", "JACCHUS_genome.fasta", "GCA_011100535.2"))}
 
-    ref_genomes = {"Mm": (("Mm", "MUSCULUS_genome", "GCA_000001635.8")),
-                   "Hs": (("Hs", "SAPIENS_genome", "GCA_000001405.28"))}
+    mouse_ref_dict = {"Mm": (("Mm", "MUSCULUS_genome", "GCF_000001635.26"))}, # GenBank GCA_000001635.8; GRCm38.p6
+    human_ref_dict = {"Hs": (("Hs", "SAPIENS_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39
 
-    if ref_genome is True:
-        genomes = ref_genomes
+    if ref_species == "Mm" and ref_genome is False:
+        genomes_dict = mouse_dict
+    elif ref_species == "Mm" and ref_genome is True:
+        genomes_dict = mouse_ref_dict
+    elif ref_species == "Hs" and ref_genome is False:
+        genomes_dict = human_dict
+    elif ref_species == "Hs" and ref_genome is True:
+        genomes_dict = human_ref_dict
+    else:
+        print("Something went wrong")
 
+    # collect genomes
     all_genomes = []
-    for ref, species in genomes.items():
-        if ref == ref_species:
-            for genome in species:
-                all_genomes.append(genome)
+    for ref, species in genomes_dict.items():
+        for genome in species: # genome = ("Mi", "SPICILEGUS_genome", "GCA_003336285.1")
+            all_genomes.append(genome)
 
     return all_genomes
 
 
 
+"""
+
+# deprecated 09/25/2021
+    musculus_dict_GenBank = {'1': 'CM000994.2',
+                     '10': 'CM001003.2',
+                     '11': 'CM001004.2',
+                     '12': 'CM001005.2',
+                     '13': 'CM001006.2',
+                     '14': 'CM001007.2',
+                     '15': 'CM001008.2',
+                     '16': 'CM001009.2',
+                     '17': 'CM001010.2',
+                     '18': 'CM001011.2',
+                     '19': 'CM001012.2',
+                     '2': 'CM000995.2',
+                     '3': 'CM000996.2',
+                     '4': 'CM000997.2',
+                     '5': 'CM000998.2',
+                     '6': 'CM000999.2',
+                     '7': 'CM001000.2',
+                     '8': 'CM001001.2',
+                     '9': 'CM001002.2',
+                     'GL456210.1': 'GL456210.1',
+                     'GL456211.1': 'GL456211.1',
+                     'GL456212.1': 'GL456212.1',
+                     'GL456216.1': 'GL456216.1',
+                     'GL456219.1': 'GL456219.1',
+                     'GL456221.1': 'GL456221.1',
+                     'GL456233.1': 'GL456233.1',
+                     'GL456239.1': 'GL456239.1',
+                     'GL456350.1': 'GL456350.1',
+                     'GL456354.1': 'GL456354.1',
+                     'GL456372.1': 'GL456372.1',
+                     'GL456381.1': 'GL456381.1',
+                     'GL456385.1': 'GL456385.1',
+                     'JH584292.1': 'JH584292.1',
+                     'JH584293.1': 'JH584293.1',
+                     'JH584294.1': 'JH584294.1',
+                     'JH584295.1': 'JH584295.1',
+                     'JH584296.1': 'JH584296.1',
+                     'JH584297.1': 'JH584297.1',
+                     'JH584298.1': 'JH584298.1',
+                     'JH584299.1': 'JH584299.1',
+                     'JH584303.1': 'JH584303.1',
+                     'JH584304.1': 'JH584304.1',
+                     'MT': 'AY172335.1',
+                     'X': 'CM001013.2',
+                     'Y': 'CM001014.2'}
 
 
+Notes from meeting with NCBI Datasets developpers on 09/24/2021
 
 
+    unzip - p
+    dataset.zip ‘chr *.fna
+    ' > all_chr_files.fna
 
+    Correction(hopefully): unzip - p
+    ncbi_dataset.zip
+    '*/chr*.fna' > all_chr_files.fna
 
+    https: // anaconda.org / conda - forge / ncbi - datasets - cli
 
+    datasets
+    summary
+    gene
+    symbol
+    sumo1 | jq. | less
 
-
-
-
-
-
-
-
-
-
-
-
+"""

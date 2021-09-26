@@ -113,7 +113,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 PAML_log_dict["Species"].append(species)
                 
             # record CDS_coverage
-            if start_recording is True and line.startswith("['ref alignment:"):
+            if start_recording is True and line.startswith("['Original alignment:"):
                 coverage = line.split(")")[0].split("(")[-1].replace(" ", "")
                 PAML_log_dict["CDS Coverage"].append(coverage)
             
@@ -748,11 +748,11 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
         
         if features[3] == 1:
             omegas.append(float(features[1]))
-            if features[1] > roof:
+            if float(features[1]) > roof:
                 roof = math.ceil(features[1])
-            elif 0.5 <= features[1] <= floor:
+            elif 0.5 <= float(features[1]) <= floor:
                 floor = 0.5
-            elif 0 < features[1] < 0.5:
+            elif 0 < float(features[1]) < 0.5:
                 floor = 0
             probabilities.append(float(features[2]))
             

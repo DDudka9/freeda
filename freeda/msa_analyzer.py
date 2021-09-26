@@ -15,6 +15,7 @@ from freeda import fasta_reader
 from freeda import exon_finder
 from freeda import cds_cloner
 from freeda import input_extractor
+from freeda import genomes_preprocessing
 import operator
 import logging
 import re
@@ -81,9 +82,8 @@ def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exon
         logging.info(side_note)
     final_cds = cloned_cds.replace("N", "")
     
-    
     # write a given protein cds into a file
-    species_name = write_cds(wdir, protein_name, genome_name, final_cds, MSA_path)
+    species_name = find_species_abbreviation(wdir, ref_species, protein_name, genome_name, final_cds, MSA_path)
     file_cloned_cds(final_cds, protein_name, species_name)
 
 
@@ -148,6 +148,7 @@ def clone_exons_overhangs(seqs, exons): # works well
 
 
 def preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons):
+
     intronic_exons = []
     preselected_exons_overhangs = {}
     sorted_exons = []
@@ -189,6 +190,7 @@ def preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons
 
 
 def find_contigs_with_most_intronic_exons(preselected_exons_overhangs): # works well
+
     intronic_contigs = {}
     for exon, contigs in preselected_exons_overhangs.items():
         if contigs != []:
@@ -199,33 +201,44 @@ def find_contigs_with_most_intronic_exons(preselected_exons_overhangs): # works 
                     intronic_contigs[contig[0]] = 0
                     intronic_contigs[contig[0]] += 1
 
-    most_intronic_contigs = sorted(intronic_contigs.items(), key=operator.itemgetter(1), \
-                                                                 reverse=True)
+    most_intronic_contigs = sorted(intronic_contigs.items(), key=operator.itemgetter(1), reverse=True)
         
     return most_intronic_contigs
 
 
-def write_cds(wdir, protein_name, genome_name, cloned_cds, MSA_path):
+def find_species_abbreviation(wdir, ref_species, protein_name, genome_name, cloned_cds, MSA_path):
+    """Finds species abbreviation."""
+
+    # get all genome names and genomes dict with species abbreviations as keys
+    all_genomes = genomes_preprocessing.get_names(ref_species, ref_genome=False)
+
+    # refactoring in progress...
+    header = [name[0] for name in all_genomes if name[1] == genome_name][0]
     filepath = MSA_path + "Cloned_cds"
-    species_path = wdir + "species.txt"
-    genomes_path = wdir + "genomes.txt"
-    with open(species_path, "r") as s:
-        species_list = s.readlines()
-    with open(genomes_path, "r") as g:
-        genomes_list = g.read().splitlines()
-    
-    species_index = genomes_list.index(genome_name + ".fasta")
-    
-    header = species_list[species_index].rstrip("\n")
     filename = header + "_" + protein_name + ".fasta"
+
+    #species_path = wdir + "species.txt"
+    #genomes_path = wdir + "genomes.txt"
+    #with open(species_path, "r") as s:
+    #    species_list = s.readlines()
+    #with open(genomes_path, "r") as g:
+    #    genomes_list = g.read().splitlines()
+
+    #species_index = genomes_list.index(genome_name + ".fasta")
+    
+    #header = species_list[species_index].rstrip("\n")
+
     with open(filename, "w") as f:
         f.write(">" + header + "_" + protein_name + "_cds")
         f.write("\n" + cloned_cds)
     shutil.move(filename, filepath)
+
     return header
 
 
 def file_cloned_cds(cloned_cds, protein_name, species_name):
+    """Appends cloned cds to the end of the file with all cds."""
+
     file_name = protein_name + ".fasta"
     name = protein_name + "_" + species_name
     with open(file_name, "a+") as f:

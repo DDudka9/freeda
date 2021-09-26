@@ -10,6 +10,8 @@ Created on Fri Jul  9 22:47:43 2021
     # pyensembl install --species mouse --release 100
     # pyensembl install --species human --release 100
 
+# 09/25/2021 -> installed new version of pyensembl using command line ->
+# pyensembl install --species mouse --release 104 DID NOT WORK !!!
 
 from freeda import tblastn
 from freeda import genomes_preprocessing
@@ -725,7 +727,7 @@ def clear_structure_files(structure_path):
         try:
             os.remove(structure_path + "/" + file)
         except FileNotFoundError:
-            print("FileNotFoundError was triggered for: %s" % file)
+            #print("FileNotFoundError was triggered for: %s" % file)
             pass
 
     return

@@ -24,6 +24,7 @@ import genomes_preprocessing
 import subprocess
 import os
 import glob
+import time
 
 
 def run_blast(wdir, ref_species, all_proteins):
@@ -37,8 +38,8 @@ def run_blast(wdir, ref_species, all_proteins):
             "bitscore length means pident means mismatch means gapopen means qlen means slen means"
     
     #genomes = [genome.rstrip("\n") for genome in open(genomes_file_dir, "r").readlines()]
-    all_names = genomes_preprocessing.get_names(ref_species)
-    genomes = [names[1] for names in all_names]
+    all_genomes = genomes_preprocessing.get_names(ref_species)
+    genomes = [names[1] for names in all_genomes]
 
     # clear Blast_output folder
     all_old_blast_output_files = glob.glob(os.path.join(output_path, "*.txt"))
@@ -81,16 +82,19 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     zip_file = genome + ".zip"
     expected_genome_file = genome + ".fasta"
     # database extensions for tblastn
-    expected_database_extensions = {".00.phr",
-                           ".00.pin",
-                           ".00.psq",
-                           ".01.phr",
-                           ".01.pin",
-                           ".01.psq",
-                           ".02.phr",
-                           ".02.pin",
-                           ".02.psq",
-                           ".pal"}
+    expected_database_extensions = {".nsq",
+                                    ".nhr",
+                                    ".nin",
+                                    ".00.phr",
+                                    ".00.pin",
+                                    ".00.psq",
+                                    ".01.phr",
+                                    ".01.pin",
+                                    ".01.psq",
+                                    ".02.phr",
+                                    ".02.pin",
+                                    ".02.psq",
+                                    ".pal"}
     
     # get info on all files available
     all_files = []
@@ -133,11 +137,13 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         
         print("\nGenome : %s blast database does not exists" \
                             " -> downloading and decompressing it now (it might take couple of minutes)...\n" % genome)
-        accession_nr = [names[2] for names in genomes_preprocessing.get_names(ref_species) if genome in names][0]
+
+        all_genomes = genomes_preprocessing.get_names(ref_species)
+        accession_nr = [names[2] for names in all_genomes if genome in names][0]
         # download genome
-        download_genome(wdir, genome, accession_nr, database_path, ref_genome=False)
+        download_genome(genome, accession_nr, database_path)
         # decompress genome
-        unzip_genome(wdir, genome, accession_nr, database_path)
+        #unzip_genome(wdir, genome, accession_nr, database_path)
         # make database
         make_blast_database(database_path, genome)
 
@@ -174,7 +180,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         # fasta file and databases are present for the genome
         if genome_found is True and genome_file_database is True:
             genome_file_database = True
-            print("Genome : %s was downloaded and decompressed successfully\n" % genome)
+            print("\nGenome : %s was downloaded and decompressed successfully" % genome)
 
             return genome_file_database
 
@@ -210,12 +216,12 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
 
             # unpack and decompress the genome into a fasta file
             #genome_to_unzip = ref_genome_path + "/" + genome + "zip"
-            accession_nr = [names[2] for names in genomes_preprocessing.get_names(ref_species,
-                                                                                  ref_genome=True) if genome in names][0]
+            all_genomes = genomes_preprocessing.get_names(ref_species, ref_genome=True)
+            accession_nr = all_genomes[2]
             # download genome
-            download_genome(wdir, genome, accession_nr, ref_genome_path, ref_genome=True)
+            download_genome(genome, accession_nr, ref_genome_path)
             # decompress genome
-            unzip_genome(wdir, genome, accession_nr, ref_genome_path)
+            #unzip_genome(wdir, genome, accession_nr, ref_genome_path)
             # remove the tar file
             #os.remove(ref_genome_path + tar_file)
             return True
@@ -231,8 +237,44 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     return genome_file_database
 
 
+def download_genome(genome, accession_nr, database_path):
+    """Downloads and unzips genomes using NCBI Datasets CLI, makes one fasta file"""
+
+    # download genome
+    #print("         Downloading and unzipping genome : %s - it might take a couple of min ..." % genome)
+    start_time = time.time()
+    filepath_1 = database_path + genome + ".zip"
+    cmd1 = ["datasets", "download", "genome", "accession", accession_nr, "--filename", filepath_1]
+    subprocess.call(cmd1, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb')) # mute output and cautions
+
+    # unzip all chromosomes into single file
+    filepath_2 = database_path + genome + ".fasta"
+    cmd2 = ["unzip", "-pq", filepath_1, "cat", "*/*.fna", filepath_2]
+    with open(filepath_2, "w") as outfile:
+        subprocess.call(cmd2, stdout=outfile, stderr=open(os.devnull, 'wb')) # redirect output to file and mute cautions
+
+    stop_time = time.time()
+    print("         -> Done : in %s min" % ((stop_time - start_time) / 60))
+
+    os.remove(filepath_1)
+
+
+def make_blast_database(database_path, genome):
+    """ Makes a blast database based on genome fasta file."""
+
+    genome_file = genome + ".fasta"
+    make_database_nucl = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "nucl"]
+    make_database_prot = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "prot"]
+
+    print("\n                  Building blast database for genome : %s ..." % genome)
+    subprocess.call(make_database_nucl, stdout=open(os.devnull, 'wb')) # mute log info
+    subprocess.call(make_database_prot, stdout=open(os.devnull, 'wb')) # mute log info
+
+
+"""
+
 def download_genome(wdir, genome, accession_nr, database_path, ref_genome=False):
-    """Downloads preselected genomes from NCBO Assemblies using NCBI API : ncbi.datasets."""
+    #Downloads preselected genomes from NCBO Assemblies using NCBI API : ncbi.datasets.
 
     # Almost empty zip downloaded for : MUSCULUS_genome, SPRETUS_genome,
 
@@ -287,6 +329,7 @@ def download_genome(wdir, genome, accession_nr, database_path, ref_genome=False)
 
     # get genomes
     assembly_accessions = [accession_nr]
+    print(accession_nr)
     exclude_sequence = False
     #include_annotation_type = ['PROT_FASTA']
     api_response = api_instance.download_assembly_package(assembly_accessions,
@@ -306,9 +349,8 @@ def download_genome(wdir, genome, accession_nr, database_path, ref_genome=False)
     #else:
     #    shutil.move(wdir + genome + ".zip", wdir + "/Reference_genomes/" + genome + ".zip")
 
-
 def unzip_genome(wdir, genome, accession_nr, database_path):
-    """Unzips NCBI API downloaded genomes in zip format using ... gzip and shutil modules"""
+    #Unzips NCBI API downloaded genomes in zip format using ... gzip and shutil modules
 
     import os
     import shutil
@@ -335,20 +377,9 @@ def unzip_genome(wdir, genome, accession_nr, database_path):
                 shutil.move(root + "/" + file, database_path + genome + ".fasta")
 
     # removes directory and its content
-    shutil.rmtree(temp)
-    os.remove(to_unzip)
+    #shutil.rmtree(temp)
+    #os.remove(to_unzip)
 
-
-def make_blast_database(database_path, genome):
-    """ Makes a blast database based on genome fasta file."""
-    
-    genome_file = genome + ".fasta"
-    #make_database_nucl = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "nucl"]
-    #subprocess.call(make_database_nucl)
-    make_database_prot = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "prot"]
-    subprocess.call(make_database_prot)
-
-"""
 
 ("\n"
  "            # to avoid duplications\n"

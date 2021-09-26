@@ -16,6 +16,9 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 """
 
 # TODO:
+#    Figure out how to bypass the nead for pyensembl install release
+#    Issue with excel sheet in Mis18bp1 -> problem with finding coverage? -> FIXED?
+#    Issue with PAML visualization graph -> CDS should be that of the reference species but Mis18bp1 it looks like its the longest's species # I decided that its ok
 #    Fix the bioservices issue (Brian) -> in virtual box and pyinstaller the colorlog module doesnt have "logging" attribute -> deprecated in python 3.8 ?
 #    Use colorlog module to colour the log files
 #    TESTING > 10kb flanks on CD46 and CD55 with 70 t and 30kb flanks (08_22_2021)
@@ -55,7 +58,7 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 #            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
 #            Same with Cenp-W
 #            Not sure what the solution is -> I made sure proteins that do not score in M8 vs M7 are not visualized
-#    8) ISSUE with the cds_cloner functon (requires refactoring):
+#    8) ISSUE with the cds_cloner function (requires refactoring):
 #           Cloner module needs revision to get hamming distance duplication comparison compare
 #           the actual duplicated exons and not only the number of exon they carry
 #           test on Aurkc Ap
@@ -154,9 +157,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
 
     # get all species and genome names
-    all_names = genomes_preprocessing.get_names(ref_species)
-    all_species = [names[0] for names in all_names]
-    all_genome_names = [names[1] for names in all_names]
+    #all_names = genomes_preprocessing.get_names(ref_species)
+    #all_species = [names[0] for names in all_names]
+    #all_genome_names = [names[1] for names in all_names]
 
 
 
@@ -344,7 +347,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 # ----------------------------------------#
 
 # need to provide an absolute path to the main when running in command line:
-# (py37) python /Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py -d /Volumes/DamianEx_2/Data/ -os "Mm" -t 30
+# (py37) python /Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py -d /Volumes/DamianEx_2/Data/ -rs "Mm" -t 30
 # you can get abs path using:
 # (base) brew install coreutils
 # (base) realpath freeda_pipeline.py
