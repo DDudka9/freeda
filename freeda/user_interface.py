@@ -9,11 +9,19 @@ from tkinter import ttk
 import os
 import re
 
+
+# Define which operating system is used -> os.uname().sysname
+# Use spinbox for gene names? -> it will contain all possible pyensembl genes for the release
+# Use scrollbar?
+
+
+
+
 wdir = os.getcwd() + "/"
 
-def make_proteins_file(*args):
-    with open(wdir + "proteins_new.txt", "a") as f:
-        f.write("\n" + value)
+#def make_proteins_file(*args):
+#    with open(wdir + "proteins_new.txt", "a") as f:
+#        f.write("\n" + value)
 
 
 root = Tk()

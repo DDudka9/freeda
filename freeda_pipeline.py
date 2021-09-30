@@ -16,6 +16,13 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 """
 
 # TODO:
+#    There is something wrong with Zp3 !!!! Ms, Mc, Ha and Mn look completely different -> it seems that all contigs in Zp3 look good but exon 1 is not present in Zp3.fasta -> instead Ms, Mc, Ha and Mn seem to be Zp2 !!!
+#    Solution: rerun Zp3 alone -> could be some leftovers from the previous run? Otherwise I dont see how can Zp2 get into Zp3 file -> yes, alone its analyzed properly
+#    Izumo1r PAML log file logged 14 species but the alignment shows 16 species! (2 of them are Izumo1)
+#    Solution: Go through naming of the alignment files and making copies. Its likely that freeda remebers previous alignments and adds to them. Its them perpetrated to Spaca3 and Astl
+#    Lead -> Pd and Gd in Izumo1r are both <90 so they are present in Izumo1r.fasta but Izumo1r_final.fasta has Pd and Gd from Izumo1 !!! that was run alongside
+#    Same situation with Izumo1 and Izumo1r -> Izumo1 analyzed with no issues but Izumo1r has Pd and Gd sequence from Izumo1
+#    To check operation system -> os.uname().sysname -> macOS is "Darwin", linux is "Linux"
 #    Figure out how to bypass the nead for pyensembl install release
 #    Issue with excel sheet in Mis18bp1 -> problem with finding coverage? -> FIXED?
 #    Issue with PAML visualization graph -> CDS should be that of the reference species but Mis18bp1 it looks like its the longest's species # I decided that its ok
@@ -356,7 +363,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Hs")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 

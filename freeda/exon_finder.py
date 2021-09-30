@@ -98,27 +98,33 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
                         # do not allow introny in first exon if not syntenic (often RETRO have 5UTR)
                         else:
                             introny_at_Nterm = False
-                
-                # check possible retrotransposition since no intron attached
-                elif locus[position-1] == "-" \
-                    and locus[position-4] == "-" \
-                    and locus[position-7] == "-":
+
+
+                else:
+                    try:
+                        # check possible retrotransposition since no intron attached
+                        if locus[position-1] == "-" \
+                            and locus[position-4] == "-" \
+                            and locus[position-7] == "-":
                     
-                    N_term_retrotransposition = check_retrotransposition(position, last_bp, cds, locus, gene)
+                            N_term_retrotransposition = check_retrotransposition(position, last_bp, cds, locus, gene)
             
-                # check for very divergent introns (will be counted intronic)
-                # does not allow the first exon to have divergent introns (possibly not-syntenic exon)
+                            # check for very divergent introns (will be counted intronic)
+                            # does not allow the first exon to have divergent introns (possibly not-syntenic exon)
 
-                # ALLOWED EXON 1 TO BE DIVERGENT ON 08_21_2021 -> Terf2 looses exon 1 in Ay because of this -> keep testing
-                # exon_number != 1
-                # note from 08_22_2021 -> this does not allow first exons to be divergent cose of the previous statement
+                            # ALLOWED EXON 1 TO BE DIVERGENT ON 08_21_2021 -> Terf2 looses exon 1 in Ay because of this -> keep testing
+                            # exon_number != 1
+                            # note from 08_22_2021 -> this does not allow first exons to be divergent cose of the previous statement
 
-                elif homology_check(position, last_bp, cds, locus, gene) is True:
-                    divergent_introns = True
+                        elif homology_check(position, last_bp, cds, locus, gene) is True:
+                            divergent_introns = True
             
-            # this exon seems to be missing from the contig          
-            else:
-                exon_missing = True
+                        # this exon seems to be missing from the contig
+                        else:
+                            exon_missing = True
+                    # there is no place to check retrotransposition gaps (match at the edge of alignment)
+                    except KeyError:
+                        introny_at_Nterm = False
         
         # EXON CONTINUES IN REF SPECIES (includes first bp)
     

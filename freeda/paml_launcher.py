@@ -51,13 +51,11 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
     #                        "M2a vs M1a"})
     
     # make an empty template for all possible species
-    all_names = genomes_preprocessing.get_names(ref_species)
-    all_species = [names[0] for names in all_names]
+    all_species = [names[0] for names in genomes_preprocessing.get_names(ref_species)]
 
-    final_species = {}
-    final_species[ref_species] = ""
+    all_species_dict = {ref_species: ""}
     for species in all_species:
-        final_species[species] = ""
+        all_species_dict[species] = ""
 
     #with open("species.txt", "r") as f:
     #    all_species[ref_species] = ""
@@ -84,7 +82,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
         # otherwise proceed with the analysis
         else:
             # need to use deepcopy function to make an actual dictionary copy
-            final_species = copy.deepcopy(final_species)
+            final_species = copy.deepcopy(all_species_dict)
             final_species_headers = []
         
             # read each cds fasta file and put them into the empty final_species dict

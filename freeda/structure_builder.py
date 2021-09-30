@@ -13,6 +13,7 @@ from ast import literal_eval
 import shutil
 import subprocess
 import os
+import requests
 
 
 # wdir = os.getcwd() + "/"
@@ -22,6 +23,8 @@ import os
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCOREING (C-term label interferes?)
 # Done but NOT TESTED YET
+
+
 
 
 def check_structure(wdir, ref_species, protein):
@@ -188,8 +191,69 @@ def get_pymol_script(wdir, ref_species, dictionary, protein, protein_path, prote
 
     return True
 
-
 """
+
+# 2021-09-15
+# Brian Akins
+
+# METHOD: get_interpro(uniprot_id), interacts with the InterPro REST API.
+# INPUT:  A string containing the Uniprot ID of a target protein.
+# OUTPUT: A requests Response object. To interact with this object, use:
+#         .status_code, .headers['content-type'], .encoding, .text, or .json()
+# More info on the API URL architecture can be found at
+# https://docs.google.com/document/d/1JkZAkGI6KjZdqwJFXYlTFPna82p68vom_CojYYaTAR0/edit
+def get_interpro(uniprot_id):
+    print('Retrieving InterPro data for UniProt ID ' + uniprot_id + '...\n')
+    interpro_url = 'https://www.ebi.ac.uk/interpro/api/protein/uniprot/' + uniprot_id + '/entry/interpro/'
+    print('Request URL: ' + interpro_url)
+    response = requests.get(interpro_url)
+    print(response.json())
+    return response
+
+
+def get_domain_info(interpro_entry_id):
+    domain_entry_url = 'https://www.ebi.ac.uk/interpro/api/entry/interpro/' + interpro_entry_id
+    response = requests.get(domain_entry_url)
+    return response
+
+
+# METHOD: protein_domains(uniprot_id), gets information from the InterPro REST API about the protein domains present.
+# INPUT: A string containing the UniProt ID of the target protein.
+# OUTPUT: A list of dictionaries, each containing:
+#         {'accession': InterPro Accession ID string,
+#          'name': domain name string,
+#          'coordinates': [(domain_start1, domain_end1), (domain_start2, domain_end2), ...]}
+#         With one list item per InterPro entry. Most (all?) domains will have only one start/stop coordinate tuple.
+def protein_domains(uniprot_id):
+    interpro_dict = get_interpro(uniprot_id).json()
+    # List the entries from InterPro with type 'domain' (as opposed to 'family', etc.) as a list of dictionaries
+    domains = [entry for entry in interpro_dict['entry_subset'] if entry['entry_type'] == 'domain']
+    output_dict = []
+    # Iterate through the domain entries and add an entry to the output dictionary for each
+    for entry in domains:
+        accession_id = entry['accession']
+        domain_info = get_domain_info(accession_id).json()
+        domain_name = domain_info['metadata']['name']['name']
+        # An ugly way to retrieve the start(s) and end(s) of the domain from the nested dictionaries and lists
+        # If there is a bug, check here first
+        domain_fragments = entry['entry_protein_locations'][0]['fragments']
+        # A list of tuples where each tuple is (start residue number, end residue number) for the domain
+        domain_coordinates = [(fragment['start'], fragment['end']) for fragment in domain_fragments]
+        output_dict.append({'accession': accession_id,
+                            'name': domain_name,
+                            'coordinates': domain_coordinates})
+    print('Domains retrieved for UniProt ID ' + uniprot_id)
+    return output_dict
+
+
+cenpt_uniprot = 'Q3TJM4'
+cenpo_uniprot = 'Q9BU64'
+test_cenpt = protein_domains(cenpt_uniprot)
+test_cenpo = protein_domains(cenpo_uniprot)
+print(test_cenpt)
+print(test_cenpo)
+
+
 
 # THIS IS NOT NEEDED ANYMORE:
 def compare_model_with_input(wdir, ref_species, protein, model_seq):
