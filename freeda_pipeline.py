@@ -10,18 +10,20 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 """
 
 """
-ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, model was found so whats the problem? -> gene_name issue?guerin
+ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, model was found so whats the problem? -> gene_name issue?
 
 
 """
 
 # TODO:
-#    There is something wrong with Zp3 !!!! Ms, Mc, Ha and Mn look completely different -> it seems that all contigs in Zp3 look good but exon 1 is not present in Zp3.fasta -> instead Ms, Mc, Ha and Mn seem to be Zp2 !!!
-#    Solution: rerun Zp3 alone -> could be some leftovers from the previous run? Otherwise I dont see how can Zp2 get into Zp3 file -> yes, alone its analyzed properly
-#    Izumo1r PAML log file logged 14 species but the alignment shows 16 species! (2 of them are Izumo1)
-#    Solution: Go through naming of the alignment files and making copies. Its likely that freeda remebers previous alignments and adds to them. Its them perpetrated to Spaca3 and Astl
-#    Lead -> Pd and Gd in Izumo1r are both <90 so they are present in Izumo1r.fasta but Izumo1r_final.fasta has Pd and Gd from Izumo1 !!! that was run alongside
-#    Same situation with Izumo1 and Izumo1r -> Izumo1 analyzed with no issues but Izumo1r has Pd and Gd sequence from Izumo1
+#    Genome of at least one species contains no matches above the identity threshold used : 30 -> use a lower one -> exiting the pipeline now...
+#    I can see that index of nbci datasets downloaded genomes is a bit lower than the one of original genomes (ex. SORICOIDES 14000 entries vs 15000 entries
+#    Its possible that Im missing some of the contigs... How to fix that?
+#    Nap1l4 -> ...WARNING... : CDS of Nap1l4 in ref species is NOT in frame. (from fasta_reader-py module; it has 2 microexons 1, 14)
+#    Think about PAML visualization and what the "gray" bars mean -> longest sequence, not reference, what about 3D overlay?
+#    Use Mo for prediction of sequence accuracy -> compare with NCBI Mo
+#    Get full gene name list and pass it to GUI -> user can only pick valid gene names
+#    Check if NCBI datasets can give uniprot ID -> is it better than pyensembl?
 #    To check operation system -> os.uname().sysname -> macOS is "Darwin", linux is "Linux"
 #    Figure out how to bypass the nead for pyensembl install release
 #    Issue with excel sheet in Mis18bp1 -> problem with finding coverage? -> FIXED?
@@ -226,7 +228,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
             print("\n----------- * %s * -----------" % protein)
             # get structure prediction model from AlphaFold
             possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, protein)
-            model_seq = input_extractor.fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
+            model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
             # get sequence input from ensembl
             input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
                                                                                         wdir,
@@ -236,7 +238,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                                                                                         ensembl,
                                                                                         biotype,
                                                                                         protein,
-                                                                                        model_seq
+                                                                                        model_seq,
+                                                                                        uniprot_id
             )
 
             if input_correct:
@@ -278,7 +281,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
             result_path = exon_extractor.analyse_blast_results(wdir, blast_output_path,
                                                                ref_species, int(t), all_proteins, all_genomes)
         else:
-            print("\n   Genome of at least one species contains no matches above the identity threshold used : %s -> use a lower one " 
+            print("\n     ...FATAL ERROR... : Genome of at least one species contains no matches above the identity threshold used : %s -> use a lower one " 
                     "-> exiting the pipeline now..." % t)
             return
 

@@ -106,7 +106,7 @@ def check_blast_output(blast_output_path, t):
         with open(blast_output_path + genome_name, "r") as f:
             file = f.readlines()
             if not [match for match in file if float(match.split("\t")[9]) > t]:
-                print("\nNo matches above threshold : %s found in blast output file : %s" % (t, genome_name))
+                print("\n...FATAL ERROR... : No matches above threshold : %s found in blast output file : %s" % (t, genome_name))
                 return False
 
     return True

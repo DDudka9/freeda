@@ -133,7 +133,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
             final_species_headers.insert(0, ref_species)
             nr_of_species = len(final_species_headers)
             nr_of_species_total_dict[protein] = nr_of_species
-            message = "\n --------- * %s * --------- \n\n Final species cloned and aligned (+ ref) for %s : %s %s" \
+            message = "\n\n --------- * %s * --------- \n\n Final species cloned and aligned (+ ref) for %s : %s %s" \
                 % (protein, protein, str(nr_of_species), str(final_species_headers))
             print(message)
             logging.info(message)
@@ -387,7 +387,7 @@ def run_RAxML(protein, protein_folder_path, translated_path):
     if result == 0:
         message = "\n Best gene tree was found for protein : %s " % protein
         print(message)
-        logging.info(message)
+        #logging.info(message)
         
     else:
         message = "\n PROBLEM with making gene tree for protein : %s " % protein
@@ -508,7 +508,7 @@ def run_seqret(protein, protein_folder_path, out_Gblocks):
     if result == 0:
         message = "\n Phylip format was created for protein : %s " % protein
         print(message)
-        logging.info(message)
+        #logging.info(message)
         return phylip_path
     else:
         message = "\n PROBLEM with making phylip for protein : %s " % protein
