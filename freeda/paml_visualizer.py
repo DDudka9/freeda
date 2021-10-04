@@ -34,7 +34,7 @@ import math
 #all_proteins = ["CD46"]
 #nr_of_species_total_dict = {"CD46" : 9}
 #PAML_logfile_name = "PAML-08-23-2021-00-53.log"
-#original_species = "Hs"
+#ref_species = "Hs"
 #day = "-06-27-2021-15-04"
 #protein_name = "CD46"
 #nr_of_species_total = 9
@@ -44,10 +44,10 @@ import math
 
 
 def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict,
-                         original_species, PAML_logfile_name, day, proteins_under_positive_selection):
+                         ref_species, PAML_logfile_name, day, proteins_under_positive_selection):
     """Analyses PAML results for each protein"""
 
-    all_matched_adaptive_sites_original = {}
+    all_matched_adaptive_sites_ref = {}
     
     for protein in all_proteins:
         
@@ -59,22 +59,24 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
         
         else:
             nr_of_species_total = nr_of_species_total_dict[protein]
-            matched_adaptive_sites_original = plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species, proteins_under_positive_selection)
-            all_matched_adaptive_sites_original[protein] = matched_adaptive_sites_original
+            matched_adaptive_sites_ref = plot_PAML(wdir, result_path, protein,
+                                                   nr_of_species_total, ref_species,
+                                                   proteins_under_positive_selection)
+            all_matched_adaptive_sites_ref[protein] = matched_adaptive_sites_ref
         
     # prepare a dict with PAML stats
-    final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_original)
+    final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref)
     # generate a PAML result excel sheet
     output_excel_sheet(wdir, final_PAML_log_dict, result_path, day)
     
     # save the matched adaptive sites into a file
-    with open("all_matched_adaptive_sites_original.txt", "w") as file:
-        dump(all_matched_adaptive_sites_original, file)
+    with open("all_matched_adaptive_sites_ref.txt", "w") as file:
+        dump(all_matched_adaptive_sites_ref, file)
     
-    shutil.move(wdir + "all_matched_adaptive_sites_original.txt", result_path + "all_matched_adaptive_sites_original.txt")
+    shutil.move(wdir + "all_matched_adaptive_sites_ref.txt", result_path + "all_matched_adaptive_sites_ref.txt")
 
 
-def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_original):
+def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref):
     """Reads the output PAML and finds LRTs and computes p-values for M2a-M1a and M8-M7 models"""
 
     # prepare the dict storing the PAML result
@@ -181,7 +183,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 # remove adaptive sites from proteins that are not rapidly evolving
                 if M8_vs_M7_pvalue != "None" and float(M8_vs_M7_pvalue) <= 0.05:
                         
-                    matched_dict = all_matched_adaptive_sites_original[protein]    
+                    matched_dict = all_matched_adaptive_sites_ref[protein]
                     mild_sites = {}
                     strong_sites = {}
         
@@ -294,42 +296,42 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
 
 
 
-def plot_PAML(wdir, result_path, protein, nr_of_species_total, original_species, proteins_under_positive_selection):
+def plot_PAML(wdir, result_path, protein, nr_of_species_total, ref_species, proteins_under_positive_selection):
     """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
     
-    # get original and final aa sequence for a protein
-    original_sequence_record, final_sequence_record = get_original_and_final_seqs(wdir, protein, result_path, original_species)
+    # get ref and final aa sequence for a protein
+    ref_sequence_record, final_sequence_record = get_ref_and_final_seqs(wdir, protein, result_path, ref_species)
     # organise them into easy to search dictionaries
-    original_species_dict, final_original_species_dict, final_length = organise_original_and_final_seqs(original_sequence_record, final_sequence_record)
-    # map the aa residues between the original and final sequences
-    mapped_original_and_final_residues_dict = map_original_and_final_residues(original_sequence_record, final_sequence_record)
+    ref_species_dict, final_ref_species_dict, final_length = organise_ref_and_final_seqs(ref_sequence_record, final_sequence_record)
+    # map the aa residues between the ref and final sequences
+    mapped_ref_and_final_residues_dict = map_ref_and_final_residues(ref_sequence_record, final_sequence_record)
     # find dN/dS omega ratio per site based on "rst" file (final only for now)
     omega_dict = get_omegas(protein, result_path, final_length)
     # read PAML output file to find which residues are rapidly evolving in the final seq
     adaptive_sites_dict = get_adaptive_sites(result_path, protein)
-    # find these residues in the original sequence
-    matched_adaptive_sites_original = match_adaptive_sites_to_original(final_original_species_dict,
-            mapped_original_and_final_residues_dict, adaptive_sites_dict, omega_dict)
+    # find these residues in the ref sequence
+    matched_adaptive_sites_ref = match_adaptive_sites_to_ref(final_ref_species_dict,
+            mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict)
     # mark the sites that were not analyzed by PAML
-    final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_original, mapped_original_and_final_residues_dict)
-    # record and write breakdown of adaptive sites overlay to original cds
+    final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
+    # record and write breakdown of adaptive sites overlay to ref cds
     record_adaptive_sites(final_dict_to_plot, protein, proteins_under_positive_selection)
     # plot omegas and probabilities
     make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection)
 
-    return matched_adaptive_sites_original
+    return matched_adaptive_sites_ref
 
 
-def mark_skipped_sites(matched_adaptive_sites_original, mapped_original_and_final_residues_dict):
+def mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict):
     """Marks sites that were not analyzed by PAML"""
 
-    for site in mapped_original_and_final_residues_dict:
-        if mapped_original_and_final_residues_dict[site][0] != "-":
-            matched_adaptive_sites_original[site].append(1)
+    for site in mapped_ref_and_final_residues_dict:
+        if mapped_ref_and_final_residues_dict[site][0] != "-":
+            matched_adaptive_sites_ref[site].append(1)
         else:
-            matched_adaptive_sites_original[site].append(0)
+            matched_adaptive_sites_ref[site].append(0)
             
-    return matched_adaptive_sites_original
+    return matched_adaptive_sites_ref
 
 
 def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_positive_selection):
@@ -480,11 +482,11 @@ def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_posit
         logging.info(residues)
 
 
-def get_original_protein_seq(wdir, protein_name, original_species):
+def get_ref_protein_seq(wdir, protein_name, ref_species):
     """Gets the protein sequenced used for blast"""
 
     # open according cds fasta file
-    with open(wdir + "Blast_input/" + protein_name + "_" + original_species + "_protein.fasta", "r") as f:
+    with open(wdir + "Blast_input/" + protein_name + "_" + ref_species + "_protein.fasta", "r") as f:
         sequence = ""
         cds = f.readlines()
         for line in cds[1:]:
@@ -492,18 +494,18 @@ def get_original_protein_seq(wdir, protein_name, original_species):
     return sequence
     
 
-def get_original_and_final_seqs(wdir, protein_name, result_path, original_species):
+def get_ref_and_final_seqs(wdir, protein_name, result_path, ref_species):
     """Recovers aa seq of reference species from input and a final one after Gblocks"""
     
     protein_path = result_path + "/" + protein_name
 
-    # get record object for the original protein sequence
-    original_sequence = get_original_protein_seq(wdir, protein_name, original_species)
-    original_sequence_Seq_object = Seq(original_sequence)
-    #original_original_Seq_object = original_sequence_Seq.translate()
-    original_sequence_record = SeqRecord(original_sequence_Seq_object)
+    # get record object for the ref protein sequence
+    ref_sequence = get_ref_protein_seq(wdir, protein_name, ref_species)
+    ref_sequence_Seq_object = Seq(ref_sequence)
+    #ref_ref_Seq_object = ref_sequence_Seq.translate()
+    ref_sequence_record = SeqRecord(ref_sequence_Seq_object)
     
-    # get record onject for the final protein sequence
+    # get record object for the final protein sequence
     pattern = "translated.fasta"
     all_files = os.listdir(protein_path)
     
@@ -517,49 +519,49 @@ def get_original_and_final_seqs(wdir, protein_name, result_path, original_specie
     final_sequence_Seq_object = Seq(final_sequence)
     final_sequence_record = SeqRecord(final_sequence_Seq_object)
     
-    return original_sequence_record, final_sequence_record
-    
+    return ref_sequence_record, final_sequence_record
 
-def organise_original_and_final_seqs(original_sequence_record, final_sequence_record):
+
+def organise_ref_and_final_seqs(ref_sequence_record, final_sequence_record):
     """Organises residues in aa seq of reference species from input and post Gblocks into an easy to search dict"""
 
     # aa seq from input
-    original_species_dict = {}    
+    ref_species_dict = {}
     total_length = 0
-    for index, aa in enumerate(original_sequence_record.seq, start=1):
+    for index, aa in enumerate(ref_sequence_record.seq, start=1):
         if aa == "*":
             break
-        original_species_dict[index] = aa
+        ref_species_dict[index] = aa
         total_length += 1
 
     # aa seq post Gblocks
-    final_original_species_dict = {}
+    final_ref_species_dict = {}
     final_length = 0
     for index, aa in enumerate(final_sequence_record.seq, start=1):
         if aa == "*":
             break
-        final_original_species_dict[index] = aa
+        final_ref_species_dict[index] = aa
         final_length += 1
 
-    return original_species_dict, final_original_species_dict, final_length   
+    return ref_species_dict, final_ref_species_dict, final_length
 
 
-def map_original_and_final_residues(original_sequence_record, final_sequence_record):
+def map_ref_and_final_residues(ref_sequence_record, final_sequence_record):
     """Maps residues between the aa seq of reference species and post Gblocks"""
     
     # perform pairwise alignment (multiple alignments of the same sequences)
-    aln = pairwise2.align.globalxx(final_sequence_record.seq, original_sequence_record.seq)
+    aln = pairwise2.align.globalxx(final_sequence_record.seq, ref_sequence_record.seq)
     
     # make a dict storing the alignments
-    mapped_original_and_final_residues_dict = {}
+    mapped_ref_and_final_residues_dict = {}
     for i in range(1, len(aln[0][0]) + 1): # added "+1" on 09_04_2021
-        mapped_original_and_final_residues_dict[i] = []
+        mapped_ref_and_final_residues_dict[i] = []
 
     # fill the dict with paired positions (need to subtract 1 cose aln starts at 0)
-    for position in mapped_original_and_final_residues_dict:
-        mapped_original_and_final_residues_dict[position] = [aln[0][0][position-1], aln[0][1][position-1]]
+    for position in mapped_ref_and_final_residues_dict:
+        mapped_ref_and_final_residues_dict[position] = [aln[0][0][position-1], aln[0][1][position-1]]
     
-    return mapped_original_and_final_residues_dict
+    return mapped_ref_and_final_residues_dict
     
     # flag any non-synonymous substitutions that indicate frameshifts
     #frameshift_positions = {}
@@ -573,12 +575,12 @@ def map_original_and_final_residues(original_sequence_record, final_sequence_rec
 
     
 
-def match_adaptive_sites_to_original(final_original_species_dict, mapped_original_and_final_residues_dict, adaptive_sites_dict, omega_dict):
+def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict):
     """Matches sites under positive selection from seq post Gblocks onto thw one used for blast input"""
     
     # overlay the final residue dictionary with probability for positive selection
     matched_adaptive_sites_final = {}
-    for site, aa in final_original_species_dict.items():
+    for site, aa in final_ref_species_dict.items():
         # mark this site as potentially positively selected
         if site in adaptive_sites_dict:
             matched_adaptive_sites_final[site] = adaptive_sites_dict[site]
@@ -587,12 +589,12 @@ def match_adaptive_sites_to_original(final_original_species_dict, mapped_origina
             matched_adaptive_sites_final[site] = [aa, "0.00"]
     
     # adjust the final residue dicitionary to include missing sites
-    adjusted_mapped_original_and_final_residue_dict = {}
-    for i in range(1, len(mapped_original_and_final_residues_dict) + 1):
-        adjusted_mapped_original_and_final_residue_dict[i] = ["", "", 0]
+    adjusted_mapped_ref_and_final_residue_dict = {}
+    for i in range(1, len(mapped_ref_and_final_residues_dict) + 1):
+        adjusted_mapped_ref_and_final_residue_dict[i] = ["", "", 0]
     
-    a = mapped_original_and_final_residues_dict
-    b = adjusted_mapped_original_and_final_residue_dict
+    a = mapped_ref_and_final_residues_dict
+    b = adjusted_mapped_ref_and_final_residue_dict
     for site, aa in a.items():
         # special case when there is no previous site/key
         if site == 1 and aa[0] == "-":
@@ -610,20 +612,20 @@ def match_adaptive_sites_to_original(final_original_species_dict, mapped_origina
         else:
             print("else")
     
-    # map omegas and probabilities to the original residues
+    # map omegas and probabilities to the ref residues
     c = matched_adaptive_sites_final
     w = omega_dict
-    matched_adaptive_sites_original = {}
+    matched_adaptive_sites_ref = {}
     for site, aa in a.items():
         if aa[0] == aa[1]:
             key = [k for k,v in b.items() if k == site][0]
             probability = c[key-b[site][2]][1]
             omega = w[key-b[site][2]]
-            matched_adaptive_sites_original[site] = [aa[0], omega, probability]
+            matched_adaptive_sites_ref[site] = [aa[0], omega, probability]
         else:
-            matched_adaptive_sites_original[site] = [aa[1], "0.000", "0.000"]
+            matched_adaptive_sites_ref[site] = [aa[1], "0.000", "0.000"]
 
-    return matched_adaptive_sites_original
+    return matched_adaptive_sites_ref
 
 
 def get_omegas(protein_name, result_path, final_length):
@@ -748,11 +750,11 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
         
         if features[3] == 1:
             omegas.append(float(features[1]))
-            if features[1] > roof:
+            if float(features[1]) > roof:
                 roof = math.ceil(features[1])
-            elif 0.5 <= features[1] <= floor:
+            elif 0.5 <= float(features[1]) <= floor:
                 floor = 0.5
-            elif 0 < features[1] < 0.5:
+            elif 0 < float(features[1]) < 0.5:
                 floor = 0
             probabilities.append(float(features[2]))
             

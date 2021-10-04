@@ -5,7 +5,7 @@ Created on Wed Mar 24 18:55:36 2021
 
 @author: damian
 
-Extracts single exons looking at exon/intron bounderies based on exons from original species
+Extracts single exons looking at exon/intron bounderies based on exons from ref species
 Clones and stiches the exons into a final cds for given genome.
 
 CURRENTLY (03_24_2021) THERE IS NO ALTERNATIVE STOP CODON SEARCH FUNCTION ->
@@ -28,7 +28,7 @@ import shutil
 
 
 def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, \
-    genome_name, final_exon_number, Mm_exons, MSA_path):
+    genome_name, final_exon_number, ref_exons, MSA_path):
     
     # get a dictionary with all the contigs and how many exons they have
     all_contigs_dict = {}
@@ -115,7 +115,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                 total_hd_normalized = 0
                 exons = [exon_nr for exon_nr, cs in duplicated_exons.items() if winner in cs]
                 for exon_nr in exons:
-                    total_hd_normalized += hamming_distance_to_original_species(Mm_exons, \
+                    total_hd_normalized += hamming_distance_to_ref_species(ref_exons, \
                         exon_nr, winner, preselected_exons_overhangs, \
                         MSA_path, protein_name)
                 winners_hd_normalized[winner] = total_hd_normalized
@@ -210,7 +210,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                     # if yes, and this exon wasnt yet cloned -> run MAFFT against Mm exon
                     if contig[0] == seq[0] and cds_composition[exon] == "":
                         in_filename, out_filename = generate_single_exon_MSA(seq[1], contig[0], exon, \
-                            protein_name, Mm_exons, MSA_path, seq[2])
+                            protein_name, ref_exons, MSA_path, seq[2])
                         # collect the aligned sequences
                         aligned_seqs = collect_sequences(in_filename + out_filename)
 
@@ -222,7 +222,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                         #frameshift = check_frameshift(Mm_exon, locus_exon)
                         
                         # check if its not the last exon
-                        if exon != list(Mm_exons.keys())[-1] and frameshift == False:
+                        if exon != list(ref_exons.keys())[-1] and frameshift == False:
                             # converting the nucleotides into a string
                             locus_exon_string = "".join(locus_exon.values())
                             # mark that this exon was already cloned
@@ -231,7 +231,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                             break 
                         
                         # if frameshift detected and not last exon
-                        if frameshift == True and exon != list(Mm_exons.keys())[-1]:
+                        if frameshift == True and exon != list(ref_exons.keys())[-1]:
                             # log the frameshift
                             message = "   ...WARNING... : FRAMESHIFT detected in contig " \
                                     + contig[0] + " in exon nr: %s" % str(exon)
@@ -244,7 +244,7 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
                             break
 
                         # if last exon
-                        if exon == list(Mm_exons.keys())[-1]:
+                        if exon == list(ref_exons.keys())[-1]:
                             # check if there is a STOP codon
                             STOP = check_stop_codon(aligned_seqs[0][1], aligned_seqs[1][1], \
                                             exon, protein_name, genome_name)
@@ -310,16 +310,16 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
     return cloned_cds 
 
 
-def hamming_distance_to_original_species(Mm_exons, exon_nr, winner, \
+def hamming_distance_to_ref_species(ref_exons, exon_nr, winner, \
                     preselected_exons_overhangs, MSA_path, protein_name):
 
     # determine the name for the file to mafft
     filename = "duplicated_exon_" + str(exon_nr) + "_in_" + winner + "_hamming_distance.fasta"
     # prepare a file to mafft
     with open(filename, "w") as f:
-        # write the original species exon first
-        f.write(Mm_exons[exon_nr][0] + "\n")
-        f.write(Mm_exons[exon_nr][1] + "\n")
+        # write the reference species exon first
+        f.write(ref_exons[exon_nr][0] + "\n")
+        f.write(ref_exons[exon_nr][1] + "\n")
         # for each winner write in an exon
         e = preselected_exons_overhangs[exon_nr]
         sequence = [(seq, genomic) for (contig_name, seq, genomic) in e if contig_name == winner]
@@ -343,10 +343,10 @@ def hamming_distance_to_original_species(Mm_exons, exon_nr, winner, \
     alignment = AlignIO.read(path, "fasta")
     # collect sequences in the alignment
     seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
-    # get trimmed and indexed versions of the original species exon and compared exon
-    original_exon, compared_exon = index_positions_exons(seqs)
+    # get trimmed and indexed versions of the reference species exon and compared exon
+    ref_exon, compared_exon = index_positions_exons(seqs)
     # check if there is no frame shift in the given exon
-    frameshift = check_frameshift(original_exon, compared_exon)
+    frameshift = check_frameshift(ref_exon, compared_exon)
     if frameshift == True:
         message = "   ...WARNING... : FRAMESHIFT detected in contig " + winner + \
             " in exon nr: %s" % str(exon_nr)
@@ -358,7 +358,7 @@ def hamming_distance_to_original_species(Mm_exons, exon_nr, winner, \
     
     
     # find hamming distance for them
-    hd = hamming_distance_frameshift(original_exon, compared_exon, exon_nr, Mm_exons)
+    hd = hamming_distance_frameshift(ref_exon, compared_exon, exon_nr, ref_exons)
     message = "   Hamming distance for contig " + winner + " exon nr: %s is %s" \
         % (str(exon_nr), str(hd))
     print(message)
@@ -369,40 +369,40 @@ def hamming_distance_to_original_species(Mm_exons, exon_nr, winner, \
     shutil.move(out_filename, MSA_path + "Duplicated_exons/")
 
     # if there is a frameshift and its not the last exon, reject this contig
-    if frameshift == True and exon_nr != list(Mm_exons)[-1]:
+    if frameshift == True and exon_nr != list(ref_exons)[-1]:
         hd_normalized = float("inf")
         
         return hd_normalized
     else:
-        # normalize hd to original species exon (prior MAFFT; without indels)
-        hd_normalized = hd/len(Mm_exons[exon_nr][1])
+        # normalize hd to ref species exon (prior MAFFT; without indels)
+        hd_normalized = hd/len(ref_exons[exon_nr][1])
         return hd_normalized    
     
     
 def index_positions_exons(seqs): 
-    original_exon = seqs[0][1]
+    ref_exon = seqs[0][1]
     compared_exon = seqs[1][1]
-    # get position of the last dash before the start of the original species exon 
+    # get position of the last dash before the start of the ref species exon
     first_nucl = re.search(r"[ACTG]", seqs[0][1]).span()[0]
-    # get position of the last character in original species exon
+    # get position of the last character in ref species exon
     last_nucl = max([len(seqs[0][1].rsplit(n, 1)[0]) for n in "ACTG"])
-    # trim original exon (includes indels)
-    trimmed_original_exon = original_exon[first_nucl:last_nucl+1]
+    # trim ref exon (includes indels)
+    trimmed_ref_exon = ref_exon[first_nucl:last_nucl+1]
     trimmed_compared_exon = compared_exon[first_nucl:last_nucl+1]
     # get indexes for trimmed exons
-    trimmed_original_exon_indexed = {}
+    trimmed_ref_exon_indexed = {}
     trimmed_compared_exon_indexed = {}
-    for n in range(len(trimmed_original_exon)):
-        trimmed_original_exon_indexed[n] = trimmed_original_exon[n]
+    for n in range(len(trimmed_ref_exon)):
+        trimmed_ref_exon_indexed[n] = trimmed_ref_exon[n]
         trimmed_compared_exon_indexed[n] = trimmed_compared_exon[n]
     
-    return trimmed_original_exon_indexed, trimmed_compared_exon_indexed
+    return trimmed_ref_exon_indexed, trimmed_compared_exon_indexed
 
 
-def check_frameshift(original_exon, compared_exon):
+def check_frameshift(ref_exon, compared_exon):
     frameshift = False
     end_of_contig = False
-    oe = original_exon
+    oe = ref_exon
     ce = compared_exon
     nr_of_insertions = 0
     nr_of_deletions = 0
@@ -445,7 +445,7 @@ def check_frameshift(original_exon, compared_exon):
         return frameshift
 
 
-def hamming_distance_frameshift(p, q, exon_nr, original_species_exons):
+def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
     indels_p = 0
     indels_q = 0
     mismatches = []
@@ -467,20 +467,20 @@ def hamming_distance_frameshift(p, q, exon_nr, original_species_exons):
     
     # trigger highest possible hd if frameshift detected        
     if end_of_contig == False:
-        if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(original_species_exons.keys())[-1]:
+        if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(ref_species_exons.keys())[-1]:
             
             return float("inf")
 
     return len(mismatches)
 
 
-def generate_single_exon_MSA(seq, contig_name, exon_number, protein_name, Mm_exons, MSA_path, genomic_locus):
+def generate_single_exon_MSA(seq, contig_name, exon_number, protein_name, ref_exons, MSA_path, genomic_locus):
             
     filename = "exon_" + str(exon_number) + "_to_align.fasta"
     with open(filename, "w") as f:
         # write Mm_exon first
         f.write(">_Mm_" + "_" + protein_name + "_exon_" + str(exon_number))
-        f.write("\n" + Mm_exons[exon_number][1])
+        f.write("\n" + ref_exons[exon_number][1])
         # write the locus_exon second
         f.write("\n>_" + contig_name + "_" + protein_name + "_exon_" + str(exon_number))
         f.write("\n" + seq)
