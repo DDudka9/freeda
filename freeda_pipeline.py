@@ -16,10 +16,15 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 """
 
 # TODO:
+#    Ptprd -> 5,6,8 microexons and 500kb gene -> "stich" missing bp in that case as if it was a single microexon
+#    Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon) -> that transcript does not have a START codon in ensembl ("START lost")
+#    Run PAML on Rnf187 to see how does it affect the pipeline
 #    Genome of at least one species contains no matches above the identity threshold used : 30 -> use a lower one -> exiting the pipeline now...
 #    I can see that index of nbci datasets downloaded genomes is a bit lower than the one of original genomes (ex. SORICOIDES 14000 entries vs 15000 entries
 #    Its possible that Im missing some of the contigs... How to fix that?
-#    Nap1l4 -> ...WARNING... : CDS of Nap1l4 in ref species is NOT in frame. (from fasta_reader-py module; it has 2 microexons 1, 14)
+#    Nap1l4 -> ...WARNING... : CDS of Nap1l4 in ref species is NOT in frame. (from fasta_reader-py module; it has 2 microexons 1, 14) -> no successful correction of cds
+#    However Nap1l4 also is missing exon 13 from the coding sequence (shows up as None in exon calling) -> also misses last bp from exon 12
+#    Refactor : change "protein_name" to "gene_name" and "protein" to "gene_name"
 #    Think about PAML visualization and what the "gray" bars mean -> longest sequence, not reference, what about 3D overlay?
 #    Use Mo for prediction of sequence accuracy -> compare with NCBI Mo
 #    Get full gene name list and pass it to GUI -> user can only pick valid gene names
@@ -173,6 +178,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     # check if the user had previously obtained data for given list of proteins
     if user_input0 == "n":
         input_present = True
+
         for protein in all_proteins:
             structure_path = wdir + "Structures/" + protein + "_" + ref_species
             if "model_matches_input_seq.txt" in os.listdir(structure_path) or "model_incompatible.txt" in os.listdir(structure_path):
@@ -211,9 +217,12 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     if user_input0 == "y":
 
         # generate a reference Genome object
-        #ref_genome_name = input("(FREEDA) What is the name of the reference genome? (e.g. MUSCULUS_genome)\n")
         ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
-                                                biotype = input_extractor.generate_ref_genome_object(wdir, ref_species)
+                        biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
+
+        # check if provided gene names are present in ensembl object for ref assembly
+        if not input_extractor.validate_gene_names(all_proteins, all_genes_ensembl):
+            return
 
         # stop pipeline if the reference genome is absent
         if not ref_genome_present:
@@ -231,15 +240,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
             model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
             # get sequence input from ensembl
             input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
-                                                                                        wdir,
-                                                                                        ref_species,
-                                                                                        ref_genomes_path,
-                                                                                        ref_genome_contigs_dict,
-                                                                                        ensembl,
-                                                                                        biotype,
-                                                                                        protein,
-                                                                                        model_seq,
-                                                                                        uniprot_id
+                wdir, ref_species, ref_genomes_path,
+                ref_genome_contigs_dict, ensembl, biotype,
+                protein, model_seq, uniprot_id
             )
 
             if input_correct:
@@ -255,7 +258,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 print("...WARNING... : Protein may still be analyzed using PAML but without 3D structure overlay\n")
 
             if microexon_present:
-                print("...WARNING... : Sequence for: %s found in Ensembl contains a microexon : %s\n" % (protein, microexons))
+                print("...WARNING... : Sequence for: %s found in Ensembl contains microexons : %s\n" % (protein, microexons))
                 print("...WARNING... : Microexons are difficult to align and are removed\n")
 
     # ----------------------------------------#
@@ -368,7 +371,7 @@ if __name__ == '__main__':
     parser.add_argument("-rs", "--ref_species",
                         help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=70)
 
 
     args = parser.parse_args()

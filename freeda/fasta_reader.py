@@ -64,14 +64,14 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
         for line in re.split("\n", file):
 
             # this statement executes last
-            if line.startswith(">") and seq_recorded == True:
+            if line.startswith(">") and seq_recorded is True:
                 # record header, sequence and length of the exon
                 ref_exons[nr] = (header, seq, len(seq))
                 seq_recorded = False
                 seq = ""
 
             # this statement executes first
-            if line.startswith(">") and seq_recorded == False:
+            if line.startswith(">") and seq_recorded is False:
                 nr = int(line.split("_")[-1])
                 head = line.lstrip(">").rstrip("\n")
                 header = ">" + head
@@ -85,15 +85,15 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
         ref_exons[nr] = (header, seq, len(seq))
 
         # double check if all exons together are in frame (they should be)
-        exon_total_length = 0
-        for number, v in ref_exons.items():
-            exon_total_length += v[2]
+        #exon_total_length = 0
+        #for number, v in ref_exons.items():
+        #    exon_total_length += v[2]
 
-        if exon_total_length % 3 != 0:
-            message = "\n...WARNING... : CDS of %s in ref species is NOT in frame." \
-                      % protein_name
-            print(message)
-            logging.info(message)
+        #if exon_total_length % 3 != 0:
+        #    message = "\n...WARNING... : CDS of %s in ref species is NOT in frame." \
+        #              % protein_name
+        #    print(message)
+        #    logging.info(message)
 
         expected_exons = tuple(e for e, features in ref_exons.items())
 

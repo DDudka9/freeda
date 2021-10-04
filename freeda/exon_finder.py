@@ -717,7 +717,9 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
     return introny
 
 
-def homology_check(starting_position, last_bp, cds, locus, gene): # runs only when ambigous introny (100bp stretch with 0.80 homology) or RETRO suspected
+def homology_check(starting_position, last_bp, cds, locus, gene):
+    """Checks exon homology if: ambigous introny, RETRO suspected or truncation suspected at N-term"""
+    # runs only when ambigous introny (100bp stretch with 0.80 homology) or RETRO suspected
 
     homology = False
 
