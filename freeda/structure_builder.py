@@ -238,11 +238,12 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
 
         # color domains
         colors = ["yellow", "orange", "marine", "limon", "wheat", "lightblue", "lightpink", "deepolive", "red"]
-        for domain, coordinates in domains.items():
-            color = colors.pop(0)
-            f.write("color " + color + ", resi " + str(coordinates[0]) + "-" + str(coordinates[1]) + "\n")
-            middle = int((coordinates[1] - coordinates[0]) / 2 + coordinates[0])
-            f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + str(domain) + '")\n')
+        if domains:
+            for domain, coordinates in domains.items():
+                color = colors.pop(0)
+                f.write("color " + color + ", resi " + str(coordinates[0]) + "-" + str(coordinates[1]) + "\n")
+                middle = int((coordinates[1] - coordinates[0]) / 2 + coordinates[0])
+                f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + str(domain) + '")\n')
 
         # PyMOL command to color adaptive residues
         for site, features in matched_adaptive_sites_ref.items():

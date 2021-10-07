@@ -26,14 +26,14 @@ import glob
 def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons):
     """Analyses MSA per contig -> finds exons, clones them into cds"""
 
-    # make a dictionary with exon number as key and sequences, names as values -> inclue microexons as empty lists
+    # make a dictionary with exon number as key and sequences, names as values -> include microexons as empty lists
     microexons = input_extractor.check_microexons(wdir, protein_name, ref_species)
 
     final_exon_number = len(ref_exons)
     cloned_exons_overhangs = []
     # define pattern of all aligned fasta files
     pattern = "aligned*.fasta"
-    # make a list of paths containins the aligned fasta files
+    # make a list of paths containing the aligned fasta files
     paths = glob.glob(MSA_path + "/" + pattern)
 
     for path in paths:
@@ -63,7 +63,7 @@ def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exon
     most_intronic_contigs = find_contigs_with_most_intronic_exons(preselected_exons_overhangs)
     
     # clone cds based on the most intronic contigs
-    cloned_cds = cds_cloner.clone_cds(preselected_exons_overhangs, most_intronic_contigs,
+    cloned_cds = cds_cloner.clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs,
                  protein_name, genome_name, final_exon_number, ref_exons, MSA_path)
 
     # check if final CDS is in frame (clone anyway)
@@ -133,17 +133,22 @@ def clone_exons_overhangs(seqs, exons): # works well
     cloned_exons_overhangs = []
     prefix = -50
     suffix = 50
-    # read the exons dictionary to retrieve boundery positions 
+
+    # read the exons dictionary to retrieve boundary positions
     for exon, features in exons.items():
-        # unpack boundery tuple
+
+        # unpack boundary tuple
         start, end, introny, exon_number, big_insertion = features
+
         # define locus sequence
         locus = seqs[2][1]
         gene = seqs[3][1]
+
         # clone exons
-        cloned_exons_overhangs.append((locus[start+prefix:end+suffix], \
-                                       gene[start+prefix:end+suffix], \
-                                        introny, exon_number, big_insertion))
+        locus_exon = locus[start+prefix:end+suffix]
+        gene_exon = gene[start+prefix:end+suffix]
+        cloned_exons_overhangs.append((locus_exon, gene_exon, introny, exon_number, big_insertion))
+
     return cloned_exons_overhangs
 
 
@@ -174,7 +179,7 @@ def preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons
 
         intronic_exons.append([(final_exon_number, contig_name, exon, genomic) for \
             exon, genomic, introny, final_exon_number, big_insertion in exons \
-                             if introny == True and big_insertion == False]) 
+                             if introny is True and big_insertion is False])
             
         sorted_exons = sorted([entry for entry in intronic_exons if entry != []])
 

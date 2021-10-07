@@ -18,7 +18,9 @@ CURRENTLY (03_24_2021) THERE IS NO ALTERNATIVE STOP CODON SEARCH FUNCTION ->
 
 from Bio.Align.Applications import MafftCommandline
 from Bio import AlignIO
+from Bio import pairwise2
 from freeda import fasta_reader
+from freeda import exon_extractor
 import glob
 import logging
 import operator
@@ -27,8 +29,8 @@ import re
 import shutil
 
 
-def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, \
-    genome_name, final_exon_number, ref_exons, MSA_path):
+def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs, protein_name,
+              genome_name, final_exon_number, ref_exons, MSA_path):
     
     # get a dictionary with all the contigs and how many exons they have
     all_contigs_dict = {}
@@ -291,9 +293,9 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
 
     # clone the final cds
     cloned_cds = "".join([value[1] for key, value in pre_cloned_cds.items()])
-                    
+
     message1 = "\nCDS for %s protein in %s is composed of %s/%s exons from contigs: \n%s" \
-            % (protein_name, genome_name, final_exon_number-final_missing_exons_count, \
+            % (protein_name, genome_name, final_exon_number-final_missing_exons_count,
                final_exon_number, final_exon_breakdown)
     print(message1)
     logging.info(message1)
@@ -309,6 +311,64 @@ def clone_cds(preselected_exons_overhangs, most_intronic_contigs, protein_name, 
     
     return cloned_cds 
 
+
+"""
+
+    mismatches = 0
+    matches = 0
+    ref_cds_aln, cloned_cds_aln = aln[0].seqA, aln[0].seqB
+    d1 = {}
+    for position, bp in enumerate(ref_cds_aln):
+        d1[position] = bp
+
+    for position, bp in enumerate(cloned_cds_aln):
+        if bp == "-":
+            continue
+        elif bp != d1[position]:
+            mismatches += 1
+        else:
+            matches += 1
+
+    if matches / len(ref_cds_aln) < 0.6:
+        cloned_cds = ""
+        message = "\n...WARNING... : CDS for %s protein contains a massive frameshift " \
+                  "-> likely a repetitive protein region misaligned" % protein_name
+        print(message)
+
+    return cloned_cds
+
+
+    mismatches = 0
+    matches = 0
+    for position in aln:
+
+
+
+        # positions are a match
+        if aln[0][0][position] == aln[0][1][position] and (aln[0][0][position] != "-" or aln[0][1][position] != "-"):
+            matches += 1
+
+        # potential indel
+        elif aln[0][0][position] == "-" or aln[0][1][position] == "-":
+            continue
+
+        # mismatch
+        else:
+            mismatches += 1
+
+    # zero the cloned coding sequence
+    if matches/len(aln[0][0]) < 0.6:
+        cloned_cds = ""
+        message = "\n...WARNING... : CDS for %s protein contains a massive frameshift " \
+                   "-> likely a repetitive protein region misaligned" % protein_name
+        print(message)
+        logging.info(message)
+
+        return cloned_cds
+
+    else:
+        return cloned_cds
+"""
 
 def hamming_distance_to_ref_species(ref_exons, exon_nr, winner, \
                     preselected_exons_overhangs, MSA_path, protein_name):
@@ -493,10 +553,12 @@ def generate_single_exon_MSA(seq, contig_name, exon_number, protein_name, ref_ex
     shutil.move(current_directory + "/" + filename, in_filepath)
     # run MAFFT and get the final filename of the aligned sequences
     out_filename = run_single_exon_MAFFT(in_filepath, str(exon_number), filename)
+
     return in_filepath, out_filename
 
 
 def run_single_exon_MAFFT(in_filepath, exon_number, filename):
+
     out_filename = "aligned_" + "exon_" + str(exon_number) + ".fasta"
     # run mafft
     mafft_cline = MafftCommandline(input=in_filepath + filename)
@@ -508,14 +570,17 @@ def run_single_exon_MAFFT(in_filepath, exon_number, filename):
         f.write(stdout)
         # move the file to MSA_path
         shutil.move(out_filename, in_filepath)
+
     return out_filename
 
 
 def collect_sequences(path):
+
     # use biopython to read alignment file
     alignment = AlignIO.read(path, "fasta")
     # collect sequences in the alignment
     seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
+
     return seqs
 
 

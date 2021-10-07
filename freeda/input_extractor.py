@@ -555,12 +555,12 @@ def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, mo
     parse_sequence(ref_species, blast_input_path, protein_sequence,
                    protein, transcript, strand = None, sequence_type = "protein")
     # check if protein length and sequence match that of the model
-    if matching_length == True:
-        if model_seq == protein_sequence:
+    if matching_length is True and model_seq == protein_sequence:
             model_matches_input = True
             with open(structure_path + "/model_matches_input_seq.txt", "w") as f:
                 f.write("Model is based on an identical protein sequence as blast input.")
                 f.write("\nUniprot ID : %s" % uniprot_id)
+
     else:
         with open(structure_path + "/model_incompatible.txt", "w") as f:
             f.write("Model sequence does not match the protein sequence used for blast input. Cannot overlay FREEDA results onto a 3D structure.")
