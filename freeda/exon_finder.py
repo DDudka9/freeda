@@ -481,7 +481,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
     elif nr_of_RETRO_exons != 0 and nr_of_intronic_exons == 0:
         RETRO_score = float(1)
 
-    message = "RETRO_score (>= 0.4 suggests retrotransposition event) = %s" % (str(RETRO_score))
+    message = "       RETRO_score (>= 0.4 suggests retrotransposition event) = %s" % (str(RETRO_score))
     print(message)
     logging.info(message)
 
@@ -492,35 +492,35 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
         # call synteny of the contig
         if N_term_synteny is True and C_term_synteny is True:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is SYNTENIC (N and C-term)" % (contig_name)
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is SYNTENIC (N and C-term)" % (contig_name)
             print(message)
             logging.info(message)
             synteny = True
 
         elif N_term_synteny is True and C_term_synteny is False:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is SYNTENIC (N-term)" % (contig_name)
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is SYNTENIC (N-term)" % (contig_name)
             print(message)
             logging.info(message)
             synteny = True
 
         elif N_term_synteny is False and C_term_synteny is True:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is SYNTENIC (C-term)" % (contig_name)
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is SYNTENIC (C-term)" % (contig_name)
             print(message)
             logging.info(message)
             synteny = True
 
         elif N_term_synteny is False and C_term_synteny is False:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is NOT SYNTENIC" % (contig_name)
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is NOT SYNTENIC" % (contig_name)
             print(message)
             logging.info(message)
 
     else:
-        message = "\nSYNTENY ESTIMATION: possible retrotransposition (synteny not allowed)"
+        message = "\n       SYNTENY ESTIMATION: possible retrotransposition (synteny not allowed)"
         print(message)
         logging.info(message)
 
     if exon_number != len(ref_exons): # removed "+ len(microexons)" 08_26_2021 (cose microexons are list of tuples)
-        message = "\nFREEDA could not find all exons in contig %s " % (contig_name)
+        message = "\n       FREEDA could not find all exons in contig %s " % (contig_name)
         print(message)
         logging.info(message)
 
@@ -535,14 +535,14 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
         if nr_of_intronic_exons != 0 and nr_of_fully_intronic_exons != 0:
             duplication_score = nr_of_fully_intronic_exons/nr_of_intronic_exons
 
-            message = "\nDuplication_score (<0.5 suggests duplication) = %s" % (str(duplication_score))
+            message = "\n       Duplication_score (<0.5 suggests duplication) = %s" % (str(duplication_score))
             print(message)
             logging.info(message)
 
     if duplication_score_parameter is False:
         duplication_score = 1.0
 
-        message = "\nDuplication_score (<0.5 suggests duplication) = DISABLED (1.0 as default)"
+        message = "\n       Duplication_score (<0.5 suggests duplication) = DISABLED (1.0 as default)"
         print(message)
         logging.info(message)
 

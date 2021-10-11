@@ -56,17 +56,8 @@ def correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_li
     path_to_exons = wdir + "Exons/"
     path_to_cds = wdir + "Coding_sequences/"
 
-    # these exons dont have microexons anymore
-    ref_exons, expected_exons = fasta_reader.get_ref_exons(wdir, protein, ref_species, at_input=True) # expected_exons not used here
-
-    #microexon_nr = [m[0] for m in microexons]
-    #corrected_cds = ""
-    #bp_count = 0
-
-
-    # MOST LIKELY THIS NEEDS TO BE A LOOP THROUGHT ALL MICROEXONS -> each one separately
-    # with updating corrected_cds
-
+    # these exons dont have microexons anymore (expected_exons not used here)
+    ref_exons, expected_exons = fasta_reader.get_ref_exons(wdir, protein, ref_species, at_input=True)
 
     with open(path_to_exons + protein + "_" + ref_species + "_exons.fasta", "w") as f:
 
@@ -75,15 +66,38 @@ def correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_li
 
         # microexon is a tuple of int (number) and str (bp)
 
-        # make a shallow copy (doesnt modify the original)
-        final_exons = ref_exons.copy()
+        # prepare dict to store microexons and their length
+        #consecutive_microexons = False
+        #microexons_dict = {}
+        #for microexon in microexons:
+        #    microexons_dict[microexon[0]] = 0
 
-        # check for consecutive microexons
+        # last consecutive microexon should have length of all previous microexons
         #for microexon in microexons:
         #    microexon_nr = microexon[0]
         #    microexon_length = missing_bp_list[0]
-        #    if microexon_nr - 1 == previous microexon_nr:
+        #    microexons_dict[microexon_nr] = microexon_length
 
+        #    # consecutive microexons
+        #    if microexon_nr - 1 == current_nr:
+        #        consecutive_microexons = True
+        #        # both current and following microexons need to have combined length to interact with flanking exons
+        #        new_length = current_length + microexon_length
+        #        microexons_dict[current_nr] = new_length
+        #        microexons_dict[microexon_nr] = new_length
+
+        #    current_nr = microexon_nr
+        #    current_length = microexon_length
+
+        # reconstruct microexons list and missing_bp list based on microexons_dict
+        #microexons = []
+        #missing_bp_list = []
+        #for microexon_nr, length in microexons_dict.items():
+        #    microexons.append((microexon_nr, str(length) + "bp"))
+        #    missing_bp_list.append(length)
+
+        # make a shallow copy (doesnt modify the original)
+        final_exons = ref_exons.copy()
 
         # update final_exons dict for each microexon
         for microexon in microexons:
@@ -213,93 +227,7 @@ def correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_li
 
     return input_correct
 
-"""
 
-
-    with open(path_to_exons + protein + "_" + ref_species + "_exons.fasta", "w") as f:
-
-        microexon = microexon_nr.pop(0)
-        missing_bp = missing_bp_list.pop(0)
-
-        if microexon == 1:
-            bp_count += missing_bp
-
-        for exon in ref_exons:
-
-            # ref_exons dict does not have microexons !!!
-            header, seq, length = ref_exons[exon]
-
-            # find the exon preceding a microexon
-            if exon == microexon - 1:
-                bp_count += length
-
-                # first frame -> no need for corrections
-                if bp_count % 3 == 0:
-                    bp_count += length
-                    corrected_cds += seq
-
-                # second frame -> need to trim one bp
-                elif bp_count % 3 == 1:
-                    corrected_cds = corrected_cds[:-1]
-                    bp_count -= 1
-
-                # third frame -> need to trim two bps
-                else:
-                    corrected_cds = corrected_cds[:-2]
-                    bp_count -= 2
-
-                # write exon into file
-                f.write(header + "\n")
-                f.write(seq + "\n")
-
-            # find the exon proceeding a microexon
-            elif exon == microexon + 1:
-
-                # removing microexon does not alter the frame
-                if missing_bp % 3 == 0:
-                    bp_count += length
-                    corrected_cds += seq
-
-                # removing microexon alters the frame
-                elif missing_bp % 3 == 1:
-                    seq = seq[2:]
-                    corrected_cds += seq
-                    bp_count += length - 2
-
-                # removing microexon alters the frame
-                else:
-                    seq = seq[1:]
-                    corrected_cds += seq
-                    bp_count += length - 1
-
-                # write exon into file
-                f.write(header + "\n")
-                f.write(seq + "\n")
-
-                # get another exon in case its present
-                if microexon_nr:
-                    microexon = microexon_nr.pop(0)
-                    missing_bp = missing_bp_list.pop(0)
-
-            else:
-                bp_count += length
-                corrected_cds += seq
-
-                # write exon into file
-                f.write(header + "\n")
-                f.write(seq + "\n")
-
-    if len(corrected_cds) % 3 != 0:
-        correction_successful = False
-        return correction_successful
-
-    # correct cds (but not the protein -> better to get micrexon matches to extend contig)
-    with open(path_to_cds + protein + "_" + ref_species + "_cds.fasta", "w") as f:
-        f.write(">" + transcript.name + "_" + ref_species + "_cds\n")
-        f.write(corrected_cds + "\n")
-
-
-"""
 
 
 def generate_basic_folders(wdir):
@@ -948,6 +876,7 @@ def clear_structure_files(structure_path):
 
     return
 
+
 def check_microexons(wdir, protein_name, ref_species):
     """Checks if microexons were found during automatic input extraction"""
 
@@ -963,6 +892,92 @@ def check_microexons(wdir, protein_name, ref_species):
 
 
 """
+
+
+
+    with open(path_to_exons + protein + "_" + ref_species + "_exons.fasta", "w") as f:
+
+        microexon = microexon_nr.pop(0)
+        missing_bp = missing_bp_list.pop(0)
+
+        if microexon == 1:
+            bp_count += missing_bp
+
+        for exon in ref_exons:
+
+            # ref_exons dict does not have microexons !!!
+            header, seq, length = ref_exons[exon]
+
+            # find the exon preceding a microexon
+            if exon == microexon - 1:
+                bp_count += length
+
+                # first frame -> no need for corrections
+                if bp_count % 3 == 0:
+                    bp_count += length
+                    corrected_cds += seq
+
+                # second frame -> need to trim one bp
+                elif bp_count % 3 == 1:
+                    corrected_cds = corrected_cds[:-1]
+                    bp_count -= 1
+
+                # third frame -> need to trim two bps
+                else:
+                    corrected_cds = corrected_cds[:-2]
+                    bp_count -= 2
+
+                # write exon into file
+                f.write(header + "\n")
+                f.write(seq + "\n")
+
+            # find the exon proceeding a microexon
+            elif exon == microexon + 1:
+
+                # removing microexon does not alter the frame
+                if missing_bp % 3 == 0:
+                    bp_count += length
+                    corrected_cds += seq
+
+                # removing microexon alters the frame
+                elif missing_bp % 3 == 1:
+                    seq = seq[2:]
+                    corrected_cds += seq
+                    bp_count += length - 2
+
+                # removing microexon alters the frame
+                else:
+                    seq = seq[1:]
+                    corrected_cds += seq
+                    bp_count += length - 1
+
+                # write exon into file
+                f.write(header + "\n")
+                f.write(seq + "\n")
+
+                # get another exon in case its present
+                if microexon_nr:
+                    microexon = microexon_nr.pop(0)
+                    missing_bp = missing_bp_list.pop(0)
+
+            else:
+                bp_count += length
+                corrected_cds += seq
+
+                # write exon into file
+                f.write(header + "\n")
+                f.write(seq + "\n")
+
+    if len(corrected_cds) % 3 != 0:
+        correction_successful = False
+        return correction_successful
+
+    # correct cds (but not the protein -> better to get micrexon matches to extend contig)
+    with open(path_to_cds + protein + "_" + ref_species + "_cds.fasta", "w") as f:
+        f.write(">" + transcript.name + "_" + ref_species + "_cds\n")
+        f.write(corrected_cds + "\n")
+
+
 
 def check_microexons(wdir, protein_name, ref_species):
     Checks if microexons were found during automatic input extraction

@@ -173,7 +173,7 @@ def preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons
                 
         # log that possibly introny check was too strict for an exon in this contig
         if missing_exon_detection > 2:
-            message = "\nPossible introny missed by the code in contig: %s" % contig_name
+            message = "\n       Possible introny missed by the code in contig: %s" % contig_name
             print(message)
             logging.info(message)
 

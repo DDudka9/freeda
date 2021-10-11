@@ -29,43 +29,31 @@ import pandas as pd
 import math
 
 
-#wdir = "/Volumes/DamianEx_2/Data/"
-#result_path = wdir + "Results-08-23-2021-00-24/"
-#all_proteins = ["CD46"]
-#nr_of_species_total_dict = {"CD46" : 9}
-#PAML_logfile_name = "PAML-08-23-2021-00-53.log"
-#ref_species = "Hs"
-#day = "-06-27-2021-15-04"
-#protein_name = "CD46"
-#nr_of_species_total = 9
-
-
-# ADD LEGEND BOX TO PYMOL SCRIPT -> pymol.cgo module
-
-
 def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict,
-                         ref_species, PAML_logfile_name, day, proteins_under_positive_selection):
-    """Analyses PAML results for each protein"""
+                         ref_species, PAML_logfile_name, day, proteins_under_positive_selection, failed_paml):
+    """Analyses PAML results for each protein unless no PAML result available"""
 
     all_matched_adaptive_sites_ref = {}
     
     for protein in all_proteins:
+
+        if protein not in failed_paml:
         
-        protein_folder = result_path + protein + "/"
-        if os.path.exists(protein_folder + protein + "_PAML_analysis.tif"):
-            message = "\n***************\n\n PAML analysis graph for : %s already exists" % protein
-            print(message)
-            logging.info(message)
+            protein_folder = result_path + protein + "/"
+            if os.path.exists(protein_folder + protein + "_PAML_analysis.tif"):
+                message = "\n***************\n\n PAML analysis graph for : %s already exists" % protein
+                print(message)
+                logging.info(message)
         
-        else:
-            nr_of_species_total = nr_of_species_total_dict[protein]
-            matched_adaptive_sites_ref = plot_PAML(wdir, result_path, protein,
+            else:
+                nr_of_species_total = nr_of_species_total_dict[protein]
+                matched_adaptive_sites_ref = plot_PAML(wdir, result_path, protein,
                                                    nr_of_species_total, ref_species,
                                                    proteins_under_positive_selection)
-            all_matched_adaptive_sites_ref[protein] = matched_adaptive_sites_ref
+                all_matched_adaptive_sites_ref[protein] = matched_adaptive_sites_ref
         
     # prepare a dict with PAML stats
-    final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref)
+    final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml)
     # generate a PAML result excel sheet
     output_excel_sheet(wdir, final_PAML_log_dict, result_path, day)
     
@@ -76,21 +64,30 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
     shutil.move(wdir + "all_matched_adaptive_sites_ref.txt", result_path + "all_matched_adaptive_sites_ref.txt")
 
 
-def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref):
+def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml):
     """Reads the output PAML and finds LRTs and computes p-values for M2a-M1a and M8-M7 models"""
 
     # prepare the dict storing the PAML result
-    PAML_log_dict = {"Protein name":[],
-                        "Nr of species analyzed":[],
-                        "Species":[],
-                        "CDS Coverage":[],
-                        "M2a vs M1a (LRT)":[],
-                        "M2a vs M1a (p-value)":[],
-                        "M8 vs M7 (LRT)":[],
-                        "M8 vs M7 (p-value)":[],
-                        "Sites with pr < 0.90":[],
-                        "Sites with pr >= 0.90":[]} 
-    
+    PAML_log_dict = {"Protein name": [],
+                        "Nr of species analyzed": [],
+                        "Species": [],
+                        "CDS Coverage": [],
+                        "M2a vs M1a (LRT)": [],
+                        "M2a vs M1a (p-value)": [],
+                        "M8 vs M7 (LRT)": [],
+                        "M8 vs M7 (p-value)": [],
+                        "Sites with pr < 0.90": [],
+                        "Sites with pr >= 0.90": []}
+
+    # mark proteins that failed paml
+    if failed_paml:
+        for protein in failed_paml:
+            for key, values in PAML_log_dict.items():
+                if key == "Protein name":
+                    PAML_log_dict[key].append(protein)
+                else:
+                    PAML_log_dict[key].append("-")
+
     # extract PAML results from PAML log file
     PAML_log_path = result_path + PAML_logfile_name
     
@@ -104,6 +101,8 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
             # record protein name
             if line.startswith(" --------- *"):
                 protein = line.replace("-","").replace(" ","").replace("*","").rstrip("\n")
+                if protein in failed_paml:
+                    continue
                 PAML_log_dict["Protein name"].append(protein)
                 start_recording = True 
 
@@ -631,12 +630,12 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
 def get_omegas(protein_name, result_path, final_length):
     """Gets Dn/Ds ratio (omega) for each site in aa seq of reference species"""
     
-    PAML_output_file_path = result_path + "/" + protein_name + "/PAML_" + protein_name
+    PAML_output_file_path = result_path + protein_name + "/PAML_" + protein_name
     
     PAML_result_dict = {}
     for i in range(1, final_length+1):
         PAML_result_dict[i] = ""
-    
+
     # collect all values for each residue from the BEB of M8 model
     with open(PAML_output_file_path + "/rst", "r") as f:
         
