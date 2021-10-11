@@ -12,53 +12,63 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 """
 ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, model was found so whats the problem? -> gene_name issue?
 
+SUGGESTIONS:
+#               Use Mo for prediction of sequence accuracy -> compare with NCBI Mo
+#               Bioservices 1.8.1 release is ready -> not sure if I need to update from 1.7.12
+#               Use pytest -> make TestClass for all tests and use "test_*.py" notation for the testing module
+#               Check if NCBI datasets can give uniprot ID -> is it better than pyensembl?
+#               To check operation system -> os.uname().sysname -> macOS is "Darwin", linux is "Linux"
+#               Figure out how to bypass the nead for pyensembl install release
+#               Use colorlog module to colour the log files
+#               Get full gene name list and pass it to GUI -> user can only pick valid gene names
+#               CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
+
 
 """
 
 # TODO:
-#    Ptprd -> 5,6,8 microexons and 500kb gene -> "stich" missing bp in that case as if it was a single microexon
-#    Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon) -> that transcript does not have a START codon in ensembl ("START lost")
-#    Run PAML on Rnf187 to see how does it affect the pipeline
-#    Genome of at least one species contains no matches above the identity threshold used : 30 -> use a lower one -> exiting the pipeline now...
-#    I can see that index of nbci datasets downloaded genomes is a bit lower than the one of original genomes (ex. SORICOIDES 14000 entries vs 15000 entries
-#    Its possible that Im missing some of the contigs... How to fix that?
-#    Nap1l4 -> ...WARNING... : CDS of Nap1l4 in ref species is NOT in frame. (from fasta_reader-py module; it has 2 microexons 1, 14) -> no successful correction of cds
-#    However Nap1l4 also is missing exon 13 from the coding sequence (shows up as None in exon calling) -> also misses last bp from exon 12
-#    Refactor : change "protein_name" to "gene_name" and "protein" to "gene_name"
-#    Think about PAML visualization and what the "gray" bars mean -> longest sequence, not reference, what about 3D overlay?
-#    Use Mo for prediction of sequence accuracy -> compare with NCBI Mo
-#    Get full gene name list and pass it to GUI -> user can only pick valid gene names
-#    Check if NCBI datasets can give uniprot ID -> is it better than pyensembl?
-#    To check operation system -> os.uname().sysname -> macOS is "Darwin", linux is "Linux"
-#    Figure out how to bypass the nead for pyensembl install release
-#    Issue with excel sheet in Mis18bp1 -> problem with finding coverage? -> FIXED?
-#    Issue with PAML visualization graph -> CDS should be that of the reference species but Mis18bp1 it looks like its the longest's species # I decided that its ok
-#    Fix the bioservices issue (Brian) -> in virtual box and pyinstaller the colorlog module doesnt have "logging" attribute -> deprecated in python 3.8 ?
-#    Use colorlog module to colour the log files
-#    TESTING > 10kb flanks on CD46 and CD55 with 70 t and 30kb flanks (08_22_2021)
-#                   -> ISSUE -> flanks are as big as the split_large_contigs function -> might be getting same matches on artificially different contigs???
-#                               -> requires testing but probably not (CD46)
-#           -> CD46 C-terminus was successfully recovered!!! (so larger flanks help -> need to be paired with higher thresholds though)
-#           -> Try dynamic flanking -> 10kb if gene < 30kb and 30kb if gene > 30kb
-#           -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree? (but the gene tree looks fine)
-#           -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
-#   CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
-#    0) Use Apbb1 - Ay -> contig LIPJ01008178.1__rev -> exon 11 has one single N and it gets thrown out -> fix conservatively? -> or more conservative would be to delete that base -> gBlocks will take care of the frameshift
-#    0) AP2M1 -> cannot overlay on 3D structure cose of microexon but should still show model
-#    0) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25) so its missing but finder thinks there is a STOP in 24 (which there is not)
-#           -> also C-term synteny check should not run if last exon is missing (currently exon 24 in Gorilla is syntenic) -> probably DONE
+#    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle, PRANK)
+#    0) ESSENTIAL -> check for each Haus or any other protein -> protein seq from Mo compare with uniprot
+#    0) ISSUE  -> Add final protein alignment that would correspond to origial protein squence
+#    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line
+#    2) ISSUE  -> Ptprd -> 5,6,8 microexons and 500kb gene -> "stich" missing bp in that case as if it was
+#                  a single microexon
+#                  SOLUTION : no good solution for that so far, stiching exons does not help cose of flanking exons
+#    3) ISSUE   -> Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon)
+#                   -> that transcript does not have a START codon in ensembl ("START lost")
+#                   Run PAML on Rnf187 to see how does it affect the pipeline
+#                   When running Rnf187 I get "data missing" FATAL ERROR -> and there is no "model_matches_input.txt"
+#                   -> why? -> probably cose no START codon (no cds so no comparison with model)
+#                   The pipeline will run Rnf187 till the end but it doesnt run from middle
+#                   (no "model_matches_input.txt" file !!!)
+#    3) ISSUE   -> Refactor : change "protein_name" to "gene_name" and "protein" to "gene_name"
+#    4) ISSUE   -> Fix the bioservices issue (Brian) -> in virtual box and pyinstaller the colorlog module
+#                   doesnt have "logging" attribute -> deprecated in python 3.8 ?
+#    5) ISSUE   -> flanks are as big as the split_large_contigs function -> might be getting same matches
+#                      on artificially different contigs??? -> requires testing but probably not (CD46)
+#               -> CD46 C-terminus was successfully recovered!!! (so larger flanks help -> need to be
+#                           paired with higher thresholds though)
+#               -> Try dynamic flanking -> 10kb if gene < 30kb and 30kb if gene > 30kb
+#               -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree?
+#                               (but the gene tree looks fine)
+#               -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT
+#                           -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
+#    6) Use Apbb1 - Ay -> contig LIPJ01008178.1__rev -> exon 11 has one single N and it gets thrown out
+#                           -> fix conservatively? -> or more conservative would be to delete that base
+#                           -> gBlocks will take care of the frameshift
+#    7) AP2M1 -> cannot overlay on 3D structure cose of microexon but should still show model
+#    8) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25)
+#                   so its missing but finder thinks there is a STOP in 24 (which there is not)
+#           -> also C-term synteny check should not run if last exon is missing (currently exon 24
+#                           in Gorilla is syntenic) -> probably DONE
 #           -> also add bp number to microexon info in model_incompatible.txt file and log it in exon finder -> DONE
-#    1) ISSUE with Haus8 -> Gs -> SRMG01015959.1__for -> part of exon 4 does not align (the other one does), there is insertion as well
-#                           it created a frameshift at the beginning of the sequence (22aa) present in translated alignment
-#                           it might skew the PAML result for Haus8
-#                           SOLUTION : drop Gs from Haus8 analysis
-#                           Generally Haus8 rat has some very divergent regions but they match the rat uniprot sequence
-#                           Haus8 is a weird protein -> possibly many duplications, retrotranspositions
-#    2)  TESTING run time for same protein using higher blast thresholds (50 and 70)
-#    3)  ISSUE with CD46 primates -> 10-13 exons found only in mulatta -> check blast file
-#                       Consider running a blastn (nucleotide) instead of tblastn (protein) -> tried that, still doesnt find all exons
-#                       Consider extending the arms above 10kb to 30kb to check if thats the issue (probably same as CD55)
-#    6) ISSUE with defining parameters:
+#    9)  TESTING run time for same protein using higher blast thresholds (50 and 70)
+#    10)  ISSUE with CD46 primates -> 10-13 exons found only in mulatta -> check blast file
+#                       Consider running a blastn (nucleotide) instead of tblastn (protein)
+#                                -> tried that, still doesnt find all exons
+#                       Consider extending the arms above 10kb to 30kb to check if thats the issue
+#                               (probably same as CD55)
+#    11) ISSUE with defining parameters:
 #           Define a module for tweaking parameters (advanced_parameters.py)
 #               - duplication restriction (switches on the duplication score)
 #               - flanking arms (default 10kb) -> recommend for large introns (ex. primate default to 30kb)
@@ -68,19 +78,20 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 #               - coverage threshold
 #               - non_ACGT corrector (to mirror CDS position)
 #               - pymol residues
-#    7) ISSUE with BEB results for non-adaptive proteins:
+#               - input known sites
+#    12) ISSUE with BEB results for non-adaptive proteins:
 #            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
 #            Same with Cenp-W
 #            Not sure what the solution is -> I made sure proteins that do not score in M8 vs M7 are not visualized
-#    8) ISSUE with the cds_cloner function (requires refactoring):
+#    13) ISSUE with the cds_cloner function (requires refactoring):
 #           Cloner module needs revision to get hamming distance duplication comparison compare
 #           the actual duplicated exons and not only the number of exon they carry
 #           test on Aurkc Ap
-#    9) ISSUE with exon_finding function:
+#    14) ISSUE with exon_finding function:
 #           Single non_ACGT bases currently lead to whol exon loss
 #           SOLUTION: THINK ABOUT FLIPPING non_ACGT INTO CORRESPONDING CDS POSITION (conservative)
 #           this could save these exons!
-#    10) ISSUE with early SROP codons :
+#    15) ISSUE with early SROP codons :
 #           THERE IS AN ISSUE WITH: if earlier STOP present in other species then
 #           ref species gets translated normally and final_ref_dict is +1
 #           which leads to ValueError in get_omegas function
@@ -88,19 +99,18 @@ ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, m
 #           TO FIX: dashes in the MAFFT alignment (need to remove these positions before
 #           counting codons -> test on Haus8)
 #           08_21_2021 -> I dont really know what this comment mean
-#    11) ISSUE with correction:
+#    16) ISSUE with correction:
 #           THERE IS AN ERROR IN HAUS8 CORRECTION function -> not same lengths?
 #           check the print screen
-#    13) ISSUE with the log files:
+#    17) ISSUE with the log files:
 #           Make FREEDA log file more readable (indentations)
-#    14) ISSUE with running Ap2m1:
+#    18) ISSUE with running Ap2m1:
 #           How come "Contig too short to check C-term synteny 0bp aligned" for contig 81143 in genome11 Ap2m1
 #           SOLUTION: Probably connected to exon4 being a 6bp microexon and NOT deleted from exon input but
 #           There are 13 exons expected instead of 11 -> exon 12 is skipped for some reason; alignment looks good
 #           Also alignment of single exons from exon 7 is messed up (linux default file order problem again?)
 #           early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
 #           but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
-#    16)  TESTING: download genomes of more primates and try reproducing Schuler 2010 MBE paper
 
 print("\nImporting all modules and libraries...\n")
 
@@ -265,26 +275,26 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     ######## RUN BLAST ########
     # ----------------------------------------#
 
+    blast_output_path = wdir + "Blast_output/"
     if user_input1 == "y":
-        print(" -> checking genome blast databases...")
-        blast_output_path = tblastn.run_blast(wdir, ref_species, all_proteins)
-        if blast_output_path is None:
-            print("\n...FATAL ERROR... : Blast database build failed for at least one genome"
-                  "\n                               -> exiting the pipeline now...")
-            return
-    else:
-        blast_output_path = wdir + "Blast_output/"
+        print("Checking genome blast databases...")
+        tblastn.run_blast(wdir, ref_species, all_proteins)
+        #if blast_output_path is None:
+        #    print("\n...FATAL ERROR... : Blast database build failed for at least one genome"
+        #          "\n                               -> exiting the pipeline now...")
+        #return
 
     # ----------------------------------------#
     ######## RUN EXON FINDING ########
     # ----------------------------------------#
 
     if user_input2 == "y":
-        if exon_extractor.check_blast_output(blast_output_path, t):
+        if exon_extractor.check_blast_output(blast_output_path, t, all_proteins):
             result_path = exon_extractor.analyse_blast_results(wdir, blast_output_path,
                                                                ref_species, int(t), all_proteins, all_genomes)
         else:
-            print("\n     ...FATAL ERROR... : Genome of at least one species contains no matches above the identity threshold used : %s -> use a lower one " 
+            print("\n     ...FATAL ERROR... : Genome of at least one species contains "
+                  "no matches above the identity threshold used : %s -> use a lower one " 
                     "-> exiting the pipeline now..." % t)
             return
 
@@ -293,60 +303,82 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     # ----------------------------------------#
 
     if user_input3 == "y" and user_input2 == "n":
+
         nr_of_tries = 1
         while nr_of_tries <= 3:
             user_input4 = input("----->  Indicate folder with results (no slashes or quotes): ")
             result_path = wdir + user_input4 + "/"
+
             if os.path.isdir(result_path) is False:
                 print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
                 nr_of_tries += 1
             else:
                 nr_of_tries = float("inf")
                 result_path = wdir + user_input4 + "/"
+
                 # run PAML
-                nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, ref_species, result_path, all_proteins)
-                if not all([nr_of_species_total_dict]):
-                    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
-                    return
+                nr_of_species_total_dict, PAML_logfile_name, day, \
+                failed_paml, prots_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
+                                                                                  result_path, all_proteins)
+
+                #if not all([nr_of_species_total_dict]):
+                #    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
+                #    return
 
                 # visualize PAML result
-                paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, ref_species, PAML_logfile_name, day, proteins_under_positive_selection)
+                paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins,
+                                                     nr_of_species_total_dict, ref_species, PAML_logfile_name,
+                                                     day, prots_under_pos_sel, failed_paml)
                 # run PyMOL
                 for protein in all_proteins:
                     # do not allow further analysis of failed paml runs
+
                     if protein in failed_paml:
                         continue
                     # check if model seq and input seq match and check if exactly one model exists
                     elif structure_builder.check_structure(wdir, ref_species, protein):
-                        successful = structure_builder.run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_selection, offset=None)
+                        successful = structure_builder.run_pymol(wdir, ref_species, result_path,
+                                                                 protein, prots_under_pos_sel,
+                                                                 offset=None)
                         if not successful:
                             print("\nThe structure for : %s was not built successfully." % protein)
                             continue
                     else:
-                        print("\nPrediction model for : %s DOES NOT match input sequence -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
+                        print("\nPrediction model for : %s DOES NOT match input sequence "
+                              "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
 
     if user_input3 == "y" and user_input2 == "y":
+
         # run PAML
-        nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, proteins_under_positive_selection = paml_launcher.analyse_final_cds(wdir, ref_species, result_path, all_proteins)
-        if not all([nr_of_species_total_dict]):
-            print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
-            return
+        nr_of_species_total_dict, PAML_logfile_name, day, \
+        failed_paml, prots_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
+                                                                          result_path, all_proteins)
+
+        #if not all([nr_of_species_total_dict]):
+        #    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
+        #    return
 
         # visualize PAML result
-        paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, ref_species, PAML_logfile_name, day, proteins_under_positive_selection)
+        paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins,
+                                             nr_of_species_total_dict, ref_species, PAML_logfile_name,
+                                             day, prots_under_pos_sel, failed_paml)
         # run PyMOL
         for protein in all_proteins:
             # do not allow further analysis of failed paml runs
+
             if protein in failed_paml:
                 continue
             # check if model seq and input seq match and check if exactly one model exists
             elif structure_builder.check_structure(wdir, ref_species, protein):
-                successful = structure_builder.run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_selection, offset=None)
+                successful = structure_builder.run_pymol(wdir, ref_species, result_path,
+                                                         protein, prots_under_pos_sel,
+                                                         offset=None)
                 if not successful:
                     print("\nThe structure for : %s was not built successfully." % protein)
                     continue
             else:
-                print("\nPrediction model for : %s DOES NOT match input sequence -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
+                print("\nPrediction model for : %s DOES NOT match input sequence "
+                      "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
 
     print("\nYou reached the end of FREEDA pipeline.")
 
@@ -371,7 +403,7 @@ if __name__ == '__main__':
     parser.add_argument("-rs", "--ref_species",
                         help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=70)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 
 
     args = parser.parse_args()

@@ -228,7 +228,7 @@ def write_seq_rev_comp(header, complement, protein_name, genome_name, contig):
     # check and log if "N" bases are present
     non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
     if [n for n in complement if n in non_ACGT] != []:
-        side_note = "      ...WARNING... non-ACGT bases in the reverse complemented sequence."
+        side_note = "      ...WARNING... : non-ACGT bases in the reverse complemented sequence."
         print(side_note)
         logging.info(side_note)
     o = open("Rev_comp_" + contig + ".fasta", "w")
@@ -247,7 +247,7 @@ def write_seq(header, seq, protein_name, genome_name, fasta_name):
     # check and log if "N" bases are present
     non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
     if [n for n in seq if n in non_ACGT] != []:
-        side_note = "    ...WARNING... non-ACGT bases in the sequence."
+        side_note = "    ...WARNING... : non-ACGT bases in the sequence."
         print(side_note)
         logging.info(side_note)
     o = open(fasta_name, "w")

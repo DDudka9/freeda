@@ -11,6 +11,39 @@ from freeda import input_extractor
 import re
 import logging
 
+def alignment_file_to_dict(wdir, ref_species, filename):
+    """Reads alignment file and transforms it into python dictionary."""
+
+    all_seq_dict = {}
+    seq = ""
+
+    # read alignment file and put into dict
+    with open(wdir + filename, "r") as f:
+        file = f.readlines()
+
+        for line in file:
+
+            if ">" in line and ref_species in line:
+                header = line.rstrip("\n")
+                continue
+
+            if not line.startswith(">"):
+                seq += line.rstrip("\n")
+                continue
+
+            # adds ref species header the first time its executed
+            if line.startswith(">"):
+                all_seq_dict[header] = seq
+                header = line.rstrip("\n")
+                seq = ""
+                continue
+
+        # record the final species
+        all_seq_dict[header] = seq
+
+    return all_seq_dict
+
+
 def read_fasta_record(record):
     """Splits a fasta file into a header and sequence."""
     header = ">"
@@ -112,7 +145,7 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
         # dont print and log it if function used by input extractor module
         if at_input is False:
             if microexons:
-                message = "\n...WARNING...: Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
+                message = "\n...WARNING... : Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
                 print(message)
                 logging.info(message)
 

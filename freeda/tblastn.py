@@ -65,7 +65,7 @@ def run_blast(wdir, ref_species, all_proteins):
 
     print("\ntblastn txt files have been generated.")
     
-    return output_path
+    return
 
 
 def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False):

@@ -59,13 +59,13 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
         # NON-CODING REGION IN REF SPECIES
 
-        if exon_checked == False and cds[position] == "-":
+        if exon_checked is False and cds[position] == "-":
             continue
 
 
         # EXON STARTS IN REF SPECIES -> define N-term for contig locus
 
-        if exon_checked == False and cds[position] == gene[position]:
+        if exon_checked is False and cds[position] == gene[position]:
 
             exon_number += 1
 
@@ -128,7 +128,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
         # EXON CONTINUES IN REF SPECIES (includes first bp)
 
-        if exon_checked == True and cds[position] == gene[position]:
+        if exon_checked is True and cds[position] == gene[position]:
 
             # clone that position
             exon = exon + cds[position]
@@ -172,14 +172,14 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
         # EXON ENDS IN REF SPECIES -> define C-term
 
-        if exon_checked == True and cds[position] == "-" and gene[position] != "-":
+        if exon_checked is True and cds[position] == "-" and gene[position] != "-":
 
             # mark start of the non-coding sequence
             last_bp = True
             exon_checked = False
 
             # check introny first
-            if check_introny(position, last_bp, cds, locus, gene) == True:
+            if check_introny(position, last_bp, cds, locus, gene) is True:
                 introny_at_Cterm = True
 
             # check if its the last exon based on ref species cds
@@ -188,15 +188,15 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
                 # check synteny
                 # WARNING: average 800bp 3'UTRs in mammals make synteny check at C-term not very efficient (most contigs too short)
                 C_term_synteny, Cterm_synteny_message = check_synteny_Cterm(position, locus, gene)
-                if C_term_synteny == False:
+                if C_term_synteny is False:
 
                     # do not allow introny in last exon if not syntenic (often RETRO have 5UTR)
                     introny_at_Cterm = False
 
             # check for very divergent introns (will be counted intronic) -> does not allow divergent introns in last exon
-            elif introny_at_Cterm == False \
+            elif introny_at_Cterm is False \
                 and exon_number != list(ref_exons.keys())[-1] \
-                and homology_check(position, last_bp, cds, locus, gene) == True:
+                and homology_check(position, last_bp, cds, locus, gene) is True:
                 divergent_introns = True
 
             # swapped retro check and divergent exons statements (10/02/2021)
@@ -208,7 +208,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
                                 and locus[position+6] == "-" \
                                 and locus[position-1] not in "-N":
 
-                        if check_retrotransposition(position, last_bp, cds, locus, gene) == True:
+                        if check_retrotransposition(position, last_bp, cds, locus, gene) is True:
                             C_term_retrotransposition = True
                 # KeyError triggered when match at the edge of alignment)
                 except KeyError:
@@ -216,10 +216,10 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
         # CALL EXON IN CONTIG LOCUS ANALYSED
 
-        if last_bp == True:
+        if last_bp is True:
 
             # call it missing
-            if exon_missing == True:
+            if exon_missing is True:
                 message = "Contig %s exon %s genomic locus is MISSING" \
                               % (contig_name, exon_number)
                 print(message)
@@ -242,10 +242,10 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
 
             # call it possible retrotransposition
-            if N_term_retrotransposition == True or C_term_retrotransposition == True:
+            if N_term_retrotransposition is True or C_term_retrotransposition is True:
 
                 # RETRO at both ends
-                if N_term_retrotransposition == True and C_term_retrotransposition == True:
+                if N_term_retrotransposition is True and C_term_retrotransposition is True:
                     possible_retrotransposition = True
                     nr_of_RETRO_exons += 1
                     message = "Contig %s exon %s genomic locus might be RETRO (N and C-term)" \
@@ -254,10 +254,10 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
                     logging.info(message)
 
                 # RETRO at N-term
-                elif N_term_retrotransposition == True and C_term_retrotransposition == False:
+                elif N_term_retrotransposition is True and C_term_retrotransposition is False:
                     possible_retrotransposition = True
                     nr_of_RETRO_exons += 1
-                    if introny_at_Cterm == True:
+                    if introny_at_Cterm is True:
                         introny = True
 
                         # check insertions
@@ -277,10 +277,10 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
                         logging.info(message)
 
                 # RETRO at C-term
-                elif N_term_retrotransposition == False and C_term_retrotransposition == True:
+                elif N_term_retrotransposition is False and C_term_retrotransposition is True:
                     possible_retrotransposition = True
                     nr_of_RETRO_exons += 1
-                    if introny_at_Nterm == True:
+                    if introny_at_Nterm is True:
                         introny = True
 
                         # check insertions
@@ -314,8 +314,8 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
 
             # call it non-intronic
-            if (divergent_introns == False or (divergent_introns == True and single_exon == True)) \
-                                    and introny_at_Nterm == False and introny_at_Cterm == False:
+            if (divergent_introns is False or (divergent_introns is True and single_exon is True)) \
+                                    and introny_at_Nterm is False and introny_at_Cterm is False:
                 message = "Contig %s exon %s genomic locus is not intronic" \
                         % (contig_name, exon_number)
                 print(message)
@@ -338,7 +338,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
 
             # call it invalid if non_ACGT present
-            if non_ACGT == True:
+            if non_ACGT is True:
                 introny = False
 
                 message = "Contig %s exon %s genomic locus contains non_ACGT bases (not allowed)" \
@@ -363,8 +363,8 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
 
             # call it divergent introns (only if its not a lone exon in contig -> risk of erronous introny)
-            if divergent_introns == True and introny_at_Nterm == False and introny_at_Cterm == False \
-                                                and single_exon == False:
+            if divergent_introns is True and introny_at_Nterm is False and introny_at_Cterm is False \
+                                                and single_exon is False:
                 introny = True
 
                 big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
@@ -397,12 +397,12 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
 
 
             # call it intronic
-            if introny_at_Nterm == True or introny_at_Cterm == True:
+            if introny_at_Nterm is True or introny_at_Cterm is True:
                 introny = True
                 single_exon = False
 
                 # at both ends
-                if introny_at_Nterm == True and introny_at_Cterm == True:
+                if introny_at_Nterm is True and introny_at_Cterm is True:
                     message = "Contig %s exon %s genomic locus is INTRONIC  (N and C-term)" \
                         % (contig_name, exon_number)
                     print(message)
@@ -412,7 +412,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
                     nr_of_fully_intronic_exons += 1
 
                 # at N-term
-                elif introny_at_Nterm == True and introny_at_Cterm == False:
+                elif introny_at_Nterm is True and introny_at_Cterm is False:
                     message = "Contig %s exon %s genomic locus is INTRONIC (only N-term)" \
                         % (contig_name, exon_number)
                     print(message)
@@ -422,7 +422,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
                     nr_of_partially_intronic_exons += 1
 
                 # at C-term
-                elif introny_at_Nterm == False and introny_at_Cterm == True:
+                elif introny_at_Nterm is False and introny_at_Cterm is True:
                     message = "Contig %s exon %s genomic locus is INTRONIC (only C-term)" \
                         % (contig_name, exon_number)
                     print(message)
@@ -481,7 +481,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
     elif nr_of_RETRO_exons != 0 and nr_of_intronic_exons == 0:
         RETRO_score = float(1)
 
-    message = "RETRO_score (>= 0.4 suggests retrotransposition event) = %s" % (str(RETRO_score))
+    message = "       RETRO_score (>= 0.4 suggests retrotransposition event) = %s" % (str(RETRO_score))
     print(message)
     logging.info(message)
 
@@ -491,36 +491,36 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
     # CALL SYNTENY OF CONTIG LOCUS ANALYSED
 
         # call synteny of the contig
-        if N_term_synteny == True and C_term_synteny == True:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is SYNTENIC (N and C-term)" % (contig_name)
+        if N_term_synteny is True and C_term_synteny is True:
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is SYNTENIC (N and C-term)" % (contig_name)
             print(message)
             logging.info(message)
             synteny = True
 
-        elif N_term_synteny == True and C_term_synteny == False:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is SYNTENIC (N-term)" % (contig_name)
+        elif N_term_synteny is True and C_term_synteny is False:
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is SYNTENIC (N-term)" % (contig_name)
             print(message)
             logging.info(message)
             synteny = True
 
-        elif N_term_synteny == False and C_term_synteny == True:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is SYNTENIC (C-term)" % (contig_name)
+        elif N_term_synteny is False and C_term_synteny is True:
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is SYNTENIC (C-term)" % (contig_name)
             print(message)
             logging.info(message)
             synteny = True
 
-        elif N_term_synteny == False and C_term_synteny == False:
-            message = "\nSYNTENY ESTIMATION -> Contig %s is NOT SYNTENIC" % (contig_name)
+        elif N_term_synteny is False and C_term_synteny is False:
+            message = "\n       SYNTENY ESTIMATION -> Contig %s is NOT SYNTENIC" % (contig_name)
             print(message)
             logging.info(message)
 
     else:
-        message = "\nSYNTENY ESTIMATION: possible retrotransposition (synteny not allowed)"
+        message = "\n       SYNTENY ESTIMATION: possible retrotransposition (synteny not allowed)"
         print(message)
         logging.info(message)
 
     if exon_number != len(ref_exons): # removed "+ len(microexons)" 08_26_2021 (cose microexons are list of tuples)
-        message = "\nFREEDA could not find all exons in contig %s " % (contig_name)
+        message = "\n       FREEDA could not find all exons in contig %s " % (contig_name)
         print(message)
         logging.info(message)
 
@@ -530,19 +530,19 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
         #    logging.info(message)
 
     # assess likelihood of this contig carrying a duplication
-    if duplication_score_parameter == True:
+    if duplication_score_parameter is True:
 
         if nr_of_intronic_exons != 0 and nr_of_fully_intronic_exons != 0:
             duplication_score = nr_of_fully_intronic_exons/nr_of_intronic_exons
 
-            message = "\nDuplication_score (<0.5 suggests duplication) = %s" % (str(duplication_score))
+            message = "\n       Duplication_score (<0.5 suggests duplication) = %s" % (str(duplication_score))
             print(message)
             logging.info(message)
 
-    if duplication_score_parameter == False:
+    if duplication_score_parameter is False:
         duplication_score = 1.0
 
-        message = "\nDuplication_score (<0.5 suggests duplication) = DISABLED (1.0 as default)"
+        message = "\n       Duplication_score (<0.5 suggests duplication) = DISABLED (1.0 as default)"
         print(message)
         logging.info(message)
 
@@ -566,7 +566,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
     allowed_indels = 20
 
     # for testing introny at the beginning of an exon
-    if last_bp == False:
+    if last_bp is False:
         # mark the ref position to be used for homology_check
         starting_position = position
         # start from previous position
@@ -590,7 +590,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
             return introny
 
 
-    if last_bp == True:
+    if last_bp is True:
         # mark the ref position to be used for homology_check
         starting_position = position
         offset = 1
@@ -689,7 +689,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
 
             # check homology inwards before calling introny
             homology = homology_check(starting_position, last_bp, cds, locus, gene)
-            if homology == True:
+            if homology is True:
                 introny = True
                 return introny
             else:
@@ -732,7 +732,7 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
     indels = 0
     allowed_indels = 10
 
-    if last_bp == False:
+    if last_bp is False:
 
         # cannot predict the exon length at this point so hardcoded 100 as stop
         for i in range(starting_position, starting_position + max_stretch_length):
@@ -815,7 +815,7 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
         return homology
 
 
-    if last_bp == True:
+    if last_bp is True:
         # set position to last exon bp
         starting_position -= 1
 
@@ -1030,7 +1030,7 @@ def check_retrotransposition(position, last_bp, cds, locus, gene): # runs only w
 
     retrotransposition = False
 
-    if homology_check(position, last_bp, cds, locus, gene) == True:
+    if homology_check(position, last_bp, cds, locus, gene) is True:
         retrotransposition = True
         return retrotransposition
     else:
@@ -1057,7 +1057,7 @@ def check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_wi
     big_insertion = False
 
     # do not allow Ns in insertions to avoid misalignment
-    if insertion_with_N == True:
+    if insertion_with_N is True:
         big_insertion = True
         insertion_message = ">>>>> Contig %s exon %s contains %s bp insertion (Ns present -> not allowed) <<<<< \n" \
             % (contig_name, exon_number, str(insertion))

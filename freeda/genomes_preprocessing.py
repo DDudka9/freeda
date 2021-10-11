@@ -131,6 +131,7 @@ def get_names(ref_species, ref_genome=False):
                       ("Ms", "SPRETUS_genome", "GCA_001624865.1"),
                       ("Mc", "CAROLI_genome", "GCA_900094665.2"),
                       ("Mp", "PAHARI_genome", "GCA_900095145.2"),
+                      ("Mu", "MINUTOIDES_genome", "GCA_902729485.2"),
                       ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
                       ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
                       ("Ha", "ALLENI_genome", "GCA_019843855.1"),

@@ -18,12 +18,15 @@ import logging
 
 
 def run_MAFFT(MSA_path):
+
     # get path to all separate MSA files 
     for in_filename in glob.glob(MSA_path + "to_align*.fasta"):
+
         # check if its a rev_comp file
         if re.search(r"to_align_rev_comp", in_filename):
             # for each MSA path find contig name; make it a string with group method
             out_filename = "aligned_rev_comp_" + re.search(r"(?<=to_align_rev_comp_).*$", in_filename).group()
+
         elif re.search(r"to_align_", in_filename):
             # for each MSA path find contig name; make it a string with group method
             out_filename = "aligned_" + re.search(r"(?<=to_align_).*$", in_filename).group()        
