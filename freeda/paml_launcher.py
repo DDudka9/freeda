@@ -20,9 +20,13 @@ Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 from freeda import fasta_reader
 from freeda import genomes_preprocessing
 from Bio.Align.Applications import MafftCommandline
+from Bio.Align.Applications import MuscleCommandline
+from Bio.Align.Applications import ClustalwCommandline
+from Bio import pairwise2
 from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+
 import datetime
 import time
 import glob
@@ -34,7 +38,7 @@ import subprocess
 import copy
 
 
-def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
+def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
 
     failed_paml = []
     start_time = time.time()
@@ -45,11 +49,6 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
         logging.root.removeHandler(handler)
     PAML_logfile_name = "PAML" + day + ".log"
     logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
-    
-    # make empty dataframe to store PAML results
-    #PAML_df = pd.DataFrame({"Protein Name" : \
-    #                        "p-value" : \
-    #                        "M2a vs M1a"})
     
     # make an empty template for all possible species
     all_species = [names[0] for names in genomes_preprocessing.get_names(ref_species)]
@@ -165,29 +164,29 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
             shutil.copy("control_file.ctl", PAML_path + "/" + control_file)
         
             # align the final cds sequences
-            out_mafft = align_final_cds(protein, final_cds_file, result_path)
+            out_msa = align_final_cds(protein, final_cds_file, result_path, aligner)
 
             # check for rare frameshifts in cloned cds
-            cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, out_mafft)
-            shutil.move(out_mafft, protein_folder_path)
+            cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, out_msa)
+            shutil.move(out_msa, protein_folder_path)
 
             # check and eliminate insertions that cause dashes in ref species
-            correction, corrected_filename = eliminate_all_insertions(protein_folder_path, out_mafft)
+            correction, corrected_filename = eliminate_all_insertions(protein_folder_path, out_msa)
             if correction is True:
                 side_note = " \n---- Insertions detected in " + protein + " alignment -> " \
                     "these bp positions were removed in all species forcing conserved alignment\n"
                 print(side_note)
                 logging.info(side_note)
-                no_dashes_out_mafft = corrected_filename
+                no_dashes_out_msa = corrected_filename
             else:
-                no_dashes_out_mafft = out_mafft
+                no_dashes_out_msa = out_msa
         
             # remove STOP codons
-            final_cds_file_no_STOP = STOP_remover(protein_folder_path, no_dashes_out_mafft, protein)
+            final_cds_file_no_STOP = STOP_remover(protein_folder_path, no_dashes_out_msa, protein, aligner)
             shutil.move(final_cds_file_no_STOP, protein_folder_path)
         
             # run gBLOCK
-            raw_out_Gblocks_filename = run_Gblocks(final_cds_file_no_STOP, protein, result_path)
+            raw_out_Gblocks_filename = run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner)
             # Gblocks will fail if not enough species in alignment -> go to next protein
             if raw_out_Gblocks_filename is None:
                 #nr_of_species_total_dict = False
@@ -210,7 +209,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
 
             # check for frameshifts in protein seq and eliminate species from protein and cds
             translated_path, out_Gblocks, to_delete = eliminate_frameshits_cds(wdir, ref_species, protein,
-                                                                    raw_translated_path, filepath_to_translate)
+                                                                    raw_translated_path, filepath_to_translate, aligner)
 
             # correct number of species in the final analysis
             nr_of_species = nr_of_species - len(to_delete)
@@ -268,7 +267,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins):
     return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, prots_under_pos_sel
 
 
-def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, raw_out_Gblocks):
+def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, raw_out_Gblocks, aligner):
     """Finds frameshifts in cds post Gblocks at protein level and eliminates them from nucl and protein alignments."""
 
     raw_translated_filepath = raw_translated_path.replace(wdir, "")
@@ -311,7 +310,8 @@ def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, ra
             f.write(seq + "\n")
 
     # write cds into a file
-    out_Gblocks = raw_out_Gblocks.replace("aligned_MAFFT_Gblocks_", "PAML_template_").replace("_final_no_STOP", "")
+    out_Gblocks = raw_out_Gblocks.replace("aligned_" + aligner.upper() + "_Gblocks_",
+                                          "PAML_template_").replace("_final_no_STOP", "")
     with open(out_Gblocks, "w") as f:
         for species, seq in final_dict_cds.items():
             f.write(species + "\n")
@@ -321,11 +321,11 @@ def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, ra
     return translated_path, out_Gblocks, to_delete
 
 
-def eliminate_all_insertions(protein_folder_path, out_mafft):
+def eliminate_all_insertions(protein_folder_path, out_msa):
 
     correction = False
     
-    alignment = AlignIO.read(protein_folder_path + "/" + out_mafft, "fasta")
+    alignment = AlignIO.read(protein_folder_path + "/" + out_msa, "fasta")
     seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
     
     # check if ref species contains dashes
@@ -335,7 +335,7 @@ def eliminate_all_insertions(protein_folder_path, out_mafft):
         
         # if yes, make a new file for a corrected alignment
         correction = True
-        corrected_filename = "corrected_" + out_mafft
+        corrected_filename = "corrected_" + out_msa
         file_path = protein_folder_path + "/" + corrected_filename
         with open(file_path, "w") as f:
         
@@ -363,7 +363,7 @@ def eliminate_all_insertions(protein_folder_path, out_mafft):
                     
     # if there are no dashes in ref species sequence
     else:
-        return correction, out_mafft
+        return correction, out_msa
     
     return correction, corrected_filename
 
@@ -442,6 +442,7 @@ def run_PAML(wdir, protein, PAML_path, control_file):
     
 
 def run_RAxML(protein, protein_folder_path, translated_path):
+
     tree_name = protein + "_Tree"
     RAxML_cline = ["raxmlHPC", "-f", "a", "-s", translated_path, "-n", tree_name,
                    "-m", "PROTGAMMAAUTO", "-p", "1985", "-x", "2020", "-#", "100"]
@@ -488,7 +489,6 @@ def get_ref_cds(wdir, protein_name, ref_species):
 
 
 def translated_frameshift_checkpoint(wdir, seqs, protein, ref_species):
-    from Bio import pairwise2
     
     # take the cds of ref species post-Gblocks (always the first one)
     ref_post_Gblocks = seqs[0][1]
@@ -532,10 +532,10 @@ def translated_frameshift_checkpoint(wdir, seqs, protein, ref_species):
     return translated_frameshift, frameshift_positions
 
 
-def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, out_mafft):
+def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, out_msa):
     """Compares presumptive cloned cds with reference cds and eliminates rare extreme frameshits."""
 
-    all_seq_dict = fasta_reader.alignment_file_to_dict(wdir, ref_species, out_mafft)
+    all_seq_dict = fasta_reader.alignment_file_to_dict(wdir, ref_species, out_msa)
 
     # make an empty dict to fill with headers and cds
     ref_cds = all_seq_dict[">" + ref_species]
@@ -558,10 +558,10 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, out_mafft):
         logging.info(message)
 
         # flag cds with rare extreme frameshifts
-        if score < 0.55: # threshold set by legi >Gd = 0.5879396984924623 Izumo1
+        if score < 0.55:  # threshold set by legit >Gd = 0.5879396984924623 Izumo1
             to_delete.append(species)
-            message = "\n...WARNING... : CDS for species : %s in %s protein contains a frameshift " \
-                      "-> eliminated from alignment" % (species.rstrip("\n"), protein)
+            message = "...WARNING... : CDS for species : %s in %s protein contains a frameshift " \
+                      "-> eliminated from alignment\n" % (species.rstrip("\n"), protein)
             print(message)
             logging.info(message)
 
@@ -569,7 +569,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, out_mafft):
     final_dict = {species: seq for (species, seq) in all_seq_dict.items() if species not in to_delete}
 
     # write it into a file
-    with open(wdir + out_mafft, "w") as f:
+    with open(wdir + out_msa, "w") as f:
         for species, seq in final_dict.items():
             f.write(species + "\n")
             f.write(seq + "\n")
@@ -630,12 +630,12 @@ def run_seqret(protein, out_Gblocks):
         logging.info(message)
       
 
-def STOP_remover(protein_folder_path, no_dashes_out_mafft, protein_name):
+def STOP_remover(protein_folder_path, no_dashes_out_msa, protein_name, aligner):
     
     to_trim = {}
     max_trim_position = 30
     c_term_bp_to_trim = 0
-    path_to_trim = protein_folder_path + "/" + no_dashes_out_mafft
+    path_to_trim = protein_folder_path + "/" + no_dashes_out_msa
     with open(path_to_trim, "r") as f:
         file = f.readlines()
         
@@ -675,7 +675,7 @@ def STOP_remover(protein_folder_path, no_dashes_out_mafft, protein_name):
         else:
             final_cds_no_STOP[species] = cds
 
-    final_cds_file_no_STOP = "aligned_MAFFT_" + protein_name + "_final_no_STOP.fasta"
+    final_cds_file_no_STOP = "aligned_" + aligner.upper() + "_" + protein_name + "_final_no_STOP.fasta"
     with open(final_cds_file_no_STOP, "w") as f:
     
         for species, cds in final_cds_no_STOP.items():
@@ -757,10 +757,10 @@ def post_Gblocks_STOP_remover(protein_folder_path, raw_out_Gblocks_filename, pro
     return post_Gblocks_path
 
 
-def run_Gblocks(final_cds_file_no_STOP, protein, result_path):
+def run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner):
 
     in_filepath = result_path + protein + "/" + final_cds_file_no_STOP
-    raw_out_Gblocks_filename = "aligned_MAFFT_Gblocks_" + protein + "_final_no_STOP.fasta"
+    raw_out_Gblocks_filename = "aligned_" + aligner.upper() + "_Gblocks_" + protein + "_final_no_STOP.fasta"
     # run Gblocks with options: codon ("-t=c") and dont save html file ("-p=n")
     Gblocks_cline = ["Gblocks", in_filepath, "-t=c", "-p=n"]
     result = subprocess.run(Gblocks_cline, capture_output=True)
@@ -783,20 +783,30 @@ def run_Gblocks(final_cds_file_no_STOP, protein, result_path):
     return raw_out_Gblocks_filename
 
               
-def align_final_cds(protein, final_cds_file, result_path):
-    
+def align_final_cds(protein, final_cds_file, result_path, aligner):
+
     in_filepath = result_path + protein + "/" + protein + "_final.fasta"
-    out_mafft = "aligned_MAFFT_" + final_cds_file
-    # run mafft
-    mafft_cline = MafftCommandline(input=in_filepath)
+
+    # define which aligner is used
+    if aligner == "mafft":
+        cline = MafftCommandline(input=in_filepath)
+    if aligner == "muscle":
+        cline = MuscleCommandline(input=in_filepath)
+    if aligner == "clustalw":
+        cline = ClustalwCommandline("clustalw2", infile=in_filepath)
+
+    out_msa = "aligned_" + aligner.upper() + "_" + final_cds_file
+
+    # run msa
+    cline = MafftCommandline(input=in_filepath)
     # record standard output and standard error
-    stdout, stderr = mafft_cline()
+    stdout, stderr = cline()
     # make a post-MSA file using out_filename
-    with open(out_mafft, "w") as f:
+    with open(out_msa, "w") as f:
         f.write(stdout)
     
-    # returns the filename after MAFFT
-    return out_mafft
+    # returns the filename after MSA
+    return out_msa
 
 
 """

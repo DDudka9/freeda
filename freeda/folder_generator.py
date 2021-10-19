@@ -12,7 +12,7 @@ def generate_folders(result_path, all_proteins, all_genomes):
     
     # make protein folders
     for protein in all_proteins:
-       os.makedirs(result_path + str(protein))
+        os.makedirs(result_path + str(protein))
         
     # name genome folder for each protein folder
     all_protein_folders = os.listdir(result_path)

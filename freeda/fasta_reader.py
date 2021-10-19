@@ -46,6 +46,7 @@ def alignment_file_to_dict(wdir, ref_species, filename):
 
 def read_fasta_record(record):
     """Splits a fasta file into a header and sequence."""
+
     header = ">"
     seq = ""
     for line in re.split("\n", record):

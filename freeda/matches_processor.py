@@ -335,9 +335,13 @@ def generate_files_to_MSA(contig, cds, gene, fasta_path):
         name = "to_align_rev_comp_" + str(contig) + ".fasta"
     with open(name, "w") as o:
         o.write(cds)
-        for seq in sequences:
-            o.write("\n" + seq + "\n") # ADDED "\n" at the end (07_06_2021)
-        o.write(gene.rstrip("\n+"))  
+        o.write("\n" + sequences[0])
+        o.write("\n" + sequences[1])
+        o.write(gene.rstrip("\n"))
+        #o.write(cds)
+        #for seq in sequences:
+        #    o.write("\n" + seq + "\n") # ADDED "\n" at the end (07_06_2021)
+        #o.write(gene.rstrip("\n+"))
     o.close()
     shutil.move(name, MSA_path)
     return MSA_path  

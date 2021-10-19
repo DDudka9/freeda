@@ -53,7 +53,7 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
     duplication_score_parameter = False # THIS WILL BE PART OF NEW MODULE
 
     # all sequences are in capital letters at this point
-    list_of_non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
+    list_of_non_ACGT = ["N", "Y", "R", "W", "S", "K", "M", "D", "H", "V", "B", "X"]
 
     for position in cds:
 

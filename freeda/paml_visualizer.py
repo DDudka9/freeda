@@ -51,7 +51,11 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
                                                    nr_of_species_total, ref_species,
                                                    proteins_under_positive_selection)
                 all_matched_adaptive_sites_ref[protein] = matched_adaptive_sites_ref
-        
+
+    # get protein alignment that matches 3D structure
+    for protein in all_proteins:
+        get_alignment_matching_structure(result_path, ref_species, protein, all_matched_adaptive_sites_ref)
+
     # prepare a dict with PAML stats
     final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml)
     # generate a PAML result excel sheet
@@ -62,6 +66,57 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
         dump(all_matched_adaptive_sites_ref, file)
     
     shutil.move(wdir + "all_matched_adaptive_sites_ref.txt", result_path + "all_matched_adaptive_sites_ref.txt")
+
+
+def get_alignment_matching_structure(result_path, ref_species, protein, dictionary):
+    """Generates protein alignment matching 3D structure"""
+
+    # get protein alignment corresponding to unedited reference protein
+    aa_features_dict = dictionary[protein]
+    filename = protein + "_protein_alignment.fasta"
+    all_seq_dict = fasta_reader.alignment_file_to_dict(result_path, ref_species, filename)
+
+    # remove alignment file (not needed)
+    os.remove(result_path + filename)
+
+    # make temporary dictionary donor of aa
+    temp_seq_dict = {}
+    for species in all_seq_dict:
+        temp_seq_dict[species] = []
+        for position, aa in enumerate(all_seq_dict[species]):
+            temp_seq_dict[species].append(aa)
+
+    # make a new dictionary to hold empty positions ("-") or aa from temp_seq_dict
+    new_seq_dict = {}
+    for species in all_seq_dict:
+        new_seq_dict[species] = {}
+        for position, aa in enumerate(aa_features_dict):
+            new_seq_dict[species][position] = ""
+
+    # fill up new_seq_dict
+    for species in all_seq_dict:
+
+        for position, features in aa_features_dict.items():
+
+            # reference species sequence is full length
+            if species.lstrip(">") == ref_species:
+                new_seq_dict[species][position] = features[0]
+                continue
+
+            position = int(position) - 1
+            # add aa
+            if features[-1] == 1:
+                new_seq_dict[species][position] = temp_seq_dict[species].pop(0)
+            # introduce a dash (missing aa)
+            else:
+                new_seq_dict[species][position] = "-"
+
+    with open(result_path + protein + "_protein_alignment.fasta", "w") as f:
+        for species in new_seq_dict:
+            f.write(species + "\n")
+            # reconstruct sequence
+            seq = "".join([aa for position, aa in new_seq_dict[species].items()])
+            f.write(seq + "\n")
 
 
 def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml):

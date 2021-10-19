@@ -180,9 +180,6 @@ def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_s
     with open(result_path + "all_matched_adaptive_sites_ref.txt", "r") as f:
         dictionary = literal_eval(f.read())
 
-    # get protein alignment that matches 3D structure
-    get_alignment_matching_structure(result_path, ref_species, protein, dictionary)
-
     # get domain names and coordinates from Interpro API
     domains = get_domains(wdir, ref_species, protein)
 
@@ -203,71 +200,15 @@ def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_s
     return True
 
 
-def get_alignment_matching_structure(result_path, ref_species, protein, dictionary):
-    """Generates protein alignment matching 3D structure"""
-
-    # get protein alignment corresponding to unedited reference protein
-    aa_features_dict = dictionary[protein]
-    filename = protein + "_protein_alignment.fasta"
-    all_seq_dict = fasta_reader.alignment_file_to_dict(result_path, ref_species, filename)
-
-    # remove alignment file (not needed)
-    os.remove(result_path + filename)
-
-    # make temporary dictionary donor of aa
-    temp_seq_dict = {}
-    for species in all_seq_dict:
-        temp_seq_dict[species] = []
-        for position, aa in enumerate(all_seq_dict[species]):
-            temp_seq_dict[species].append(aa)
-
-    # make a new dictionary to hold empty positions ("-") or aa from temp_seq_dict
-    new_seq_dict = {}
-    for species in all_seq_dict:
-        new_seq_dict[species] = {}
-        for position, aa in enumerate(aa_features_dict):
-            new_seq_dict[species][position] = ""
-
-    # fill up new_seq_dict
-    for species in all_seq_dict:
-
-        for position, features in aa_features_dict.items():
-
-            # reference species sequence is full length
-            if species.lstrip(">") == ref_species:
-                new_seq_dict[species][position] = features[0]
-                continue
-
-            position = int(position) - 1
-            # add aa
-            if features[-1] == 1:
-                new_seq_dict[species][position] = temp_seq_dict[species].pop(0)
-            # introduce a dash (missing aa)
-            else:
-                new_seq_dict[species][position] = "-"
-
-    with open(result_path + protein + "_protein_alignment.fasta", "w") as f:
-        for species in new_seq_dict:
-            f.write(species + "\n")
-            # reconstruct sequence
-            seq = "".join([aa for position, aa in new_seq_dict[species].items()])
-            f.write(seq + "\n")
-
-
 def get_pymol_script(wdir, ref_species, dictionary, protein,
                      protein_path, proteins_under_positive_selection, offset, domains):
     """Gets a PyMOL script that will be passed into PyMOL automatically"""
 
     paint_sites = False
-    paint_domains = False
 
     # paint sites of proteins likely under positive selection
     if protein in proteins_under_positive_selection:
         paint_sites = True
-
-    # paint domains if found in Interpro
-    if domains:
-        paint_domains = True
 
     matched_adaptive_sites_ref = dictionary[protein]
     structure_prediction_path = wdir + "Structures/" + protein + "_" + ref_species
@@ -300,12 +241,27 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
 
         # color domains
         colors = ["yellow", "orange", "marine", "limon", "wheat", "lightblue", "lightpink", "deepolive", "red"]
+
         if domains:
+
+            current_coordinates = (0, 0)
             for domain, coordinates in domains.items():
-                color = colors.pop(0)
-                f.write("color " + color + ", resi " + str(coordinates[0]) + "-" + str(coordinates[1]) + "\n")
-                middle = int((coordinates[1] - coordinates[0]) / 2 + coordinates[0])
-                f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + str(domain) + '")\n')
+
+                c1 = set(range(current_coordinates[0], current_coordinates[1]))
+                c2 = set(range(coordinates[0], coordinates[1]))
+
+                # domain overlaps too much with the previous domain -> dont paint
+                if len(c1 & c2) > len(c2) / 2:
+                    continue
+
+                # paint that domain
+                else:
+                    color = colors.pop(0)
+                    f.write("color " + color + ", resi " + str(coordinates[0]) + "-" + str(coordinates[1]) + "\n")
+                    middle = int((coordinates[1] - coordinates[0]) / 2 + coordinates[0])
+                    f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + str(domain) + '")\n')
+
+                current_coordinates = coordinates
 
         # PyMOL command to color adaptive residues
         for site, features in matched_adaptive_sites_ref.items():

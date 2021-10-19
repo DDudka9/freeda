@@ -17,10 +17,10 @@ CURRENTLY (03_24_2021) THERE IS NO ALTERNATIVE STOP CODON SEARCH FUNCTION ->
 """
 
 from Bio.Align.Applications import MafftCommandline
+from Bio.Align.Applications import MuscleCommandline
+from Bio.Align.Applications import ClustalwCommandline
 from Bio import AlignIO
-from Bio import pairwise2
 from freeda import fasta_reader
-from freeda import msa_analyzer
 import glob
 import logging
 import operator
@@ -30,7 +30,7 @@ import shutil
 
 
 def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs, protein_name,
-              genome_name, final_exon_number, ref_exons, MSA_path):
+              genome_name, final_exon_number, ref_exons, MSA_path, aligner):
     
     # get a dictionary with all the contigs and how many exons they have
     all_contigs_dict = {}
@@ -117,9 +117,8 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
                 total_hd_normalized = 0
                 exons = [exon_nr for exon_nr, cs in duplicated_exons.items() if winner in cs]
                 for exon_nr in exons:
-                    total_hd_normalized += hamming_distance_to_ref_species(ref_exons, \
-                        exon_nr, winner, preselected_exons_overhangs, \
-                        MSA_path, protein_name)
+                    total_hd_normalized += hamming_distance_to_ref_species(ref_exons, exon_nr, winner,
+                                                    preselected_exons_overhangs, MSA_path, protein_name, aligner)
                 winners_hd_normalized[winner] = total_hd_normalized
                 contigs_hd_analyzed[winner] = total_hd_normalized
 
@@ -209,10 +208,10 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
             for contig in most_intronic_contigs:
                 # look if a given contig contains a given exon
                 for seq in preselected_exons_overhangs[exon]:
-                    # if yes, and this exon wasnt yet cloned -> run MAFFT against Mm exon
+                    # if yes, and this exon wasnt yet cloned -> run MSA against Mm exon
                     if contig[0] == seq[0] and cds_composition[exon] == "":
                         in_filename, out_filename = generate_single_exon_MSA(wdir, ref_species, seq[1], contig[0], exon,
-                                                                             protein_name, ref_exons, MSA_path, seq[2])
+                                                                    protein_name, ref_exons, MSA_path, seq[2], aligner)
                         # collect the aligned sequences
                         aligned_seqs = collect_sequences(in_filename + out_filename)
 
@@ -313,12 +312,14 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
     return cloned_cds 
 
 
-def hamming_distance_to_ref_species(ref_exons, exon_nr, winner, \
-                    preselected_exons_overhangs, MSA_path, protein_name):
+def hamming_distance_to_ref_species(ref_exons, exon_nr, winner, preselected_exons_overhangs,
+                                    MSA_path, protein_name, aligner):
+    """Compares ref exon to the presumptive exon in order to pick between >1 exon candidate -> picks more conserved."""
 
-    # determine the name for the file to mafft
+    # determine the name for the file to MSA
     filename = "duplicated_exon_" + str(exon_nr) + "_in_" + winner + "_hamming_distance.fasta"
-    # prepare a file to mafft
+
+    # prepare a file to run MSA
     with open(filename, "w") as f:
         # write the reference species exon first
         f.write(ref_exons[exon_nr][0] + "\n")
@@ -330,13 +331,24 @@ def hamming_distance_to_ref_species(ref_exons, exon_nr, winner, \
         f.write(sequence[0][0] + "\n")
         f.write(">_" + protein_name + "gene\n")
         f.write(sequence[0][1])
+
+    # prepare handles for msa
     in_filename = glob.glob(os.getcwd() + "/" + filename)[0]
     out_filename = filename.rstrip(".fasta") + "_aligned.fasta"
-    # run mafft
-    mafft_cline = MafftCommandline(input=in_filename)
+
+    # define which aligner is used
+    if aligner == "mafft":
+        cline = MafftCommandline(input=in_filename)
+    if aligner == "muscle":
+        cline = MuscleCommandline(input=in_filename)
+    if aligner == "clustalw":
+        cline = ClustalwCommandline("clustalw2", infile=in_filename)
+
+    # run MSA
+    #mafft_cline = MafftCommandline(input=in_filename)
     #print(mafft_cline)
     # record standard output and standard error
-    stdout, stderr = mafft_cline()
+    stdout, stderr = cline()
     # make a post-MSA file using out_filename
     with open(out_filename, "w") as f:
         f.write(stdout)
@@ -350,7 +362,7 @@ def hamming_distance_to_ref_species(ref_exons, exon_nr, winner, \
     ref_exon, compared_exon = index_positions_exons(seqs)
     # check if there is no frame shift in the given exon
     frameshift = check_frameshift(ref_exon, compared_exon)
-    if frameshift == True:
+    if frameshift is True:
         message = "   ...WARNING... : FRAMESHIFT detected in contig " + winner + \
             " in exon nr: %s" % str(exon_nr)
         print(message)
@@ -372,12 +384,12 @@ def hamming_distance_to_ref_species(ref_exons, exon_nr, winner, \
     shutil.move(out_filename, MSA_path + "Duplicated_exons/")
 
     # if there is a frameshift and its not the last exon, reject this contig
-    if frameshift == True and exon_nr != list(ref_exons)[-1]:
+    if frameshift is True and exon_nr != list(ref_exons)[-1]:
         hd_normalized = float("inf")
         
         return hd_normalized
     else:
-        # normalize hd to ref species exon (prior MAFFT; without indels)
+        # normalize hd to ref species exon (prior MSA; without indels)
         hd_normalized = hd/len(ref_exons[exon_nr][1])
         return hd_normalized    
     
@@ -478,7 +490,7 @@ def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
 
 
 def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, protein_name,
-                             ref_exons, MSA_path, genomic_locus):
+                             ref_exons, MSA_path, genomic_locus, aligner):
             
     filename = "exon_" + str(exon_number) + "_to_align.fasta"
     with open(filename, "w") as f:
@@ -494,8 +506,8 @@ def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, p
     in_filepath = MSA_path + "Single_exons_MSA/"
     # move the file for MSA
     shutil.move(wdir + filename, in_filepath)
-    # run MAFFT and get the final filename of the aligned sequences
-    out_filename = run_single_exon_MAFFT(wdir, ref_species, in_filepath, str(exon_number), filename)
+    # run MSA and get the final filename of the aligned sequences
+    out_filename = run_single_exon_msa(wdir, ref_species, in_filepath, str(exon_number), filename, aligner)
 
     return in_filepath, out_filename
 
@@ -517,6 +529,25 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
             gene_header = header
             gene_aligned = all_seq_dict[gene_header]
 
+    # check for unreasonable insertions
+    if len(cloned_exon_aligned.replace("-", "")) / len(gene_aligned.replace("-", "")) > 2:
+        message = "\n...WARNING... : Exon : %s : Contains a huge insertions " \
+                  "-> eliminated" % cloned_exon_header
+        print(message)
+        logging.info(message)
+        uncorrected_filename = "_uncorrected_" + out_filename
+        shutil.copy(wdir + out_filename, wdir + uncorrected_filename)
+        shutil.move(wdir + uncorrected_filename, in_filepath)
+        cloned_exon = "-" * len(cloned_exon_aligned)
+        all_seq_dict[cloned_exon_header] = cloned_exon
+
+        # write dict back to file
+        with open(out_filename, "w") as f:
+            for header, seq in all_seq_dict.items():
+                f.write(header + "\n")
+                f.write(seq + "\n")
+            return
+
     # score mismatches
     matches = 0
     mapping_positions = 0
@@ -535,7 +566,7 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
     score = matches/mapping_positions
 
     # eliminate misaligned exons by converting all bases to dashes (save original alignment as "uncorrected"
-    if 0.65 <= score <= 0.75:
+    if 0.60 <= score <= 0.75:  # Cenpu Ay _LIPJ01001187.1__rev_Cenpu_exon_5 0.6363636363636364 -> legit
 
         # check if both flanks of the poorly aligned cloned exon are homologous to reference introns
         double_introny = check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned)
@@ -543,7 +574,7 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
         if double_introny is False:
 
             message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s " \
-                      "and lack of two flanking introns (good > 0.75, questionable = 0.65-0.75, poor < 0.65) " \
+                      "and lack of two flanking introns (good > 0.75, questionable = 0.60-0.75, poor < 0.60) " \
                       "-> eliminated" % (cloned_exon_header, score)
             print(message)
             logging.info(message)
@@ -563,16 +594,16 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
         # low score but introns detected at both ends
         else:
             message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s " \
-                      "but flanked by two syntenic introns (good > 0.75, questionable = 0.65-0.75, poor < 0.65) " \
+                      "but flanked by two syntenic introns (good > 0.75, questionable = 0.60-0.75, poor < 0.60) " \
                       "-> acceptable" % (cloned_exon_header, score)
             print(message)
             logging.info(message)
             return
 
-    if score < 0.65:
+    if score < 0.60:
 
         message = "\n...WARNING... : Exon : %s : Poor alignment score : %s " \
-                  "(good > 0.75, questionable = 0.65-0.75, poor < 0.65)" \
+                  "(good > 0.75, questionable = 0.60-0.75, poor < 0.60)" \
                   " -> eliminated" % (cloned_exon_header, score)
         print(message)
         logging.info(message)
@@ -590,7 +621,7 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
         return
 
     if score > 0.75:
-        message = "\nExon : %s Good alignment score : %s (good > 0.75, questionable = 0.65-0.75, poor < 0.65) " \
+        message = "\nExon : %s Good alignment score : %s (good > 0.75, questionable = 0.60-0.75, poor < 0.60) " \
                   "-> accepted" % (cloned_exon_header, score)
         print(message)
         logging.info(message)
@@ -697,15 +728,24 @@ def check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligne
     return double_introny
 
 
-def run_single_exon_MAFFT(wdir, ref_species, in_filepath, exon_number, filename):
-    """Runs mafft comparing reference species single exons and syntenic locus with presumptive exons"""
+def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, filename, aligner):
+    """Runs MSA comparing reference species single exons and syntenic locus with presumptive exons"""
+
+    # define which aligner is used
+    if aligner == "mafft":
+        cline = MafftCommandline(input=in_filepath + filename)
+    if aligner == "muscle":
+        cline = MuscleCommandline(input=in_filepath + filename)
+    if aligner == "clustalw":
+        cline = ClustalwCommandline("clustalw2", infile=in_filepath + filename)
 
     out_filename = "aligned_" + "exon_" + str(exon_number) + ".fasta"
-    # run mafft
-    mafft_cline = MafftCommandline(input=in_filepath + filename)
+
+    # run msa
+    #mafft_cline = MafftCommandline(input=in_filepath + filename)
     #print(mafft_cline)
     # record standard output and standard error
-    stdout, stderr = mafft_cline()
+    stdout, stderr = cline()
     # make a post-MSA file using out_filename
     with open(out_filename, "w") as f:
         f.write(stdout)
