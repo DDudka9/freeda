@@ -23,6 +23,7 @@ import subprocess
 import shutil
 import tarfile
 import logging
+logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
@@ -202,9 +203,7 @@ def correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_li
 
     if len(corrected_cds) % 3 != 0:
         input_correct = False
-        message = "\n...WARNING... : CDS of %s in ref species is NOT in frame." % protein
-        print(message)
-        logging.info(message)
+        print("\n...WARNING... : CDS of %s in ref species is NOT in frame." % protein)
 
         return input_correct
 
@@ -406,13 +405,15 @@ def get_gene_names(wdir, ensembl):
     with open(wdir + "proteins_temp.txt", "w") as f:
 
         genes = []
-        for i in range(37800, len(all_genes_ensembl), 99):
+        for i in range(37800, len(all_genes_ensembl), 95):
             gene = all_genes_ensembl[i]
             if not gene.startswith("Mir") \
                     and "-" not in gene \
                     and "ps" not in gene \
                     and "os" not in gene \
-                    and "ik" not in gene:
+                    and "ik" not in gene \
+                    and "Sno" not in gene \
+                    and "Gm" not in gene:
                 genes.append(gene)
                 f.write(gene + "\n")
 
@@ -467,14 +468,15 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                                           transcript, model_seq, matching_length, uniprot_id)
 
     # find gene sequence
-    extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
-                ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript)
+    extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id, ref_genomes_path, ref_genome_name,
+                 ref_genome_contigs_dict, protein, transcript, UTR_3, cds_sequence_expected)
 
     # find exons sequence
-    input_correct, microexon_present, microexons, missing_bp_list = extract_exons(wdir, ref_species, protein, exons_input_path,
-                                                                             ref_genomes_path, ref_genome_name, contig,
-                                                                             strand, transcript, ref_genome_contigs_dict,
-                                                                             UTR_5, UTR_3, cds_sequence_expected)
+    input_correct, microexon_present, microexons, missing_bp_list = extract_exons(wdir, ref_species, protein,
+                                                                                  exons_input_path, ref_genomes_path,
+                                                                                  ref_genome_name, contig, strand,
+                                                                                  transcript, ref_genome_contigs_dict,
+                                                                                  UTR_5, UTR_3, cds_sequence_expected)
 
     # trim exons and coding sequence if microexons were detected
     if microexon_present:
@@ -686,8 +688,8 @@ def get_single_exon(ref_species, protein, ref_genome_contigs_dict, ref_genomes_p
     return exon_fasta_sequence
 
 
-def extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
-        ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript):
+def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id,
+        ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript, UTR_3, cds_sequence_expected):
     """Extracts gene sequence based on Genome object"""
 
     # list all genes in contig
@@ -719,6 +721,26 @@ def extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
 
     parse_sequence(ref_species, gene_input_path, gene_fasta_sequence,
                    protein, transcript, strand, sequence_type="gene")
+
+    # last bp is often missing in gene where UTR_3 is missing -> last exon will not be called unless fixed
+    if len(UTR_3) == 0:
+
+        with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "r") as f:
+            file = f.readlines()
+
+            if file[1].endswith("TG") or file[1].endswith("TA"):  # check if gene sequence ends with a partial STOP
+
+                print("\n...WARNING... : 3' UTR not detected in %s and gene ends with a partial STOP " 
+                          "-> added missing bp" % protein)
+
+                with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "w") as w:
+                    w.write(file[0])
+
+                    # add the missing bp based on STOP from cds AND ADD A PLACEHOLDER BP TO FACILITATE EXON CALLING
+                    if cds_sequence_expected[-3:] == "TGA" or cds_sequence_expected[-3:] == "TAA":
+                        w.write(file[1] + "A" + "A")  # TGA or TAA + placeholder bp
+                    else:
+                        w.write(file[1] + "G" + "G")  # TAG + placeholder bp
 
 
 def parse_sequence(ref_species, output_path, fasta_sequence, protein, transcript, strand, sequence_type):
@@ -904,6 +926,10 @@ def check_microexons(wdir, protein_name, ref_species):
 
 
 """
+
+
+
+
 
 
 

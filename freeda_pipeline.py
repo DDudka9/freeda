@@ -93,6 +93,8 @@ KeyError: 'Prdm9'
 #                   -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
 #    0) ESSENTIAL -> Sgo2b last exon (7) is called "None" in exon finder in all contigs -> last bp in cds is missing in gene
 #           SOLUTION : Special case for last bp?
+#           Update : Same for last exon (13) in Nlrp1a !
+#           SOLUTION 2 : Check at input extractor -> if UTR3 == O -> check STOP codon -> if None -> check last exon STOP -> add last bp to gene
 #    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
 #    0) ESSENTIAL -> Prdm9 fails cose of few sequences passing 90% -> cose last exon (10) is huge and 8kb distant -> and there is up to 5000 matches from blast
@@ -108,9 +110,11 @@ KeyError: 'Prdm9'
 #    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle, PRANK)
 #    0) ESSENTIAL -> run proteins that have seqs from Mo on uniprot -> compare
 #    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line -> DONE?
-#    2) ISSUE  -> Ptprd -> 5,6,8 microexons and 500kb gene -> "stich" missing bp in that case as if it was
-#                  a single microexon
+#    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
+#               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
+#                   -> "stich" missing bp in that case as if it was a single microexon
 #                  SOLUTION : no good solution for that so far, stiching exons does not help cose of flanking exons
+#                           -> but lowering the limit to < 18bp would fix both of these instances
 #    3) ISSUE   -> Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon)
 #                   -> that transcript does not have a START codon in ensembl ("START lost")
 #                   Run PAML on Rnf187 to see how does it affect the pipeline
@@ -348,9 +352,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 return
 
             if not model_matches_input:
-                print("...WARNING... : Structure prediction for protein: %s DOES NOT have a match in available ensembl "
-                        "database -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
-                print("...WARNING... : Protein may still be analyzed using PAML but without 3D structure overlay\n")
+                print("...WARNING... : No matching structure prediction model is available for : %s "
+                      "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
+                print("...WARNING... : Protein will still be analyzed using PAML but without 3D structure overlay\n")
 
             #if microexon_present:
             #    print("...WARNING... : Sequence for: %s found in Ensembl contains microexons : %s\n"
