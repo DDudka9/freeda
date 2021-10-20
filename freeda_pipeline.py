@@ -24,16 +24,97 @@ SUGGESTIONS:
 #               CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
 
 
+----------- * Nudt11 * -----------
+
+Looking for structure in AlphaFold database for: Nudt11 ...
+
+Based on uniprot id: P0C028 structure prediction for protein: Nudt11 has been found (164 aa)
+
+Exons FAILED to assemble expected CDS for: Nudt11-201
+
+
+...FATAL ERROR... : Input data generation FAILED for protein: Nudt11 -> exiting the pipeline now...
+
+
+-> its a protein coding gene with 2 exons where exon 2 is a SINGLE nucleaotide (A) - part of the STOP
+
+
+
+
+
+
+
+
+
+ --------- * Prdm9 * --------- 
+
+
+Alignment score for species : >Mm = -0.8530805687203792
+...WARNING... : CDS for species : >Mm in Prdm9 protein contains a frameshift -> eliminated from alignment
+
+Alignment score for species : >Ay = -1.0793838862559242
+...WARNING... : CDS for species : >Ay in Prdm9 protein contains a frameshift -> eliminated from alignment
+
+Alignment score for species : >An = -1.0209320695102686
+...WARNING... : CDS for species : >An in Prdm9 protein contains a frameshift -> eliminated from alignment
+
+Alignment score for species : >Rs = 0.872827804107425
+Alignment score for species : >Rn = -1.032780410742496
+...WARNING... : CDS for species : >Rn in Prdm9 protein contains a frameshift -> eliminated from alignment
+
+ 
+ WARNING : Insertions in positions in ref MSA deleted: [1491, 1492, 1493, 1958, 3698, 3699]
+ 
+---- Insertions detected in Prdm9 alignment -> these bp positions were removed in all species forcing conserved alignment
+
+[]
+
+...WARNING... : Failed PAML analysis for : Prdm9 -> probably not enough species in the alignment (e.g. poor alignment of repetitive regions)
+
+ --------------->  PAML analysis completed in 0.01356441577275594 minutes or 0.00022607386112213134 hours
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 434, in <module>
+    freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 356, in freeda_pipeline
+    day, prots_under_pos_sel, failed_paml)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_visualizer.py", line 57, in analyse_PAML_results
+    get_alignment_matching_structure(result_path, ref_species, protein, all_matched_adaptive_sites_ref)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_visualizer.py", line 75, in get_alignment_matching_structure
+    aa_features_dict = dictionary[protein]
+KeyError: 'Prdm9'
+
+
 """
 
 # TODO:
+#    0) ESSENTIAL -> Should all 17 + 1 rodent genomes be used? Some may introduce problematic alignments
+#                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay
+#    0) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
+#                   -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
+#    0) ESSENTIAL -> Sgo2b last exon (7) is called "None" in exon finder in all contigs -> last bp in cds is missing in gene
+#           SOLUTION : Special case for last bp?
+#           Update : Same for last exon (13) in Nlrp1a !
+#           SOLUTION 2 : Check at input extractor -> if UTR3 == O -> check STOP codon -> if None -> check last exon STOP -> add last bp to gene
+#    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
+#           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
+#    0) ESSENTIAL -> Prdm9 fails cose of few sequences passing 90% -> cose last exon (10) is huge and 8kb distant -> and there is up to 5000 matches from blast
+#           so probably the final threshold of 65 misses some matches in exon 10 and contig ends early -> also plenty of Ns in exon 10 in Mi, Mc etc.
+#           Also exon 10 in Prdm9 has duplications that make alignment difficult -> thats why matches and locus not always align (probably main culprit)
+#           Main problem -> Mafft seems to fail aligning Prdm9_final.fasta (but Ugene mafft does it with no problem)
+#           SOLUTIONS : 1) Nevertheless FREEDA should not crash; 2) Increase matches limit from 40 to 60 and run again; 3) Decrease threshold from 90% to 70% and run again
+#           I might need to add single exon length checkpoint -> dash the exon that is double the size of the ref exon -> DONE
+#           SOLVED -> exon insertion checkpoint at single exon mapping saved Prdm9 aligmnent and showed rapid evolution of DNA binding repeats in exon 10
+#    0) UPGRADE -> Visualization module should get info about domains as well
+#    0) UPGRADE -> Interpro module often overlaps domains (ex. Dmc1 -> 4 overlapping domains)
+#                       -> if coordinates overlap > 50% -> pick only first domain -> FIXED?
 #    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle, PRANK)
-#    0) ESSENTIAL -> check for each Haus or any other protein -> protein seq from Mo compare with uniprot
-#    0) ISSUE  -> Add final protein alignment that would correspond to origial protein squence
-#    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line
-#    2) ISSUE  -> Ptprd -> 5,6,8 microexons and 500kb gene -> "stich" missing bp in that case as if it was
-#                  a single microexon
+#    0) ESSENTIAL -> run proteins that have seqs from Mo on uniprot -> compare
+#    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line -> DONE?
+#    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
+#               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
+#                   -> "stich" missing bp in that case as if it was a single microexon
 #                  SOLUTION : no good solution for that so far, stiching exons does not help cose of flanking exons
+#                           -> but lowering the limit to < 18bp would fix both of these instances
 #    3) ISSUE   -> Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon)
 #                   -> that transcript does not have a START codon in ensembl ("START lost")
 #                   Run PAML on Rnf187 to see how does it affect the pipeline
@@ -57,7 +138,7 @@ SUGGESTIONS:
 #                           -> fix conservatively? -> or more conservative would be to delete that base
 #                           -> gBlocks will take care of the frameshift
 #    7) AP2M1 -> cannot overlay on 3D structure cose of microexon but should still show model
-#    8) ISSUE with "STOP codon detected in öAST exon (24) in Gorilla Numa1 -> last exon is microexon (25)
+#    8) ISSUE with "STOP codon detected in LAST exon (24) in Gorilla Numa1 -> last exon is microexon (25)
 #                   so its missing but finder thinks there is a STOP in 24 (which there is not)
 #           -> also C-term synteny check should not run if last exon is missing (currently exon 24
 #                           in Gorilla is syntenic) -> probably DONE
@@ -87,11 +168,13 @@ SUGGESTIONS:
 #           Cloner module needs revision to get hamming distance duplication comparison compare
 #           the actual duplicated exons and not only the number of exon they carry
 #           test on Aurkc Ap
+#           test on Nlrp5 Ap BDUI01009531.1__rev
 #    14) ISSUE with exon_finding function:
-#           Single non_ACGT bases currently lead to whol exon loss
+#           Single non_ACGT bases currently lead to whole exon loss
 #           SOLUTION: THINK ABOUT FLIPPING non_ACGT INTO CORRESPONDING CDS POSITION (conservative)
-#           this could save these exons!
-#    15) ISSUE with early SROP codons :
+#           this could save these exons! -> better woould be to just delete that base and let frameshit be taken care of by Gblocks
+#           this function should target only single base non_ACGT and flag these exons -> test on Cxxc1 Ap aligned_rev_comp_BDUI01029349.1__rev exon 7
+#    15) ISSUE with early STOP codons :
 #           THERE IS AN ISSUE WITH: if earlier STOP present in other species then
 #           ref species gets translated normally and final_ref_dict is +1
 #           which leads to ValueError in get_omegas function
@@ -102,8 +185,6 @@ SUGGESTIONS:
 #    16) ISSUE with correction:
 #           THERE IS AN ERROR IN HAUS8 CORRECTION function -> not same lengths?
 #           check the print screen
-#    17) ISSUE with the log files:
-#           Make FREEDA log file more readable (indentations)
 #    18) ISSUE with running Ap2m1:
 #           How come "Contig too short to check C-term synteny 0bp aligned" for contig 81143 in genome11 Ap2m1
 #           SOLUTION: Probably connected to exon4 being a 6bp microexon and NOT deleted from exon input but
@@ -178,6 +259,10 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines() if protein != "\n"]
 
 
+    # get settings
+    aligner = "mafft"
+
+
     # get all species and genome names
     all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(ref_species, ref_genome=False)]
 
@@ -191,13 +276,15 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
         for protein in all_proteins:
             structure_path = wdir + "Structures/" + protein + "_" + ref_species
-            if "model_matches_input_seq.txt" in os.listdir(structure_path) or "model_incompatible.txt" in os.listdir(structure_path):
+            if "model_matches_input_seq.txt" in os.listdir(structure_path) \
+                    or "model_incompatible.txt" in os.listdir(structure_path):
                 print("\nAll input data and structure model for : %s are present." % protein)
             else:
                 input_present = False
                 print("\n...WARNING... : Data are missing for : %s" % protein)
         if not input_present:
-            print("\n...FATAL_ERROR... : Input data for at least one protein are missing -> exiting the pipeline now...")
+            print("\n...FATAL_ERROR... : Input data for at least one protein are missing "
+                  "-> exiting the pipeline now...")
             return
 
     # ----------------------------------------#
@@ -247,7 +334,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
             print("\n----------- * %s * -----------" % protein)
             # get structure prediction model from AlphaFold
             possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, protein)
-            model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
+            model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
+                                                                               protein, possible_uniprot_ids)
             # get sequence input from ensembl
             input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
                 wdir, ref_species, ref_genomes_path,
@@ -259,17 +347,19 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 print("\nInput data have been generated for protein: %s\n\n" % protein)
 
             if not input_correct:
-                print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s -> exiting the pipeline now...\n" % protein)
+                print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s "
+                      "-> exiting the pipeline now...\n" % protein)
                 return
 
             if not model_matches_input:
-                print("...WARNING... : Structure prediction for protein: %s DOES NOT have a match in available ensembl "
-                        "database -> cannot overlay FREEDA results onto a 3D structure\n" % protein)
-                print("...WARNING... : Protein may still be analyzed using PAML but without 3D structure overlay\n")
+                print("...WARNING... : No matching structure prediction model is available for : %s "
+                      "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
+                print("...WARNING... : Protein will still be analyzed using PAML but without 3D structure overlay\n")
 
-            if microexon_present:
-                print("...WARNING... : Sequence for: %s found in Ensembl contains microexons : %s\n" % (protein, microexons))
-                print("...WARNING... : Microexons are difficult to align and are removed\n")
+            #if microexon_present:
+            #    print("...WARNING... : Sequence for: %s found in Ensembl contains microexons : %s\n"
+            #          % (protein, microexons))
+            #    print("...WARNING... : Microexons are difficult to align and are removed\n")
 
     # ----------------------------------------#
     ######## RUN BLAST ########
@@ -291,7 +381,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     if user_input2 == "y":
         if exon_extractor.check_blast_output(blast_output_path, t, all_proteins):
             result_path = exon_extractor.analyse_blast_results(wdir, blast_output_path,
-                                                               ref_species, int(t), all_proteins, all_genomes)
+                                                    ref_species, int(t), all_proteins, all_genomes, aligner)
         else:
             print("\n     ...FATAL ERROR... : Genome of at least one species contains "
                   "no matches above the identity threshold used : %s -> use a lower one " 
@@ -319,7 +409,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, \
                 failed_paml, prots_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
-                                                                                  result_path, all_proteins)
+                                                                                  result_path, all_proteins, aligner)
 
                 #if not all([nr_of_species_total_dict]):
                 #    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
@@ -352,7 +442,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, \
         failed_paml, prots_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
-                                                                          result_path, all_proteins)
+                                                                          result_path, all_proteins, aligner)
 
         #if not all([nr_of_species_total_dict]):
         #    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
@@ -403,8 +493,7 @@ if __name__ == '__main__':
     parser.add_argument("-rs", "--ref_species",
                         help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
-
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
 
     args = parser.parse_args()
     freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)

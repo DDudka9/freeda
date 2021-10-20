@@ -5,7 +5,7 @@ Created on Wed Mar 24 18:13:46 2021
 
 @author: damian
 
-Takes a MAFFT output, finds exons, clones exons and makes a final cds for protein
+Takes a MSA output, finds exons, clones exons and makes a final cds for protein
 of a given genome.
 
 """
@@ -23,7 +23,7 @@ import shutil
 import glob
 
 
-def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons):
+def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons, aligner):
     """Analyses MSA per contig -> finds exons, clones them into cds"""
 
     # make a dictionary with exon number as key and sequences, names as values -> include microexons as empty lists
@@ -64,7 +64,7 @@ def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exon
     
     # clone cds based on the most intronic contigs
     cloned_cds = cds_cloner.clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs,
-                 protein_name, genome_name, final_exon_number, ref_exons, MSA_path)
+                 protein_name, genome_name, final_exon_number, ref_exons, MSA_path, aligner)
 
     # check if final CDS is in frame (clone anyway)
     if (len(cloned_cds)-cloned_cds.count("-")) % 3 != 0:

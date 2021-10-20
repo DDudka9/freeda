@@ -22,7 +22,7 @@ import os
 import re
 
 
-def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins, all_genomes):
+def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins, all_genomes, aligner):
     """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
@@ -62,11 +62,11 @@ def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins,
                 # process the final dataframe
                 MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, result_path,
                                                              protein_name, genome_name, genome_index)
-                # run MAFFT on all the MSA and write them into files
-                msa_aligner.run_MAFFT(MSA_path)
+                # run MSA and write them into files
+                msa_aligner.run_msa(MSA_path, aligner)
                 # return potential exons for a current protein in current genome
                 msa_analyzer.analyse_MSA(wdir, ref_species, MSA_path, protein_name,
-                                         genome_name, ref_exons, expected_exons)
+                                         genome_name, ref_exons, expected_exons, aligner)
                 # mark that this blast result has been analysed
                 message = "\nFinished running protein: '%s' from genome: '%s'\n" \
                     % (protein_name, genome_name)

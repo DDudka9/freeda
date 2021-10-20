@@ -74,7 +74,8 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     It also looks for reference genome if key-only argument reference_genome is invoked."""
 
     genome_file_database = True
-    
+
+    # if function called by input extractor module not tblastn module
     if ref_genome is True:
         ref_genome_path = database_path
     
@@ -201,7 +202,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     #    genome_file_database = True
     
     # unpack and decompress reference genome
-    if ref_genome is True:
+    if ref_genome:
         
         if expected_genome_file in all_files:
 

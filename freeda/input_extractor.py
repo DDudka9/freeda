@@ -7,11 +7,8 @@ Created on Fri Jul  9 22:47:43 2021
 """
 
 # REQUIRES INSTALLATION OF THE REFERENCE GENOME:
-    # pyensembl install --species mouse --release 100
-    # pyensembl install --species human --release 100
-
-# 09/25/2021 -> installed new version of pyensembl using command line ->
-# pyensembl install --species mouse --release 104 DID NOT WORK !!!
+    # pyensembl install --species mouse --release 104
+    # pyensembl install --species human --release 104
 
 from freeda import tblastn
 from freeda import genomes_preprocessing
@@ -26,22 +23,7 @@ import subprocess
 import shutil
 import tarfile
 import logging
-
-# import glob
-# import shutil
-#ref_species = "Mm"
-#wdir = os.getcwd() + "/"
-#protein = "Haus1"
-#reference_genome_name = "MUSCULUS_genome"
-
-
-# Make a function deleting microexon from exons
-# DONE -> remove microexons check from further functions? -> exon finder doesnt know one exon was skipped!!!
-# Still there is one additional exon found.... cose exons are first aligned using CDS which still contains microexon
-# FURTHER CHECKPOINT MIGHT BE TRIGGERED IF FINAL CDS IS OUT OF FRAME (when translated???)
-
-# Think how to deal with gene_and_cds_reader module -> also detects microexons etc -> leave it in case of manual input
-# but no microexons would be detected and no warnings issued (which is a problem)
+logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
@@ -50,6 +32,8 @@ rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
 
 def correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_list, transcript):
     """Corrects the automatic input - exons and cds. IT CANNOT HANDLE TWO MICROEXONS ONE AFTER THE OTHER"""
+
+    # FURTHER CHECKPOINT MIGHT BE TRIGGERED IF FINAL CDS IS OUT OF FRAME (when translated???)
 
     input_correct = True
 
@@ -219,20 +203,18 @@ def correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_li
 
     if len(corrected_cds) % 3 != 0:
         input_correct = False
-        message = "\n...WARNING... : CDS of %s in ref species is NOT in frame." % protein
-        print(message)
-        logging.info(message)
+        print("\n...WARNING... : CDS of %s in ref species is NOT in frame." % protein)
 
         return input_correct
 
     return input_correct
 
 
-
-
 def generate_basic_folders(wdir):
     """Checks if folders for input are present in working directory, generates if not"""
 
+    path_to_ref_genomes = wdir + "Reference_genomes/"
+    path_to_genomes = wdir + "Genomes/"
     path_to_blast_input = wdir + "Blast_input/"
     path_to_blast_output = wdir + "Blast_output/"
     path_to_cds = wdir + "Coding_sequences/"
@@ -240,6 +222,10 @@ def generate_basic_folders(wdir):
     path_to_exons = wdir + "Exons/"
     path_to_structures = wdir + "Structures/"
 
+    if not os.path.isdir(path_to_ref_genomes):
+        os.makedirs(path_to_ref_genomes)
+    if not os.path.isdir(path_to_genomes):
+        os.makedirs(path_to_genomes)
     if not os.path.isdir(path_to_blast_input):
         os.makedirs(path_to_blast_input)
     if not os.path.isdir(path_to_blast_output):
@@ -379,20 +365,20 @@ def generate_ref_genome_object(wdir, ref_species):
     if ref_species in human_names:
         ref_genome_name = "SAPIENS_genome"
         species = "homo sapiens"
-        release = 100
+        release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     # default is mouse for now
     else:
         ref_genome_name = "MUSCULUS_genome"
         species = "mus musculus"
-        release = 100
+        release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
 
     # make sure ref species genome (reference genome) is present
     ref_genomes_path = wdir + "Reference_genomes/"
-    # check if reference genome is present -> exit 
+    # check if reference genome is present -> exit if not
     ref_genome_present = tblastn.check_genome_present(wdir,
                                                       ref_species,
                                                       ref_genomes_path,
@@ -412,13 +398,40 @@ def generate_ref_genome_object(wdir, ref_species):
             ref_genome_contigs_dict, biotype, all_genes_ensembl
 
 
+def get_gene_names(wdir, ensembl):
+    """Gets sample of gene names from ensembl using pyensembl package"""
+
+    all_genes_ensembl = ensembl.gene_names()
+    with open(wdir + "proteins_temp.txt", "w") as f:
+
+        genes = []
+        for i in range(37800, len(all_genes_ensembl), 95):
+            gene = all_genes_ensembl[i]
+            if not gene.startswith("Mir") \
+                    and "-" not in gene \
+                    and "ps" not in gene \
+                    and "os" not in gene \
+                    and "ik" not in gene \
+                    and "Sno" not in gene \
+                    and "Gm" not in gene:
+                genes.append(gene)
+                f.write(gene + "\n")
+
+
 def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                   ensembl, biotype, protein, model_seq, uniprot_id):
     """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
 
     if ref_species == "Mm":
+        # get pyensembl release for mouse (or load it if already installed)
+        cmd = ["pyensembl", "install", "--species mus musculus", "--release 104"]
+        subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
         ref_genome_name = "MUSCULUS_genome"
+
     if ref_species == "Hs":
+        # get pyensembl release for human (or load it if already installed)
+        cmd = ["pyensembl", "install", "--species homo sapiens", "--release 104"]
+        subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
         ref_genome_name = "SAPIENS_genome"
 
     input_correct = False
@@ -455,14 +468,15 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                                           transcript, model_seq, matching_length, uniprot_id)
 
     # find gene sequence
-    extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
-                ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript)
+    extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id, ref_genomes_path, ref_genome_name,
+                 ref_genome_contigs_dict, protein, transcript, UTR_3, cds_sequence_expected)
 
     # find exons sequence
-    input_correct, microexon_present, microexons, missing_bp_list = extract_exons(wdir, ref_species, protein, exons_input_path,
-                                                                             ref_genomes_path, ref_genome_name, contig,
-                                                                             strand, transcript, ref_genome_contigs_dict,
-                                                                             UTR_5, UTR_3, cds_sequence_expected)
+    input_correct, microexon_present, microexons, missing_bp_list = extract_exons(wdir, ref_species, protein,
+                                                                                  exons_input_path, ref_genomes_path,
+                                                                                  ref_genome_name, contig, strand,
+                                                                                  transcript, ref_genome_contigs_dict,
+                                                                                  UTR_5, UTR_3, cds_sequence_expected)
 
     # trim exons and coding sequence if microexons were detected
     if microexon_present:
@@ -674,8 +688,8 @@ def get_single_exon(ref_species, protein, ref_genome_contigs_dict, ref_genomes_p
     return exon_fasta_sequence
 
 
-def extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
-        ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript):
+def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id,
+        ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, protein, transcript, UTR_3, cds_sequence_expected):
     """Extracts gene sequence based on Genome object"""
 
     # list all genes in contig
@@ -707,6 +721,26 @@ def extract_gene(ref_species, gene_input_path, ensembl, contig, strand, gene_id,
 
     parse_sequence(ref_species, gene_input_path, gene_fasta_sequence,
                    protein, transcript, strand, sequence_type="gene")
+
+    # last bp is often missing in gene where UTR_3 is missing -> last exon will not be called unless fixed
+    if len(UTR_3) == 0:
+
+        with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "r") as f:
+            file = f.readlines()
+
+            if file[1].endswith("TG") or file[1].endswith("TA"):  # check if gene sequence ends with a partial STOP
+
+                print("\n...WARNING... : 3' UTR not detected in %s and gene ends with a partial STOP " 
+                          "-> added missing bp" % protein)
+
+                with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "w") as w:
+                    w.write(file[0])
+
+                    # add the missing bp based on STOP from cds AND ADD A PLACEHOLDER BP TO FACILITATE EXON CALLING
+                    if cds_sequence_expected[-3:] == "TGA" or cds_sequence_expected[-3:] == "TAA":
+                        w.write(file[1] + "A" + "A")  # TGA or TAA + placeholder bp
+                    else:
+                        w.write(file[1] + "G" + "G")  # TAG + placeholder bp
 
 
 def parse_sequence(ref_species, output_path, fasta_sequence, protein, transcript, strand, sequence_type):
@@ -895,6 +929,10 @@ def check_microexons(wdir, protein_name, ref_species):
 
 
 
+
+
+
+
     with open(path_to_exons + protein + "_" + ref_species + "_exons.fasta", "w") as f:
 
         microexon = microexon_nr.pop(0)
@@ -1069,8 +1107,6 @@ def get_prediction(wdir, ref_species, protein):
 
 def get_assemblies():
 
-    
-
     import sys
     import zipfile
     import pandas as pd
@@ -1086,82 +1122,4 @@ def get_assemblies():
         import ncbi.datasets
     except ImportError:
         print('ncbi.datasets module not found. To install, run `pip install ncbi-datasets-pylib`.')
-
-def start(accession_nr):
-    import time
-    import ncbi.datasets.openapi
-    from pprint import pprint
-    from ncbi.datasets.openapi.api import gene_api
-    from ncbi.datasets.openapi.model.rpc_status import RpcStatus
-    from ncbi.datasets.openapi.model.v1_download_summary import V1DownloadSummary
-    from ncbi.datasets.openapi.model.v1_fasta import V1Fasta
-    from ncbi.datasets.openapi.model.v1_gene_dataset_request import V1GeneDatasetRequest
-    from ncbi.datasets.openapi.model.v1_gene_dataset_request_content_type import V1GeneDatasetRequestContentType
-    from ncbi.datasets.openapi.model.v1_gene_dataset_request_sort_field import V1GeneDatasetRequestSortField
-    from ncbi.datasets.openapi.model.v1_gene_match import V1GeneMatch
-    from ncbi.datasets.openapi.model.v1_gene_metadata import V1GeneMetadata
-    from ncbi.datasets.openapi.model.v1_organism import V1Organism
-    from ncbi.datasets.openapi.model.v1_organism_query_request_tax_rank_filter import \
-        V1OrganismQueryRequestTaxRankFilter
-    from ncbi.datasets.openapi.model.v1_ortholog_request_content_type import V1OrthologRequestContentType
-    from ncbi.datasets.openapi.model.v1_ortholog_set import V1OrthologSet
-    from ncbi.datasets.openapi.model.v1_sci_name_and_ids import V1SciNameAndIds
-    from ncbi.datasets.openapi.model.v1_sort_direction import V1SortDirection
-    # Defining the host is optional and defaults to https://api.ncbi.nlm.nih.gov/datasets/v1
-    # See configuration.py for a list of all supported configuration parameters.
-    configuration = ncbi.datasets.openapi.Configuration(
-        host="https://api.ncbi.nlm.nih.gov/datasets/v1"
-    )
-
-    # The client must configure the authentication and authorization parameters
-    # in accordance with the API server security policy.
-    # Examples for each auth method are provided below, use the example that
-    # satisfies your auth use case.
-
-    # Configure API key authorization: ApiKeyAuthHeader
-    configuration.api_key['ApiKeyAuthHeader'] = 'YOUR_API_KEY'
-
-    # Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-    # configuration.api_key_prefix['ApiKeyAuthHeader'] = 'Bearer'
-
-    # Enter a context with an instance of the API client
-    with ncbi.datasets.openapi.ApiClient(configuration) as api_client:
-        # Create an instance of the API class
-        api_instance = gene_api.GeneApi(api_client)
-        gene_ids = [
-            59067,
-        ]  # [int] | NCBI gene ids
-    include_annotation_type = [
-        V1Fasta("FASTA_UNSPECIFIED"),
-    ]  # [V1Fasta] | Select additional types of annotation to include in the data package.  If unset, no annotation is provided. (optional)
-    fasta_filter = [
-        "fasta_filter_example",
-    ]  # [str] | Limit the FASTA sequences in the datasets package to these transcript and protein accessions (optional)
-    filename = "ncbi_dataset.zip"  # str | Output file name. (optional) (default to "ncbi_dataset.zip")
-
-    try:
-        # Get a gene dataset by gene ID
-        api_response = api_instance.download_gene_package(gene_ids, include_annotation_type=include_annotation_type,
-                                                          fasta_filter=fasta_filter, filename=filename)
-        pprint(api_response)
-    except ncbi.datasets.openapi.ApiException as e:
-        print("Exception when calling GeneApi->download_gene_package: %s\n" % e)
-
-    api_instance = ncbi.datasets.GenomeApi(ncbi.datasets.ApiClient())
-
-    # get genome5
-    assembly_accessions = [accession_nr]
-    exclude_sequence = False
-    include_annotation_type = ['PROT_FASTA']
-    api_response = api_instance.download_assembly_package(
-        assembly_accessions,
-        exclude_sequence=exclude_sequence,
-        include_annotation_type=include_annotation_type,
-        # Because we are streaming back the results to disk,
-        # we should defer reading/decoding the response
-        _preload_content=False
-    )
-    with open('genome5_assembly.zip', 'wb') as f:
-        f.write(api_response.data)
-
 """

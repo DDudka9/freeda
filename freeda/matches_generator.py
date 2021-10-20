@@ -67,7 +67,7 @@ def threshold_matches(matches, t, protein_name, genome_name): # works well
     # filter matches based on identity 
     threshold = matches["pident"] > t
     
-    # get only columns of interest and check that there is less than 40 matches (ease on MAFFT)
+    # get only columns of interest and check that there is less than 40 matches (to reduce MSA time)
     matches_above_threshold = matches[threshold]
     if len(matches_above_threshold) < 40:
         pass
