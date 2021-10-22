@@ -91,22 +91,9 @@ KeyError: 'Prdm9'
 #                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay
 #    0) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
 #                   -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
-#    0) ESSENTIAL -> Sgo2b last exon (7) is called "None" in exon finder in all contigs -> last bp in cds is missing in gene
-#           SOLUTION : Special case for last bp?
-#           Update : Same for last exon (13) in Nlrp1a !
-#           SOLUTION 2 : Check at input extractor -> if UTR3 == O -> check STOP codon -> if None -> check last exon STOP -> add last bp to gene
 #    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#    0) ESSENTIAL -> Prdm9 fails cose of few sequences passing 90% -> cose last exon (10) is huge and 8kb distant -> and there is up to 5000 matches from blast
-#           so probably the final threshold of 65 misses some matches in exon 10 and contig ends early -> also plenty of Ns in exon 10 in Mi, Mc etc.
-#           Also exon 10 in Prdm9 has duplications that make alignment difficult -> thats why matches and locus not always align (probably main culprit)
-#           Main problem -> Mafft seems to fail aligning Prdm9_final.fasta (but Ugene mafft does it with no problem)
-#           SOLUTIONS : 1) Nevertheless FREEDA should not crash; 2) Increase matches limit from 40 to 60 and run again; 3) Decrease threshold from 90% to 70% and run again
-#           I might need to add single exon length checkpoint -> dash the exon that is double the size of the ref exon -> DONE
-#           SOLVED -> exon insertion checkpoint at single exon mapping saved Prdm9 aligmnent and showed rapid evolution of DNA binding repeats in exon 10
 #    0) UPGRADE -> Visualization module should get info about domains as well
-#    0) UPGRADE -> Interpro module often overlaps domains (ex. Dmc1 -> 4 overlapping domains)
-#                       -> if coordinates overlap > 50% -> pick only first domain -> FIXED?
 #    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle, PRANK)
 #    0) ESSENTIAL -> run proteins that have seqs from Mo on uniprot -> compare
 #    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line -> DONE?
@@ -329,6 +316,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                   "GenBank -> Genomic FASTA(.fna)")
             return
 
+        # get names of
+
         for protein in all_proteins:
 
             print("\n----------- * %s * -----------" % protein)
@@ -493,7 +482,7 @@ if __name__ == '__main__':
     parser.add_argument("-rs", "--ref_species",
                         help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=70)
 
     args = parser.parse_args()
     freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)

@@ -789,7 +789,8 @@ def align_final_cds(protein, final_cds_file, result_path, aligner):
 
     # define which aligner is used
     if aligner == "mafft":
-        cline = MafftCommandline(input=in_filepath)
+        cline = MafftCommandline(input=in_filepath, thread=-1)  # thread -1 is suppose to automatically
+                                                                # calculate physical cores
     if aligner == "muscle":
         cline = MuscleCommandline(input=in_filepath)
     if aligner == "clustalw":

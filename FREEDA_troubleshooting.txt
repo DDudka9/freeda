@@ -1,0 +1,665 @@
+GENERAL RULES:
+
+# remeber to always name the proteins by their gene names
+# remeber to ALWAYS use coding sequence and exons corresponding to the GENEID in ensembl (exons MUST be identical to gene for "find_exons" function to work)
+# its best to use the same uniprot aa sequence for blasting as the ensembl cds
+
+
+
+
+DISPLAY:
+
+# Clasp1 genome3 is good for find exons function display
+
+# Hamming function (duplications) display - Sgo2a in Caroli -> chr1_for and chr8_rev are duplications (Sgo2a and Sgo2b) -> humming distance worked to distinguish
+# or Sgo2a Pahari - chr19 (Sgo2b) and chr5 (Sgo2a) - same as ensembl
+
+# Display of hamming distance function and synteny check -> Cep170 genome1
+
+# DISPLAY -> Cdc16 genome 1 -> all 18 exons are retreived
+
+
+
+
+RECORDED ON:
+
+02/14/2021
+
+# Problem: Cdk5rap2 exon-intron boundery "in frame" causes frameshift via gBlocks:
+# Cdk5rap2 has a frameshift in middle-C-term in whole MSA (including Mm)  -> still doesnt score as adaptive
+
+# Cause:
+# Ms has 26 and 27 exons missing (Ns) and is off by 1bp in alignment but the deletion is %3 == 0 so it thinks its in frame
+# so gBlocks fails
+# its not scoring in PAML cose every sequence is frameshifted the same way for a stretch of almost 240aa
+# Need to implement a function checking Mm uniprot vs post-gBlocks translation of Mm
+# if non-syn detected -> delete the post-gBlocks sequence that is out of frame in whole MSA
+# then run PAML on the remaining part -> log the deletion (use Cdk5rap2 Ms chr4_1_rev exon 25 ending and 28 beginning (missing 26 and 27))
+# basically the last bp in exon 25 (G) is glued to beginning of exon 28 in while MSA but deletion is 228bp ("in frame") so Frameshift is not triggered
+# and therefore gBlocks thinks its all in frame -> introduces a frameshift in whle MSA when trimming the edges of the deletion
+
+# Solution:
+# checkpoint of uniprot Mm with the post-gBlocks Mm cds -> delete frameshifts before PAML
+
+
+02/15/2021
+
+# vs v43 -> added check for insertion (needs to have locus[position != "-"])
+# vs v43 -> increased the threshold to 40% of match identity from blast (Aurkb and Ttk kinases had >300 matches with 30% threshold)
+
+
+# THE CODE CAN APPARENTLY RETREIVE WELL THE CDS (Pd_CENP-T the same as manual)
+#  -> except for a small deletion in automatic CDS (dashes) that was manually removed in my original analysis
+#  -> also Gd_CENP-T contig 1386593 misses piece of N-term in exon 1 and shows non-intronic exon 2 which is not true
+
+# some contigs have non-0 RETRO score cose of C-term introny but possible retro at N-term (usually cose of N-term intron misalignment/deletion) -> looks like ("only C-term")
+
+# Although Mad1l1 gene is enormous (300kb) and its very slow to align even with 15kb contig threshold
+# it seems that lowering the threshold to 15kb did not speed up the alignment -> best to get back to 30kb
+# its most likely because of the gene itself (300kb) that the alignment takes 1.5h per species
+# the code seems to be able to retreive proper exons from each genome
+# therefore best strategy will be to simply run all such big proteins separately 
+# these slow alignment files need to be converted to "CLUSTAL" format in unipro "project" view
+
+# N-terms missing (so whole exons missing):
+    # Cenpt genome7 - 1386593__for exon 1
+    # Dlgap5 genome....
+    # Dlgap5 genome3 - 560691__rev exon 17
+    
+# OLD COMMENT (not sure if still valid as of v45)
+	# Haus2 RATTUS - frameshift detected in exon5 (out of 6) -> 3 del and 2 ins but only 2 ins are real (dels are at exon edge)
+	# CHECK THAT -> THE CDS SHOULD NOT BE CLONED BUT IT IS!!!!!
+	# same for Sgo2 Mo (here there are Ns in most of exon 6)
+	
+# OLD COMMENT (not sure if still valid as of v45)
+	# check exons ex. Haus3 -> check carefully exon junctions before and after Gblocks
+
+# OLD COMMENT (not sure if still valid as of v45)
+	# So far Dlgap5, Haus1, Haus3, Haus5 and Haus8 pass >5.99 LRT for M8 v M7
+	# only Haus3 passes both M2a v M1a and M8 v M7 (maybe cose its the largest)
+	# my previous ref based assembly based PAML detected pos sel in Haus1, 4, 5, 6
+	# however it had few Haus3 and Haus8 sequences and Haus6 was PRANK aligned
+	# check why Haus4 is not consistent (99% seq, 12 species but no pos sel)
+
+# OLD COMMENT (not sure if still valid as of v45)
+	# Cenpk An NC_047676.1_rev contig exon 3 not intronic cose of >3 dashes in gene on both ends
+	# same for Cenpk genome15 contig 24 exon 3
+	
+# OLD COMMENT (not sure if still valid as of v45)
+	# Something weird in Kif4 Spicilegus (QGOO01034972.1__for) -> huge insertion in exon 12 (not cloned)
+	# and shows exon 31 and 32 while there is only 30 exons in Kif4
+
+
+**** DONE ****
+# FRAMESHIFT detecting function -> long genes have high chance of single exons aligning
+# erroneously -> causing frameshifts (Clasp1 Spicilegus) -> fix that
+# The code recognized 38 exons instead of 39 exons and all exons were shifted -> causing fake frameshift
+# somewhere between exon 26 and 27
+# FIXED (microexons function) -> skips the microexon (but mind you that exon numbers are also changed)
+
+
+**** DONE ****
+# Clasp1 SURDASTER contig NW_021604620.1__rev -> all exons found but it says "CDS not in frame"
+# ITS BECAUSE these genes are too long for single exon alignment and cloning -> they misalign
+# to fix it I might need to:
+    # 1) either clone exons directly from the first alignment (time efficient)
+        # -> ex. if gene length >= 100kb clone clone exons without overhangs
+    # 2) DO THIS !!!!! or maybe its even better to modify the cloning exon function to cut the underlying gene fragment and align the exon + overhangs onto it (instead of the whole gene)
+
+**** DONE ****
+# the best way to deal with microexons is to simply scan Mm_exons for microexons and cut them out
+# preserving continuity of 1->x exons without skipping numbers (Done)
+
+**** DONE ****
+# Clasp1 alignemnt ended up with many STOP codons within CDS
+# -> there are dashes in Mm cds
+# -> maybe make MAFFT not leave single dashes?
+
+**** DONE ****
+# add a checkpoint of the final original species cds translation (also "corrected") to original species ensembl coding sequence (not uniprot as these may (rarely) be tiny different)
+
+**** DONE ****
+# Cep250 ensembl 202 has a microexon 12 of size 17bp (passes my 15bp threshold) and leads to massive missalignment
+# I need to raise the threshold to 20bp at least (sequences with 21bp exons were aligned well)
+# Cep250 has alternative transcript (201) that has a longer exon 12 -> use that instead but need to run blast again
+
+**** NOT SURE IF FIXED ****
+# Cep250 genome15 exon10 has a clear deletion in C-term that misaligns in final MSA giving dashes to original species -> again correction function fails
+
+
+# Aspm genome1 1439113_rev exon 3 has a 1bp deletion -> frameshift and not cloned (ok i think)
+
+
+**** DONE ****
+# correction function needs fixing -> it only eliminates one dash column based on Mm
+# use Oip5 to fix that
+# also it might be good to clone Frameshifts as well -> Oip5 has meaningful frameshifts in exon 5
+
+# Problem: Cdk5rap2 exon-intron boundery "in frame" causes frameshift via gBlocks:
+# Cdk5rap2 has a frameshift in middle-C-term in whole MSA (including Mm)  -> still doesnt score as adaptive
+
+# Cause:
+# Ms has 26 and 27 exons missing (Ns) and is off by 1bp in alignment but the deletion is %3 == 0 so it thinks its in frame
+# so gBlocks fails
+# its not scoring in PAML cose every sequence is frameshifted the same way for a stretch of almost 240aa
+# Need to implement a function checking Mm uniprot vs post-gBlocks translation of Mm
+# if non-syn detected -> delete the post-gBlocks sequence that is out of frame in whole MSA
+# then run PAML on the remaining part -> log the deletion (use Cdk5rap2 Ms chr4_1_rev exon 25 ending and 28 beginning (missing 26 and 27))
+# basically the last bp in exon 25 (G) is glued to beginning of exon 28 in while MSA but deletion is 228bp ("in frame") so Frameshift is not triggered
+# and therefore gBlocks thinks its all in frame -> introduces a frameshift in whle MSA when trimming the edges of the deletion
+
+# Solution:
+# checkpoint of uniprot Mm with the post-gBlocks Mm cds -> delete frameshifts before PAML
+
+# eliminate_all_insertions works well for Cep250
+
+
+**** DONE ****
+    # I RELAXED INTRONY FROM "and" to "or" - 12_15_2020
+    # TOO RELAXED -> make pos5 -> 1 or pos12 -> 3 -> DONE (to be tested; 12_16_2020)
+    # THATS BETTER -> but still too relaxed -> try pos6 -> 1 or pos12 -> 3
+    # Still getting some fake introny -> Haus6 genome7 -> '1244393__rev' contig has
+    # 2 good intronic exons and one fake -> loses to 953665__for because of fake exon
+    # (they should not compete with one another) -> try pos7 -> 1 or pos12 -> 3
+    
+    # still (01_05_2021) introny too strict for Dlgap5 Rattus exon 7 (>= 4/16 will be enough)
+    # same for Haus4 Pahari (>= 4/16 should be enough)
+    
+    # Haus8 Gs exon2 intronic only N-term WRONG (3/13 rule too permissive)
+    #   -> modify find exon function to reject exons that contains >60bp insertions:
+        # cds == "-" and gene == "-" and locus != "-" for more than 60bp
+    
+    # HOW TO DEAL WITH DASHES? -> nothing, counts as mismatch
+
+**** DONE ****
+    # some genes (like Mad1l1 are very large >300kb with some introns of up to 70kb) -> which slows MAFFT alignment very significantly
+    # but the contigs can still assemble a final cds well even if broken down by 30kb limit
+    # especially that Mad1l1 has mulitple large introns of >10kb that all go to one contig
+    # breaking down contigs to <15kb would help
+    # 01/18/2021 -> I changed the limit to 15kb -> IT RUN EVEN LONGER!
+    # most likely due to 300kb gene -> more contigs run longer even if they are shorter
+    # smaller piece (200bp) from blast aligns much longer than longer piece (1000bp) with longer contig
+    
+    # TEST WHAT HAPPENS WITH MAD1 WITH 50kb LIMIT
+    
+03_15_2021 (v52)
+
+# ***** REVIEW OF THE v46 version (leading to v52):
+    
+# very often 200bp synteny cap was too long (<100bp) so synteny wasnt called
+
+# Anapc15 SPRET chr10 exon 5 -> N-term is RETRO but its not called that cose
+# C-term is INTRONIC -> but still RETRO_score is high and contig is discarded
+
+# Anapc10 ARVICANTHIS NC_047675.1__for -> exon4 is only N-term intronic due to a large insertion in 3UTR
+# but maybe I should let synteny check in all potential last exons and if syntenic -> then also intronic
+# DONE
+
+# I added a check that does not reject an insertion in last exons
+# DONE
+
+# Anapc11 genome1 1177822__for last exon (2) -> fails C-term introny check cose cannot reach 0.80 (but looks intronic)
+# SOLUTION: check synteny every time at last exon (computationally expensive) or decrease homology to 0.75 (maybe extend to 20bp)
+# DONE -> currently check introny function runs on 0.75 homology threshold and 50bp min stretch (v52)
+
+# I added a call for introny when rolling hd gets to the end of the extension
+# test on Anapc11 genome5 977531__rev exon 2 (not intronic despite apparent N-term introny probably cose C-term introny is "None" rather than "False")
+# SOLUTION: reduce homology to 0.75 and lift the 15bp check to 20bp (finally lifted to 50bp in v52)
+# FIXED
+
+# testing PAML on v47 -> Anapc11 has only 11 species as compared to 14 species in v45
+# Anapc11 genome1 -> 117782 falsely not intronic cose C-term not intronic (11/15) falsely (why N-term called not intronic?)
+# FIXED
+
+# Anapc10 -> same between v45 and v47
+# Anapc13 -> same number of species but 100% sequence compared to 97% in v45 (CHECK SPRET ERRONEOUS EXON FROM v45)
+# Anapc16 -> v47 gives all 14 species while v45 only 12
+# FIXED
+
+# Anapc10 ARVICANTHIS contig NC_047675.1__for -> exon 4 intronic only N-term (cose deletion in 3UTR makes it have more than 10 indels in rolling_introny and synteny never checked)
+# SOLUTION: if its the last exon -> check synteny first and only then introny
+# FIXED
+
+# v49 prints C-term synteny message before last exon introny is called 
+# implemented -> good
+
+# Anapc16 RATTUS NC_005119.4__rev -> exon 3 is falsely not intronic (very divergent introns -> <= 10/40 check would pick it up)
+# same for Anapc16 genome5 1009636__rev (10/40 would fix it)
+# FIXED (v52 runs homology check on non-intronic exons)
+
+# v51
+# Anapc1 ARVICANTHIS NC_047659.1__rev exon 12 -> not intronic cose it falls below 0.66 at N-term and has huge intron insertion at C-term
+# SOLUTION: v45 picked it up as C-term introny -> modify check_introny function extending min_stretch to 50bp
+# still not fixed -> Anapc1 genome3 contig 503241__for exon 12 not intronic cose N-term intron very divergent (not even 50bp stetch helped)
+# SOLUTION2: dont count dashes at all -> count till cds != "-" then break
+# still not fixed -> for Anapc1 genome3 contig 503241__for exon 12 (not intronic)
+# SOLUTION3: extend the allowed_indels variable to 20bp (17 dashes in locus of Anapc1 genome3 contig 503241__for exon 12)
+# FIXED by extending min stretch to 50bp in homology check and running it at all non-intronic exons that are not first and last (risks of not syntenic contigs)
+
+# Anapc13 SPRET chrX and chrX_1 and chr17 have non-syntenic (by eye) but syntenic by current introny rules contigs
+# these are probably some duplications -> but chr17 was cloned as true exon1 cose chr9 (true locus according to ensembl in SPRET) has Ns insertions in both exons
+# SOLUTION: write a Synteny check function (if first exon / if last exon -> check synteny ex. 20/100bp aligned, $
+# dont count dashes as indels are more frequent in non-coding regions)
+# FIXED (v51 -> synteny check of min 100bp length and up to 200bp -> only exon 2 cloned cose the other one has a huge insertion)
+
+# the inward check should also be 80% rolling at 15bp (<=12/15) - which is a minimal exon size -> include dashes
+# test on Anapc13 genome 7 contig 1376713__for exon 2 that survives introny checkpoint (N-term) cose passes 3/10 inward but its completely not intronic
+# it also has a frameshift but since its the last exon (Anapc13 has only 2) it gets cloned
+# FIXED (v51 synteny check of min 100bp up to 200bp)
+
+# RETRO score issue -> Anapc10 genome1 contig 1096166 -> exon 1 called RETRO cose N-term not intronic and C-term cut as RETRO (but is really MISSING)
+# this led to a loss of exon 3 that was also on that contig
+# FIXED (thanks to check introny functon in v51)
+
+# Anapc1 genome1 contig 1019892__for exon 15 -> called twice (RETRO at C-term and N anc C-term intronic -> cloned still)
+# SOLUTION: first check synteny and only then look for introny and only then for RETRO (at C-term)
+# FIXED
+
+# Anapc4 genom5 contigs: 896751__rev and 353__rev -> 353 has more exons and more conserved but hd function measures only overlaps -> wrong contigs picked
+# SOLUTION: try to either divide the number by number of exons or better -> just reduce comparison to given exons
+# NOT FIXED YET (v52)
+
+# I noticed that N-term syntenic contigs get a "contig NOT SYNTENIC" in the end
+# FIXED 
+
+# Anapc1_Pahari_EiJ chr3__rev contig 13 MISSING cose of Ns
+
+# homology check function requires tightening -> Anapc4 genome7 contig 1323785__for exons 13 and 17 are falsely RETRO (min_stretch too short)
+# v52 wasnt tested on Anapc4 yet (03_14_2021) -> should be ok though cose min stretch is at 50bp in v52
+
+# reconsider allowing insertions of %3 != 0 -> Anapc4 MASTOMYS contig NW_022196905.1__for exon 26 seems to have an insertion of 18bp but alignment is perturbed by Ns
+# and insertion does not fully align with exon 26 from Mm -> ends up being 16bp insertion and exon is eliminated -> whole protein is eliminated (< 90%)
+# FIXED -> insertions with Ns are cosidered "big_insertions" in v52 and are not allowed
+
+# reconsider the 50bp minimal stretch in checking introny -> Cdc20 ARVICANTHIS contig NC_047662.1__for exon 10 doesnt pass it at N-term and contig too short to find C-term
+# and whole protein is eliminated (<90%)
+# FIXED (runs homology check on non-intronic exons)
+
+# v51 can retreive more species of Anapc10 thanks to not falsely picking up one RETRO contig
+
+# v51 Anapc13 has 56% after Gblocks compared to 97% of v45-> cose of Ms misalignment in final MSA and Gd missing
+# v51 does better job in finding good contigs for Gd (v45 took a clearly missing contig as exon 2 cose ov 1/7 rule)
+
+# v51 Anapc13 SPRET chr9__for exon 2 has insertion (last exon -> allowed) with Ns -> gets cloned and spoils alignment
+# SOLUTION: if statement -> if Ns present in insertion -> not allowed
+# DONE in v52
+
+# review Anapc16 -> 2 more species (Mn and Rn) -> goes to >6 LRT M7 vs M8 when v45 was None
+# translation looks good -> clearly some non-syn changes in Ha and Rn
+
+# v52 -> Cdc23 genome3 / genome5 / MASTOMYS contig 565196__rev -> exon 13 very divergent introns -> 24/50 matches in C-term and probably similar in N-term
+# SOLUTION -> if not-intronic -> run homology check function -> if homologous then call "divergent introns" -> allowed
+# should all non-intronic go through homology check? computationally expensive but can rescue poor introns
+# ALMOST FIXED
+# Cdc23 genome15 contig 209__for exon 15 -> should be divergent introns but its not intronic cose its a small exon and homology check has a 50bp minimum -> try 30bp minimum
+# FIXED (30bp min stretch in homology check function)
+
+# allow larger insertions (currently >= 100bp; 02_22_2021) -> >= 171bp (I found 197bp false insertion in Birc5 genome5 984352)
+# Cenpe rattus NC_005101.4__for has a 165bp insertion in exon 33 (legitimate)
+# DONE
+
+03/19/2021 (v52 -> v53)
+
+# Haus4 -> Pd has a RETRO C-term in one exon (missing) -> whole protein eliminated
+# this prevents from false RETRO exons (exon will be cloned even if "might be RETRO" as long as RETRO_score is <0.4)
+# Haus4 -> An same exon, same issue -> whole protein eliminated
+# -> v53 has "introny = True" whenever even one side is intronic (so RETRO is still called but exon is not missing)
+# Haus5 -> Gd is missing exon 1 cose of false RETRO C-term (same issue as Haus5 genome11 78606__rev) 
+# FIXED
+
+
+05/24/2021 (FREEDA_v01)
+
+# Cenpk has multiple STOP codons in Ap, Ay, Pd, Mn, Mo -> clearly there were indels
+# Gblocks forces them to make artificial STOPs
+# SOLUTION: same as for Cenpc -> force conserved alignment, warning -> remove columns
+# (FIXED)
+
+# Cenpc Ay has a STOP codon in the beginning of the final cds post Gblocks
+# This STOP codon is NOT legitimate -> 81bp deletion in all Mus species
+# Gblocks cut it out in frame causing STOP in Ay but not anywhere else
+# SOLUTION: write a function that goes through each gblocks sequence and removes the column
+# containing the STOP -> flag it with a warning (maybe even remove the whole sequence?? - rather not)
+# otherwise PAML visualizer acts out
+# (FIXED)
+
+# Having dashes in the last 30bp is problematic for STOP removal
+# SOLUTION: Place the STOP removal function past the elimination of framesfhit?
+# (FIXED)
+
+# Cenpl ended up with only 3 species cose of Duplication score (only 3 exons present)
+# SOLUTION: disable the Duplication score as a default 
+#(FIXED)
+
+# THERE IS AN ISSUE WITH RECOGNISING SOME EXONS (Pahari Anapc11 exon2)
+# SOLUTION: forgot to print message and so it didint log but it was effected 
+#(FIXED)
+
+# THERE IS AN ISSUE WITH CHECKING INTRONY FUNCTION IN SMALL INTRONS
+# Its because sometimes one base pair would be coopted to an exon and pretend to be another exon
+# leading to "another exon" introny check issue 
+# (FIXED)
+
+
+08/18/2021
+
+# VERSION CONTROL:
+# 1) Go to /Volumes/DamianEx/FREEDA_v01/src (or ...src/FREEDA)
+# 2) In IPython console type:
+# 3) !git add "main.py" (or whatever the module you changed)
+# 4) !git commit -m "My commit"
+# 5) !git push origin main (need to make another brunch except main)
+
+# !git commit -m 'Initial commit'
+# !git add forgotten_file
+# !git commit --amend
+
+# !git branch <newbranchname> (create a new branch)
+# !git checkout -b <newbranchname> (create and got to new branch)
+# !git checkout main (go to a branch)
+# !git checkout - (go back to pewviously checkedout branch)
+# always have clear staging area (all commited) before switching branches
+# !git merge <newbranchname> (merge the new branch with main)
+# !git branch -d <newbranchname> (delete the new branch cose main points already at the same place)
+# dont modify the same place in two different branches!!!!
+
+
+# I ADDED DELE&ION TO INSERTION CHECK
+# I ALSO DISABLED FRAMESHIFT CHECK in cds_cloner-py 
+# UNLESS ITS A DUPLICATED EXON (primates seem to have legit indels)
+
+# HAUS2 ponAbe3 -> chr2A has many more exons cose cds != genpmic in alignment (pieces)
+# enforce that exon needs to not onlx != "-" but also be equal to ake exon
+# also HAUS3 genomic sequence from ensembl is missing the last exon !?!? (download again)
+# FIXED -> made a mistake providing genomic sequence (shorter)
+
+
+# Last bp in Anapc16 is plotted as red on graph -> why?
+# Gblocks seems to not like the last codon for some reason (last after STOP removal)
+
+
+# Showcase STOP_remover function using Cenol -> Pd has an early STOP
+# which is followed by a mutation in the original STOP suggesting a rescue that way
+# in the same time Mc also has a mutation in the STOP but doesnt have an early STOP rescue
+# suggesting that there is another later STOP that FREEDA does not capture (WHICH THERE ISNT!!!)
+
+
+# Think about giving 0.5 RETRO score value for Retro at one end and introny at another
+# to allow hamming distance function to kick in (not sure about this)
+
+# GET RID OF MAFFT PATH -> not needed if mafft binary in the path (with other dependecies)
+# DONE
+
+08/21/2021
+
+#    1)  ISSUE with not finding CD46 C-term in nomLeu3 genome as oppose to gorilla
+#           check matches generator module -> does it sort matches before chopping into smaller?
+#           -> check on nomleu3 genome CD46 chr5_rev -> compare to gorGor6 chr1_6_for
+#            I think the problem is in sorting matches and the fact that two domains in CD46 are quite repeated
+#            so broken large contigs do not align well and distant exons 10-13 are not found on later contigs
+#            this is speific to exons remote by over 13kb
+#            consider increasing suffix and prefix to 15kb? But this will not help with repeated domains
+#            even if exon 10 will be found then exon 11 will not be aligned properly
+#            WRITE WARNING FOR PROTEINS WITH REPEATED DOMAINS (ex. TACC3, CD46)
+#            SAME THING with CD55 -> last exon (10) not found in aligned_CM009238.2__5__for nor aligned_CM009238.2__6__for
+#            exon 10 is 20,140 bp away from exon 9 so it should be on contig aligned_CM009238.2__6__for (??? -> check with debugger)
+#            possibly exon 10 alone cannot align well with huge gene
+#            no point extending 10kb flanking regions to 30kb cose it will increase alignment time for all genes
+#            SOLUTION : check debugger to confirm that __6__ is the next contig, let it be -> let user adjust flanks for genes with huge introns
+#            FIXED : I checked using debugger -> no match on __6__ suggesting tblastn fault for not picking up this exon
+#            VERDICT : Allow user to change flanking region from 10kb default
+
+#    4)  ISSUE with folder_generator:
+#           Generating names for folders from genomes names is defective
+#           I think its cose "lstrip" that strips "Acomys_Rus -> Acomys_Ru" and "Neomys_lepida" -> "Neomys_lepid"
+#           FIXED : this error was not reproduced later (08_21_2021)
+
+
+#    12) ISSUE with Cenpt missing in spicilegus genome:
+#           How come there is no contig with Cenpt coming from Spicilegus genome?
+#           SOLUTION : check blast table and compare with spretus
+#           VERDICT : no high percentage matches in spicilegus genome -> probably missing from assembly ?
+
+#    5)  ISSUE with exon_finding function:
+#           There is a problem in recognising the first exon in Terf2 Apodemus sylv contig LIPJ01013670.1__rev
+#           leading hypothesis is that the exon does not fall into any of the "callings"
+#           SOLUTION : check if exon intronic on both ends
+#           VERDICT : divergent exon -> allow first exons to be divergent (may require further attention and testing)
+
+#    3)  ISSUE with testing exon_finding function:
+#           Cenpt Caroli chr19__rev somehow sees only 12 exons (not 13) and final
+#           exon count is set as 12 not 13 (even if the right contig picked chr8__rev has 13 exons)
+#           its clear that cloner depends on the last contig analysed which is wrong
+#           but mainly its a failure of the find_exons function
+#           try to get exons dictionary once and then use try/except to avoid KeyError
+#           when cloning exons (and potentially having different number)
+#           SOLUTION: find_exons doesnt output final exon count anymore (FIXED)
+#           and find_exons function requires more fixes (in progress)
+#           FIXED : issue not reproduced anymore 08_21_2021
+
+# Hard code "reference_contigs_dict" for human and mouse, potentially other main species
+# Cose you need the user to have it with the packcage without digging to instal folder
+# Done
+
+# Check protein list for valid gene names
+# DONE
+
+# Write number of transcript into the cds header
+# DONE
+
+# Write a test function that would ensure that all first exons start with ATG and all the last exons end with TGA, TAG and TAA
+# DONE
+
+# Make a function that aligns protein sequence from pyensembl and from AlphaFold
+# DONE
+
+
+08/28/2021
+
+ISSUE : STOP CODON NOT FOUND (microexon in last exon) -> "no-STOP" file is not formed -> test in CENPX primates
+
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 373, in <module>
+    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 332, in freeda_pipeline
+    nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 181, in analyse_final_cds
+    out_Gblocks = run_Gblocks(final_cds_file_no_STOP, protein, result_path)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 635, in run_Gblocks
+    os.rename(in_filepath + "-gb", out_Gblocks)
+FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/DamianEx_2/Data/Results-08-27-2021-01-06/NUMA1/aligned_MAFFT_NUMA1_final_no_STOP.fasta-gb' -> 'aligned_MAFFT_Gblocks_NUMA1_final_no_STOP.fasta'
+
+# FIXED
+
+
+ISSUE : TOO FEW SPECIES TO GET GENE TREE
+
+Final species cloned and aligned (+ original) for CD46 : 3 ['Hs', 'Pb', 'Mu']
+['Original alignment: 1176 positions', 'Gblocks alignment:  1125 positions (95 %) in 1 selected block(s)']
+Read and write (return) sequences
+
+ Phylip format was created for protein : CD46 
+
+RAxML can't, parse the alignment file as phylip file 
+it will now try to parse it as FASTA file
+
+ PROBLEM with making gene tree for protein : CD46 
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 306, in <module>
+    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 265, in freeda_pipeline
+    nr_of_species_total_dict, PAML_logfile_name, day = paml_launcher.analyse_final_cds(wdir, original_species, result_path, all_proteins)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 196, in analyse_final_cds
+    best_tree_path = run_RAxML(protein, protein_folder_path, translated_path)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_launcher.py", line 381, in run_RAxML
+    with open(best_tree_path, "r") as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/DamianEx_2/Data/Results-08-21-2021-23-35/CD46/RAxML_bestTree.CD46_Tree'
+
+# FIXED
+
+
+
+ISSUE : NO MATCHES ABOVE THRESHOLD
+
+PROBLEM with no matches at a given treshold (Gorilla CENPX)
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 348, in <module>
+    freeda_pipeline(original_species=args.original_species, t=args.blast_threshold, wdir=args.wdir)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 273, in freeda_pipeline
+    result_path = exon_extractor.analyse_blast_results(wdir, blast_path, original_species, int(t), all_proteins)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/exon_extractor.py", line 52, in analyse_blast_results
+    matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/matches_generator.py", line 39, in generate_matches
+    concatenated_matches = split_large_contigs(dataframes).reset_index(drop=True)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/matches_generator.py", line 151, in split_large_contigs
+    concatenated_matches = pd.concat([i for i in list_new_matches])
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 284, in concat
+    sort=sort,
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 331, in __init__
+    raise ValueError("No objects to concatenate")
+
+# FIXED
+
+
+ISSUE WITH RAxML sometimes (CENPX primates):
+
+    Partition No Name Provided number 0 has a problem, the number of expected states is 20 the number of states that are present is 17.
+    Please go and fix your data!
+
+# NO SOLUTION : Not all amino acids are present in the alignment -> expects 20 "states" for each amino acid
+# DID NOTHING
+
+
+ISSUE -> autodelete proteins from proteins.txt in Data folder if running exon finding (to prevent half-finished runs interfere)
+
+# DONE
+
+
+#    15)  ISSUE with CD55:
+#           Runs blast for forever...
+#           Fixed : probably an issue with a blast database, no problem currently
+
+
+09_05_2021
+
+#    0) Figure out how to overlay sequences with microexons -> DONE
+#    0) Check Apbb1 protein in rodents -> no 5UTR present in ensembl -> OK
+#    0) N-term synteny is not called in non-intronic exons -> why? -> probably cose N-term synteny check not triggered (if indel before first bp)
+
+
+
+09/29/2021
+
+#    There is something wrong with Zp3 !!!! Ms, Mc, Ha and Mn look completely different -> it seems that all contigs in Zp3 look good but exon 1 is not present in Zp3.fasta -> instead Ms, Mc, Ha and Mn seem to be Zp2 !!!
+#    Solution: rerun Zp3 alone -> could be some leftovers from the previous run? Otherwise I dont see how can Zp2 get into Zp3 file -> yes, alone its analyzed properly
+#    Izumo1r PAML log file logged 14 species but the alignment shows 16 species! (2 of them are Izumo1)
+#    Solution: Go through naming of the alignment files and making copies. Its likely that freeda remebers previous alignments and adds to them. Its them perpetrated to Spaca3 and Astl
+#    Lead -> Pd and Gd in Izumo1r are both <90 so they are present in Izumo1r.fasta but Izumo1r_final.fasta has Pd and Gd from Izumo1 !!! that was run alongside
+#    Same situation with Izumo1 and Izumo1r -> Izumo1 analyzed with no issues but Izumo1r has Pd and Gd sequence from Izumo1
+#    FIXED -> final_species dict in paml launcher was the issue
+
+#    Issue with Incenp -> microexon 10 is absent in cds and exon list but it is still present in the gene (that was alwys the case though)
+#    Old input extractor (from Brian) performs Incenp well.
+#    SOLUTION : retrace correcting the corrected_cds -> there is a 135bp duplication in its sequence -> FIXED
+
+#    Genome of at least one species contains no matches above the identity threshold used : 30 -> use a lower one -> exiting the pipeline now...
+#    I can see that index of nbci datasets downloaded genomes is a bit lower than the one of original genomes (ex. SORICOIDES 14000 entries vs 15000 entries
+#    Its possible that Im missing some of the contigs... How to fix that? -> thats what it is, Tomo confirmed that NCBI eliminates some contigs for quality control
+
+#    Nap1l4 -> ...WARNING... : CDS of Nap1l4 in ref species is NOT in frame. (from fasta_reader-py module; it has 2 microexons 1, 14) -> no successful correction of cds
+#    However Nap1l4 also is missing exon 13 from the coding sequence (shows up as None in exon calling) -> also misses last bp from exon 12 -> FIXED (microexon correctio function)
+
+#    Try to get Interpro domains for Haus8 -> Q99L00 (see above) -> no Interpro entry -> exception handling -> FIXED
+
+#    Cpne9 -> Mi -> exon 10 has a small repetition that causes exon splitting (10 and 11) and makes total exon number higher -> CDS not in frame -> all exons are a mess
+#    Also exon 22 (the one that should not exist) is called exon 23 ???
+#    That is no longer true in Ms !! (exon found perfectly well, except that we lost 3bp from exon 10 that aligned with an intron)
+#    I should generally double check exon finding in contigs that show deletions -> might be exactly that same issue
+#    SOLUTION : fix the exon finding function -> test on Cpne9 Mi contig QGOO01037269.1__rev
+#    BETTER SOLUTION : since this predicts the whole sequence to be out of frame -> get an alignment score for each sequence in final alignment (against ref) -> low score -> remove from alignment -> FIXED?
+#    Izumo3 -> Mc -> there is 10bp frameshift insertion in last exon (7) -> FREEDA deletes it in "corrected"
+#    -> blastp with uniprot Izumo3 shows that this is consistent with known protein seq and that framshift is most likely a seq error (so good job FREEDA)
+
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 409, in <module>
+    freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 290, in freeda_pipeline
+    ref_species, int(t), all_proteins, all_genomes)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/exon_extractor.py", line 59, in analyse_blast_results
+    matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/matches_generator.py", line 39, in generate_matches
+    concatenated_matches = split_large_contigs(dataframes).reset_index(drop=True)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/matches_generator.py", line 151, in split_large_contigs
+    concatenated_matches = pd.concat([i for i in list_new_matches])
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 284, in concat
+    sort=sort,
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/pandas/core/reshape/concat.py", line 331, in __init__
+    raise ValueError("No objects to concatenate")
+
+#    Deal with no matches at threshold (see above) -> FIXED
+
+#    Issue with repetitive domains -> test on Tacc3
+#    SOLUTION : Added a single exon mapping checkpoint (test on Haus8 and TACC3) -> Haus8 sometimes passes cds checkpoint in paml launcher and sometimes not -> why? -> different scores -> but used different blast threshold -> test 30
+#    Haus8 Gs -> exon 5 has a high score but also 5bp deletion which creates an actual frameshift -> relay on cds checkpoint -> PROTEIN LEVEL CHECKPOINT! -> eliminate species from PAML log as well
+#    HOWEVER -> 0.70 cds frameshift will not work cose very rapidly evolving proteins e.g. Izumo1 Gd = 0.5879396984924623 -> also LEAVE UNCORRECTED aligned_final
+#    Haus8 Gs -> exon 6 has a low score (0.714) but doesnt have a frameshift, legit???
+#    Try to run TACC3 which notoriuosly misaligns cose of repetitive sites -> cds checkpoint is not enough -> try protein checkpoint
+#    NO : protein treshold would not help, Izumo1 has as much as 10 aa stretch different between ref and some other species (legit)
+#    FINAL SOLUTION : single exon introny check triggered only when poor alignment and penalizes exonic bp in overhangs -> FIXED?
+
+#    Issue with PAML visualization graph -> CDS should be that of the reference species but Mis18bp1 it looks like its the longest's species # I decided that its ok
+
+ Retrieving InterPro data for UniProt ID Q99L00...
+
+Request URL: https://www.ebi.ac.uk/interpro/api/protein/uniprot/Q99L00/entry/interpro/
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 429, in <module>
+    freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 394, in freeda_pipeline
+    offset=None)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/structure_builder.py", line 176, in run_pymol
+    domains = get_domains(wdir, ref_species, protein)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/structure_builder.py", line 111, in get_domains
+    interpro_dict = protein_domains(uniprot_id)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/structure_builder.py", line 68, in protein_domains
+    interpro_dict = get_interpro(uniprot_id).json()
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/requests/models.py", line 910, in json
+    return complexjson.loads(self.text, **kwargs)
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/simplejson/__init__.py", line 525, in loads
+    return _default_decoder.decode(s)
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/simplejson/decoder.py", line 370, in decode
+    obj, end = self.raw_decode(s)
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/site-packages/simplejson/decoder.py", line 400, in raw_decode
+    return self.scan_once(s, idx=_w(s, idx).end())
+simplejson.errors.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+Fixed
+
+#    ISSUE with Haus8 -> Gs -> SRMG01015959.1__for -> part of exon 4 does not align (the other one does), there is insertion as well
+#                           it created a frameshift at the beginning of the sequence (22aa) present in translated alignment
+#                           it might skew the PAML result for Haus8
+#                           SOLUTION : drop Gs from Haus8 analysis
+#                           Generally Haus8 rat has some very divergent regions but they match the rat uniprot sequence
+#                           Haus8 is a weird protein -> possibly many duplications, retrotranspositions
+#                           FIXED : single exon introny check for questionably aligned exons
+
+#    0) ESSENTIAL -> get dict for contigs in mouse assembly 104 -> GCA_000001635.9 -> DONE
+#    0) ISSUE  -> Add final protein alignment that would correspond to origial protein sequence -> DONE
+#    0) QUICK FIX -> proteins with no structure model also dont get protein mapping alignment (Tinf2) -> FIXED
+
+
+#    0) ESSENTIAL -> Sgo2b last exon (7) is called "None" in exon finder in all contigs -> last bp in cds is missing in gene
+#           SOLUTION : Special case for last bp?
+#           Update : Same for last exon (13) in Nlrp1a !
+#           SOLUTION 2 : Check at input extractor -> if UTR3 == O -> check STOP codon -> if None -> check last exon STOP -> add last bp to gene -> FIXED
+
+#    0) ESSENTIAL -> Prdm9 fails cose of few sequences passing 90% -> cose last exon (10) is huge and 8kb distant -> and there is up to 5000 matches from blast
+#           so probably the final threshold of 65 misses some matches in exon 10 and contig ends early -> also plenty of Ns in exon 10 in Mi, Mc etc.
+#           Also exon 10 in Prdm9 has duplications that make alignment difficult -> thats why matches and locus not always align (probably main culprit)
+#           Main problem -> Mafft seems to fail aligning Prdm9_final.fasta (but Ugene mafft does it with no problem)
+#           SOLUTIONS : 1) Nevertheless FREEDA should not crash; 2) Increase matches limit from 40 to 60 and run again; 3) Decrease threshold from 90% to 70% and run again
+#           I might need to add single exon length checkpoint -> dash the exon that is double the size of the ref exon -> DONE
+#           SOLVED -> exon insertion checkpoint at single exon mapping saved Prdm9 aligmnent and showed rapid evolution of DNA binding repeats in exon 10
+
+#    0) UPGRADE -> Interpro module often overlaps domains (ex. Dmc1 -> 4 overlapping domains)
+#                       -> if coordinates overlap > 50% -> pick only first domain -> FIXED

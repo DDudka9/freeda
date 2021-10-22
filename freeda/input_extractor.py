@@ -285,13 +285,12 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
     clear_structure_files(structure_path)
 
     # find prediction model based on possible uniprot ids for the protein
-    path_to_ref_species_structures = [path for path in glob.glob(wdir + "*")
-                                                   if path.endswith(handle + ".tar")][0]
+    path_to_ref_species_structures = [path for path in glob.glob(wdir + "*") if path.endswith(handle + ".tar")][0]
     tar = tarfile.open(path_to_ref_species_structures)
     print("\nLooking for structure in AlphaFold database for: %s ...\n" % protein)
-    all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]
+    all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]  # getnames() takes longest
     # this assumes that there is only one prediction model for a given protein in AlphaFold
-    all_structures_compressed = [s for s in all_structures if s.split("-")[1] in possible_uniprot_ids]
+    all_structures_compressed = [s for s in set(all_structures) if s.split("-")[1] in possible_uniprot_ids]
 
     # try finding the structure
     model_seq = ""
@@ -360,21 +359,27 @@ def validate_gene_names(all_proteins, all_genes_ensembl):
 def generate_ref_genome_object(wdir, ref_species):
     """Generates a reference Genome object using pyensembl as a wrapper for ensembl database"""
 
-    human_names = {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}
+    if ref_species == "Hs":
+        # get pyensembl release for human (or load it if already installed)
+        #cmd = ["pyensembl", "install", "--release 104", "--species human"]
+        #subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
 
-    if ref_species in human_names:
         ref_genome_name = "SAPIENS_genome"
         species = "homo sapiens"
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
+
     # default is mouse for now
     else:
+        # get pyensembl release for mouse (or load it if already installed)
+        #cmd = ["pyensembl", "install", "--release 104", "--species mouse"]
+        #subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
+
         ref_genome_name = "MUSCULUS_genome"
         species = "mus musculus"
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
-
 
     # make sure ref species genome (reference genome) is present
     ref_genomes_path = wdir + "Reference_genomes/"
@@ -385,8 +390,11 @@ def generate_ref_genome_object(wdir, ref_species):
                                                       ref_genome_name,
                                                       ref_genome=True)
 
-    # get assembly database
+    # get ref assembly database
     ensembl = pyensembl.EnsemblRelease(release, species)
+    ensembl.download()  # this is suppose to bypass installing the release from outside python
+    ensembl.index()  # this is suppose to bypass installing the release from outside python
+
     # define biotype (FREEDA deals only with protein coding sequences)
     biotype = "Protein coding"
 
@@ -422,17 +430,10 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                   ensembl, biotype, protein, model_seq, uniprot_id):
     """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
 
-    if ref_species == "Mm":
-        # get pyensembl release for mouse (or load it if already installed)
-        cmd = ["pyensembl", "install", "--species mus musculus", "--release 104"]
-        subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
-        ref_genome_name = "MUSCULUS_genome"
-
     if ref_species == "Hs":
-        # get pyensembl release for human (or load it if already installed)
-        cmd = ["pyensembl", "install", "--species homo sapiens", "--release 104"]
-        subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
         ref_genome_name = "SAPIENS_genome"
+    else:
+        ref_genome_name = "MUSCULUS_genome"
 
     input_correct = False
     model_matches_input = False

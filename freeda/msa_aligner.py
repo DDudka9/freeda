@@ -30,7 +30,8 @@ def run_msa(MSA_path, aligner):
 
         # define which aligner is used
         if aligner == "mafft":
-            cline = MafftCommandline(input=in_filename)
+            cline = MafftCommandline(input=in_filename, thread=-1)  # thread -1 is suppose to automatically
+                                                                    # calculate physical cores
         if aligner == "muscle":
             cline = MuscleCommandline(input=in_filename)
         if aligner == "clustalw":
