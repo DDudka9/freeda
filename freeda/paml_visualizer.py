@@ -54,7 +54,11 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
 
     # get protein alignment that matches 3D structure
     for protein in all_proteins:
-        get_alignment_matching_structure(result_path, ref_species, protein, all_matched_adaptive_sites_ref)
+        try:
+            get_alignment_matching_structure(result_path, ref_species, protein, all_matched_adaptive_sites_ref)
+        # if all_matched_adaptive_sites_ref dictionary was not generated (all proteins failed paml)
+        except KeyError:
+            return
 
     # prepare a dict with PAML stats
     final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml)
@@ -672,7 +676,7 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
     matched_adaptive_sites_ref = {}
     for site, aa in a.items():
         if aa[0] == aa[1]:
-            key = [k for k,v in b.items() if k == site][0]
+            key = [k for k, v in b.items() if k == site][0]
             probability = c[key-b[site][2]][1]
             omega = w[key-b[site][2]]
             matched_adaptive_sites_ref[site] = [aa[0], omega, probability]
@@ -731,11 +735,15 @@ def get_omegas(protein_name, result_path, final_length):
                 PAML_result_dict[line_number] = line.split(" ")
                 start_recording = False
     
-    # collect omegas for each residue
+    # collect posterior mean omegas for each residue
     omega_dict = {}
     for residue, values in PAML_result_dict.items():
-        if float(values[-1]) > 0.001:
-            omega_dict[residue] = float(values[-4])
+        # remove empty strings which can change number of elements in values
+        values = [element for element in values if element != ""]
+        # record value only for recurrently changing sites where omega is likely > 1 (not all > 1 are in M8 class 11 !!)
+        if int((values[-4]).lstrip("(").rstrip(")")) == 11:
+        #if float(values[-1]) > 0.001:
+            omega_dict[residue] = float(values[-3])
         else:
             omega_dict[residue] = 0.000
         
@@ -795,7 +803,7 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
     probabilities = []
     present = []
     # these will determine omega graph y axis
-    roof = 1
+    roof = 2
     floor = 1
 
     for site, features in final_dict_to_plot.items():
@@ -833,10 +841,10 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
 
     # plot all omegas
     plt.subplot(311, title="PAML analysis - %s (%s species analyzed)" % (protein, nr_of_species_total))
-    plt.ylabel("dN/dS\n")
+    plt.ylabel("Recurrently\n changing sites\n")
     plt.axis([0.5, sites[-1], 0, roof])
     plt.ylim(0.5, roof)
-    plt.yticks(np.arange(0.5, roof + 0.1, 1.0))
+    plt.yticks(np.arange(0.5, roof, 1.0))
     # mark the missing values for the plot
     clrs1 = ["black" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, omegas, color=clrs1)

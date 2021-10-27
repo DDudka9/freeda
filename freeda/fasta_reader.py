@@ -12,7 +12,8 @@ import re
 import logging
 
 def alignment_file_to_dict(wdir, ref_species, filename):
-    """Reads alignment file and transforms it into python dictionary."""
+    """Reads alignment file and transforms it into python dictionary.
+    Alignment needs to be in the working directory (Data folder)."""
 
     all_seq_dict = {}
     seq = ""

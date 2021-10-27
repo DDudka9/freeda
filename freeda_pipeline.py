@@ -84,19 +84,50 @@ Traceback (most recent call last):
 KeyError: 'Prdm9'
 
 
+I am listing this as an answer instead of editing my question because someone might find it useful. If I have made an error please let me know. The problem appears to be with using the BioPython MuscleCommandLine wrapper in this fashion. I was not able to pass any command line options to muscle through the wrapper when calling through a subprocess. My modified code for this is below.
+
+cmd = ['muscle', "-quiet", "-maxiters", "1", "-diags"]
+
+read_list = (SeqRecord(Seq(seq, IUPAC.unambiguous_dna), str(index)) for index, seq in enumerate(grouped_reads_list))
+
+muscle = Popen(cmd, stdin=PIPE, stdout=PIPE, universal_newlines=True)
+
+SeqIO.write(read_list, muscle.stdin, "fasta")  # Send sequences to Muscle in FASTA format.
+muscle.stdin.close()
+
+align = AlignIO.read(muscle.stdout, 'fasta')  # Capture output from muscle and get it into FASTA format in an object.
+
+muscle.stdout.close()
+
+consensus_read = AlignInfo.SummaryInfo(align).dumb_consensus(threshold=0.6, ambiguous="N", consensus_alpha=IUPAC.ambiguous_dna)
+return str(consensus_read)
+
+
 """
 
 # TODO:
+#    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
+#                   -> Cenpc1 aligned well
+#                   -> Ptprd crashed cose it makes 2.3MB files to align -> ApplicationError
+#                                   -> but whatever got aligned it has done it well, 18bp microexon (6) included
+#                   -> Slc8a1 -> 18bp microexon was detected well in Mi -> try rattus -> also OK
+#                   SOLUTIION : Exception handling -> Bio.ApplicationError -> rename to FAILED_to_align
+#                           -> it looks like the application went on without issues to the next species
+#    0) NOTE -> Cenpb Pd, Mn, Gd are best for working on avoiding "missing" exons when N-tip only is missing
+#    0) NOTE -> coverage value in PAML excel sheet does not include microexons (but its intrinsically a small value)
+#    0) ESSENTIAL -> think of building gene tree using nucleotides in RAxML cose conserved proteins
+#                   will not be abel to give a meanigful tree based on aa -> DONE (still testing)
+#    0) ESSENTIAL -> "None" is not the best info for M2a etc tests in PAML excel file -> check literature
+#    0) UPGRADE -> Species column in PAML excel sheet should be wider
 #    0) ESSENTIAL -> Should all 17 + 1 rodent genomes be used? Some may introduce problematic alignments
-#                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay
+#                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay -> eliminated Ha
 #    0) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
 #                   -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
 #    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#    0) UPGRADE -> Visualization module should get info about domains as well
+#    0) UPGRADE -> Visualization module should get info about domains as well -> maybe not
 #    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle, PRANK)
 #    0) ESSENTIAL -> run proteins that have seqs from Mo on uniprot -> compare
-#    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line -> DONE?
 #    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
 #               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
 #                   -> "stich" missing bp in that case as if it was a single microexon
@@ -108,7 +139,7 @@ KeyError: 'Prdm9'
 #                   When running Rnf187 I get "data missing" FATAL ERROR -> and there is no "model_matches_input.txt"
 #                   -> why? -> probably cose no START codon (no cds so no comparison with model)
 #                   The pipeline will run Rnf187 till the end but it doesnt run from middle
-#                   (no "model_matches_input.txt" file !!!)
+#                   (no "model_matches_input.txt" file !!!) -> FIXED -> now it gives "model_incompatible.txt file
 #    3) ISSUE   -> Refactor : change "protein_name" to "gene_name" and "protein" to "gene_name"
 #    4) ISSUE   -> Fix the bioservices issue (Brian) -> in virtual box and pyinstaller the colorlog module
 #                   doesnt have "logging" attribute -> deprecated in python 3.8 ?
@@ -410,10 +441,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                                                      day, prots_under_pos_sel, failed_paml)
                 # run PyMOL
                 for protein in all_proteins:
-                    # do not allow further analysis of failed paml runs
 
+                    # do not allow further analysis of failed paml runs
                     if protein in failed_paml:
                         continue
+
                     # check if model seq and input seq match and check if exactly one model exists
                     elif structure_builder.check_structure(wdir, ref_species, protein):
                         successful = structure_builder.run_pymol(wdir, ref_species, result_path,
@@ -443,10 +475,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                                              day, prots_under_pos_sel, failed_paml)
         # run PyMOL
         for protein in all_proteins:
-            # do not allow further analysis of failed paml runs
 
+            # do not allow further analysis of failed paml runs
             if protein in failed_paml:
                 continue
+
             # check if model seq and input seq match and check if exactly one model exists
             elif structure_builder.check_structure(wdir, ref_species, protein):
                 successful = structure_builder.run_pymol(wdir, ref_species, result_path,
@@ -455,6 +488,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 if not successful:
                     print("\nThe structure for : %s was not built successfully." % protein)
                     continue
+
             else:
                 print("\nPrediction model for : %s DOES NOT match input sequence "
                       "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
@@ -482,7 +516,7 @@ if __name__ == '__main__':
     parser.add_argument("-rs", "--ref_species",
                         help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=70)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
 
     args = parser.parse_args()
     freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)

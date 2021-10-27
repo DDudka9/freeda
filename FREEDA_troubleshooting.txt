@@ -663,3 +663,23 @@ Fixed
 
 #    0) UPGRADE -> Interpro module often overlaps domains (ex. Dmc1 -> 4 overlapping domains)
 #                       -> if coordinates overlap > 50% -> pick only first domain -> FIXED
+
+#    0) UPGRADE -> model should be given in results folder even if its incompatible (so people can estimate)
+#                   -> NOT POSSIBLE -> python cannot copy pdb file (cose of metadata)
+
+#    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line -> DONE
+
+#    0) ESSENTIAL -> How to deal with non-legit dupliction like Pot1a (Mn) and Pot1b (Ha) - except duplication score
+#                   SOLUTION : cds checkpoint is useless right now cose it penalizes dashes -> try Pot1 Mn without dashes -> what is the score?
+#                   -> also currently even Mm is penalized for dashes -> no sense
+#                   -> test on Terf1 (insertion in Mo makes Mm score at 0.93) -> get Mm to 1.0
+#                   -> and on Izumo1 (insertion in Rd makes Mm 0.90)
+#                   -> reject any sequence below 0.70
+#                   -> the issue might be with sequences missing different exons -> test Cenpc, Cenpa etc -> DONE
+
+#    0) ESSENTIAL -> dN/dS ratio is taken wrongly I think -> Rnf187 has 4 NS but dN/dS PAML visualization graph shows
+#                                           only one value and the all_matched... dict also shows only one value
+#                   SOLUTION : I refactored it, now it shows "recurrently changing sites" indtead of dN/dS ratio
+
+#    0) ESSENTIAL -> if the only protein run has too few species
+#                   -> tree fails -> paml fails and all_dict is not formed -> crash -> FIXED

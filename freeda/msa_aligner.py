@@ -12,13 +12,13 @@ Runs MAFFT using a BioPython wrapper.
 from Bio.Align.Applications import MafftCommandline
 from Bio.Align.Applications import MuscleCommandline
 from Bio.Align.Applications import ClustalwCommandline
+from Bio.Application import ApplicationError
 import os
 import re
 import shutil
 import glob
 import time
 import logging
-import subprocess
 
 
 def run_msa(MSA_path, aligner):
@@ -56,7 +56,24 @@ def run_msa(MSA_path, aligner):
         print(message)
         logging.info(message)
 
-        stdout, stderr = cline()
+        try:
+            stdout, stderr = cline()
+
+        except ApplicationError:
+            message = "...WARNING... : ApplicationError raised -> aligner failed at file %s (probably too big)" % in_filename
+            print(message)
+            logging.info(message)
+
+            # rename the unaligned file as "failed"
+            os.rename(in_filename, in_filename.replace("to_align", "FAILED_to_align"))
+
+            stop_time = time.time()
+            message = "FAILED : in %s minutes" % ((stop_time - start_time) / 60)
+            print(message)
+            logging.info(message)
+
+            return
+
         #subprocess.call([aligner, "-in", in_filename, "-out", wdir + out_filename])
 
         stop_time = time.time()

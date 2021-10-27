@@ -610,7 +610,7 @@ def extract_exons(wdir, ref_species, protein, exons_input_path, ref_genomes_path
 
     for nr, exon_sequence in coding_exons.items():
 
-        if len(exon_sequence) < 20: # changed from 20 08_23_2021 -> testing CENP-X primates
+        if len(exon_sequence) < 18: # changed from 20 10_24_2021 -> testing Cenpc1, Ptprd, Slc8a1
             with open(wdir + "Structures/" + protein + "_" + ref_species + "/microexons.txt", "a") as f:
                 f.write(str(nr) + "\n")
             microexon_present = True
