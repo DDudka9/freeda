@@ -106,6 +106,9 @@ return str(consensus_read)
 """
 
 # TODO:
+#    0) ESSENTIAL -> protein mapping function need refactoring -> too many single aa
+#                       -> unreasonable and most times not true
+#                   SOLUTION :
 #    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
 #                   -> Cenpc1 aligned well
 #                   -> Ptprd crashed cose it makes 2.3MB files to align -> ApplicationError
@@ -126,20 +129,15 @@ return str(consensus_read)
 #    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
 #    0) UPGRADE -> Visualization module should get info about domains as well -> maybe not
-#    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle, PRANK)
-#    0) ESSENTIAL -> run proteins that have seqs from Mo on uniprot -> compare
+#    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle)
+#                   -> Muscle works now (maxiter 2) -> Cenpx looks identical as mafft, tiny bit faster than mafft
+#                   -> test on harder aligments
+#    0) ESSENTIAL -> run proteins that have seqs from Rn on uniprot -> compare
 #    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
 #               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
 #                   -> "stich" missing bp in that case as if it was a single microexon
 #                  SOLUTION : no good solution for that so far, stiching exons does not help cose of flanking exons
 #                           -> but lowering the limit to < 18bp would fix both of these instances
-#    3) ISSUE   -> Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon)
-#                   -> that transcript does not have a START codon in ensembl ("START lost")
-#                   Run PAML on Rnf187 to see how does it affect the pipeline
-#                   When running Rnf187 I get "data missing" FATAL ERROR -> and there is no "model_matches_input.txt"
-#                   -> why? -> probably cose no START codon (no cds so no comparison with model)
-#                   The pipeline will run Rnf187 till the end but it doesnt run from middle
-#                   (no "model_matches_input.txt" file !!!) -> FIXED -> now it gives "model_incompatible.txt file
 #    3) ISSUE   -> Refactor : change "protein_name" to "gene_name" and "protein" to "gene_name"
 #    4) ISSUE   -> Fix the bioservices issue (Brian) -> in virtual box and pyinstaller the colorlog module
 #                   doesnt have "logging" attribute -> deprecated in python 3.8 ?
@@ -278,7 +276,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
 
     # get settings
-    aligner = "mafft"
+    aligner = "muscle"
 
 
     # get all species and genome names

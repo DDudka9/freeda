@@ -176,13 +176,12 @@ def make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_na
     
     # get fasta file from genome
     try:
-        fasta_file = expanded_bed_object.sequence(fi = genome_dir + \
-                            genome_name + ".fasta")
+        fasta_file = expanded_bed_object.sequence(fi=genome_dir + genome_name + ".fasta")
         fasta_file = fasta_file.save_seqs(fasta_name)
         
     # assuming that exception comes from match at end/beginning of contig
     except:
-        fasta_file = bed_object.sequence(fi = genome_dir + genome_name + ".fasta")
+        fasta_file = bed_object.sequence(fi=genome_dir + genome_name + ".fasta")
         fasta_file = fasta_file.save_seqs(fasta_name)
 
 
@@ -190,19 +189,21 @@ def process_fasta_file(fasta_name, contig, result_path, protein_name, genome_nam
 
     # reverse complement if "sstart" > "send" (marked as rev == True)
     global rev
-    fasta_path = result_path + protein_name \
-            + "/" + genome_name + "/Fasta/above_threshold"
-    if rev == True:
+    fasta_path = result_path + protein_name + "/" + genome_name + "/Fasta/above_threshold"
+
+    if rev is True:
         reverseComplement(fasta_name, protein_name, genome_name, contig)
         # move the reverse complemented fasta file to Fasta folder
         global rev_comp_filename
         shutil.move(rev_comp_filename, fasta_path)
         os.remove(fasta_name)
+
     else:    
         # stich exons without reverse complementing
         exons_stich(fasta_name, protein_name, genome_name)
         # move fasta file to Fasta folder
         shutil.move(fasta_name, fasta_path)
+
     return fasta_path
 
 
@@ -225,15 +226,20 @@ def read_seq(fasta_name):
    
     
 def write_seq_rev_comp(header, complement, protein_name, genome_name, contig):
+    """Writes sequence of the reverse compemented contig into a fasta file"""
+
     # check and log if "N" bases are present
-    non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
+    non_ACGT = ["N", "Y", "R", "W", "S", "K", "M", "D", "H", "V", "B", "X"]
+
     if [n for n in complement if n in non_ACGT] != []:
         side_note = "      ...WARNING... : non-ACGT bases in the reverse complemented sequence."
         print(side_note)
         logging.info(side_note)
+
     o = open("Rev_comp_" + contig + ".fasta", "w")
     # generate a global filename for this sequence; start from default empty string
     # by converting file name to string that "shutil.move()" function can use
+
     global rev_comp_filename
     rev_comp_filename = ""
     rev_comp_filename = str(o.name)
@@ -244,12 +250,16 @@ def write_seq_rev_comp(header, complement, protein_name, genome_name, contig):
 
 
 def write_seq(header, seq, protein_name, genome_name, fasta_name):
+    """Writes sequence of the contig into a fasta file"""
+
     # check and log if "N" bases are present
-    non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
+    non_ACGT = ["N", "Y", "R", "W", "S", "K", "M", "D", "H", "V", "B", "X"]
+
     if [n for n in seq if n in non_ACGT] != []:
         side_note = "    ...WARNING... : non-ACGT bases in the sequence."
         print(side_note)
         logging.info(side_note)
+
     o = open(fasta_name, "w")
     h = ">_" + protein_name + "_" + genome_name + header.lstrip(">")
     o.write(h.rstrip("\n"))
@@ -262,6 +272,7 @@ def reverseComplement(fasta_name, protein_name, genome_name, contig):
     rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
              "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
              "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
+
     header, seq = read_seq(fasta_name)
     complement = ""
     for base in seq:

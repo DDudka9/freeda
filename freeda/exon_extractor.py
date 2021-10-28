@@ -63,7 +63,7 @@ def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins,
                 MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, result_path,
                                                              protein_name, genome_name, genome_index)
                 # run MSA and write them into files
-                msa_aligner.run_msa(MSA_path, aligner)
+                msa_aligner.run_msa(wdir, ref_species, MSA_path, aligner)
                 # return potential exons for a current protein in current genome
                 msa_analyzer.analyse_MSA(wdir, ref_species, MSA_path, protein_name,
                                          genome_name, ref_exons, expected_exons, aligner)

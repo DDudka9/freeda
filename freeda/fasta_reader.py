@@ -11,6 +11,57 @@ from freeda import input_extractor
 import re
 import logging
 
+def reorder_alignment(in_filename, out_filename):
+
+    ord_headers = []
+
+    with open(in_filename, "r") as f:
+        file = f.readlines()
+        for line in file:
+            if line.startswith(">"):
+                ord_headers.append(line.rstrip("\n"))
+
+    headers = []
+    seqs = []
+    seq = ""
+    count = 0
+
+    with open(out_filename, "r") as f:
+        file = f.readlines()
+        for line in file:
+            count += 1
+
+            if line.startswith(">") and count == 1:
+                headers.append(line.rstrip("\n"))
+
+            elif not line.startswith(">") and len(headers) == 1:
+                seq += line.rstrip("\n")
+
+            elif line.startswith(">") and count > 1:
+                seqs.append(seq)
+                headers.append(line.rstrip("\n"))
+                seq = ""
+
+            else:
+                seq += line.rstrip("\n")
+
+        # append last sequence
+        seqs.append(seq)
+
+    aln_dict = {}
+    for head in headers:
+        aln_dict[head] = seqs.pop(0)
+
+    ord_aln_dict = {}
+    for head in ord_headers:
+        ord_aln_dict[head] = aln_dict[head]
+
+    with open(out_filename, "w") as f:
+        for head, seq in ord_aln_dict.items():
+            f.write(head + "\n")
+            f.write(seq + "\n")
+
+
 def alignment_file_to_dict(wdir, ref_species, filename):
     """Reads alignment file and transforms it into python dictionary.
     Alignment needs to be in the working directory (Data folder)."""

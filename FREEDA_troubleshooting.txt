@@ -683,3 +683,11 @@ Fixed
 
 #    0) ESSENTIAL -> if the only protein run has too few species
 #                   -> tree fails -> paml fails and all_dict is not formed -> crash -> FIXED
+
+#    3) ISSUE   -> Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon)
+#                   -> that transcript does not have a START codon in ensembl ("START lost")
+#                   Run PAML on Rnf187 to see how does it affect the pipeline
+#                   When running Rnf187 I get "data missing" FATAL ERROR -> and there is no "model_matches_input.txt"
+#                   -> why? -> probably cose no START codon (no cds so no comparison with model)
+#                   The pipeline will run Rnf187 till the end but it doesnt run from middle
+#                   (no "model_matches_input.txt" file !!!) -> FIXED -> now it gives "model_incompatible.txt file

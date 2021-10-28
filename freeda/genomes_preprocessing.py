@@ -122,23 +122,23 @@ def get_ref_genome_contigs_dict(ref_species):
 def get_names(ref_species, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
 
-    mouse_dict = {"Mm": (#("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
-                      #("Ms", "SPRETUS_genome", "GCA_001624865.1"),
-                      #("Mc", "CAROLI_genome", "GCA_900094665.2"),
-                      #("Mu", "MINUTOIDES_genome", "GCA_902729485.2"),
-                      #("Mp", "PAHARI_genome", "GCA_900095145.2"),
-                      #("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
-                      #("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
-                      # ("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
-                      #("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
-                      #("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
-                      #("Mo", "COUCHA_genome", "GCA_008632895.1"),
-                      #("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
-                      #("Gs", "SURDASTER_genome", "GCA_004785775.1"),
-                      #("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
-                      #("Rd", "DILECTUS_genome", "GCA_019844195.1"),
-                      #("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
-                      ("Rr", "RATTUS_genome", "GCA_011800105.1"),  # Rattus rattus (Black rat)
+    mouse_dict = {"Mm": (("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
+                      ("Ms", "SPRETUS_genome", "GCA_001624865.1"),
+                      ("Mc", "CAROLI_genome", "GCA_900094665.2"),
+                      ("Mu", "MINUTOIDES_genome", "GCA_902729485.2"),
+                      ("Mp", "PAHARI_genome", "GCA_900095145.2"),
+                      ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
+                      ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
+                      #("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
+                      ("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
+                      ("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
+                      ("Mo", "COUCHA_genome", "GCA_008632895.1"),
+                      ("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
+                      ("Gs", "SURDASTER_genome", "GCA_004785775.1"),
+                      ("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
+                      ("Rd", "DILECTUS_genome", "GCA_019844195.1"),
+                      ("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
+                      ("Rr", "RATTUS_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
                       ("Rn", "NORVEGICUS_genome", "GCA_015227675.2"))}  # Rattus norvegicus (Norway rat)
 
     human_dict = {"Hs": (("Pt", "TROGLODYTES_genome", "GCA_002880755.3"),

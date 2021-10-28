@@ -839,12 +839,12 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
 
     plt.figure()
 
-    # plot all omegas
+    # plot recurrently changing sites (put it 11 bin of M8 model with postmean omega > 1.0)
     plt.subplot(311, title="PAML analysis - %s (%s species analyzed)" % (protein, nr_of_species_total))
-    plt.ylabel("Recurrently\n changing sites\n")
-    plt.axis([0.5, sites[-1], 0, roof])
-    plt.ylim(0.5, roof)
-    plt.yticks(np.arange(0.5, roof, 1.0))
+    plt.ylabel("Posterior mean\n omega")
+    plt.axis([1.0, sites[-1], 0, roof])
+    plt.ylim(1.0, roof)
+    plt.yticks(np.arange(1.0, roof, 0.5))
     # mark the missing values for the plot
     clrs1 = ["black" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, omegas, color=clrs1)
