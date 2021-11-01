@@ -691,3 +691,15 @@ Fixed
 #                   -> why? -> probably cose no START codon (no cds so no comparison with model)
 #                   The pipeline will run Rnf187 till the end but it doesnt run from middle
 #                   (no "model_matches_input.txt" file !!!) -> FIXED -> now it gives "model_incompatible.txt file
+
+#    0) ESSENTIAL -> retreived gene from pyensembl LOC691918 Rn does not contain all exons
+#                               -> exon finder fails to find exons -> "not enough species to run paml"
+#                               SOLUTION : add a check "exon" in "gene" -> if not all exons present
+#                               -> exit -> remove protein -> DONE
+#    0) UPGRADE -> make a crosscheck for retriving correct Rn prot sequence using pyensembl -> DONE
+#    0) ESSENTIAL -> Im working on running Rn as ref_species
+#                       -> pyensembl is using GCA_000001895.4 while Ive always used GCA_015227675.2 -> DONE
+#    0) ESSENTIAL -> protein mapping function need refactoring -> too many single aa
+#                       -> unreasonable and most times not true
+#                       SOLUTION : its from biopython pairwise alignment xx -> doesnt penalize gaps -> changed to xs
+#                                       -> FIXED

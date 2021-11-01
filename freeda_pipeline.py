@@ -103,13 +103,6 @@ return str(consensus_read)
 
 # TODO:
 #    0) ESSENTIAL -> handle exception raised by muscle on Ptprd
-#    0) UPGRADE -> make a crosscheck for retriving correct Rn prot sequence using pyensembl -> DONE
-#    0) ESSENTIAL -> Im working on running Rn as ref_species
-#                       -> pyensembl is using GCA_000001895.4 while Ive always used GCA_015227675.2 -> DONE
-#    0) ESSENTIAL -> protein mapping function need refactoring -> too many single aa
-#                       -> unreasonable and most times not true
-#                       SOLUTION : its from biopython pairwise alignment xx -> doesnt penalize gaps -> changed to xs
-#                                       -> FIXED
 #    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
 #                   -> Cenpc1 aligned well
 #                   -> Ptprd crashed cose it makes 2.3MB files to align -> ApplicationError
@@ -122,14 +115,13 @@ return str(consensus_read)
 #    0) ESSENTIAL -> think of building gene tree using nucleotides in RAxML cose conserved proteins
 #                   will not be abel to give a meanigful tree based on aa -> DONE (still testing)
 #    0) ESSENTIAL -> "None" is not the best info for M2a etc tests in PAML excel file -> check literature
-#    0) UPGRADE -> Species column in PAML excel sheet should be wider
+#    0) UPGRADE -> Species column in PAML excel sheet should be wider -> make a csv file?
 #    0) ESSENTIAL -> Should all 17 + 1 rodent genomes be used? Some may introduce problematic alignments
 #                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay -> eliminated Ha
 #    0) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
 #                   -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
 #    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#    0) UPGRADE -> Visualization module should get info about domains as well -> maybe not
 #    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle)
 #                   -> Muscle works now (maxiter 2) -> Cenpx looks identical as mafft, tiny bit faster than mafft
 #                   -> test on harder aligments (Cenpc1, Cenpt, Cenpo, Izumo1)
@@ -148,7 +140,6 @@ return str(consensus_read)
 #                   -> clustalw2 made very bad alignments
 #                   -> tried Probcons both wrapper and command line -> failed
 #                   -> prank takes way too long but try to test it on final alignment
-#    0) ESSENTIAL -> run proteins that have seqs from Rn on uniprot -> compare
 #    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
 #               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
 #                   -> "stich" missing bp in that case as if it was a single microexon
@@ -196,7 +187,7 @@ return str(consensus_read)
 #            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
 #            Same with Cenp-W
 #            Not sure what the solution is -> I made sure proteins that do not score in M8 vs M7 are not visualized
-#    13) ISSUE with the cds_cloner function (requires refactoring):
+#    13) ISSUE with the cds_cloner function (requires refactoring) -> hard to solve, probably best left as is
 #           Cloner module needs revision to get hamming distance duplication comparison compare
 #           the actual duplicated exons and not only the number of exon they carry
 #           test on Aurkc Ap
@@ -381,8 +372,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 print("\nInput data have been generated for protein: %s\n\n" % protein)
 
             if not input_correct:
-                print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s "
-                      "-> exiting the pipeline now...\n" % protein)
+                print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s - please remove from analysis"
+                      " -> exiting the pipeline now...\n" % protein)
                 return
 
             if not model_matches_input:

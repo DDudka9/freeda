@@ -285,6 +285,7 @@ def check_compatibility(ref_species, protein, translated_path):
 
     # get cloned protein sequence from the most distant species
     record_sequence = False
+    seq = ""
     with open(translated_path, "r") as f:
         file = f.readlines()
         for line in file:
@@ -297,8 +298,15 @@ def check_compatibility(ref_species, protein, translated_path):
 
     # align them and write into dicts
     aln = pairwise2.align.globalxs(distant_seq, seq, open=-0.5, extend=-0.1)
-    s1, s2 = aln[0].seqA, aln[0].seqB
 
+    if not aln:
+        message = "\n...WARNING... : cloning seq for protein %s from %s FAILED " \
+                  "-> cannot cross-check identity with ensembl" % (protein, species)
+        print(message)
+        logging.info(message)
+        return
+
+    s1, s2 = aln[0].seqA, aln[0].seqB
     distant_seq_dict = {}
     for position, aa in enumerate(s1):
         distant_seq_dict[position] = aa

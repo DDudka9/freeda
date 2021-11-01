@@ -469,26 +469,54 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
     if selected_transcript_id is None:
         return input_correct, model_matches_input, microexon_present, microexons
 
-    # find protein sequence
+    # find reference protein sequence
     model_matches_input = extract_protein(wdir, ref_species, blast_input_path, protein,
                                           transcript, model_seq, matching_length, uniprot_id)
 
-    # find gene sequence
+    # find reference gene sequence
     extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id, ref_genomes_path, ref_genome_name,
                  ref_genome_contigs_dict, protein, transcript, UTR_3, cds_sequence_expected)
 
-    # find exons sequence
+    # find reference exons sequence
     input_correct, microexon_present, microexons, missing_bp_list = extract_exons(wdir, ref_species, protein,
                                                                                   exons_input_path, ref_genomes_path,
                                                                                   ref_genome_name, contig, strand,
                                                                                   transcript, ref_genome_contigs_dict,
                                                                                   UTR_5, UTR_3, cds_sequence_expected)
 
-    # trim exons and coding sequence if microexons were detected
+    # trim reference exons and coding sequence if microexons were detected
     if microexon_present:
         input_correct = correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_list, transcript)
 
+    # check if all expected reference exons are found in the expected reference gene sequnce
+    if not check_exons_gene_compatibility(wdir, ref_species, protein):
+        input_correct = False
+
     return input_correct, model_matches_input, microexon_present, microexons
+
+
+def check_exons_gene_compatibility(wdir, ref_species, protein):
+    """Checks if reference exons pooled from ensembl are present in the corresponding reference gene"""
+
+    path_to_exons = wdir + "Exons/" + protein + "_" + ref_species + "_exons.fasta"
+    path_to_gene = wdir + "Genes/" + protein + "_" + ref_species + "_gene.fasta"
+
+    with open(path_to_gene, "r") as f:
+        file = f.readlines()
+        for line in file:
+            if not line.startswith(">") and not line.startswith("\n"):
+                gene_seq = line.rstrip("\n")
+                break
+
+    with open(path_to_exons, "r") as f:
+        file = f.readlines()
+        for line in file:
+            if not line.startswith(">") and not line.startswith("\n"):
+                if line.rstrip("\n") not in gene_seq:
+                    print("\n...FATAL ERROR... : At least one expected ref exon ABSENT in expected ref gene sequence")
+                    return False
+
+        return True
 
 
 def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, model_seq, matching_length, uniprot_id):
@@ -511,7 +539,8 @@ def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, mo
 
     else:
         with open(structure_path + "/model_incompatible.txt", "w") as f:
-            f.write("Model sequence does not match the protein sequence used for blast input. Cannot overlay FREEDA results onto a 3D structure.")
+            f.write("Model sequence does not match the protein sequence used for blast input. "
+                    "Cannot overlay FREEDA results onto a 3D structure.")
 
     return model_matches_input
 
