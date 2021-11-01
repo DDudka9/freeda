@@ -23,7 +23,6 @@ import subprocess
 import shutil
 import tarfile
 import logging
-logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
@@ -243,10 +242,13 @@ def generate_basic_folders(wdir):
 def get_uniprot_id(ref_species, protein):
     """Retrieves all possible uniprot ids to be matched against structure prediction from AlphaFold"""
 
-    if ref_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+    if ref_species == "Mm":
         ref_species_number = "10090"
 
-    if ref_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+    if ref_species == "Rn":
+        ref_species_number = "10116"
+
+    if ref_species == "Hs":
         ref_species_number = "9606"
 
     possible_uniprot_ids = set()
@@ -271,9 +273,11 @@ def get_uniprot_id(ref_species, protein):
 def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids):
     """Finds and extracts structure prediction model from AlphaFold database for the species"""
 
-    if ref_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+    if ref_species == "Mm":
         handle = "MOUSE"
-    if ref_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+    if ref_species == "Rn":
+        handle = "RAT"
+    if ref_species == "Hs":
         handle = "HUMAN"
 
     # make folder to host the structure prediction
@@ -330,8 +334,10 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
 
     # didnt find structure
     except IndexError:
-        print("...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND -> Cannot overlay FREEDA results onto a 3D structure\n" % protein)
-        print("...SUGGESTION... : You can use your own model (ex. from PDB; fragments are ok but no sequence mismatches!)\n")
+        print("...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND "
+              "-> Cannot overlay FREEDA results onto a 3D structure\n" % protein)
+        print("...SUGGESTION... : You can use your own model "
+              "(ex. from PDB; fragments are ok but no sequence mismatches!)\n")
         with open(structure_path + "/model_incompatible.txt", "w") as f:
             f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
 
@@ -350,8 +356,8 @@ def validate_gene_names(all_proteins, all_genes_ensembl):
             absent_names.append(protein)
 
     if not all_names_valid:
-        print("...FATAL ERROR... : Gene names %s do not exist in " \
-                  "reference assembly -> exiting the pipeline now...\n" % absent_names)
+        print("...FATAL ERROR... : Gene names %s do not exist in "
+              "reference assembly -> exiting the pipeline now...\n" % absent_names)
 
     return all_names_valid
 
@@ -359,25 +365,22 @@ def validate_gene_names(all_proteins, all_genes_ensembl):
 def generate_ref_genome_object(wdir, ref_species):
     """Generates a reference Genome object using pyensembl as a wrapper for ensembl database"""
 
-    if ref_species == "Hs":
-        # get pyensembl release for human (or load it if already installed)
-        #cmd = ["pyensembl", "install", "--release 104", "--species human"]
-        #subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
-
-        ref_genome_name = "SAPIENS_genome"
-        species = "homo sapiens"
+    # default is mouse for now
+    if ref_species == "Mm":
+        ref_genome_name = "MUSCULUS_genome"
+        species = "mus musculus"
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
+    if ref_species == "Rn":
+        ref_genome_name = "NORVEGICUS_genome"
+        species = "rattus norvegicus"
+        release = 104
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
-    # default is mouse for now
-    else:
-        # get pyensembl release for mouse (or load it if already installed)
-        #cmd = ["pyensembl", "install", "--release 104", "--species mouse"]
-        #subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
-
-        ref_genome_name = "MUSCULUS_genome"
-        species = "mus musculus"
+    if ref_species == "Hs":
+        ref_genome_name = "SAPIENS_genome"
+        species = "homo sapiens"
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
@@ -390,6 +393,7 @@ def generate_ref_genome_object(wdir, ref_species):
                                                       ref_genome_name,
                                                       ref_genome=True)
 
+    logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
     # get ref assembly database
     ensembl = pyensembl.EnsemblRelease(release, species)
     ensembl.download()  # this is suppose to bypass installing the release from outside python
@@ -401,9 +405,8 @@ def generate_ref_genome_object(wdir, ref_species):
     # get all gene names available (list)
     all_genes_ensembl = ensembl.gene_names()
 
-
-    return ref_genome_present, ensembl, ref_species, ref_genomes_path, \
-            ref_genome_contigs_dict, biotype, all_genes_ensembl
+    return ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
+           biotype, all_genes_ensembl
 
 
 def get_gene_names(wdir, ensembl):
@@ -430,10 +433,12 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                   ensembl, biotype, protein, model_seq, uniprot_id):
     """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
 
+    if ref_species == "Mm":
+        ref_genome_name = "MUSCULUS_genome"
+    if ref_species == "Rn":
+        ref_genome_name = "NORVEGICUS_genome"
     if ref_species == "Hs":
         ref_genome_name = "SAPIENS_genome"
-    else:
-        ref_genome_name = "MUSCULUS_genome"
 
     input_correct = False
     model_matches_input = False

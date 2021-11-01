@@ -9,20 +9,13 @@ Generates a PyMOL script and runs it internally. Saves the PyMOL session per pro
 
 """
 
-from freeda import fasta_reader
 from ast import literal_eval
 import shutil
 import subprocess
 import os
-import glob
 import requests
 import simplejson.errors
 
-
-# wdir = os.getcwd() + "/"
-# protein = "Haus1"
-# ref_species = "Mm"
-# result_path = wdir + "Results-06-13-2021-23-37/"
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
 # Done but NOT TESTED YET

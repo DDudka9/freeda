@@ -11,7 +11,9 @@ Runs MAFFT using a BioPython wrapper.
 
 from freeda import fasta_reader
 from Bio.Align.Applications import MafftCommandline
-from Bio.Align.Applications import MuscleCommandline
+from Bio.Align.Applications import MSAProbsCommandline
+from Bio.Align.Applications import ProbconsCommandline
+from Bio.Align.Applications import PrankCommandline
 from Bio.Align.Applications import ClustalwCommandline
 from Bio.Application import ApplicationError
 import os
@@ -56,10 +58,10 @@ def run_msa(wdir, ref_species, MSA_path, aligner):
 
             # define which aligner is used
             if aligner == "mafft":
+
                 cline = MafftCommandline(input=in_filename, thread=-1)  # thread -1 is suppose to automatically
                                                                         # calculate physical cores
                 stdout, stderr = cline()
-
                 stop_time = time.time()
                 message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
                 print(message)
@@ -73,14 +75,17 @@ def run_msa(wdir, ref_species, MSA_path, aligner):
                 shutil.move(out_filename, MSA_path)
 
             if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
+
                 cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", MSA_path + out_filename]
                 subprocess.call(cmd)
+                # need to reorder seqs post msa
                 fasta_reader.reorder_alignment(in_filename, MSA_path + out_filename)
 
                 stop_time = time.time()
                 message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
                 print(message)
                 logging.info(message)
+
 
         except ApplicationError:
             message = "...WARNING... : ApplicationError raised -> aligner failed at file %s (probably too big)" % in_filename

@@ -608,33 +608,34 @@ def map_ref_and_final_residues(ref_sequence_record, final_sequence_record):
     """Maps residues between the aa seq of reference species and post Gblocks"""
     
     # perform pairwise alignment (multiple alignments of the same sequences)
-    aln = pairwise2.align.globalxx(final_sequence_record.seq, ref_sequence_record.seq)
+    # x - matches = 1, mismatches = 0; s - gap penalty (second parameter x would be no gap penalties)
+    aln = pairwise2.align.globalxs(final_sequence_record.seq, ref_sequence_record.seq, open=-0.5, extend=-0.1)
     
     # make a dict storing the alignments
     mapped_ref_and_final_residues_dict = {}
-    for i in range(1, len(aln[0][0]) + 1): # added "+1" on 09_04_2021
+    for i in range(1, len(aln[0][0]) + 1):  # added "+1" on 09_04_2021
         mapped_ref_and_final_residues_dict[i] = []
 
     # fill the dict with paired positions (need to subtract 1 cose aln starts at 0)
     for position in mapped_ref_and_final_residues_dict:
         mapped_ref_and_final_residues_dict[position] = [aln[0][0][position-1], aln[0][1][position-1]]
     
-    return mapped_ref_and_final_residues_dict
-    
     # flag any non-synonymous substitutions that indicate frameshifts
-    #frameshift_positions = {}
-    #translated_frameshift = False
-    #for position, pair in d.items():
-    #    if pair[0] != pair[1] and pair[0] != "-" and pair[1] != "-":
-    #        # sequence index starts at 1 so need to "+1" from the python indexing
-    #        frameshift_positions[position + 1] = pair
-    #        translated_frameshift = True
-    #        print(translated_frameshift)
+    frameshift_positions = {}
+    translated_frameshift = False
+    for position, pair in mapped_ref_and_final_residues_dict.items():
+        if pair[0] != pair[1] and pair[0] != "-" and pair[1] != "-":
+            # sequence index starts at 1 so need to "+1" from the python indexing
+            frameshift_positions[position + 1] = pair
+            translated_frameshift = True
+            print("...WARNING... : position - %s (%s) between final protein ref seq differs from blast input "
+                  "-> frameshift?" % (position + 1, (pair[0], pair[1])))
 
-    
+    return mapped_ref_and_final_residues_dict
+
 
 def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict):
-    """Matches sites under positive selection from seq post Gblocks onto thw one used for blast input"""
+    """Matches sites under positive selection from seq post Gblocks onto the one used for blast input (ref species)"""
     
     # overlay the final residue dictionary with probability for positive selection
     matched_adaptive_sites_final = {}
@@ -646,7 +647,7 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
         else:
             matched_adaptive_sites_final[site] = [aa, "0.00"]
     
-    # adjust the final residue dicitionary to include missing sites
+    # adjust the final residue dictionary to include missing sites
     adjusted_mapped_ref_and_final_residue_dict = {}
     for i in range(1, len(mapped_ref_and_final_residues_dict) + 1):
         adjusted_mapped_ref_and_final_residue_dict[i] = ["", "", 0]

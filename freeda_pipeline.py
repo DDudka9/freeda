@@ -42,10 +42,6 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 
 
 
-
-
-
-
  --------- * Prdm9 * --------- 
 
 
@@ -106,9 +102,14 @@ return str(consensus_read)
 """
 
 # TODO:
+#    0) ESSENTIAL -> handle exception raised by muscle on Ptprd
+#    0) UPGRADE -> make a crosscheck for retriving correct Rn prot sequence using pyensembl -> DONE
+#    0) ESSENTIAL -> Im working on running Rn as ref_species
+#                       -> pyensembl is using GCA_000001895.4 while Ive always used GCA_015227675.2 -> DONE
 #    0) ESSENTIAL -> protein mapping function need refactoring -> too many single aa
 #                       -> unreasonable and most times not true
-#                   SOLUTION :
+#                       SOLUTION : its from biopython pairwise alignment xx -> doesnt penalize gaps -> changed to xs
+#                                       -> FIXED
 #    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
 #                   -> Cenpc1 aligned well
 #                   -> Ptprd crashed cose it makes 2.3MB files to align -> ApplicationError
@@ -131,7 +132,22 @@ return str(consensus_read)
 #    0) UPGRADE -> Visualization module should get info about domains as well -> maybe not
 #    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle)
 #                   -> Muscle works now (maxiter 2) -> Cenpx looks identical as mafft, tiny bit faster than mafft
-#                   -> test on harder aligments
+#                   -> test on harder aligments (Cenpc1, Cenpt, Cenpo, Izumo1)
+#                   -> muscle (maxiters 2) is faster than mafft (about 30%)
+#                                   but fails on partial contigs sometimes (Cenpc1 Gd) -> test on final alignment
+#                                   -> muscle often allows parts of actual exons to align in other exons
+#                                         (which are often missing or intronic)
+#                                         -> generating false RETRO (Haus8 Gd aligned_rev_comp_JADRCF010453847.1__rev)
+#                                       -> sometimes fails to call good number of exons Haus8 Rd JADRCG010009828.1__rev
+#                                   -> final FREEDA result is identical for mafft and muscle (maxiters 2) for Cenpc1,
+#                                                                                       Cenpt, Cenpo and Izumo1
+#                                   -> muscle final alignment is very similar to mafft (nearly identical)
+#                                   -> but muscle failed to align huge Ptprd -> file not found
+#                                               -> handle exception and allow cose generally muscle yields similar
+#                                                           results and its about 30% faster
+#                   -> clustalw2 made very bad alignments
+#                   -> tried Probcons both wrapper and command line -> failed
+#                   -> prank takes way too long but try to test it on final alignment
 #    0) ESSENTIAL -> run proteins that have seqs from Rn on uniprot -> compare
 #    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
 #               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
@@ -231,9 +247,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
         ref_species = "Mm"
 
     # reference species sequences: protein seq, cds, exons, gene (ex. Mus musculus)
-    if ref_species != "Mm" and ref_species != "Hs":
-        print("\nSupported reference species are mouse : %s and human : %s" % ('"Mm"', '"Hs"'))
-        return
+    #if ref_species != "Mm" and ref_species != "Hs":
+    #    print("\nSupported reference species are mouse : %s and human : %s" % ('"Mm"', '"Hs"'))
+    #    return
 
     # initial percent identity threshold for blast matches analysis
     if t is None:
@@ -276,7 +292,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
 
     # get settings
-    aligner = "muscle"
+    aligner = "mafft"
 
 
     # get all species and genome names
@@ -512,7 +528,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Rn")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
 

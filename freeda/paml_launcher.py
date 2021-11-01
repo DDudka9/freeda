@@ -20,8 +20,6 @@ Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 from freeda import fasta_reader
 from freeda import genomes_preprocessing
 from Bio.Align.Applications import MafftCommandline
-from Bio.Align.Applications import MuscleCommandline
-from Bio.Align.Applications import ClustalwCommandline
 from Bio import pairwise2
 from Bio import AlignIO
 from Bio.Seq import Seq
@@ -36,6 +34,7 @@ import logging
 import shutil
 import subprocess
 import copy
+import pyensembl
 
 
 def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
@@ -165,7 +164,6 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
         
             # align the final cds sequences
             out_msa = align_final_cds(protein, final_cds_file, result_path, aligner)
-            shutil.move(out_msa, protein_folder_path)
 
             # check and eliminate insertions that cause dashes in ref species
             correction, corrected_filename = eliminate_all_insertions(protein_folder_path, out_msa)
@@ -211,6 +209,9 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
             # check for frameshifts in protein seq and eliminate species from protein and cds
             translated_path, out_Gblocks, to_delete = eliminate_frameshits_cds(wdir, ref_species, protein,
                                                     raw_translated_path, filepath_to_translate, aligner, to_delete)
+
+            # check compatibility of most distant cloned seq with its known protein sequence (e.g. rat for mouse)
+            check_compatibility(ref_species, protein, translated_path)
 
             # correct number of species in the final analysis
             nr_of_species = nr_of_species - len(to_delete)
@@ -266,6 +267,133 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
     logging.info(message)
     
     return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, prots_under_pos_sel
+
+
+def check_compatibility(ref_species, protein, translated_path):
+    """Checks cloned protein sequence from opposite species against ensembl entry (e.g. rat for mouse)"""
+
+    # get known protein sequence from the most distant species
+    distant_seq = get_most_distant_prot_seq(ref_species, protein)
+
+    if ref_species == "Mm":
+        species = "Rn"
+    elif ref_species == "Rn":
+        species = "Mm"
+    # NOT SUPPORTING PRIMATES
+    else:
+        return
+
+    # get cloned protein sequence from the most distant species
+    record_sequence = False
+    with open(translated_path, "r") as f:
+        file = f.readlines()
+        for line in file:
+            if line.startswith(">" + species):
+                record_sequence = True
+                continue
+            if record_sequence:
+                seq = line.rstrip("\n")
+                break
+
+    # align them and write into dicts
+    aln = pairwise2.align.globalxs(distant_seq, seq, open=-0.5, extend=-0.1)
+    s1, s2 = aln[0].seqA, aln[0].seqB
+
+    distant_seq_dict = {}
+    for position, aa in enumerate(s1):
+        distant_seq_dict[position] = aa
+
+    seq_dict = {}
+    for position, aa in enumerate(s2):
+        seq_dict[position] = aa
+
+    mismatches = 0
+    for position, aa in distant_seq_dict.items():
+        if seq_dict[position] != aa and seq_dict[position] != "-":
+            mismatches += 1
+
+    # report if too many mismatches occurred -> accounts for more than 1% of mismatching aa (NOT INDELS)
+    score = mismatches/len(distant_seq_dict)
+
+    if score < 0.01:
+        message = "\n...NOTE... : cloned seq for protein %s from %s species is %s percent identical to expected" \
+                  % (protein, species, 100 - (score * 100))
+        print(message)
+        logging.info(message)
+
+    if score > 0.01:
+        message = "\n...WARNING... : cloned seq for protein %s from %s is only %s percent identical to expected" \
+                  % (protein, species, 100 - (score * 100))
+        print(message)
+        logging.info(message)
+
+
+
+def get_most_distant_prot_seq(ref_species, protein):
+    """Finds protein sequence of the longest transcript from most distant species (e.g. rat for mouse)."""
+
+    if ref_species == "Mm":
+        species = "rattus norvegicus"
+    if ref_species == "Rn":
+        species = "mus musculus"
+
+    logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
+    ensembl = pyensembl.EnsemblRelease(104, species)
+    # get all transcript ids
+    all_transcripts_ids = ensembl.transcript_ids_of_gene_name(protein)
+
+    all_transcripts_dict = {}
+    length = 0
+    distant_seq = ""
+
+    # find all possible transcripts
+    for t in all_transcripts_ids:
+        all_transcripts_dict[t] = []
+
+        # find gene id
+        gene_id = ensembl.gene_ids_of_gene_name(protein)
+        all_transcripts_dict[t].append(gene_id)
+
+        # find contig
+        contig = ensembl.locus_of_transcript_id(t).contig
+        all_transcripts_dict[t].append(contig)
+
+        # find strand
+        strand = ensembl.locus_of_transcript_id(t).strand
+        all_transcripts_dict[t].append(strand)
+
+        # find transcript name
+        transcript_name = ensembl.transcript_name_of_transcript_id(t)
+        all_transcripts_dict[t].append(transcript_name)
+
+        # find start of the transcript (not START codon)
+        start = ensembl.locus_of_transcript_id(t).start
+        all_transcripts_dict[t].append(start)
+
+        # find end of the transcript (not STOP codon)
+        end = ensembl.locus_of_transcript_id(t).end
+        all_transcripts_dict[t].append(end)
+
+        # find transcript
+        biotype = "Protein coding"
+        transcript = pyensembl.Transcript(t, transcript_name,
+                contig, start, end, strand, biotype, gene_id, ensembl, support_level=None)
+
+        # get protein sequence
+        try:
+            protein_sequence = transcript.protein_sequence
+            if protein_sequence:
+                length_current = len(protein_sequence)
+                if length < length_current:
+                    length = length_current
+                    distant_seq = protein_sequence
+            else:
+                continue
+        except ValueError:
+            continue
+
+    return distant_seq
+
 
 
 def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, raw_out_Gblocks, aligner, to_delete):
@@ -768,6 +896,7 @@ def post_Gblocks_STOP_remover(protein_folder_path, raw_out_Gblocks_filename, pro
 
 
 def run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner):
+    """Runs Gblocks software which removes indels in frame from the final alignment"""
 
     in_filepath = result_path + protein + "/" + final_cds_file_no_STOP
     raw_out_Gblocks_filename = "aligned_" + aligner.upper() + "_Gblocks_" + protein + "_final_no_STOP.fasta"
@@ -794,30 +923,36 @@ def run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner):
 
               
 def align_final_cds(protein, final_cds_file, result_path, aligner):
+    """Aligns cloned coding sequences that pass coverage threshold (default 90 percent)"""
 
-    in_filepath = result_path + protein + "/" + protein + "_final.fasta"
+    protein_folder_path = result_path + protein + "/"
+    in_filepath = protein_folder_path + protein + "_final.fasta"
+    out_msa = "aligned_" + aligner.upper() + "_" + final_cds_file
 
     # define which aligner is used
     if aligner == "mafft":
+
         cline = MafftCommandline(input=in_filepath, thread=-1)  # thread -1 is suppose to automatically
                                                                 # calculate physical cores
-    if aligner == "muscle":
-        cline = MuscleCommandline(input=in_filepath)
-    if aligner == "clustalw":
-        cline = ClustalwCommandline("clustalw2", infile=in_filepath)
+        # record standard output and standard error
+        stdout, stderr = cline()
+        # make a post-MSA file using out_filename
+        with open(out_msa, "w") as f:
+            f.write(stdout)
+        shutil.move(out_msa, protein_folder_path)
 
-    out_msa = "aligned_" + aligner.upper() + "_" + final_cds_file
+        # returns the filename after MSA
+        return out_msa
 
-    # run msa
-    cline = MafftCommandline(input=in_filepath)
-    # record standard output and standard error
-    stdout, stderr = cline()
-    # make a post-MSA file using out_filename
-    with open(out_msa, "w") as f:
-        f.write(stdout)
-    
-    # returns the filename after MSA
-    return out_msa
+    if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
+
+        cmd = ['muscle', "-in", in_filepath, "-quiet", "-maxiters", "2", "-out", protein_folder_path + out_msa]
+        subprocess.call(cmd)
+        # need to reorder seqs post msa
+        fasta_reader.reorder_alignment(in_filepath, protein_folder_path + out_msa)
+
+        # returns the filename after MSA
+        return out_msa
 
 
 """
