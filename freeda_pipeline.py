@@ -102,7 +102,8 @@ return str(consensus_read)
 """
 
 # TODO:
-#    0) ESSENTIAL -> handle exception raised by muscle on Ptprd
+#    0) ESSENTIAL -> make sure that the cross-species check works well, so far Ive seen only 100 percent scores
+#    0) ESSENTIAL -> handle exception raised by muscle on Ptprd -> DONE
 #    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
 #                   -> Cenpc1 aligned well
 #                   -> Ptprd crashed cose it makes 2.3MB files to align -> ApplicationError
@@ -519,7 +520,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Rn")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
 

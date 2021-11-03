@@ -272,13 +272,14 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
 def check_compatibility(ref_species, protein, translated_path):
     """Checks cloned protein sequence from opposite species against ensembl entry (e.g. rat for mouse)"""
 
-    # get known protein sequence from the most distant species
-    distant_seq = get_most_distant_prot_seq(ref_species, protein)
-
     if ref_species == "Mm":
         species = "Rn"
+        # get known protein sequence from the most distant species
+        distant_seq = get_most_distant_prot_seq(species, protein)
     elif ref_species == "Rn":
         species = "Mm"
+        # get known protein sequence from the most distant species
+        distant_seq = get_most_distant_prot_seq(species, protein)
     # NOT SUPPORTING PRIMATES
     else:
         return
@@ -299,8 +300,22 @@ def check_compatibility(ref_species, protein, translated_path):
     # align them and write into dicts
     aln = pairwise2.align.globalxs(distant_seq, seq, open=-0.5, extend=-0.1)
 
-    if not aln:
-        message = "\n...WARNING... : cloning seq for protein %s from %s FAILED " \
+    if not distant_seq and not seq:
+        message = "\n...WARNING... : Protein %s is not annotated in %s genome and cloning seq also FAILED" \
+                  "-> cannot cross-check identity with ensembl" % (protein, species)
+        print(message)
+        logging.info(message)
+        return
+
+    if not distant_seq:
+        message = "\n...WARNING... : Protein %s is not annotated in %s genome " \
+                  "-> cannot cross-check identity with ensembl" % (protein, species)
+        print(message)
+        logging.info(message)
+        return
+
+    if not seq:
+        message = "\n...WARNING... : Cloning seq for protein %s from %s FAILED " \
                   "-> cannot cross-check identity with ensembl" % (protein, species)
         print(message)
         logging.info(message)
@@ -337,22 +352,29 @@ def check_compatibility(ref_species, protein, translated_path):
 
 
 
-def get_most_distant_prot_seq(ref_species, protein):
+def get_most_distant_prot_seq(species, protein):
     """Finds protein sequence of the longest transcript from most distant species (e.g. rat for mouse)."""
 
-    if ref_species == "Mm":
-        species = "rattus norvegicus"
-    if ref_species == "Rn":
+    distant_seq = ""
+
+    if species == "Mm":
         species = "mus musculus"
+    if species == "Rn":
+        species = "rattus norvegicus"
 
     logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
     ensembl = pyensembl.EnsemblRelease(104, species)
+
+    # check if the protein is annotated
+    all_genes = ensembl.gene_names()
+    if protein not in all_genes:
+        return distant_seq
+
     # get all transcript ids
     all_transcripts_ids = ensembl.transcript_ids_of_gene_name(protein)
 
     all_transcripts_dict = {}
     length = 0
-    distant_seq = ""
 
     # find all possible transcripts
     for t in all_transcripts_ids:
@@ -493,7 +515,7 @@ def eliminate_all_insertions(protein_folder_path, out_msa):
             
             # these positions are confusingly printing index+1 (change that -> make positions start with 1)
             
-        side_note = " \n WARNING : Insertions in positions in ref MSA deleted: %s" % str(positions)
+        side_note = " \n...NOTE... : Insertions in positions in ref MSA deleted: %s" % str(positions)
         print(side_note)
         logging.info(side_note)
                     

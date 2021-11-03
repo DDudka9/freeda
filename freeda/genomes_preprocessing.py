@@ -311,7 +311,7 @@ def get_names(ref_species, ref_genome=False):
                          ("Mo", "COUCHA_genome", "GCA_008632895.1"),
                          ("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
                          ("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
-                         #("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
+                         ("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
                          ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
                          ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
                          ("Mp", "PAHARI_genome", "GCA_900095145.2"),

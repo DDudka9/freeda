@@ -25,7 +25,7 @@ import logging
 import subprocess
 
 
-def run_msa(wdir, ref_species, MSA_path, aligner):
+def run_msa(MSA_path, aligner):
     """Runs a multiple sequence alignment of ref cds, ref gene, presumptive locus and raw blast matches.
     Uses MAFFT as default."""
 
@@ -78,17 +78,25 @@ def run_msa(wdir, ref_species, MSA_path, aligner):
 
                 cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", MSA_path + out_filename]
                 subprocess.call(cmd)
+
                 # need to reorder seqs post msa
-                fasta_reader.reorder_alignment(in_filename, MSA_path + out_filename)
+                try:
+                    fasta_reader.reorder_alignment(in_filename, MSA_path + out_filename)
+
+                except FileNotFoundError:
+                    message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
+                    print(message)
+                    logging.info(message)
 
                 stop_time = time.time()
                 message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
                 print(message)
                 logging.info(message)
 
+                return
 
         except ApplicationError:
-            message = "...WARNING... : ApplicationError raised -> aligner failed at file %s (probably too big)" % in_filename
+            message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
             print(message)
             logging.info(message)
 
