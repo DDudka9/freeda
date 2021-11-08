@@ -845,7 +845,7 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
     plt.ylabel("Posterior mean\n omega")
     plt.axis([1.0, sites[-1], 0, roof])
     plt.ylim(1.0, roof)
-    plt.yticks(np.arange(1.0, roof, 0.5))
+    plt.yticks(np.arange(1.0, roof, 1.0))
     # mark the missing values for the plot
     clrs1 = ["black" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, omegas, color=clrs1)

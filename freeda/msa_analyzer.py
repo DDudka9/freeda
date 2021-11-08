@@ -52,8 +52,8 @@ def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exon
             = exon_finder.find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons)
         # skip this contig if possible retrotransposition event was detected
         # likelihood of false positive RETRO is more than 1 per 3 intronic exons
-        # skip also contigs that are likely duplications
-        if (possible_retrotransposition is True and RETRO_score >= 0.4) or duplication_score < 0.5:
+        # skip also contigs that are likely duplications or tandem repetitions
+        if exons is None or (possible_retrotransposition is True and RETRO_score >= 0.4) or duplication_score < 0.5:
             continue
         # clone all exons WITH OVERHANGS
         cloned_exons_overhangs.append((contig_name, clone_exons_overhangs(seqs, exons)))

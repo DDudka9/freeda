@@ -428,6 +428,18 @@ def get_gene_names(wdir, ensembl):
                 genes.append(gene)
                 f.write(gene + "\n")
 
+def make_gene_list(ensembl):
+    all_genes_ensembl = ensembl.gene_names()
+    genes = []
+    for i in range(37800, len(all_genes_ensembl), 95):
+        gene = all_genes_ensembl[i]
+        if not gene.startswith("Mir") \
+                and "-" not in gene \
+                and not gene.startswith("Sno") \
+                and not gene.startswith("Gm"):
+            genes.append(gene)
+
+    return genes
 
 def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                   ensembl, biotype, protein, model_seq, uniprot_id):

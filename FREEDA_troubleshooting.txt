@@ -703,3 +703,6 @@ Fixed
 #                       -> unreasonable and most times not true
 #                       SOLUTION : its from biopython pairwise alignment xx -> doesnt penalize gaps -> changed to xs
 #                                       -> FIXED
+
+#    0) ESSENTIAL -> think of building gene tree using nucleotides in RAxML cose conserved proteins
+#                   will not be abel to give a meanigful tree based on aa -> DONE

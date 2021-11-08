@@ -102,6 +102,12 @@ return str(consensus_read)
 """
 
 # TODO:
+#    0) IDEA -> add a checkpoint for input -> align cds and gene -> if any bp doesnt align well -> fail that protein
+#    0) IDEA -> add a timer for aligner (how?) -> do not spend more than 10min for any contig
+#    0) ESSENTIAL -> > 350kb ong gene TEX11 in Pt shows different number of exons in different contigs! -> tandem repeat
+#    0) UPGRADE -> CASP10 has 3 repetitions of the same domain -> reduce threshold of allowed intersect?
+#    0) ESSENTIAL -> cloned cds frameshift check should not penalize gaps or at least not say "frameshift"
+#                               because Cj in NRLP11 is called frameshift despite having just an exon missing
 #    0) ESSENTIAL -> make sure that the cross-species check works well, so far Ive seen only 100 percent scores
 #    0) ESSENTIAL -> handle exception raised by muscle on Ptprd -> DONE
 #    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
@@ -113,8 +119,6 @@ return str(consensus_read)
 #                           -> it looks like the application went on without issues to the next species
 #    0) NOTE -> Cenpb Pd, Mn, Gd are best for working on avoiding "missing" exons when N-tip only is missing
 #    0) NOTE -> coverage value in PAML excel sheet does not include microexons (but its intrinsically a small value)
-#    0) ESSENTIAL -> think of building gene tree using nucleotides in RAxML cose conserved proteins
-#                   will not be abel to give a meanigful tree based on aa -> DONE (still testing)
 #    0) ESSENTIAL -> "None" is not the best info for M2a etc tests in PAML excel file -> check literature
 #    0) UPGRADE -> Species column in PAML excel sheet should be wider -> make a csv file?
 #    0) ESSENTIAL -> Should all 17 + 1 rodent genomes be used? Some may introduce problematic alignments
@@ -520,7 +524,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
 

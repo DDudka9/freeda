@@ -722,8 +722,8 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, filename):
         # flag cds with rare extreme frameshifts
         if score < 0.70:
             to_delete.append(species)
-            message = "...WARNING... : CDS for species : %s in %s protein contains a frameshift " \
-                      "-> eliminated from alignment" % (species.rstrip("\n"), protein)
+            message = "...WARNING... : CDS for species : %s in %s protein is either too divergent " \
+                      "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), protein)
             print(message)
             logging.info(message)
 

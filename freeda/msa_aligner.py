@@ -83,7 +83,7 @@ def run_msa(MSA_path, aligner):
                 try:
                     fasta_reader.reorder_alignment(in_filename, MSA_path + out_filename)
 
-                except FileNotFoundError:
+                except Exception:   # formerly FileNotFound but I think it doesnt work
                     message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
                     print(message)
                     logging.info(message)

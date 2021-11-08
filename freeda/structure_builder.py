@@ -247,8 +247,8 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
                 c1 = set(range(current_coordinates[0], current_coordinates[1]))
                 c2 = set(range(coordinates[0], coordinates[1]))
 
-                # domain overlaps too much with the previous domain -> dont paint
-                if len(c1 & c2) > len(c2) / 2:
+                # domain overlaps too much with the previous domain (33%) -> dont paint
+                if len(c1 & c2) > len(c2) / 3:
                     continue
 
                 # paint that domain
