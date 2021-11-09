@@ -42,10 +42,6 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 
 
 
-
-
-
-
  --------- * Prdm9 * --------- 
 
 
@@ -84,44 +80,76 @@ Traceback (most recent call last):
 KeyError: 'Prdm9'
 
 
+I am listing this as an answer instead of editing my question because someone might find it useful. If I have made an error please let me know. The problem appears to be with using the BioPython MuscleCommandLine wrapper in this fashion. I was not able to pass any command line options to muscle through the wrapper when calling through a subprocess. My modified code for this is below.
+
+cmd = ['muscle', "-quiet", "-maxiters", "1", "-diags"]
+
+read_list = (SeqRecord(Seq(seq, IUPAC.unambiguous_dna), str(index)) for index, seq in enumerate(grouped_reads_list))
+
+muscle = Popen(cmd, stdin=PIPE, stdout=PIPE, universal_newlines=True)
+
+SeqIO.write(read_list, muscle.stdin, "fasta")  # Send sequences to Muscle in FASTA format.
+muscle.stdin.close()
+
+align = AlignIO.read(muscle.stdout, 'fasta')  # Capture output from muscle and get it into FASTA format in an object.
+
+muscle.stdout.close()
+
+consensus_read = AlignInfo.SummaryInfo(align).dumb_consensus(threshold=0.6, ambiguous="N", consensus_alpha=IUPAC.ambiguous_dna)
+return str(consensus_read)
+
+
 """
 
 # TODO:
+#    0) IDEA -> add a checkpoint for input -> align cds and gene -> if any bp doesnt align well -> fail that protein
+#    0) IDEA -> add a timer for aligner (how?) -> do not spend more than 10min for any contig
+#    0) ESSENTIAL -> > 350kb ong gene TEX11 in Pt shows different number of exons in different contigs! -> tandem repeat
+#    0) UPGRADE -> CASP10 has 3 repetitions of the same domain -> reduce threshold of allowed intersect?
+#    0) ESSENTIAL -> cloned cds frameshift check should not penalize gaps or at least not say "frameshift"
+#                               because Cj in NRLP11 is called frameshift despite having just an exon missing
+#    0) ESSENTIAL -> make sure that the cross-species check works well, so far Ive seen only 100 percent scores
+#    0) ESSENTIAL -> handle exception raised by muscle on Ptprd -> DONE
+#    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
+#                   -> Cenpc1 aligned well
+#                   -> Ptprd crashed cose it makes 2.3MB files to align -> ApplicationError
+#                                   -> but whatever got aligned it has done it well, 18bp microexon (6) included
+#                   -> Slc8a1 -> 18bp microexon was detected well in Mi -> try rattus -> also OK
+#                   SOLUTIION : Exception handling -> Bio.ApplicationError -> rename to FAILED_to_align
+#                           -> it looks like the application went on without issues to the next species
+#    0) NOTE -> Cenpb Pd, Mn, Gd are best for working on avoiding "missing" exons when N-tip only is missing
+#    0) NOTE -> coverage value in PAML excel sheet does not include microexons (but its intrinsically a small value)
+#    0) ESSENTIAL -> "None" is not the best info for M2a etc tests in PAML excel file -> check literature
+#    0) UPGRADE -> Species column in PAML excel sheet should be wider -> make a csv file?
 #    0) ESSENTIAL -> Should all 17 + 1 rodent genomes be used? Some may introduce problematic alignments
-#                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay
+#                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay -> eliminated Ha
 #    0) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
 #                   -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
-#    0) ESSENTIAL -> Sgo2b last exon (7) is called "None" in exon finder in all contigs -> last bp in cds is missing in gene
-#           SOLUTION : Special case for last bp?
-#           Update : Same for last exon (13) in Nlrp1a !
-#           SOLUTION 2 : Check at input extractor -> if UTR3 == O -> check STOP codon -> if None -> check last exon STOP -> add last bp to gene
 #    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#    0) ESSENTIAL -> Prdm9 fails cose of few sequences passing 90% -> cose last exon (10) is huge and 8kb distant -> and there is up to 5000 matches from blast
-#           so probably the final threshold of 65 misses some matches in exon 10 and contig ends early -> also plenty of Ns in exon 10 in Mi, Mc etc.
-#           Also exon 10 in Prdm9 has duplications that make alignment difficult -> thats why matches and locus not always align (probably main culprit)
-#           Main problem -> Mafft seems to fail aligning Prdm9_final.fasta (but Ugene mafft does it with no problem)
-#           SOLUTIONS : 1) Nevertheless FREEDA should not crash; 2) Increase matches limit from 40 to 60 and run again; 3) Decrease threshold from 90% to 70% and run again
-#           I might need to add single exon length checkpoint -> dash the exon that is double the size of the ref exon -> DONE
-#           SOLVED -> exon insertion checkpoint at single exon mapping saved Prdm9 aligmnent and showed rapid evolution of DNA binding repeats in exon 10
-#    0) UPGRADE -> Visualization module should get info about domains as well
-#    0) UPGRADE -> Interpro module often overlaps domains (ex. Dmc1 -> 4 overlapping domains)
-#                       -> if coordinates overlap > 50% -> pick only first domain -> FIXED?
-#    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle, PRANK)
-#    0) ESSENTIAL -> run proteins that have seqs from Mo on uniprot -> compare
-#    1) ISSUE  -> Ask Tim from pyensembl how to get release outside command line -> DONE?
+#    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle)
+#                   -> Muscle works now (maxiter 2) -> Cenpx looks identical as mafft, tiny bit faster than mafft
+#                   -> test on harder aligments (Cenpc1, Cenpt, Cenpo, Izumo1)
+#                   -> muscle (maxiters 2) is faster than mafft (about 30%)
+#                                   but fails on partial contigs sometimes (Cenpc1 Gd) -> test on final alignment
+#                                   -> muscle often allows parts of actual exons to align in other exons
+#                                         (which are often missing or intronic)
+#                                         -> generating false RETRO (Haus8 Gd aligned_rev_comp_JADRCF010453847.1__rev)
+#                                       -> sometimes fails to call good number of exons Haus8 Rd JADRCG010009828.1__rev
+#                                   -> final FREEDA result is identical for mafft and muscle (maxiters 2) for Cenpc1,
+#                                                                                       Cenpt, Cenpo and Izumo1
+#                                   -> muscle final alignment is very similar to mafft (nearly identical)
+#                                   -> but muscle failed to align huge Ptprd -> file not found
+#                                               -> handle exception and allow cose generally muscle yields similar
+#                                                           results and its about 30% faster
+#                   -> clustalw2 made very bad alignments
+#                   -> tried Probcons both wrapper and command line -> failed
+#                   -> prank takes way too long but try to test it on final alignment
 #    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
 #               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
 #                   -> "stich" missing bp in that case as if it was a single microexon
 #                  SOLUTION : no good solution for that so far, stiching exons does not help cose of flanking exons
 #                           -> but lowering the limit to < 18bp would fix both of these instances
-#    3) ISSUE   -> Rnf187 -> is misssing START codon (exon 4 -> 3bp; which is a STOP codon)
-#                   -> that transcript does not have a START codon in ensembl ("START lost")
-#                   Run PAML on Rnf187 to see how does it affect the pipeline
-#                   When running Rnf187 I get "data missing" FATAL ERROR -> and there is no "model_matches_input.txt"
-#                   -> why? -> probably cose no START codon (no cds so no comparison with model)
-#                   The pipeline will run Rnf187 till the end but it doesnt run from middle
-#                   (no "model_matches_input.txt" file !!!)
 #    3) ISSUE   -> Refactor : change "protein_name" to "gene_name" and "protein" to "gene_name"
 #    4) ISSUE   -> Fix the bioservices issue (Brian) -> in virtual box and pyinstaller the colorlog module
 #                   doesnt have "logging" attribute -> deprecated in python 3.8 ?
@@ -164,7 +192,7 @@ KeyError: 'Prdm9'
 #            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
 #            Same with Cenp-W
 #            Not sure what the solution is -> I made sure proteins that do not score in M8 vs M7 are not visualized
-#    13) ISSUE with the cds_cloner function (requires refactoring):
+#    13) ISSUE with the cds_cloner function (requires refactoring) -> hard to solve, probably best left as is
 #           Cloner module needs revision to get hamming distance duplication comparison compare
 #           the actual duplicated exons and not only the number of exon they carry
 #           test on Aurkc Ap
@@ -215,9 +243,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
         ref_species = "Mm"
 
     # reference species sequences: protein seq, cds, exons, gene (ex. Mus musculus)
-    if ref_species != "Mm" and ref_species != "Hs":
-        print("\nSupported reference species are mouse : %s and human : %s" % ('"Mm"', '"Hs"'))
-        return
+    #if ref_species != "Mm" and ref_species != "Hs":
+    #    print("\nSupported reference species are mouse : %s and human : %s" % ('"Mm"', '"Hs"'))
+    #    return
 
     # initial percent identity threshold for blast matches analysis
     if t is None:
@@ -329,6 +357,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                   "GenBank -> Genomic FASTA(.fna)")
             return
 
+        # get names of
+
         for protein in all_proteins:
 
             print("\n----------- * %s * -----------" % protein)
@@ -347,8 +377,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 print("\nInput data have been generated for protein: %s\n\n" % protein)
 
             if not input_correct:
-                print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s "
-                      "-> exiting the pipeline now...\n" % protein)
+                print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s - please remove from analysis"
+                      " -> exiting the pipeline now...\n" % protein)
                 return
 
             if not model_matches_input:
@@ -421,10 +451,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                                                      day, prots_under_pos_sel, failed_paml)
                 # run PyMOL
                 for protein in all_proteins:
-                    # do not allow further analysis of failed paml runs
 
+                    # do not allow further analysis of failed paml runs
                     if protein in failed_paml:
                         continue
+
                     # check if model seq and input seq match and check if exactly one model exists
                     elif structure_builder.check_structure(wdir, ref_species, protein):
                         successful = structure_builder.run_pymol(wdir, ref_species, result_path,
@@ -454,10 +485,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                                              day, prots_under_pos_sel, failed_paml)
         # run PyMOL
         for protein in all_proteins:
-            # do not allow further analysis of failed paml runs
 
+            # do not allow further analysis of failed paml runs
             if protein in failed_paml:
                 continue
+
             # check if model seq and input seq match and check if exactly one model exists
             elif structure_builder.check_structure(wdir, ref_species, protein):
                 successful = structure_builder.run_pymol(wdir, ref_species, result_path,
@@ -466,6 +498,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 if not successful:
                     print("\nThe structure for : %s was not built successfully." % protein)
                     continue
+
             else:
                 print("\nPrediction model for : %s DOES NOT match input sequence "
                       "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
@@ -491,7 +524,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
 

@@ -23,7 +23,6 @@ import subprocess
 import shutil
 import tarfile
 import logging
-logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
@@ -243,10 +242,13 @@ def generate_basic_folders(wdir):
 def get_uniprot_id(ref_species, protein):
     """Retrieves all possible uniprot ids to be matched against structure prediction from AlphaFold"""
 
-    if ref_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+    if ref_species == "Mm":
         ref_species_number = "10090"
 
-    if ref_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+    if ref_species == "Rn":
+        ref_species_number = "10116"
+
+    if ref_species == "Hs":
         ref_species_number = "9606"
 
     possible_uniprot_ids = set()
@@ -271,9 +273,11 @@ def get_uniprot_id(ref_species, protein):
 def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids):
     """Finds and extracts structure prediction model from AlphaFold database for the species"""
 
-    if ref_species in {"Mm", "Mouse", "mouse", "Mus musculus", "mus musculus"}:
+    if ref_species == "Mm":
         handle = "MOUSE"
-    if ref_species in {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}:
+    if ref_species == "Rn":
+        handle = "RAT"
+    if ref_species == "Hs":
         handle = "HUMAN"
 
     # make folder to host the structure prediction
@@ -285,13 +289,12 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
     clear_structure_files(structure_path)
 
     # find prediction model based on possible uniprot ids for the protein
-    path_to_ref_species_structures = [path for path in glob.glob(wdir + "*")
-                                                   if path.endswith(handle + ".tar")][0]
+    path_to_ref_species_structures = [path for path in glob.glob(wdir + "*") if path.endswith(handle + ".tar")][0]
     tar = tarfile.open(path_to_ref_species_structures)
     print("\nLooking for structure in AlphaFold database for: %s ...\n" % protein)
-    all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]
+    all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]  # getnames() takes longest
     # this assumes that there is only one prediction model for a given protein in AlphaFold
-    all_structures_compressed = [s for s in all_structures if s.split("-")[1] in possible_uniprot_ids]
+    all_structures_compressed = [s for s in set(all_structures) if s.split("-")[1] in possible_uniprot_ids]
 
     # try finding the structure
     model_seq = ""
@@ -331,8 +334,10 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
 
     # didnt find structure
     except IndexError:
-        print("...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND -> Cannot overlay FREEDA results onto a 3D structure\n" % protein)
-        print("...SUGGESTION... : You can use your own model (ex. from PDB; fragments are ok but no sequence mismatches!)\n")
+        print("...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND "
+              "-> Cannot overlay FREEDA results onto a 3D structure\n" % protein)
+        print("...SUGGESTION... : You can use your own model "
+              "(ex. from PDB; fragments are ok but no sequence mismatches!)\n")
         with open(structure_path + "/model_incompatible.txt", "w") as f:
             f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
 
@@ -351,8 +356,8 @@ def validate_gene_names(all_proteins, all_genes_ensembl):
             absent_names.append(protein)
 
     if not all_names_valid:
-        print("...FATAL ERROR... : Gene names %s do not exist in " \
-                  "reference assembly -> exiting the pipeline now...\n" % absent_names)
+        print("...FATAL ERROR... : Gene names %s do not exist in "
+              "reference assembly -> exiting the pipeline now...\n" % absent_names)
 
     return all_names_valid
 
@@ -360,21 +365,24 @@ def validate_gene_names(all_proteins, all_genes_ensembl):
 def generate_ref_genome_object(wdir, ref_species):
     """Generates a reference Genome object using pyensembl as a wrapper for ensembl database"""
 
-    human_names = {"Hs", "Human", "human", "Homo sapiens", "homo sapiens"}
-
-    if ref_species in human_names:
-        ref_genome_name = "SAPIENS_genome"
-        species = "homo sapiens"
-        release = 104
-        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
-
     # default is mouse for now
-    else:
+    if ref_species == "Mm":
         ref_genome_name = "MUSCULUS_genome"
         species = "mus musculus"
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
+    if ref_species == "Rn":
+        ref_genome_name = "NORVEGICUS_genome"
+        species = "rattus norvegicus"
+        release = 104
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
+    if ref_species == "Hs":
+        ref_genome_name = "SAPIENS_genome"
+        species = "homo sapiens"
+        release = 104
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     # make sure ref species genome (reference genome) is present
     ref_genomes_path = wdir + "Reference_genomes/"
@@ -385,17 +393,20 @@ def generate_ref_genome_object(wdir, ref_species):
                                                       ref_genome_name,
                                                       ref_genome=True)
 
-    # get assembly database
+    logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
+    # get ref assembly database
     ensembl = pyensembl.EnsemblRelease(release, species)
+    ensembl.download()  # this is suppose to bypass installing the release from outside python
+    ensembl.index()  # this is suppose to bypass installing the release from outside python
+
     # define biotype (FREEDA deals only with protein coding sequences)
     biotype = "Protein coding"
 
     # get all gene names available (list)
     all_genes_ensembl = ensembl.gene_names()
 
-
-    return ref_genome_present, ensembl, ref_species, ref_genomes_path, \
-            ref_genome_contigs_dict, biotype, all_genes_ensembl
+    return ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
+           biotype, all_genes_ensembl
 
 
 def get_gene_names(wdir, ensembl):
@@ -417,21 +428,28 @@ def get_gene_names(wdir, ensembl):
                 genes.append(gene)
                 f.write(gene + "\n")
 
+def make_gene_list(ensembl):
+    all_genes_ensembl = ensembl.gene_names()
+    genes = []
+    for i in range(37800, len(all_genes_ensembl), 95):
+        gene = all_genes_ensembl[i]
+        if not gene.startswith("Mir") \
+                and "-" not in gene \
+                and not gene.startswith("Sno") \
+                and not gene.startswith("Gm"):
+            genes.append(gene)
+
+    return genes
 
 def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                   ensembl, biotype, protein, model_seq, uniprot_id):
     """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
 
     if ref_species == "Mm":
-        # get pyensembl release for mouse (or load it if already installed)
-        cmd = ["pyensembl", "install", "--species mus musculus", "--release 104"]
-        subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
         ref_genome_name = "MUSCULUS_genome"
-
+    if ref_species == "Rn":
+        ref_genome_name = "NORVEGICUS_genome"
     if ref_species == "Hs":
-        # get pyensembl release for human (or load it if already installed)
-        cmd = ["pyensembl", "install", "--species homo sapiens", "--release 104"]
-        subprocess.call(cmd, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute stdout
         ref_genome_name = "SAPIENS_genome"
 
     input_correct = False
@@ -463,26 +481,54 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
     if selected_transcript_id is None:
         return input_correct, model_matches_input, microexon_present, microexons
 
-    # find protein sequence
+    # find reference protein sequence
     model_matches_input = extract_protein(wdir, ref_species, blast_input_path, protein,
                                           transcript, model_seq, matching_length, uniprot_id)
 
-    # find gene sequence
+    # find reference gene sequence
     extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id, ref_genomes_path, ref_genome_name,
                  ref_genome_contigs_dict, protein, transcript, UTR_3, cds_sequence_expected)
 
-    # find exons sequence
+    # find reference exons sequence
     input_correct, microexon_present, microexons, missing_bp_list = extract_exons(wdir, ref_species, protein,
                                                                                   exons_input_path, ref_genomes_path,
                                                                                   ref_genome_name, contig, strand,
                                                                                   transcript, ref_genome_contigs_dict,
                                                                                   UTR_5, UTR_3, cds_sequence_expected)
 
-    # trim exons and coding sequence if microexons were detected
+    # trim reference exons and coding sequence if microexons were detected
     if microexon_present:
         input_correct = correct_for_microexons(wdir, ref_species, protein, microexons, missing_bp_list, transcript)
 
+    # check if all expected reference exons are found in the expected reference gene sequnce
+    if not check_exons_gene_compatibility(wdir, ref_species, protein):
+        input_correct = False
+
     return input_correct, model_matches_input, microexon_present, microexons
+
+
+def check_exons_gene_compatibility(wdir, ref_species, protein):
+    """Checks if reference exons pooled from ensembl are present in the corresponding reference gene"""
+
+    path_to_exons = wdir + "Exons/" + protein + "_" + ref_species + "_exons.fasta"
+    path_to_gene = wdir + "Genes/" + protein + "_" + ref_species + "_gene.fasta"
+
+    with open(path_to_gene, "r") as f:
+        file = f.readlines()
+        for line in file:
+            if not line.startswith(">") and not line.startswith("\n"):
+                gene_seq = line.rstrip("\n")
+                break
+
+    with open(path_to_exons, "r") as f:
+        file = f.readlines()
+        for line in file:
+            if not line.startswith(">") and not line.startswith("\n"):
+                if line.rstrip("\n") not in gene_seq:
+                    print("\n...FATAL ERROR... : At least one expected ref exon ABSENT in expected ref gene sequence")
+                    return False
+
+        return True
 
 
 def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, model_seq, matching_length, uniprot_id):
@@ -505,7 +551,8 @@ def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, mo
 
     else:
         with open(structure_path + "/model_incompatible.txt", "w") as f:
-            f.write("Model sequence does not match the protein sequence used for blast input. Cannot overlay FREEDA results onto a 3D structure.")
+            f.write("Model sequence does not match the protein sequence used for blast input. "
+                    "Cannot overlay FREEDA results onto a 3D structure.")
 
     return model_matches_input
 
@@ -609,7 +656,7 @@ def extract_exons(wdir, ref_species, protein, exons_input_path, ref_genomes_path
 
     for nr, exon_sequence in coding_exons.items():
 
-        if len(exon_sequence) < 20: # changed from 20 08_23_2021 -> testing CENP-X primates
+        if len(exon_sequence) < 18: # changed from 20 10_24_2021 -> testing Cenpc1, Ptprd, Slc8a1
             with open(wdir + "Structures/" + protein + "_" + ref_species + "/microexons.txt", "a") as f:
                 f.write(str(nr) + "\n")
             microexon_present = True

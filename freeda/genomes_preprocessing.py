@@ -15,12 +15,8 @@ def get_ref_genome_contigs_dict(ref_species):
     
     Returns a dictionary of contigs in Genome object (ensembl 104; GRCh38.p13) as keys and
     Sequence-Name or GeneBank-Accn of GCA_000001405.28 human genome as values"""
-    
-    mouse_names = {"Mm", "mouse", "Mus musculus", "mus musculus"}
-    human_names = {"Hs", "human", "Homo sapiens", "homo sapiens"}
 
-
-    musculus_dict = {'1': 'CM000994.3',
+    mouse_dict = {'1': 'CM000994.3',
                     '10': 'CM001003.3',
                     '11': 'CM001004.3',
                     '12': 'CM001005.3',
@@ -60,8 +56,170 @@ def get_ref_genome_contigs_dict(ref_species):
                     'X': 'CM001013.3',
                     'Y': 'CM001014.3'}
 
+    rat_dict = {'1': 'CM000072.5',
+                 '10': 'CM000081.5',
+                 '11': 'CM000082.5',
+                 '12': 'CM000083.5',
+                 '13': 'CM000084.5',
+                 '14': 'CM000085.5',
+                 '15': 'CM000086.5',
+                 '16': 'CM000087.5',
+                 '17': 'CM000088.5',
+                 '18': 'CM000089.5',
+                 '19': 'CM000090.5',
+                 '2': 'CM000073.5',
+                 '20': 'CM000091.5',
+                 '3': 'CM000074.5',
+                 '4': 'CM000075.5',
+                 '5': 'CM000076.5',
+                 '6': 'CM000077.5',
+                 '7': 'CM000078.5',
+                 '8': 'CM000079.5',
+                 '9': 'CM000080.5',
+                 'AABR07022258.1': 'AABR07022258.1',
+                 'AABR07022620.1': 'AABR07022620.1',
+                 'AABR07022926.1': 'AABR07022926.1',
+                 'AABR07024031.1': 'AABR07024031.1',
+                 'AABR07024032.1': 'AABR07024032.1',
+                 'AABR07024040.1': 'AABR07024040.1',
+                 'AABR07024041.1': 'AABR07024041.1',
+                 'AABR07024044.1': 'AABR07024044.1',
+                 'AABR07024102.1': 'AABR07024102.1',
+                 'AABR07024104.1': 'AABR07024104.1',
+                 'AABR07024106.1': 'AABR07024106.1',
+                 'AABR07024115.1': 'AABR07024115.1',
+                 'AABR07024119.1': 'AABR07024119.1',
+                 'AABR07024120.1': 'AABR07024120.1',
+                 'AABR07024122.1': 'AABR07024122.1',
+                 'AABR07024124.1': 'AABR07024124.1',
+                 'AABR07024203.1': 'AABR07024203.1',
+                 'AABR07024206.1': 'AABR07024206.1',
+                 'AABR07024263.1': 'AABR07024263.1',
+                 'AABR07024264.1': 'AABR07024264.1',
+                 'AABR07024291.1': 'AABR07024291.1',
+                 'AABR07024382.1': 'AABR07024382.1',
+                 'AABR07024399.1': 'AABR07024399.1',
+                 'AABR07024421.1': 'AABR07024421.1',
+                 'AABR07046136.1': 'AABR07046136.1',
+                 'AABR07046231.1': 'AABR07046231.1',
+                 'AABR07046248.1': 'AABR07046248.1',
+                 'AABR07046563.1': 'AABR07046563.1',
+                 'KL567891.1': 'KL567891.1',
+                 'KL567892.1': 'KL567892.1',
+                 'KL567906.1': 'KL567906.1',
+                 'KL567908.1': 'KL567908.1',
+                 'KL567939.1': 'KL567939.1',
+                 'KL567971.1': 'KL567971.1',
+                 'KL567988.1': 'KL567988.1',
+                 'KL568001.1': 'KL568001.1',
+                 'KL568002.1': 'KL568002.1',
+                 'KL568009.1': 'KL568009.1',
+                 'KL568013.1': 'KL568013.1',
+                 'KL568017.1': 'KL568017.1',
+                 'KL568024.1': 'KL568024.1',
+                 'KL568037.1': 'KL568037.1',
+                 'KL568076.1': 'KL568076.1',
+                 'KL568084.1': 'KL568084.1',
+                 'KL568092.1': 'KL568092.1',
+                 'KL568097.1': 'KL568097.1',
+                 'KL568119.1': 'KL568119.1',
+                 'KL568122.1': 'KL568122.1',
+                 'KL568125.1': 'KL568125.1',
+                 'KL568128.1': 'KL568128.1',
+                 'KL568132.1': 'KL568132.1',
+                 'KL568139.1': 'KL568139.1',
+                 'KL568141.1': 'KL568141.1',
+                 'KL568142.1': 'KL568142.1',
+                 'KL568143.1': 'KL568143.1',
+                 'KL568146.1': 'KL568146.1',
+                 'KL568147.1': 'KL568147.1',
+                 'KL568148.1': 'KL568148.1',
+                 'KL568149.1': 'KL568149.1',
+                 'KL568150.1': 'KL568150.1',
+                 'KL568151.1': 'KL568151.1',
+                 'KL568152.1': 'KL568152.1',
+                 'KL568156.1': 'KL568156.1',
+                 'KL568157.1': 'KL568157.1',
+                 'KL568158.1': 'KL568158.1',
+                 'KL568159.1': 'KL568159.1',
+                 'KL568160.1': 'KL568160.1',
+                 'KL568161.1': 'KL568161.1',
+                 'KL568162.1': 'KL568162.1',
+                 'KL568169.1': 'KL568169.1',
+                 'KL568174.1': 'KL568174.1',
+                 'KL568194.1': 'KL568194.1',
+                 'KL568195.1': 'KL568195.1',
+                 'KL568198.1': 'KL568198.1',
+                 'KL568199.1': 'KL568199.1',
+                 'KL568205.1': 'KL568205.1',
+                 'KL568208.1': 'KL568208.1',
+                 'KL568212.1': 'KL568212.1',
+                 'KL568217.1': 'KL568217.1',
+                 'KL568218.1': 'KL568218.1',
+                 'KL568221.1': 'KL568221.1',
+                 'KL568231.1': 'KL568231.1',
+                 'KL568233.1': 'KL568233.1',
+                 'KL568234.1': 'KL568234.1',
+                 'KL568242.1': 'KL568242.1',
+                 'KL568244.1': 'KL568244.1',
+                 'KL568257.1': 'KL568257.1',
+                 'KL568263.1': 'KL568263.1',
+                 'KL568274.1': 'KL568274.1',
+                 'KL568281.1': 'KL568281.1',
+                 'KL568295.1': 'KL568295.1',
+                 'KL568297.1': 'KL568297.1',
+                 'KL568300.1': 'KL568300.1',
+                 'KL568304.1': 'KL568304.1',
+                 'KL568305.1': 'KL568305.1',
+                 'KL568306.1': 'KL568306.1',
+                 'KL568307.1': 'KL568307.1',
+                 'KL568325.1': 'KL568325.1',
+                 'KL568337.1': 'KL568337.1',
+                 'KL568367.1': 'KL568367.1',
+                 'KL568371.1': 'KL568371.1',
+                 'KL568374.1': 'KL568374.1',
+                 'KL568381.1': 'KL568381.1',
+                 'KL568401.1': 'KL568401.1',
+                 'KL568405.1': 'KL568405.1',
+                 'KL568409.1': 'KL568409.1',
+                 'KL568410.1': 'KL568410.1',
+                 'KL568411.1': 'KL568411.1',
+                 'KL568414.1': 'KL568414.1',
+                 'KL568417.1': 'KL568417.1',
+                 'KL568418.1': 'KL568418.1',
+                 'KL568423.1': 'KL568423.1',
+                 'KL568430.1': 'KL568430.1',
+                 'KL568431.1': 'KL568431.1',
+                 'KL568432.1': 'KL568432.1',
+                 'KL568435.1': 'KL568435.1',
+                 'KL568438.1': 'KL568438.1',
+                 'KL568439.1': 'KL568439.1',
+                 'KL568447.1': 'KL568447.1',
+                 'KL568449.1': 'KL568449.1',
+                 'KL568451.1': 'KL568451.1',
+                 'KL568458.1': 'KL568458.1',
+                 'KL568460.1': 'KL568460.1',
+                 'KL568463.1': 'KL568463.1',
+                 'KL568466.1': 'KL568466.1',
+                 'KL568468.1': 'KL568468.1',
+                 'KL568470.1': 'KL568470.1',
+                 'KL568472.1': 'KL568472.1',
+                 'KL568473.1': 'KL568473.1',
+                 'KL568483.1': 'KL568483.1',
+                 'KL568487.1': 'KL568487.1',
+                 'KL568488.1': 'KL568488.1',
+                 'KL568489.1': 'KL568489.1',
+                 'KL568496.1': 'KL568496.1',
+                 'KL568497.1': 'KL568497.1',
+                 'KL568507.1': 'KL568507.1',
+                 'KL568511.1': 'KL568511.1',
+                 'KL568512.1': 'KL568512.1',
+                 'KL568518.1': 'KL568518.1',
+                 'MT': 'AY172581.1',
+                 'X': 'CM000092.5',
+                 'Y': 'CM002824.1'}
 
-    sapiens_dict = {'1': 'CM000663.2',
+    human_dict = {'1': 'CM000663.2',
                     '10': 'CM000672.2',
                     '11': 'CM000673.2',
                     '12': 'CM000674.2',
@@ -110,11 +268,14 @@ def get_ref_genome_contigs_dict(ref_species):
                     'Y': 'CM000686.2'}
 
     # default is mouse
-    if ref_species in mouse_names:
-        ref_genome_contigs_dict = musculus_dict
+    if ref_species == "Mm":
+        ref_genome_contigs_dict = mouse_dict
+
+    if ref_species == "Rn":
+        ref_genome_contigs_dict = rat_dict
     
-    elif ref_species in human_names:
-        ref_genome_contigs_dict = sapiens_dict
+    elif ref_species == "Hs":
+        ref_genome_contigs_dict = human_dict
         
     return ref_genome_contigs_dict
 
@@ -129,16 +290,36 @@ def get_names(ref_species, ref_genome=False):
                       ("Mp", "PAHARI_genome", "GCA_900095145.2"),
                       ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
                       ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
-                      ("Ha", "ALLENI_genome", "GCA_019843855.1"),
+                      ("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
                       ("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
                       ("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
                       ("Mo", "COUCHA_genome", "GCA_008632895.1"),
-                      ("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),
+                      ("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
                       ("Gs", "SURDASTER_genome", "GCA_004785775.1"),
                       ("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
                       ("Rd", "DILECTUS_genome", "GCA_019844195.1"),
                       ("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
-                      ("Rn", "RATTUS_genome", "GCA_015227675.2"))}
+                      ("Rr", "RATTUS_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
+                      ("Rn", "NORVEGICUS_genome", "GCA_000001895.4"))}  # Previously used : GCA_015227675.2
+
+    rat_dict = {"Rn": (("Rr", "RATTUS_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
+                         ("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
+                         ("Rd", "DILECTUS_genome", "GCA_019844195.1"),
+                         ("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
+                         ("Gs", "SURDASTER_genome", "GCA_004785775.1"),
+                         ("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
+                         ("Mo", "COUCHA_genome", "GCA_008632895.1"),
+                         ("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
+                         ("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
+                         ("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
+                         ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
+                         ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
+                         ("Mp", "PAHARI_genome", "GCA_900095145.2"),
+                         ("Mu", "MINUTOIDES_genome", "GCA_902729485.2"),
+                         ("Mc", "CAROLI_genome", "GCA_900094665.2"),
+                         ("Ms", "SPRETUS_genome", "GCA_001624865.1"),
+                         ("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
+                         ("Mm", "MUSCULUS_genome", "GCA_000001635.9"))}
 
     human_dict = {"Hs": (("Pt", "TROGLODYTES_genome", "GCA_002880755.3"),
                       ("Gg", "GORILLA_genome", "GCA_008122165.1"),
@@ -149,13 +330,19 @@ def get_names(ref_species, ref_genome=False):
                       ("Cs", "SABAEUS_genome", "GCA_015252025.1"),
                       ("Cj", "JACCHUS_genome", "GCA_011100535.2"))}
 
+    # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)
     mouse_ref_dict = {"Mm": (("Mm", "MUSCULUS_genome", "GCA_000001635.9"))} # GeneBank GRCm39
+    rat_ref_dict = {"Rn": (("Rn", "NORVEGICUS_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0 -> NOT SAME AS GENOMES
     human_ref_dict = {"Hs": (("Hs", "SAPIENS_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39
 
     if ref_species == "Mm" and ref_genome is False:
         genomes_dict = mouse_dict
     elif ref_species == "Mm" and ref_genome is True:
         genomes_dict = mouse_ref_dict
+    elif ref_species == "Rn" and ref_genome is False:
+        genomes_dict = rat_dict
+    elif ref_species == "Rn" and ref_genome is True:
+        genomes_dict = rat_ref_dict
     elif ref_species == "Hs" and ref_genome is False:
         genomes_dict = human_dict
     elif ref_species == "Hs" and ref_genome is True:
@@ -166,13 +353,49 @@ def get_names(ref_species, ref_genome=False):
     # collect genomes
     all_genomes = []
     for ref, species in genomes_dict.items():
-        for genome in species: # genome = ("Mi", "SPICILEGUS_genome", "GCA_003336285.1")
+        for genome in species:  # e.g. genome = ("Mi", "SPICILEGUS_genome", "GCA_003336285.1")
             all_genomes.append(genome)
 
     return all_genomes
 
 
+def map_assembly_contigs(wdir):
+    """Makes a dictionary linking genome indexed contig names and pyensembl release contig names - to get input"""
 
+    import pyensembl
+
+    release = 104
+    species = "rattus norvegicus"
+
+    ensembl = pyensembl.EnsemblRelease(release, species)
+
+    # get contigs available in ensembl release
+    contigs = ensembl.contigs()
+
+    # get all available contigs in the NCBI assembly
+    with open(wdir + "NORVEGICUS_genome_contigs.txt", "r") as f:
+        rows = (line.split('\t') for line in f)
+        # need index 3 from each list
+        all_contigs = {row[0]: row[1:] for row in rows}
+
+    # get contigs from indexed reference assembly
+    with open(wdir + "Reference_genomes/NORVEGICUS_genome.fasta.fai", "r") as f:
+        rows = (line.split('\t') for line in f)
+        # need keys
+        indexed_contigs = {row[0]: row[1:] for row in rows}
+
+    mapped_contigs_dict = {}
+    for contig in contigs:  # come from ensembl release
+        for indexed_contig in indexed_contigs:  # come from pybedtools indexed ref genome .fai file
+            for available_contig, features in all_contigs.items():  # come from the ncbi assembly file
+                if available_contig == contig and indexed_contig == features[3]:
+                    mapped_contigs_dict[contig] = indexed_contig
+                elif contig == features[3]:
+                    mapped_contigs_dict[contig] = features[3]
+                elif contig == features[1] and "random" not in available_contig:
+                    mapped_contigs_dict[contig] = features[3]
+
+    return mapped_contigs_dict
 
 
 

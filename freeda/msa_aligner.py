@@ -9,9 +9,13 @@ Runs MAFFT using a BioPython wrapper.
 
 """
 
+from freeda import fasta_reader
 from Bio.Align.Applications import MafftCommandline
-from Bio.Align.Applications import MuscleCommandline
+from Bio.Align.Applications import MSAProbsCommandline
+from Bio.Align.Applications import ProbconsCommandline
+from Bio.Align.Applications import PrankCommandline
 from Bio.Align.Applications import ClustalwCommandline
+from Bio.Application import ApplicationError
 import os
 import re
 import shutil
@@ -28,13 +32,8 @@ def run_msa(MSA_path, aligner):
     # get path to all separate MSA files 
     for in_filename in glob.glob(MSA_path + "to_align*.fasta"):
 
-        # define which aligner is used
-        if aligner == "mafft":
-            cline = MafftCommandline(input=in_filename)
-        if aligner == "muscle":
-            cline = MuscleCommandline(input=in_filename)
-        if aligner == "clustalw":
-            cline = ClustalwCommandline("clustalw2", infile=in_filename)
+        #if aligner == "clustalw":
+        #    cline = ClustalwCommandline("clustalw2", infile=in_filename)
 
         # check if its a rev_comp file
         if re.search(r"to_align_rev_comp", in_filename):
@@ -43,7 +42,7 @@ def run_msa(MSA_path, aligner):
 
         elif re.search(r"to_align_", in_filename):
             # for each MSA path find contig name; make it a string with group method
-            out_filename = "aligned_" + re.search(r"(?<=to_align_).*$", in_filename).group()        
+            out_filename = "aligned_" + re.search(r"(?<=to_align_).*$", in_filename).group()
 
         #mafft_cline = MafftCommandline(input=in_filename)
 
@@ -55,17 +54,59 @@ def run_msa(MSA_path, aligner):
         print(message)
         logging.info(message)
 
-        stdout, stderr = cline()
-        #subprocess.call([aligner, "-in", in_filename, "-out", wdir + out_filename])
+        try:
 
-        stop_time = time.time()
-        message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
-        print(message)
-        logging.info(message)
+            # define which aligner is used
+            if aligner == "mafft":
 
-        # make a post-MSA file using out_filename
-        with open(out_filename, "w") as f:
-            f.write(stdout)
+                cline = MafftCommandline(input=in_filename, thread=-1)  # thread -1 is suppose to automatically
+                                                                        # calculate physical cores
+                stdout, stderr = cline()
+                stop_time = time.time()
+                message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
+                print(message)
+                logging.info(message)
 
-        # move the file to MSA_path
-        shutil.move(out_filename, MSA_path)
+                # make a post-MSA file using out_filename
+                with open(out_filename, "w") as f:
+                    f.write(stdout)
+
+                # move the file to MSA_path
+                shutil.move(out_filename, MSA_path)
+
+            if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
+
+                cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", MSA_path + out_filename]
+                subprocess.call(cmd)
+
+                # need to reorder seqs post msa
+                try:
+                    fasta_reader.reorder_alignment(in_filename, MSA_path + out_filename)
+
+                except Exception:   # formerly FileNotFound but I think it doesnt work
+                    message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
+                    print(message)
+                    logging.info(message)
+
+                stop_time = time.time()
+                message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
+                print(message)
+                logging.info(message)
+
+                return
+
+        except ApplicationError:
+            message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
+            print(message)
+            logging.info(message)
+
+            # rename the unaligned file as "failed"
+            os.rename(in_filename, in_filename.replace("to_align", "FAILED_to_align"))
+
+            stop_time = time.time()
+            message = "FAILED : in %s minutes" % ((stop_time - start_time) / 60)
+            print(message)
+            logging.info(message)
+
+            return
+

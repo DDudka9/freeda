@@ -9,7 +9,6 @@ Generates a PyMOL script and runs it internally. Saves the PyMOL session per pro
 
 """
 
-from freeda import fasta_reader
 from ast import literal_eval
 import shutil
 import subprocess
@@ -17,11 +16,6 @@ import os
 import requests
 import simplejson.errors
 
-
-# wdir = os.getcwd() + "/"
-# protein = "Haus1"
-# ref_species = "Mm"
-# result_path = wdir + "Results-06-13-2021-23-37/"
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
 # Done but NOT TESTED YET
@@ -173,7 +167,7 @@ def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_s
     """Runs PyMOL with overlaid adaptive sites"""
 
     structures_path = wdir + "Structures"
-    protein_path = structures_path + "/" + protein + "_" + ref_species + "/"
+    protein_structure_path = structures_path + "/" + protein + "_" + ref_species + "/"
     final_model_name = protein + "_" + ref_species + ".pse"
 
     # get dict of adaptives sites matched to input sequence
@@ -185,7 +179,9 @@ def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_s
 
     # obtain a pymol script based on the model
     if not get_pymol_script(wdir, ref_species, dictionary, protein,
-                            protein_path, proteins_under_positive_selection, offset, domains):
+                            protein_structure_path, proteins_under_positive_selection, offset, domains):
+        # copy the structure model into the result file for user to estimate where the sites might be
+        copy_void_structure(wdir, ref_species, protein, result_path)
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
@@ -193,15 +189,16 @@ def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_s
     stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE).communicate()
     # move and overwrite if "structure_overlay.pml" exists in Structure folder for the protein
-    shutil.move(os.path.join(wdir, "structure_overlay.pml"), os.path.join(protein_path, "structure_overlay.pml"))
+    shutil.move(os.path.join(wdir, "structure_overlay.pml"),
+                os.path.join(protein_structure_path, "structure_overlay.pml"))
     # move the model with overlaid residues into Results folder
-    shutil.move(protein_path + final_model_name, result_path + final_model_name)
+    shutil.move(protein_structure_path + final_model_name, result_path + final_model_name)
 
     return True
 
 
 def get_pymol_script(wdir, ref_species, dictionary, protein,
-                     protein_path, proteins_under_positive_selection, offset, domains):
+                     protein_structure_path, proteins_under_positive_selection, offset, domains):
     """Gets a PyMOL script that will be passed into PyMOL automatically"""
 
     paint_sites = False
@@ -229,7 +226,7 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
         model = [file for file in os.listdir(structure_model_path) if file.endswith(".pdb")][0]
 
         # start pymol script by loading the model
-        f.write("load " + protein_path + model + "\n")
+        f.write("load " + protein_structure_path + model + "\n")
 
         # PyMOL command to color all residues
         f.write("color cyan\n")
@@ -250,8 +247,8 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
                 c1 = set(range(current_coordinates[0], current_coordinates[1]))
                 c2 = set(range(coordinates[0], coordinates[1]))
 
-                # domain overlaps too much with the previous domain -> dont paint
-                if len(c1 & c2) > len(c2) / 2:
+                # domain overlaps too much with the previous domain (33%) -> dont paint
+                if len(c1 & c2) > len(c2) / 3:
                     continue
 
                 # paint that domain
@@ -316,10 +313,11 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
         f.write("set ray_opaque_background, on\n")
 
         # PyMOL command to save as figure (NO LICENSE PRINTS A NO LICENSE ON IMAGE)
-        f.write("png " + protein_path + protein + "_" + ref_species + ".png, width=12cm, height=8cm, dpi=300, ray=1\n")
+        f.write("png " + protein_structure_path + protein + "_" + ref_species + ".png, width=12cm, height=8cm, "
+                                                                                "dpi=300, ray=1\n")
 
         # PyMOL command to save the session
-        f.write("save " + protein_path + protein + "_" + ref_species + ".pse")
+        f.write("save " + protein_structure_path + protein + "_" + ref_species + ".pse")
 
     return True
 
@@ -335,6 +333,21 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
 #print(test_cenpo)
 
 """
+
+def copy_void_structure(wdir, ref_species, protein, result_path): -> DOES NOT COPY METADATA -> STRUCTURE NOT COPIED
+    #Copies an unannotated structure prediction model into the result folder
+
+    structures_path = wdir + "Structures"
+    protein_structure_path = structures_path + "/" + protein + "_" + ref_species + "/"
+    new_filename = protein + "_" + ref_species + "_incompatible.pdb"
+
+    files = glob.iglob(os.path.join(protein_structure_path, "*.pdb"))
+    for path in files:
+        if os.path.isfile(path):
+            # copy file trying to preserve (but does not guarantees) the metadata
+            shutil.copy(path, result_path)
+            filename = path.split("/")[-1]
+            os.rename(result_path + filename, result_path + new_filename)
 
 # THIS IS NOT NEEDED ANYMORE:
 def compare_model_with_input(wdir, ref_species, protein, model_seq):

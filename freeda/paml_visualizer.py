@@ -54,7 +54,11 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
 
     # get protein alignment that matches 3D structure
     for protein in all_proteins:
-        get_alignment_matching_structure(result_path, ref_species, protein, all_matched_adaptive_sites_ref)
+        try:
+            get_alignment_matching_structure(result_path, ref_species, protein, all_matched_adaptive_sites_ref)
+        # if all_matched_adaptive_sites_ref dictionary was not generated (all proteins failed paml)
+        except KeyError:
+            return
 
     # prepare a dict with PAML stats
     final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml)
@@ -604,33 +608,34 @@ def map_ref_and_final_residues(ref_sequence_record, final_sequence_record):
     """Maps residues between the aa seq of reference species and post Gblocks"""
     
     # perform pairwise alignment (multiple alignments of the same sequences)
-    aln = pairwise2.align.globalxx(final_sequence_record.seq, ref_sequence_record.seq)
+    # x - matches = 1, mismatches = 0; s - gap penalty (second parameter x would be no gap penalties)
+    aln = pairwise2.align.globalxs(final_sequence_record.seq, ref_sequence_record.seq, open=-0.5, extend=-0.1)
     
     # make a dict storing the alignments
     mapped_ref_and_final_residues_dict = {}
-    for i in range(1, len(aln[0][0]) + 1): # added "+1" on 09_04_2021
+    for i in range(1, len(aln[0][0]) + 1):  # added "+1" on 09_04_2021
         mapped_ref_and_final_residues_dict[i] = []
 
     # fill the dict with paired positions (need to subtract 1 cose aln starts at 0)
     for position in mapped_ref_and_final_residues_dict:
         mapped_ref_and_final_residues_dict[position] = [aln[0][0][position-1], aln[0][1][position-1]]
     
-    return mapped_ref_and_final_residues_dict
-    
     # flag any non-synonymous substitutions that indicate frameshifts
-    #frameshift_positions = {}
-    #translated_frameshift = False
-    #for position, pair in d.items():
-    #    if pair[0] != pair[1] and pair[0] != "-" and pair[1] != "-":
-    #        # sequence index starts at 1 so need to "+1" from the python indexing
-    #        frameshift_positions[position + 1] = pair
-    #        translated_frameshift = True
-    #        print(translated_frameshift)
+    frameshift_positions = {}
+    translated_frameshift = False
+    for position, pair in mapped_ref_and_final_residues_dict.items():
+        if pair[0] != pair[1] and pair[0] != "-" and pair[1] != "-":
+            # sequence index starts at 1 so need to "+1" from the python indexing
+            frameshift_positions[position + 1] = pair
+            translated_frameshift = True
+            print("...WARNING... : position - %s (%s) between final protein ref seq differs from blast input "
+                  "-> frameshift?" % (position + 1, (pair[0], pair[1])))
 
-    
+    return mapped_ref_and_final_residues_dict
+
 
 def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict):
-    """Matches sites under positive selection from seq post Gblocks onto thw one used for blast input"""
+    """Matches sites under positive selection from seq post Gblocks onto the one used for blast input (ref species)"""
     
     # overlay the final residue dictionary with probability for positive selection
     matched_adaptive_sites_final = {}
@@ -642,7 +647,7 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
         else:
             matched_adaptive_sites_final[site] = [aa, "0.00"]
     
-    # adjust the final residue dicitionary to include missing sites
+    # adjust the final residue dictionary to include missing sites
     adjusted_mapped_ref_and_final_residue_dict = {}
     for i in range(1, len(mapped_ref_and_final_residues_dict) + 1):
         adjusted_mapped_ref_and_final_residue_dict[i] = ["", "", 0]
@@ -672,7 +677,7 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
     matched_adaptive_sites_ref = {}
     for site, aa in a.items():
         if aa[0] == aa[1]:
-            key = [k for k,v in b.items() if k == site][0]
+            key = [k for k, v in b.items() if k == site][0]
             probability = c[key-b[site][2]][1]
             omega = w[key-b[site][2]]
             matched_adaptive_sites_ref[site] = [aa[0], omega, probability]
@@ -731,11 +736,15 @@ def get_omegas(protein_name, result_path, final_length):
                 PAML_result_dict[line_number] = line.split(" ")
                 start_recording = False
     
-    # collect omegas for each residue
+    # collect posterior mean omegas for each residue
     omega_dict = {}
     for residue, values in PAML_result_dict.items():
-        if float(values[-1]) > 0.001:
-            omega_dict[residue] = float(values[-4])
+        # remove empty strings which can change number of elements in values
+        values = [element for element in values if element != ""]
+        # record value only for recurrently changing sites where omega is likely > 1 (not all > 1 are in M8 class 11 !!)
+        if int((values[-4]).lstrip("(").rstrip(")")) == 11:
+        #if float(values[-1]) > 0.001:
+            omega_dict[residue] = float(values[-3])
         else:
             omega_dict[residue] = 0.000
         
@@ -795,7 +804,7 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
     probabilities = []
     present = []
     # these will determine omega graph y axis
-    roof = 1
+    roof = 2
     floor = 1
 
     for site, features in final_dict_to_plot.items():
@@ -831,12 +840,12 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
 
     plt.figure()
 
-    # plot all omegas
+    # plot recurrently changing sites (put it 11 bin of M8 model with postmean omega > 1.0)
     plt.subplot(311, title="PAML analysis - %s (%s species analyzed)" % (protein, nr_of_species_total))
-    plt.ylabel("dN/dS\n")
-    plt.axis([0.5, sites[-1], 0, roof])
-    plt.ylim(0.5, roof)
-    plt.yticks(np.arange(0.5, roof + 0.1, 1.0))
+    plt.ylabel("Posterior mean\n omega")
+    plt.axis([1.0, sites[-1], 0, roof])
+    plt.ylim(1.0, roof)
+    plt.yticks(np.arange(1.0, roof, 1.0))
     # mark the missing values for the plot
     clrs1 = ["black" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, omegas, color=clrs1)
