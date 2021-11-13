@@ -245,11 +245,17 @@ def get_uniprot_id(ref_species, protein):
     if ref_species == "Mm":
         ref_species_number = "10090"
 
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         ref_species_number = "10116"
 
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
         ref_species_number = "9606"
+
+    elif ref_species == "Fc":
+        ref_species_number = "9685"
+
+    elif ref_species == "Cf":
+        ref_species_number = "9615"
 
     possible_uniprot_ids = set()
 
@@ -275,9 +281,15 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
 
     if ref_species == "Mm":
         handle = "MOUSE"
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         handle = "RAT"
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
+        handle = "HUMAN"
+
+    # ALPHA FOLD DOES NOT SUPPORT CATS or DOGS SO FREEDA IS DIRECTED TO FAIL WHEN SEARCHING HUMAN DATABASE
+    elif ref_species == "Fc":
+        handle = "HUMAN"
+    elif ref_species == "Cf":
         handle = "HUMAN"
 
     # make folder to host the structure prediction
@@ -372,16 +384,28 @@ def generate_ref_genome_object(wdir, ref_species):
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         ref_genome_name = "NORVEGICUS_genome"
         species = "rattus norvegicus"
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
         ref_genome_name = "SAPIENS_genome"
         species = "homo sapiens"
         release = 104
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
+    elif ref_species == "Fc":
+        ref_genome_name = "CATUS_genome"
+        species = "felis catus"
+        release = 90
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
+    elif ref_species == "Cf":
+        ref_genome_name = "FAMILIARIS_genome"
+        species = "canis familiaris"
+        release = 90
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     # make sure ref species genome (reference genome) is present
@@ -428,6 +452,7 @@ def get_gene_names(wdir, ensembl):
                 genes.append(gene)
                 f.write(gene + "\n")
 
+
 def make_gene_list(ensembl):
     all_genes_ensembl = ensembl.gene_names()
     genes = []
@@ -441,16 +466,21 @@ def make_gene_list(ensembl):
 
     return genes
 
+
 def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                   ensembl, biotype, protein, model_seq, uniprot_id):
     """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
 
     if ref_species == "Mm":
         ref_genome_name = "MUSCULUS_genome"
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         ref_genome_name = "NORVEGICUS_genome"
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
         ref_genome_name = "SAPIENS_genome"
+    elif ref_species == "Fc":
+        ref_genome_name = "CATUS_genome"
+    elif ref_species == "Cf":
+        ref_genome_name = "FAMILIARIS_genome"
 
     input_correct = False
     model_matches_input = False
@@ -777,8 +807,8 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
 
             if file[1].endswith("TG") or file[1].endswith("TA"):  # check if gene sequence ends with a partial STOP
 
-                print("\n...WARNING... : 3' UTR not detected in %s and gene ends with a partial STOP " 
-                          "-> added missing bp" % protein)
+                print("\n...WARNING... : 3' UTR not detected in %s and gene ends with a partial STOP "
+                      "or exactly at STOP -> added missing bp" % protein)
 
                 with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "w") as w:
                     w.write(file[0])

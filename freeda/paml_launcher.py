@@ -276,10 +276,22 @@ def check_compatibility(ref_species, protein, translated_path):
         species = "Rn"
         # get known protein sequence from the most distant species
         distant_seq = get_most_distant_prot_seq(species, protein)
+
     elif ref_species == "Rn":
         species = "Mm"
         # get known protein sequence from the most distant species
         distant_seq = get_most_distant_prot_seq(species, protein)
+
+    elif ref_species == "Fc":
+        species = "Cf"
+        # get known protein sequence from the most distant species
+        distant_seq = get_most_distant_prot_seq(species, protein)
+
+    elif ref_species == "Cf":
+        species = "Fc"
+        # get known protein sequence from the most distant species
+        distant_seq = get_most_distant_prot_seq(species, protein)
+
     # NOT SUPPORTING PRIMATES
     else:
         return
@@ -301,8 +313,8 @@ def check_compatibility(ref_species, protein, translated_path):
     aln = pairwise2.align.globalxs(distant_seq, seq, open=-0.5, extend=-0.1)
 
     if not distant_seq and not seq:
-        message = "\n...WARNING... : Protein %s is not annotated in %s genome and cloning seq also FAILED" \
-                  "-> cannot cross-check identity with ensembl" % (protein, species)
+        message = "\n...WARNING... : Protein %s is not annotated in %s genome and cloning %s seq also FAILED" \
+                  "-> cannot cross-check identity with ensembl" % (protein, species, species)
         print(message)
         logging.info(message)
         return
@@ -359,8 +371,15 @@ def get_most_distant_prot_seq(species, protein):
 
     if species == "Mm":
         species = "mus musculus"
+
     if species == "Rn":
         species = "rattus norvegicus"
+
+    if species == "Fc":
+        species = "felis catus"
+
+    if species == "Cf":
+        species = "canis familiaris"
 
     logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
     ensembl = pyensembl.EnsemblRelease(104, species)

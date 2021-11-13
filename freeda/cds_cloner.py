@@ -576,8 +576,8 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
 
         if double_introny is False:
 
-            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s " \
-                      "and lack of two flanking introns (good > 0.75, questionable = 0.60-0.75, poor < 0.60) " \
+            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > 0.75, questionable " \
+                      "= 0.60-0.75, poor < 0.60) and lack of two flanking introns " \
                       "-> eliminated" % (cloned_exon_header, score)
             print(message)
             logging.info(message)
@@ -596,8 +596,8 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
 
         # low score but introns detected at both ends
         else:
-            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s " \
-                      "but flanked by two syntenic introns (good > 0.75, questionable = 0.60-0.75, poor < 0.60) " \
+            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > 0.75, questionable " \
+                      "= 0.60-0.75, poor < 0.60) but flanked by two syntenic introns " \
                       "-> acceptable" % (cloned_exon_header, score)
             print(message)
             logging.info(message)
