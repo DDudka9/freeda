@@ -45,7 +45,7 @@ def run_blast(wdir, ref_species, all_proteins):
     all_old_blast_output_files = glob.glob(os.path.join(output_path, "*.txt"))
     for file in all_old_blast_output_files:
         os.remove(file)
-    
+
     # make sure database for each genome already exists or is successfully built
     for genome in genomes:
         genome_file_database = check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False)
@@ -109,9 +109,9 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     
     # check if genome database is present
     for file in all_files:
-        for extension in expected_database_extensions:
-            if expected_genome_file + extension not in all_files:
-                genome_file_database = False
+        # look for indices
+        if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
+            genome_file_database = False
 
     # move on to next genome if database present
     if ref_genome is False and genome_file_database is True:
@@ -137,7 +137,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     if ref_genome is False and genome_file_database is False and zip_file not in all_files:
         
         print("\nGenome : %s blast database does not exists"
-              " -> downloading and decompressing it now (it might take couple of minutes)...\n" % genome)
+              " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome)
 
         all_genomes = genomes_preprocessing.get_names(ref_species)
         accession_nr = [names[2] for names in all_genomes if genome in names][0]
@@ -169,12 +169,12 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                 all_files.append(f)
 
         for file in all_files:
-            for extension in expected_database_extensions:
-                if expected_genome_file + extension not in all_files:
-                    print("\n...FATAL_ERROR... : Genome : %s database failed to build"
-                          " -> exciting the pipeline now...\n" % genome)
-                    genome_file_database = False
-                    return genome_file_database
+            # look for indices
+            if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
+                print("\n...FATAL_ERROR... : Genome : %s database failed to build"
+                      " -> exciting the pipeline now...\n" % genome)
+                genome_file_database = False
+                return genome_file_database
 
         genome_file_database = True
 

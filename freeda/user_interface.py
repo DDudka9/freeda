@@ -6,7 +6,7 @@ This module will have to be incorporated into __main__ (freeda_pipeline.py) cose
 
 from tkinter import *
 from tkinter import ttk
-from freeda import input_extractor
+from tkinter import filedialog
 import os
 import re
 import pyensembl
@@ -54,6 +54,11 @@ def check_functional_residues(residue, op):
             error_message2.set(message2)
     return valid
 
+
+def get_wdir():
+    """Asks for a working directory."""
+    directory = filedialog.askdirectory(initialdir=os.getcwd(), title="Select 'Data' folder")
+    wdir.set(directory)
 
 wdir = os.getcwd() + "/"
 
@@ -301,15 +306,22 @@ site33_label.grid(column=3, row=19, padx=5, pady=2, sticky=(W))
 
 # search for working directory (Data folder)
 
-wdir_label = StringVar()
-site11_start = ttk.Entry(gene1_frame, textvariable=s11_start, validate="all", validatecommand=check_functional_residues)
-site11_start.grid(column=1, row=11, padx=5, pady=2, sticky=(W))
+wdir_button = ttk.Button(input_frame, text="Set working directory", command=get_wdir)
+wdir_button.grid(column=0, row=21, sticky=(N, W, E, S), padx=5, pady=5)
+
+wdir = StringVar()
+#ttk.Label(input_frame, text="Working directory").grid(column=0, row=21, padx=6, sticky=(W))
+wdir_entry = ttk.Entry(input_frame, textvariable=wdir)
+wdir_entry.grid(column=1, row=21, columnspan=4, sticky=(N, W, E, S), padx=5, pady=5)
 
 
+# analyse button
 
 button = ttk.Button(mainframe, text="Analyze") # default="active"
 button.grid(column=5, row=20, padx=5, pady=5, sticky=(W)) #, command=freeda.freeda_pipeline)
 button.state(["disabled"])
+
+# error labels
 
 error_label1 = ttk.Label(mainframe, font="TkSmallCaptionFont", foreground="red", textvariable=error_message1)
 error_label1.grid(column=2, row=8, padx=5, pady=5, sticky="w")

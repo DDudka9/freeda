@@ -292,7 +292,7 @@ def check_compatibility(ref_species, protein, translated_path):
         # get known protein sequence from the most distant species
         distant_seq = get_most_distant_prot_seq(species, protein)
 
-    # NOT SUPPORTING PRIMATES
+    # NOT SUPPORTING PRIMATES AND BIRDS
     else:
         return
 
@@ -371,18 +371,19 @@ def get_most_distant_prot_seq(species, protein):
 
     if species == "Mm":
         species = "mus musculus"
-
+        release = 104
     if species == "Rn":
         species = "rattus norvegicus"
-
+        release = 104
     if species == "Fc":
         species = "felis catus"
-
+        release = 90
     if species == "Cf":
         species = "canis familiaris"
+        release = 90
 
     logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
-    ensembl = pyensembl.EnsemblRelease(104, species)
+    ensembl = pyensembl.EnsemblRelease(release, species)
 
     # check if the protein is annotated
     all_genes = ensembl.gene_names()

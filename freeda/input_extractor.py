@@ -244,18 +244,16 @@ def get_uniprot_id(ref_species, protein):
 
     if ref_species == "Mm":
         ref_species_number = "10090"
-
     elif ref_species == "Rn":
         ref_species_number = "10116"
-
     elif ref_species == "Hs":
         ref_species_number = "9606"
-
     elif ref_species == "Fc":
         ref_species_number = "9685"
-
     elif ref_species == "Cf":
         ref_species_number = "9615"
+    elif ref_species == "Gg":
+        ref_species_number = "9031"
 
     possible_uniprot_ids = set()
 
@@ -290,6 +288,8 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
     elif ref_species == "Fc":
         handle = "HUMAN"
     elif ref_species == "Cf":
+        handle = "HUMAN"
+    elif ref_species == "Gg":
         handle = "HUMAN"
 
     # make folder to host the structure prediction
@@ -408,6 +408,12 @@ def generate_ref_genome_object(wdir, ref_species):
         release = 90
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
+    elif ref_species == "Gg":
+        ref_genome_name = "GALLUS_genome"
+        species = "gallus gallus"
+        release = 94
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
     # make sure ref species genome (reference genome) is present
     ref_genomes_path = wdir + "Reference_genomes/"
     # check if reference genome is present -> exit if not
@@ -481,6 +487,8 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
         ref_genome_name = "CATUS_genome"
     elif ref_species == "Cf":
         ref_genome_name = "FAMILIARIS_genome"
+    elif ref_species == "Gg":
+        ref_genome_name = "GALLUS_genome"
 
     input_correct = False
     model_matches_input = False
@@ -776,9 +784,9 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
     # get gene name
     gene_name = gene.gene_name
     # get gene starting position
-    start = gene.start
+    start = gene.start - 1   # added on 11/13/2021
     # get gene end position
-    end = gene.end
+    end = gene.end + 1  # added on 11/13/2021
     # get gene sequence
 
     # make a bed and fasta file for gene (add underscore to differenciate from other handles)
