@@ -244,12 +244,16 @@ def get_uniprot_id(ref_species, protein):
 
     if ref_species == "Mm":
         ref_species_number = "10090"
-
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         ref_species_number = "10116"
-
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
         ref_species_number = "9606"
+    elif ref_species == "Fc":
+        ref_species_number = "9685"
+    elif ref_species == "Cf":
+        ref_species_number = "9615"
+    elif ref_species == "Gg":
+        ref_species_number = "9031"
 
     possible_uniprot_ids = set()
 
@@ -275,9 +279,17 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
 
     if ref_species == "Mm":
         handle = "MOUSE"
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         handle = "RAT"
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
+        handle = "HUMAN"
+
+    # ALPHA FOLD DOES NOT SUPPORT CATS or DOGS SO FREEDA IS DIRECTED TO FAIL WHEN SEARCHING HUMAN DATABASE
+    elif ref_species == "Fc":
+        handle = "HUMAN"
+    elif ref_species == "Cf":
+        handle = "HUMAN"
+    elif ref_species == "Gg":
         handle = "HUMAN"
 
     # make folder to host the structure prediction
@@ -372,16 +384,34 @@ def generate_ref_genome_object(wdir, ref_species):
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         ref_genome_name = "NORVEGICUS_genome"
         species = "rattus norvegicus"
         release = 104
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
         ref_genome_name = "SAPIENS_genome"
         species = "homo sapiens"
         release = 104
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
+    elif ref_species == "Fc":
+        ref_genome_name = "CATUS_genome"
+        species = "felis catus"
+        release = 90
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
+    elif ref_species == "Cf":
+        ref_genome_name = "FAMILIARIS_genome"
+        species = "canis familiaris"
+        release = 90
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
+    elif ref_species == "Gg":
+        ref_genome_name = "GALLUS_genome"
+        species = "gallus gallus"
+        release = 94
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     # make sure ref species genome (reference genome) is present
@@ -428,6 +458,7 @@ def get_gene_names(wdir, ensembl):
                 genes.append(gene)
                 f.write(gene + "\n")
 
+
 def make_gene_list(ensembl):
     all_genes_ensembl = ensembl.gene_names()
     genes = []
@@ -441,16 +472,23 @@ def make_gene_list(ensembl):
 
     return genes
 
+
 def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
                   ensembl, biotype, protein, model_seq, uniprot_id):
     """Extracts all input sequences required by FREEDA from the indicated reference genome (ref_species)"""
 
     if ref_species == "Mm":
         ref_genome_name = "MUSCULUS_genome"
-    if ref_species == "Rn":
+    elif ref_species == "Rn":
         ref_genome_name = "NORVEGICUS_genome"
-    if ref_species == "Hs":
+    elif ref_species == "Hs":
         ref_genome_name = "SAPIENS_genome"
+    elif ref_species == "Fc":
+        ref_genome_name = "CATUS_genome"
+    elif ref_species == "Cf":
+        ref_genome_name = "FAMILIARIS_genome"
+    elif ref_species == "Gg":
+        ref_genome_name = "GALLUS_genome"
 
     input_correct = False
     model_matches_input = False
@@ -553,6 +591,7 @@ def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, mo
         with open(structure_path + "/model_incompatible.txt", "w") as f:
             f.write("Model sequence does not match the protein sequence used for blast input. "
                     "Cannot overlay FREEDA results onto a 3D structure.")
+            f.write("\nUniprot ID : %s" % uniprot_id)
 
     return model_matches_input
 
@@ -746,9 +785,9 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
     # get gene name
     gene_name = gene.gene_name
     # get gene starting position
-    start = gene.start
+    start = gene.start - 200   # added on 11/13/2021 -> to extend flanking regions missing in some genes (e.g. TLR5 Gg)
     # get gene end position
-    end = gene.end
+    end = gene.end + 200  # added on 11/13/2021 -> to extend flanking regions missing in some genes (e.g. TLR5 Gg)
     # get gene sequence
 
     # make a bed and fasta file for gene (add underscore to differenciate from other handles)
@@ -777,17 +816,17 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
 
             if file[1].endswith("TG") or file[1].endswith("TA"):  # check if gene sequence ends with a partial STOP
 
-                print("\n...WARNING... : 3' UTR not detected in %s and gene ends with a partial STOP " 
-                          "-> added missing bp" % protein)
+                print("\n...WARNING... : 3' UTR not detected in %s and gene ends with a partial STOP "
+                      "or exactly at STOP -> added missing bp" % protein)
 
                 with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "w") as w:
-                    w.write(file[0])
+                    w.write(file[0].rstrip("\n"))  # added on 11/13/2021
 
                     # add the missing bp based on STOP from cds AND ADD A PLACEHOLDER BP TO FACILITATE EXON CALLING
                     if cds_sequence_expected[-3:] == "TGA" or cds_sequence_expected[-3:] == "TAA":
-                        w.write(file[1] + "A" + "A")  # TGA or TAA + placeholder bp
+                        w.write("\n" + file[1] + "A" + "A")  # TGA or TAA + placeholder bp
                     else:
-                        w.write(file[1] + "G" + "G")  # TAG + placeholder bp
+                        w.write("\n" + file[1] + "G" + "G")  # TAG + placeholder bp
 
 
 def parse_sequence(ref_species, output_path, fasta_sequence, protein, transcript, strand, sequence_type):

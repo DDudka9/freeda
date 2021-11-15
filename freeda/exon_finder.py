@@ -63,12 +63,12 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
             continue
 
         # fail any contig where ref cds does not align with the ref gene -> likely a tandem duplication region
-        if cds[position] != "-" and cds[position] != gene[position]:
-            message = "\nContig %s likely contains a tandem repetition preventing robust exon calling -> skipped" \
-                      % contig_name
-            print(message)
-            logging.info(message)
-            return None, None, None, None, None
+        #if cds[position] != "-" and cds[position] != gene[position]:
+        #    message = "\nContig %s likely contains a tandem repetition preventing robust exon calling -> skipped" \
+        #              % contig_name
+        #    print(message)
+        #    logging.info(message)
+        #    return None, None, None, None, None
 
         # EXON STARTS IN REF SPECIES -> define N-term for contig locus
 

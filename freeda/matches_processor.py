@@ -335,30 +335,35 @@ def get_prefix_suffix(start, seq_length):
 
 
 def generate_files_to_MSA(contig, cds, gene, fasta_path):
+    """Generates the file to align, outputs the path to that file"""
+
     MSA_path = fasta_path + "/MSA/"
     
     # select sequences to assemble an MSA file
     sequences, comp = select_contigs_to_MSA(contig, fasta_path)
     # name the MSA file depending on if it carries "comp" contig or not
-    if comp == False:
+    if comp is False:
         name = "to_align_" + str(contig) + ".fasta"
     else:
         name = "to_align_rev_comp_" + str(contig) + ".fasta"
     with open(name, "w") as o:
-        o.write(cds)
-        o.write("\n" + sequences[0])
-        o.write("\n" + sequences[1])
-        o.write(gene.rstrip("\n"))
+        o.write(cds.rstrip("\n"))
+        o.write("\n" + sequences[0].rstrip("\n"))
+        o.write("\n" + sequences[1].rstrip("\n"))
+        o.write("\n" + gene.rstrip("\n"))
         #o.write(cds)
         #for seq in sequences:
         #    o.write("\n" + seq + "\n") # ADDED "\n" at the end (07_06_2021)
         #o.write(gene.rstrip("\n+"))
+
     o.close()
     shutil.move(name, MSA_path)
     return MSA_path  
 
 
 def select_contigs_to_MSA(contig, fasta_path):
+    """Selects contig sequence for multiple sequence alignment from fasta folder above threshold"""
+
     selected_seqs = []
     rev_comp_seqs = []
     # marker if match was on the opposite strand
@@ -367,24 +372,29 @@ def select_contigs_to_MSA(contig, fasta_path):
     # get paths to fasta files for a given contig
     pattern = "*_" + str(contig) + ".fasta"
     sorted_paths = sorted(glob.glob(fasta_path + "/" + pattern), key=os.path.getsize, reverse=False) # ADDED sorting (07/06/2021)
+
     for path in sorted_paths:
+
         # if match on opposite strand, fil rev_comp_seqs list with comp sequences
         if "comp" in path:
             comp = True
             with open(path, "r") as o:
                 seq = o.read()
                 rev_comp_seqs.append(seq)
+
         # if a given contig wasnt matched on the opposite strand, fill the other list
-        elif comp == False:
+        elif comp is False:
             with open(path, "r") as o:
                 seq = o.read()
                 selected_seqs.append(seq)
         # if a given path contains contig that has been reversed, do nothing
         else:
             pass
+
     # return "comp" contig if it has been reversed, do nothing with the rest
-    if comp == True:
+    if comp is True:
         return rev_comp_seqs, comp
+
     # if contig wasnt reversed, return it
     else:
         return selected_seqs, comp

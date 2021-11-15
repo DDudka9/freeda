@@ -102,6 +102,15 @@ return str(consensus_read)
 """
 
 # TODO:
+#    0) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
+#    0) ESSENTIAL -> for some reason Phasanidae sometimes generates excel sheet sometimes not;
+#                       -> all_matched_adaptive_sites_ref not generated; maybe cose TLR5 was all empty
+#    0) CAUTION -> CanFam3.1 release 90 -> CENPO-201 is chosen but at download the gene is missing A in ATG (no 5'UTR)
+#                    -> so FREEDA stops (Absent exon in gene) -> how often does this happen?
+#                                   Do I always cut 1 bp from gene preparing bed file? Or its pyensembl error?
+#                                   Ensembl 90 does have a full ATG in genomic sequence
+#                                   but does not have 3UTR while pyensembl gives 3UTR
+#                   SOLUTION : I added -1 to gene start and +1 to gene end (bed files)
 #    0) IDEA -> add a checkpoint for input -> align cds and gene -> if any bp doesnt align well -> fail that protein
 #    0) IDEA -> add a timer for aligner (how?) -> do not spend more than 10min for any contig
 #    0) ESSENTIAL -> > 350kb ong gene TEX11 in Pt shows different number of exons in different contigs! -> tandem repeat
@@ -524,9 +533,9 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Hs")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=50)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 
     args = parser.parse_args()
     freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)

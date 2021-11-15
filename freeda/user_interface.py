@@ -6,7 +6,7 @@ This module will have to be incorporated into __main__ (freeda_pipeline.py) cose
 
 from tkinter import *
 from tkinter import ttk
-from freeda import input_extractor
+from tkinter import filedialog
 import os
 import re
 import pyensembl
@@ -19,22 +19,46 @@ import pyensembl
 
 def check_gene_name(gene_name, op):
     """Checks if user provided a valid gene name"""
-    error_message.set("")
+    error_message1.set("")
     # accept only entry starting with one capital letter followed by small or big letters or numbers
     valid = re.match(r"^[A-Z]{1}([A-Za-z0-9]+$)", gene_name) is not None
     # button can be clicked only if gene names are valid
     button.state(["!disabled"] if valid else ["disabled"])
     # keystroke validation
-    if op=="key":
+    if op == "key":
         ok_so_far = re.match(r"[A-Za-z0-9]+$", gene_name) is not None
         if not ok_so_far:
-            error_message.set(message)
+            error_message1.set(message1)
         return ok_so_far
-    elif op=="focusout":
+    elif op == "focusout":
         if not valid:
-            error_message.set(message)
+            error_message1.set(message1)
     return valid
 
+
+def check_functional_residues(residue, op):
+    """Checks if user provided a valid residue number"""
+    error_message2.set("")
+    # accept only entry starting with one capital letter followed by small or big letters or numbers
+    valid = re.match(r"^[1-9]{1}([0-9]{0,3}$)", residue) is not None  # max 4 digits, first one not a zero
+    # button can be clicked only if gene names are valid
+    button.state(["!disabled"] if valid else ["disabled"])
+    # keystroke validation
+    if op == "key":
+        ok_so_far = re.match(r"[0-9]+$", residue) is not None
+        if not ok_so_far:
+            error_message2.set(message2)
+        return ok_so_far
+    elif op == "focusout":
+        if not valid:
+            error_message2.set(message2)
+    return valid
+
+
+def get_wdir():
+    """Asks for a working directory."""
+    directory = filedialog.askdirectory(initialdir=os.getcwd(), title="Select 'Data' folder")
+    wdir.set(directory)
 
 wdir = os.getcwd() + "/"
 
@@ -56,8 +80,10 @@ root.title("FREEDA - Finder of Rapidly Evolving Exons in De novo Assemblies")
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 
-error_message = StringVar()
-message = "Invalid gene name (follow pattern: Cenpo for rodents and : CENPO for primates)"
+error_message1 = StringVar()
+message1 = "Invalid gene name (follow pattern: Cenpo for rodents and : CENPO for primates)"
+error_message2 = StringVar()
+message2 = "Invalid residue number (follow pattern: 100)"
 
 # create a mainframe inside the parent frame
 mainframe = ttk.Frame(root, width=200, height=400, padding="5 5 5 5")
@@ -97,8 +123,10 @@ ttk.Label(output_frame, text="Events window (logged to 'FREEDA*.log'").grid(colu
 
 clade = StringVar()
 ttk.Label(input_frame, text="Clade").grid(column=0, row=0, pady=5, sticky=(W))
-rodents = ttk.Radiobutton(input_frame, text="Rodents", variable=clade, value="Rodents").grid(column=0, row=1, sticky=(W))
-primates = ttk.Radiobutton(input_frame, text="Primates", variable=clade, value="Primates").grid(column=0, row=2, sticky=(W))
+rodents = ttk.Radiobutton(input_frame, text="Rodents", variable=clade, value="Rodents")
+rodents.grid(column=0, row=1, sticky=(W))
+primates = ttk.Radiobutton(input_frame, text="Primates", variable=clade, value="Primates")
+primates.grid(column=0, row=2, sticky=(W))
 
 # user chooses which blast threshold should be used
 
@@ -113,8 +141,9 @@ shallow = ttk.Radiobutton(input_frame, text="Shallow", variable=threshold,
 
 
 check_gene_name_wrapper = (input_frame.register(check_gene_name), "%P", "%V")
+check_functional_residues = (input_frame.register(check_functional_residues), "%P", "%V")
 
-# user inputs up to 5 gene names to analyse
+# user inputs up to 3 gene names to analyse
 
 release = 104
 species = "mus musculus"
@@ -154,31 +183,31 @@ ttk.Checkbutton(gene1_frame, text="Duplication expected", #command=duplication_e
 s11_start = StringVar()
 s11_end = StringVar()
 s11_label = StringVar()
-site11_start = ttk.Entry(gene1_frame, textvariable=s11_start, validate="all", validatecommand=check_gene_name_wrapper)
+site11_start = ttk.Entry(gene1_frame, textvariable=s11_start, validate="all", validatecommand=check_functional_residues)
 site11_start.grid(column=1, row=11, padx=5, pady=2, sticky=(W))
-site11_end = ttk.Entry(gene1_frame, textvariable=s11_end, validate="all", validatecommand=check_gene_name_wrapper)
+site11_end = ttk.Entry(gene1_frame, textvariable=s11_end, validate="all", validatecommand=check_functional_residues)
 site11_end.grid(column=2, row=11, padx=5, pady=2, sticky=(W))
-site11_label = ttk.Entry(gene1_frame, textvariable=s11_label, validate="all", validatecommand=check_gene_name_wrapper)
+site11_label = ttk.Entry(gene1_frame, textvariable=s11_label, validate="all")
 site11_label.grid(column=3, row=11, padx=5, pady=2, sticky=(W))
 
 s12_start = StringVar()
 s12_end = StringVar()
 s12_label = StringVar()
-site12_start = ttk.Entry(gene1_frame, textvariable=s12_start, validate="all", validatecommand=check_gene_name_wrapper)
+site12_start = ttk.Entry(gene1_frame, textvariable=s12_start, validate="all", validatecommand=check_functional_residues)
 site12_start.grid(column=1, row=12, padx=5, pady=2, sticky=(W))
-site12_end = ttk.Entry(gene1_frame, textvariable=s12_end, validate="all", validatecommand=check_gene_name_wrapper)
+site12_end = ttk.Entry(gene1_frame, textvariable=s12_end, validate="all", validatecommand=check_functional_residues)
 site12_end.grid(column=2, row=12, padx=5, pady=2, sticky=(W))
-site12_label = ttk.Entry(gene1_frame, textvariable=s12_label, validate="all", validatecommand=check_gene_name_wrapper)
+site12_label = ttk.Entry(gene1_frame, textvariable=s12_label, validate="all")
 site12_label.grid(column=3, row=12, padx=5, pady=2, sticky=(W))
 
 s13_start = StringVar()
 s13_end = StringVar()
 s13_label = StringVar()
-site13_start = ttk.Entry(gene1_frame, textvariable=s13_start, validate="all", validatecommand=check_gene_name_wrapper)
+site13_start = ttk.Entry(gene1_frame, textvariable=s13_start, validate="all", validatecommand=check_functional_residues)
 site13_start.grid(column=1, row=13, padx=5, pady=2, sticky=(W))
-site13_end = ttk.Entry(gene1_frame, textvariable=s13_end, validate="all", validatecommand=check_gene_name_wrapper)
+site13_end = ttk.Entry(gene1_frame, textvariable=s13_end, validate="all", validatecommand=check_functional_residues)
 site13_end.grid(column=2, row=13, padx=5, pady=2, sticky=(W))
-site13_label = ttk.Entry(gene1_frame, textvariable=s13_label, validate="all", validatecommand=check_gene_name_wrapper)
+site13_label = ttk.Entry(gene1_frame, textvariable=s13_label, validate="all")
 site13_label.grid(column=3, row=13, padx=5, pady=2, sticky=(W))
 
 # GENE 2
@@ -201,31 +230,31 @@ ttk.Checkbutton(gene2_frame, text="Duplication expected", #command=duplication_e
 s21_start = StringVar()
 s21_end = StringVar()
 s21_label = StringVar()
-site21_start = ttk.Entry(gene2_frame, textvariable=s21_start, validate="all", validatecommand=check_gene_name_wrapper)
+site21_start = ttk.Entry(gene2_frame, textvariable=s21_start, validate="all", validatecommand=check_functional_residues)
 site21_start.grid(column=1, row=14, padx=5, pady=2, sticky=(W))
-site21_end = ttk.Entry(gene2_frame, textvariable=s21_end, validate="all", validatecommand=check_gene_name_wrapper)
+site21_end = ttk.Entry(gene2_frame, textvariable=s21_end, validate="all", validatecommand=check_functional_residues)
 site21_end.grid(column=2, row=14, padx=5, pady=2, sticky=(W))
-site21_label = ttk.Entry(gene2_frame, textvariable=s21_label, validate="all", validatecommand=check_gene_name_wrapper)
+site21_label = ttk.Entry(gene2_frame, textvariable=s21_label, validate="all")
 site21_label.grid(column=3, row=14, padx=5, pady=2, sticky=(W))
 
 s22_start = StringVar()
 s22_end = StringVar()
 s22_label = StringVar()
-site22_start = ttk.Entry(gene2_frame, textvariable=s22_start, validate="all", validatecommand=check_gene_name_wrapper)
+site22_start = ttk.Entry(gene2_frame, textvariable=s22_start, validate="all", validatecommand=check_functional_residues)
 site22_start.grid(column=1, row=15, padx=5, pady=2, sticky=(W))
-site22_end = ttk.Entry(gene2_frame, textvariable=s22_end, validate="all", validatecommand=check_gene_name_wrapper)
+site22_end = ttk.Entry(gene2_frame, textvariable=s22_end, validate="all", validatecommand=check_functional_residues)
 site22_end.grid(column=2, row=15, padx=5, pady=2, sticky=(W))
-site22_label = ttk.Entry(gene2_frame, textvariable=s22_label, validate="all", validatecommand=check_gene_name_wrapper)
+site22_label = ttk.Entry(gene2_frame, textvariable=s22_label, validate="all")
 site22_label.grid(column=3, row=15, padx=5, pady=2, sticky=(W))
 
 s23_start = StringVar()
 s23_end = StringVar()
 s23_label = StringVar()
-site23_start = ttk.Entry(gene2_frame, textvariable=s23_start, validate="all", validatecommand=check_gene_name_wrapper)
+site23_start = ttk.Entry(gene2_frame, textvariable=s23_start, validate="all", validatecommand=check_functional_residues)
 site23_start.grid(column=1, row=16, padx=5, pady=2, sticky=(W))
-site23_end = ttk.Entry(gene2_frame, textvariable=s23_end, validate="all", validatecommand=check_gene_name_wrapper)
+site23_end = ttk.Entry(gene2_frame, textvariable=s23_end, validate="all", validatecommand=check_functional_residues)
 site23_end.grid(column=2, row=16, padx=5, pady=2, sticky=(W))
-site23_label = ttk.Entry(gene2_frame, textvariable=s23_label, validate="all", validatecommand=check_gene_name_wrapper)
+site23_label = ttk.Entry(gene2_frame, textvariable=s23_label, validate="all")
 site23_label.grid(column=3, row=16, padx=5, pady=2, sticky=(W))
 
 # GENE 3
@@ -248,40 +277,57 @@ ttk.Checkbutton(gene3_frame, text="Duplication expected", #command=duplication_e
 s31_start = StringVar()
 s31_end = StringVar()
 s31_label = StringVar()
-site31_start = ttk.Entry(gene3_frame, textvariable=s31_start, validate="all", validatecommand=check_gene_name_wrapper)
+site31_start = ttk.Entry(gene3_frame, textvariable=s31_start, validate="all", validatecommand=check_functional_residues)
 site31_start.grid(column=1, row=17, padx=5, pady=2, sticky=(W))
-site31_end = ttk.Entry(gene3_frame, textvariable=s31_end, validate="all", validatecommand=check_gene_name_wrapper)
+site31_end = ttk.Entry(gene3_frame, textvariable=s31_end, validate="all", validatecommand=check_functional_residues)
 site31_end.grid(column=2, row=17, padx=5, pady=2, sticky=(W))
-site31_label = ttk.Entry(gene3_frame, textvariable=s31_label, validate="all", validatecommand=check_gene_name_wrapper)
+site31_label = ttk.Entry(gene3_frame, textvariable=s31_label, validate="all")
 site31_label.grid(column=3, row=17, padx=5, pady=2, sticky=(W))
 
 s32_start = StringVar()
 s32_end = StringVar()
 s32_label = StringVar()
-site32_start = ttk.Entry(gene3_frame, textvariable=s32_start, validate="all", validatecommand=check_gene_name_wrapper)
+site32_start = ttk.Entry(gene3_frame, textvariable=s32_start, validate="all", validatecommand=check_functional_residues)
 site32_start.grid(column=1, row=18, padx=5, pady=2, sticky=(W))
-site32_end = ttk.Entry(gene3_frame, textvariable=s32_end, validate="all", validatecommand=check_gene_name_wrapper)
+site32_end = ttk.Entry(gene3_frame, textvariable=s32_end, validate="all", validatecommand=check_functional_residues)
 site32_end.grid(column=2, row=18, padx=5, pady=2, sticky=(W))
-site32_label = ttk.Entry(gene3_frame, textvariable=s32_label, validate="all", validatecommand=check_gene_name_wrapper)
+site32_label = ttk.Entry(gene3_frame, textvariable=s32_label, validate="all")
 site32_label.grid(column=3, row=18, padx=5, pady=2, sticky=(W))
 
 s33_start = StringVar()
 s33_end = StringVar()
 s33_label = StringVar()
-site33_start = ttk.Entry(gene3_frame, textvariable=s33_start, validate="all", validatecommand=check_gene_name_wrapper)
+site33_start = ttk.Entry(gene3_frame, textvariable=s33_start, validate="all", validatecommand=check_functional_residues)
 site33_start.grid(column=1, row=19, padx=5, pady=2, sticky=(W))
-site33_end = ttk.Entry(gene3_frame, textvariable=s33_end, validate="all", validatecommand=check_gene_name_wrapper)
+site33_end = ttk.Entry(gene3_frame, textvariable=s33_end, validate="all", validatecommand=check_functional_residues)
 site33_end.grid(column=2, row=19, padx=5, pady=2, sticky=(W))
-site33_label = ttk.Entry(gene3_frame, textvariable=s33_label, validate="all", validatecommand=check_gene_name_wrapper)
+site33_label = ttk.Entry(gene3_frame, textvariable=s33_label, validate="all")
 site33_label.grid(column=3, row=19, padx=5, pady=2, sticky=(W))
 
+# search for working directory (Data folder)
+
+wdir_button = ttk.Button(input_frame, text="Set working directory", command=get_wdir)
+wdir_button.grid(column=0, row=21, sticky=(N, W, E, S), padx=5, pady=5)
+
+wdir = StringVar()
+#ttk.Label(input_frame, text="Working directory").grid(column=0, row=21, padx=6, sticky=(W))
+wdir_entry = ttk.Entry(input_frame, textvariable=wdir)
+wdir_entry.grid(column=1, row=21, columnspan=4, sticky=(N, W, E, S), padx=5, pady=5)
+
+
+# analyse button
 
 button = ttk.Button(mainframe, text="Analyze") # default="active"
 button.grid(column=5, row=20, padx=5, pady=5, sticky=(W)) #, command=freeda.freeda_pipeline)
 button.state(["disabled"])
 
-error_label = ttk.Label(mainframe, font="TkSmallCaptionFont", foreground="red", textvariable=error_message)
-error_label.grid(column=2, row=8, padx=5, pady=5, sticky="w")
+# error labels
+
+error_label1 = ttk.Label(mainframe, font="TkSmallCaptionFont", foreground="red", textvariable=error_message1)
+error_label1.grid(column=2, row=8, padx=5, pady=5, sticky="w")
+
+error_label2 = ttk.Label(mainframe, font="TkSmallCaptionFont", foreground="red", textvariable=error_message2)
+error_label2.grid(column=2, row=9, padx=5, pady=5, sticky="w")
 
 #ttk.Label(mainframe, text="Gene name").grid(column=0, row=11, sticky=(W))
 
