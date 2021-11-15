@@ -375,7 +375,8 @@ def plot_PAML(wdir, result_path, protein, nr_of_species_total, ref_species, prot
     # record and write breakdown of adaptive sites overlay to ref cds
     record_adaptive_sites(final_dict_to_plot, protein, proteins_under_positive_selection)
     # plot omegas and probabilities
-    make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection)
+    make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein,
+                nr_of_species_total, proteins_under_positive_selection)
 
     return matched_adaptive_sites_ref
 
@@ -795,8 +796,10 @@ def get_adaptive_sites(result_path, protein):
     return adaptive_sites_dict
 
 
-def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_total, proteins_under_positive_selection):
-    """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites under positive selection"""
+def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein, nr_of_species_total,
+                proteins_under_positive_selection):
+    """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites
+    under positive selection"""
 
     sites = []
     residues = []
@@ -840,12 +843,21 @@ def make_graphs(wdir, final_dict_to_plot, result_path, protein, nr_of_species_to
 
     plt.figure()
 
+    if ref_species == "Mm" or ref_species == "Rn":
+        clade = "Rodents"
+    elif ref_species == "Hs":
+        clade = "Primates"
+    elif ref_species == "Fc" or ref_species == "Cf":
+        clade = "Carnivora"
+    elif ref_species == "Gg":
+        clade = "Phasanidae"
+
     # plot recurrently changing sites (put it 11 bin of M8 model with postmean omega > 1.0)
-    plt.subplot(311, title="PAML analysis - %s (%s species analyzed)" % (protein, nr_of_species_total))
+    plt.subplot(311, title="PAML analysis - %s (%s - %s species)" % (protein, clade, nr_of_species_total))
     plt.ylabel("Posterior mean\n omega")
-    plt.axis([1.0, sites[-1], 0, roof])
-    plt.ylim(1.0, roof)
-    plt.yticks(np.arange(1.0, roof, 1.0))
+    plt.axis([1.0, sites[-1], 0, roof + 1])
+    plt.ylim(1.0, roof + 1)
+    plt.yticks(np.arange(1.0, roof + 1, 1.0))
     # mark the missing values for the plot
     clrs1 = ["black" if s == 1 else "gainsboro" for s in present]
     plt.bar(sites, omegas, color=clrs1)

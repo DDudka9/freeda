@@ -591,6 +591,7 @@ def extract_protein(wdir, ref_species, blast_input_path, protein, transcript, mo
         with open(structure_path + "/model_incompatible.txt", "w") as f:
             f.write("Model sequence does not match the protein sequence used for blast input. "
                     "Cannot overlay FREEDA results onto a 3D structure.")
+            f.write("\nUniprot ID : %s" % uniprot_id)
 
     return model_matches_input
 
@@ -784,9 +785,9 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
     # get gene name
     gene_name = gene.gene_name
     # get gene starting position
-    start = gene.start - 1   # added on 11/13/2021
+    start = gene.start - 200   # added on 11/13/2021 -> to extend flanking regions missing in some genes (e.g. TLR5 Gg)
     # get gene end position
-    end = gene.end + 1  # added on 11/13/2021
+    end = gene.end + 200  # added on 11/13/2021 -> to extend flanking regions missing in some genes (e.g. TLR5 Gg)
     # get gene sequence
 
     # make a bed and fasta file for gene (add underscore to differenciate from other handles)
@@ -819,13 +820,13 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
                       "or exactly at STOP -> added missing bp" % protein)
 
                 with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "w") as w:
-                    w.write(file[0])
+                    w.write(file[0].rstrip("\n"))  # added on 11/13/2021
 
                     # add the missing bp based on STOP from cds AND ADD A PLACEHOLDER BP TO FACILITATE EXON CALLING
                     if cds_sequence_expected[-3:] == "TGA" or cds_sequence_expected[-3:] == "TAA":
-                        w.write(file[1] + "A" + "A")  # TGA or TAA + placeholder bp
+                        w.write("\n" + file[1] + "A" + "A")  # TGA or TAA + placeholder bp
                     else:
-                        w.write(file[1] + "G" + "G")  # TAG + placeholder bp
+                        w.write("\n" + file[1] + "G" + "G")  # TAG + placeholder bp
 
 
 def parse_sequence(ref_species, output_path, fasta_sequence, protein, transcript, strand, sequence_type):

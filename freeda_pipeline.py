@@ -103,6 +103,8 @@ return str(consensus_read)
 
 # TODO:
 #    0) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
+#    0) ESSENTIAL -> for some reason Phasanidae sometimes generates excel sheet sometimes not;
+#                       -> all_matched_adaptive_sites_ref not generated; maybe cose TLR5 was all empty
 #    0) CAUTION -> CanFam3.1 release 90 -> CENPO-201 is chosen but at download the gene is missing A in ATG (no 5'UTR)
 #                    -> so FREEDA stops (Absent exon in gene) -> how often does this happen?
 #                                   Do I always cut 1 bp from gene preparing bed file? Or its pyensembl error?
@@ -531,7 +533,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Gg")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 

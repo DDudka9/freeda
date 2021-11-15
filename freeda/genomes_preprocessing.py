@@ -2197,7 +2197,9 @@ def get_names(ref_species, ref_genome=False):
                                ("Ag", "AlectorisRufa_genome", "GCA_019345075.1"),  #  red-legged partridge
                                ("Pm", "PavoMuticus_genome", "GCA_016647715.1"),  #   green peafowl
                                ("Mg", "MeleagrisGallopavo_genome", "GCA_000146605.4"),  # turkey
-                               ("Ce", "CentrocercusMinimus_genome", "GCA_005890655.1"),  #  gunnison sage-grouse
+                               ("Cu", "CentrocercusUrophasianus_genome", "GCA_019232065.1"),  #  greater sage-grouse
+                               #("Ce", "CentrocercusMinimus_genome", "GCA_005890655.1"),  #  gunnison sage-grouse
+                               #                                                        -> often missing bases
                                ("Lt", "LyrurusTetrix_genome", "GCA_000586395.1"),  #  black grouse
                                ("Ll", "LagopusLeucura_genome", "GCA_019238085.1"),  #  white-tailed ptarmigan
                                ("Tc", "TympanuchusCupido_genome", "GCA_001870855.1"),  #   greater prairie chicken
