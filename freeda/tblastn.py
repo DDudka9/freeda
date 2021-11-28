@@ -25,6 +25,8 @@ import subprocess
 import os
 import glob
 import time
+import logging
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def run_blast(wdir, ref_species, all_proteins):
@@ -60,7 +62,9 @@ def run_blast(wdir, ref_species, all_proteins):
             query = query_path + protein + "_" + ref_species + "_protein.fasta"
             output = output_path + protein + "_" + genome + ".txt"
             to_blast = ["tblastn", "-db", database, "-query", query, "-out", output, "-outfmt", form, "-num_threads", "8"]
-            print("\nPerforming tblastn for protein: %s from genome: %s\n" % (protein, genome))
+            message = "\nPerforming tblastn for protein: %s from genome: %s\n" % (protein, genome)
+            #print("\nPerforming tblastn for protein: %s from genome: %s\n" % (protein, genome))
+            logging.info(message)
             subprocess.call(to_blast)
 
     print("\ntblastn txt files have been generated.")
@@ -116,15 +120,20 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     # move on to next genome if database present
     if ref_genome is False and genome_file_database is True:
         
-        print("\nGenome : %s blast database already exists" % genome)
+        message = "\nGenome : %s blast database already exists" % genome
+        logging.info(message)
+        #print("\nGenome : %s blast database already exists" % genome)
         
         return genome_file_database
     
     # build database on existing genome fasta file if present
     if ref_genome is False and expected_genome_file in all_files:
-        
-        print("\nNOT detected database for : %s but %s file is present" \
-                             " -> building database...\n" % (genome, expected_genome_file))
+
+        message = "\nNOT detected database for : %s but %s file is present" \
+                             " -> building database...\n" % (genome, expected_genome_file)
+        logging.info(message)
+        #print("\nNOT detected database for : %s but %s file is present" \
+        #                     " -> building database...\n" % (genome, expected_genome_file))
         
         # make database
         make_blast_database(database_path, genome)
@@ -135,9 +144,12 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     
     # download the genome as a tar file if both database and tar are missing
     if ref_genome is False and genome_file_database is False and zip_file not in all_files:
-        
-        print("\nGenome : %s blast database does not exists"
-              " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome)
+
+        message = "\nGenome : %s blast database does not exists" \
+              " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome
+        logging.info(message)
+        #print("\nGenome : %s blast database does not exists"
+        #      " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome)
 
         all_genomes = genomes_preprocessing.get_names(ref_species)
         accession_nr = [names[2] for names in all_genomes if genome in names][0]
@@ -158,8 +170,11 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         # exit pipeline if fasta genome absent
         if genome_found is False:
             genome_file_database = False
-            print("...FATAL_ERROR... : Genome : %s failed to download or decompress"
-                  " -> exciting the pipeline now...\n" % genome)
+            message = "...FATAL_ERROR... : Genome : %s failed to download or decompress" \
+                  " -> exciting the pipeline now...\n" % genome
+            logging.info(message)
+            #print("...FATAL_ERROR... : Genome : %s failed to download or decompress"
+            #      " -> exciting the pipeline now...\n" % genome)
             return genome_file_database
 
         # validate that the database was generated
@@ -171,8 +186,11 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         for file in all_files:
             # look for indices
             if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
-                print("\n...FATAL_ERROR... : Genome : %s database failed to build"
-                      " -> exciting the pipeline now...\n" % genome)
+                message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
+                      " -> exciting the pipeline now...\n" % genome
+                logging.info(message)
+                #print("\n...FATAL_ERROR... : Genome : %s database failed to build"
+                #      " -> exciting the pipeline now...\n" % genome)
                 genome_file_database = False
                 return genome_file_database
 
@@ -181,7 +199,9 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         # fasta file and databases are present for the genome
         if genome_found is True and genome_file_database is True:
             genome_file_database = True
-            print("\nGenome : %s was downloaded and decompressed successfully" % genome)
+            message = "\nGenome : %s was downloaded and decompressed successfully" % genome
+            logging.info(message)
+            #print("\nGenome : %s was downloaded and decompressed successfully" % genome)
 
             return genome_file_database
 
@@ -206,14 +226,19 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         
         if expected_genome_file in all_files:
 
-            print("\nReference genome : %s is present\n" % genome)
+            message = "\nReference genome : %s is present\n" % genome
+            logging.info(message)
+            #print("\nReference genome : %s is present\n" % genome)
 
             return True
             
         elif expected_genome_file not in all_files:
 
-            print("\nReference genome : %s does not exists" \
-                              " -> downloading and decompressing it now...\n" % genome)
+            message = "\nReference genome : %s does not exists" \
+                              " -> downloading and decompressing it now...\n" % genome
+            logging.info(message)
+            #print("\nReference genome : %s does not exists" \
+            #                  " -> downloading and decompressing it now...\n" % genome)
 
             # unpack and decompress the genome into a fasta file
             #genome_to_unzip = ref_genome_path + "/" + genome + "zip"
@@ -233,6 +258,8 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         #    return False
 
     else:
+        message = "Else statement when making blast database"
+        logging.info(message)
         print("Else statement when making blast database")
         
     return genome_file_database
@@ -256,7 +283,9 @@ def download_genome(genome, accession_nr, database_path):
         subprocess.call(cmd2, stdout=outfile, stderr=open(os.devnull, 'wb')) # redirect output to file and mute cautions
 
     stop_time = time.time()
-    print("         -> Done : in %s min" % ((stop_time - start_time) / 60))
+    message = "         -> Done : in %s min" % ((stop_time - start_time) / 60)
+    logging.info(message)
+    #print("         -> Done : in %s min" % ((stop_time - start_time) / 60))
 
     os.remove(filepath_1)
 
@@ -268,7 +297,9 @@ def make_blast_database(database_path, genome):
     make_database_nucl = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "nucl"]
     make_database_prot = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "prot"]
 
-    print("\n                  Building blast database for genome : %s ..." % genome)
+    message = "\n                  Building blast database for genome : %s ..." % genome
+    logging.info(message)
+    #print("\n                  Building blast database for genome : %s ..." % genome)
     subprocess.call(make_database_nucl, stdout=open(os.devnull, 'wb')) # mute log info
     subprocess.call(make_database_prot, stdout=open(os.devnull, 'wb')) # mute log info
 

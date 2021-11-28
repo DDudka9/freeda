@@ -11,6 +11,7 @@ from freeda import input_extractor
 import re
 import logging
 
+
 def reorder_alignment(in_filename, out_filename):
 
     ord_headers = []
@@ -189,7 +190,6 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
                       "ANALYZING PROTEIN: %s \n\n" \
                       "........................................................................\n\n" \
                       "Expected exons : %s" % (protein_name, str(expected_exons))
-            print(message)
             logging.info(message)
 
         # flag potential microexons
@@ -199,7 +199,6 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
         if at_input is False:
             if microexons:
                 message = "\n...WARNING... : Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
-                print(message)
                 logging.info(message)
 
     return ref_exons, expected_exons

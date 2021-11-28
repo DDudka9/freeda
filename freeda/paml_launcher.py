@@ -357,7 +357,7 @@ def check_compatibility(ref_species, protein, translated_path):
         logging.info(message)
 
     if score > 0.01:
-        message = "\n...WARNING... : cloned seq for protein %s from %s is only %s percent identical to expected" \
+        message = "\n...WARNING... : cloned seq for protein %s from %s is only %s percent identical to expected " \
                   "(indels are ommitted)" % (protein, species, 100 - (score * 100))
         print(message)
         logging.info(message)

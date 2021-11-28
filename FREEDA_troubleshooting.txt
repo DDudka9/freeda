@@ -706,3 +706,14 @@ Fixed
 
 #    0) ESSENTIAL -> think of building gene tree using nucleotides in RAxML cose conserved proteins
 #                   will not be abel to give a meanigful tree based on aa -> DONE
+
+#    0) CAUTION -> CanFam3.1 release 90 -> CENPO-201 is chosen but at download the gene is missing A in ATG (no 5'UTR)
+#                    -> so FREEDA stops (Absent exon in gene) -> how often does this happen?
+#                                   Do I always cut 1 bp from gene preparing bed file? Or its pyensembl error?
+#                                   Ensembl 90 does have a full ATG in genomic sequence
+#                                   but does not have 3UTR while pyensembl gives 3UTR
+#                   SOLUTION : I added -200 to gene start and +200 to gene end (bed files) FIXED
+
+#    0) UPGRADE -> CASP10 has 3 repetitions of the same domain -> reduce threshold of allowed intersect? FIXED
+
+#    0) IDEA -> add a timer for aligner (how?) -> do not spend more than 10min for any contig - NOT A GOOD IDEA

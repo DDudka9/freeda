@@ -1,21 +1,185 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Mar 24 16:36:16 2021
+
+@author: damian
+Main module of the freeda package. Takes user input and performs automatic input extraction, tblastn, exon finding
+and molecular evolution analysis (PAML) followed by overlay of putative adaptive sites onto 3D structure (PyMOL).
+
 """
 
-This module will have to be incorporated into __main__ (freeda_pipeline.py) cose it calls it
-
-"""
-
+from freeda import input_extractor
+from freeda import tblastn
+from freeda import exon_extractor
+from freeda import paml_launcher
+from freeda import paml_visualizer
+from freeda import structure_builder
+from freeda import genomes_preprocessing
+from freeda import TextHandler
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from PIL import ImageTk, Image
+import tkinter.scrolledtext as ScrolledText
 import os
 import re
-import pyensembl
+import logging
+import threading
 
 
-# Define which operating system is used -> os.uname().sysname
-# Use spinbox for gene names? -> it will contain all possible pyensembl genes for the release
-# Use scrollbar?
+def thread_freeda():
+
+    freeda_thread = threading.Thread(target=freeda_pipeline)
+    freeda_thread.start()
+
+def freeda_pipeline():     #  wdir=None, ref_species=None, t=None
+
+    wdir = wdirectory.get() + "/"
+    ref_species = clade.get()
+    t = threshold.get()
+    protein1 = gene_name1.get()
+    protein2 = gene_name2.get()
+    protein3 = gene_name3.get()
+
+    os.chdir(wdir)
+
+    # ----------------------------------------#
+    ######## GET USER INPUT ########
+    # ----------------------------------------#
+
+    # generate basic folders for input if not present
+    input_extractor.generate_basic_folders(wdir)
+
+    # get settings
+    aligner = "mafft"
+
+    # get all species and genome names
+    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(ref_species, ref_genome=False)]
+
+    # ----------------------------------------#
+    ######## GET ALL INPUT DATA  ########
+    # ----------------------------------------#
+
+    # generate a reference Genome object
+    ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
+        biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
+
+    # check if provided gene names are present in ensembl object for ref assembly
+    expected_proteins = [protein1, protein2, protein3]
+    all_proteins = [protein for protein in expected_proteins if protein is not ""]
+
+    if not input_extractor.validate_gene_names(all_proteins, all_genes_ensembl):
+        return
+
+    # stop pipeline if the reference genome is absent
+    if not ref_genome_present:
+        message = "\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n"
+        logging.info(message)
+        #print("\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n")
+        return
+
+    # get names of proteins
+
+    for protein in all_proteins:
+
+        message = "\n----------- * %s * -----------" % protein
+        logging.info(message)
+        #level = logging.WARNING
+        #logger.log(level, message)   # DOESNT WORK
+        #print("\n----------- * %s * -----------" % protein)
+        # get structure prediction model from AlphaFold
+        possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, protein)
+        model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
+                                                                               protein, possible_uniprot_ids)
+        # get sequence input from ensembl
+        input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
+            wdir, ref_species, ref_genomes_path,
+            ref_genome_contigs_dict, ensembl, biotype,
+            protein, model_seq, uniprot_id
+        )
+
+        if input_correct:
+            message = "\nInput data have been generated for protein: %s\n\n" % protein
+            logging.info(message)
+            #print("\nInput data have been generated for protein: %s\n\n" % protein)
+
+        if not input_correct:
+            message = "\n...FATAL ERROR... : Input data generation FAILED for protein: %s " \
+                      "- please remove from analysis -> exiting the pipeline now...\n" % protein
+            logging.info(message)
+            #print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s - please remove from analysis"
+            #      " -> exiting the pipeline now...\n" % protein)
+            return
+
+        if not model_matches_input:
+            message = "\n...WARNING... : No matching structure prediction model is available for : %s " \
+                  "-> cannot overlay FREEDA results onto a 3D structure\n" % protein
+            logging.info(message)
+            #print("...WARNING... : No matching structure prediction model is available for : %s "
+            #      "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
+            #print("...WARNING... : Protein will still be analyzed using PAML but without 3D structure overlay\n")
+
+    # ----------------------------------------#
+    ######## RUN BLAST ########
+    # ----------------------------------------#
+
+    print("Checking genome blast databases...")
+    tblastn.run_blast(wdir, ref_species, all_proteins)
+
+    # ----------------------------------------#
+    ######## RUN EXON FINDING ########
+    # ----------------------------------------#
+
+    if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_proteins):
+        result_path = exon_extractor.analyse_blast_results(wdir, wdir + "Blast_output/",
+                                                           ref_species, int(t), all_proteins, all_genomes, aligner)
+    else:
+        message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
+              "no matches above the identity threshold used : %s -> use a lower one " \
+              "-> exiting the pipeline now..." % t
+        logging.info(message)
+        #print("\n     ...FATAL ERROR... : Genome of at least one species contains "
+        #      "no matches above the identity threshold used : %s -> use a lower one "
+        #      "-> exiting the pipeline now..." % t)
+        return
+
+    # ----------------------------------------#
+    ######## RUN PAML and PyMOL ########
+    # ----------------------------------------#
+
+    # run PAML
+    nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
+            prots_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species, result_path,
+                                                                  all_proteins, aligner)
+
+    # visualize PAML result
+    paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict, ref_species,
+                                         PAML_logfile_name, day, prots_under_pos_sel, failed_paml)
+    # run PyMOL
+    for protein in all_proteins:
+
+        # do not allow further analysis of failed paml runs
+        if protein in failed_paml:
+            continue
+
+        # check if model seq and input seq match and check if exactly one model exists
+        elif structure_builder.check_structure(wdir, ref_species, protein):
+            successful = structure_builder.run_pymol(wdir, ref_species, result_path, protein, prots_under_pos_sel,
+                                                                 offset=None)
+            if not successful:
+                message = "\nThe structure for : %s was not built successfully." % protein
+                logging.info(message)
+                #print("\nThe structure for : %s was not built successfully." % protein)
+                continue
+        else:
+            message = "\nPrediction model for : %s DOES NOT match input sequence" \
+                     "-> cannot overlay FREEDA results onto a 3D structure\n" % protein
+            logging.info(message)
+            #print("\nPrediction model for : %s DOES NOT match input sequence "
+            #         "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
+
+    print("\nYou reached the end of FREEDA pipeline.")
 
 
 def check_gene_name(gene_name, op):
@@ -59,24 +223,17 @@ def check_functional_residues(residue, op):
 def get_wdir():
     """Asks for a working directory."""
     directory = filedialog.askdirectory(initialdir=os.getcwd(), title="Select 'Data' folder")
-    wdir.set(directory)
-
-wdir = os.getcwd() + "/"
-
-
-# this will be a gene name provided by the user
-#protein = StringVar()
-#protein_to_analyze = ttk.Label(mainframe, width=20, text="Gene name :", justify="left", textvariable=protein)
-#protein_to_analyze.grid(column=1, row=1, sticky=(W, E))
-# set the new protein name following user input
-#protein.set(user_gene_name)
-
-
-#ttk.Label(mainframe, text="Genes to analyze").grid()
+    wdirectory.set(directory)
 
 
 # set up the main window
 root = Tk()
+
+
+#loop_active = True
+#while loop_active:
+#    root.update()
+
 root.title("FREEDA - Finder of Rapidly Evolving Exons in De novo Assemblies")
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
@@ -87,7 +244,7 @@ error_message2 = StringVar()
 message2 = "Invalid residue number (follow pattern: 100)"
 
 # create a mainframe inside the parent frame
-mainframe = ttk.Frame(root, width=200, height=400, padding="5 5 5 5")
+mainframe = ttk.Frame(root, width=200, height=300, padding="5 5 5 5")
 mainframe.grid(sticky=(N, W, E, S))
 
 # configure first two columns of the mainframe to behave uniformly
@@ -106,10 +263,6 @@ input_frame.columnconfigure(3, weight=2, uniform="group1")
 # create logo frame
 logo_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
 logo_frame.grid(column=0, row=0, columnspan=1, rowspan=3, sticky=(N, W, E, S), padx=5, pady=5)
-# let all columns resize
-#logo_frame.columnconfigure(0, weight=3, uniform="group1")
-#logo_frame.columnconfigure((1, 2), weight=1, uniform="group1")
-#logo_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # image
 canvas = Canvas(logo_frame, width=200, height=200)
@@ -129,13 +282,24 @@ output_frame.columnconfigure(0, weight=3, uniform="group1")
 output_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 output_frame.columnconfigure(3, weight=2, uniform="group1")
 
-# create and grid the logging window
-logging_window = Text(output_frame, state="disabled", wrap="none")
-logging_window.grid(column=0, row=1, columnspan=4, sticky=(N, W, E, S))
-ttk.Label(output_frame, text="Events window (logged to 'FREEDA*.log'").grid(column=0, row=0, columnspan=4, sticky=(W))
 
-#mainframe["borderwidth"] = 2
-#mainframe["relief"] = "sunken"
+# create and grid the logging window
+#logging_window = Text(output_frame, state="disabled", wrap="none")
+#logging_window.grid(column=0, row=1, columnspan=4, sticky=(N, W, E, S))
+#ttk.Label(output_frame, text="Events window (logged to 'FREEDA*.log'").grid(column=0, row=0, columnspan=4, sticky=(W))
+
+ttk.Label(output_frame, text="Events window (logged to 'FREEDA*.log')").grid(column=0, row=0, columnspan=4, sticky=(W))
+logging_window = ScrolledText.ScrolledText(output_frame, state="disabled", wrap="none")
+logging_window.grid(column=0, row=1, columnspan=4, sticky=(N, W, E, S))
+logging_window.configure(font='TkFixedFont')
+
+
+# Create handlers
+text_handler = TextHandler.TextHandler(logging_window)
+# Logging configuration
+logging.basicConfig(format="%(message)s")  # level=logging.INFO,
+logger = logging.getLogger()
+logger.addHandler(text_handler)
 
 # user chooses which clade to analyze
 
@@ -154,28 +318,16 @@ birds.grid(column=0, row=4, columnspan=2, sticky=(W))
 
 threshold = IntVar()
 ttk.Label(settings_frame, text="Blast search").grid(column=0, row=5, pady=5, sticky=(W))
-deep = ttk.Radiobutton(settings_frame, text="Deep", variable=threshold,
-                       value="deep").grid(column=0, row=6, sticky=(W))
-medium = ttk.Radiobutton(settings_frame, text="Medium (recommended)", variable=threshold,
-                         value="medium").grid(column=0, row=7, sticky=(W))
-shallow = ttk.Radiobutton(settings_frame, text="Shallow", variable=threshold,
-                          value="shallow").grid(column=0, row=8, sticky=(W))
+ttk.Radiobutton(settings_frame, text="Deep", variable=threshold,
+                       value=30).grid(column=0, row=6, sticky=(W))
+ttk.Radiobutton(settings_frame, text="Medium (recommended)", variable=threshold,
+                         value=50).grid(column=0, row=7, sticky=(W))
+ttk.Radiobutton(settings_frame, text="Shallow", variable=threshold,
+                          value=70).grid(column=0, row=8, sticky=(W))
 
 
 check_gene_name_wrapper = (settings_frame.register(check_gene_name), "%P", "%V")
 check_functional_residues = (settings_frame.register(check_functional_residues), "%P", "%V")
-
-# user inputs up to 3 gene names to analyse
-
-#release = 104
-#species = "mus musculus"
-#ensembl = pyensembl.EnsemblRelease(release, species)
-#ensembl.download()  # this is suppose to bypass installing the release from outside python
-#ensembl.index()  # this is suppose to bypass installing the release from outside python
-
-
-
-#update(all_genes)
 
 ttk.Label(input_frame, text="Indicate functional residues").grid(column=1, row=8, columnspan=3, sticky=(N))
 ttk.Label(input_frame, text="start").grid(column=1, row=9)
@@ -194,9 +346,6 @@ gene1_frame.columnconfigure(3, weight=2, minsize=50, uniform="group1")
 
 gene_name1 = StringVar()
 ttk.Label(gene1_frame, text="Gene name").grid(column=0, row=11, padx=6, sticky=(W))
-#gene1_list = Tk.ListBox(mainframe, height=10, width=10)
-#gene1_list.pack(pady=40)
-#all_genes = input_extractor.make_gene_list(ensembl)
 protein1 = ttk.Entry(gene1_frame, textvariable=gene_name1, validate="all", validatecommand=check_gene_name_wrapper)
 protein1.grid(column=0, row=12, padx=5, pady=2, sticky=(W))
 dup1 = StringVar()
@@ -331,23 +480,20 @@ site33_label.grid(column=3, row=19, padx=5, pady=2, sticky=(W))
 wdir_button = ttk.Button(input_frame, text="Set working directory", command=get_wdir)
 wdir_button.grid(column=0, row=21, sticky=(N, W, E, S), padx=5, pady=5)
 
-wdir = StringVar()
-#ttk.Label(input_frame, text="Working directory").grid(column=0, row=21, padx=6, sticky=(W))
-wdir_entry = ttk.Entry(input_frame, textvariable=wdir)
+wdirectory = StringVar()
+wdir_entry = ttk.Entry(input_frame, textvariable=wdirectory)
 wdir_entry.grid(column=1, row=21, columnspan=4, sticky=(N, W, E, S), padx=5, pady=5)
 
 
 # analyse button
 
-analyze_button = ttk.Button(input_frame, text="Analyze") # default="active"
-analyze_button.grid(column=3, row=22, padx=5, pady=5, sticky=(E)) #, command=freeda.freeda_pipeline)
-analyze_button.state(["disabled"])
+analyze_button = ttk.Button(input_frame, text="Analyze", state="normal", command=thread_freeda)  # default="active"
+analyze_button.grid(column=3, row=22, padx=5, pady=5, sticky=(E))
 
 # STOP button
 
-stop_button = ttk.Button(input_frame, text="STOP") # default="active"
-stop_button.grid(column=3, row=23, padx=5, pady=2, sticky=(E)) #, command=freeda.freeda_pipeline)
-stop_button.state(["disabled"])
+stop_button = ttk.Button(input_frame, text="STOP", state="normal", command=root.destroy)  # default="active"
+stop_button.grid(column=3, row=23, padx=5, pady=2, sticky=(E))
 
 # error labels
 
@@ -370,64 +516,6 @@ error_label2.grid(column=0, row=23, columnspan=4, padx=5, pady=5, sticky="w")
 #root.bind("<ButtonPress-1>", lambda e: button.invoke())
 
 
-
-
-root.mainloop()
-
-
-
-
-
-
-"""
-
-root = Tk()
-l = ttk.Label(root, text="Starting...")
-l.grid()
-l.bind("<Enter>", lambda e: l.configure(text="Moved mouse inside"))
-l.bind("<Leave>", lambda e: l.configure(text="Moved mouse outside"))
-l.bind("<ButtonPress-1>", lambda e: l.configure(text="Clicked left mouse button"))
-l.bind("<ButtonPress-2>", lambda e: l.configure(text="Clicked right mouse button"))
-l.bind("<Double-1>", lambda e: l.configure(text="Double clicked"))
-l.bind("<Motion>", lambda e: l.configure(text="Mouse moved to %d, %d" % (e.x, e.y)))
+#root.after(1000, freeda_pipeline)
 
 root.mainloop()
-
-
-def calculate(*args):
-    try:
-        value = float(feet.get())
-        meters.set(int(0.3048 * value * 10000.0 + 0.5)/10000.0)
-    except ValueError:
-        pass
-
-root = Tk()
-root.title("Feet to Meters")
-
-mainframe = ttk.Frame(root, padding="3 3 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-root.columnconfigure(0, weight=1)
-root.rowconfigure(0, weight=1)
-
-feet = StringVar()
-feet_entry = ttk.Entry(mainframe, width=7, textvariable=feet)
-feet_entry.grid(column=2, row=1, sticky=(W, E))
-
-meters = StringVar()
-ttk.Label(mainframe, textvariable=meters).grid(column=2, row=2, sticky=(W, E))
-
-ttk.Button(mainframe, text="Calculate", command=calculate).grid(column=3, row=3, sticky=(W))
-
-ttk.Label(mainframe, text="feet").grid(column=3, row=1, sticky=(W))
-ttk.Label(mainframe, text="is equivalent to").grid(column=1, row=2, sticky=(E))
-ttk.Label(mainframe, text="meters").grid(column=3, row=2, sticky=(W))
-
-for child in mainframe.winfo_children():
-    child.grid_configure(padx=5, pady=5)
-
-feet_entry.focus()
-root.bind("<Return>", calculate)
-
-root.mainloop()
-
-"""

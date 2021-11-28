@@ -102,19 +102,17 @@ return str(consensus_read)
 """
 
 # TODO:
+#    0) ESSENTIAL -> I took down the ACGT incompatibility check between cds and gene but CENPR (ITGB3BP) in primates
+#                           Gorilla has one exon with such issue -> most exons were eliminated (<0.60 alignment)
+#                           but one got in (exon 4) on 0.61 alignment and perfect introns; also exon 2 is 0.66
+#                           SOLUTION: raise check to 0.65 ?
+#                           I also fixed N_score and C_score bug that allowed passing if one was >0.75
 #    0) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
 #    0) ESSENTIAL -> for some reason Phasanidae sometimes generates excel sheet sometimes not;
-#                       -> all_matched_adaptive_sites_ref not generated; maybe cose TLR5 was all empty
-#    0) CAUTION -> CanFam3.1 release 90 -> CENPO-201 is chosen but at download the gene is missing A in ATG (no 5'UTR)
-#                    -> so FREEDA stops (Absent exon in gene) -> how often does this happen?
-#                                   Do I always cut 1 bp from gene preparing bed file? Or its pyensembl error?
-#                                   Ensembl 90 does have a full ATG in genomic sequence
-#                                   but does not have 3UTR while pyensembl gives 3UTR
-#                   SOLUTION : I added -1 to gene start and +1 to gene end (bed files)
+#                       -> all_matched_adaptive_sites_ref not generated -> cose TLR5 was all empty
 #    0) IDEA -> add a checkpoint for input -> align cds and gene -> if any bp doesnt align well -> fail that protein
-#    0) IDEA -> add a timer for aligner (how?) -> do not spend more than 10min for any contig
-#    0) ESSENTIAL -> > 350kb ong gene TEX11 in Pt shows different number of exons in different contigs! -> tandem repeat
-#    0) UPGRADE -> CASP10 has 3 repetitions of the same domain -> reduce threshold of allowed intersect?
+#    0) ESSENTIAL -> > 350kb long gene TEX11 in Pt shows different number of exons in different contigs!
+#                           -> tandem repeat
 #    0) ESSENTIAL -> cloned cds frameshift check should not penalize gaps or at least not say "frameshift"
 #                               because Cj in NRLP11 is called frameshift despite having just an exon missing
 #    0) ESSENTIAL -> make sure that the cross-species check works well, so far Ive seen only 100 percent scores
@@ -351,6 +349,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     if user_input0 == "y":
 
         # generate a reference Genome object
+        # WHY DOES IT RETURN REF_SPECIES?
         ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
                         biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
 
@@ -533,7 +532,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Gg")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=30)
 

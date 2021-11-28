@@ -2169,12 +2169,12 @@ def get_names(ref_species, ref_genome=False):
                        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
                        ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
                        ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),   #  western spotted skunk
-                       ("Ll",  "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
+                       ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
                        ("Pl", "ProcyonLotor_genome",  "GCA_015708975.1"),  # raccoon
                        ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
                        ("Zc", "ZalophusCalifornianus_genome", "GCA_009762305.2"),  # sea lion
                        ("Or", "OdobenusRosmarus_genome", "GCA_000321225.1"),  # pacific walrus
-                       ("Ml",  "MiroungaLeonina_genome",  "GCA_011800145.1"),  # elephant seal
+                       ("Ml", "MiroungaLeonina_genome",  "GCA_011800145.1"),  # elephant seal
                        ("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
                        ("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # dog
 
@@ -2184,7 +2184,7 @@ def get_names(ref_species, ref_genome=False):
                        ("Zc", "ZalophusCalifornianus_genome", "GCA_009762305.2"),  # sea lion
                        ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
                        ("Pl", "ProcyonLotor_genome",  "GCA_015708975.1"),  # raccoon
-                       ("Ll",  "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
+                       ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
                        ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),   #  western spotted skunk
                        ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
                        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa

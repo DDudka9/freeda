@@ -725,7 +725,7 @@ def check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligne
     print(message)
     logging.info(message)
 
-    if (N_score or C_score) < 0.75:
+    if N_score < 0.75 or C_score < 0.75:
         double_introny = False
 
     return double_introny
