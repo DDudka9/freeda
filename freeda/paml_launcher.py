@@ -384,6 +384,8 @@ def get_most_distant_prot_seq(species, protein):
 
     logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
     ensembl = pyensembl.EnsemblRelease(release, species)
+    ensembl.download()  # this is suppose to bypass installing the release from outside python
+    ensembl.index()  # this is suppose to bypass installing the release from outside python
 
     # check if the protein is annotated
     all_genes = ensembl.gene_names()

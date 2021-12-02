@@ -9,6 +9,17 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 """
 
+# TODO
+#       0) Finish logging
+#       1) "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_visualizer.py:844:
+#       UserWarning: Starting a Matplotlib GUI outside of the main thread will likely fail. -> FIXED by "use("agg")
+#       2) STOP button -> DONE
+#       3) Analyse button should block after pushing -> DONE
+#       4) Allow deleting the first letter
+#       5) Connect sites and duplicated expected
+#       6) Make result window
+
+
 from freeda import input_extractor
 from freeda import tblastn
 from freeda import exon_extractor
@@ -29,12 +40,25 @@ import threading
 
 
 def thread_freeda():
+    """Runs freeda main function in another thread"""
 
     freeda_thread = threading.Thread(target=freeda_pipeline)
     freeda_thread.start()
 
+
+def abort_freeda():
+    """Closes the GUI and aborts FREEDA pipeline"""
+
+    root.quit()
+    root.update()
+
+
 def freeda_pipeline():     #  wdir=None, ref_species=None, t=None
 
+    # deactivate the analyse button
+    analyze_button["state"] = "disable"
+
+    # get user input
     wdir = wdirectory.get() + "/"
     ref_species = clade.get()
     t = threshold.get()
@@ -42,6 +66,7 @@ def freeda_pipeline():     #  wdir=None, ref_species=None, t=None
     protein2 = gene_name2.get()
     protein3 = gene_name3.get()
 
+    # change working directory to user indicated
     os.chdir(wdir)
 
     # ----------------------------------------#
@@ -229,6 +254,7 @@ def get_wdir():
 # set up the main window
 root = Tk()
 
+run = True
 
 #loop_active = True
 #while loop_active:
@@ -485,15 +511,15 @@ wdir_entry = ttk.Entry(input_frame, textvariable=wdirectory)
 wdir_entry.grid(column=1, row=21, columnspan=4, sticky=(N, W, E, S), padx=5, pady=5)
 
 
-# analyse button
+# ANALYZE button
 
 analyze_button = ttk.Button(input_frame, text="Analyze", state="normal", command=thread_freeda)  # default="active"
 analyze_button.grid(column=3, row=22, padx=5, pady=5, sticky=(E))
 
-# STOP button
+# ABORT button
 
-stop_button = ttk.Button(input_frame, text="STOP", state="normal", command=root.destroy)  # default="active"
-stop_button.grid(column=3, row=23, padx=5, pady=2, sticky=(E))
+abort_button = ttk.Button(input_frame, text="ABORT", state="normal", command=abort_freeda)  # default="active"
+abort_button.grid(column=3, row=23, padx=5, pady=2, sticky=(E))
 
 # error labels
 

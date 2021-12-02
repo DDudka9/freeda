@@ -25,6 +25,7 @@ import shutil
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import use
 import pandas as pd
 import math
 
@@ -841,6 +842,8 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein, nr_
             else:
                 probabilities[i] = 0
 
+    # set the backend to a non-interactive one -> does not create and destroys GUI windows
+    use('agg')
     plt.figure()
 
     if ref_species == "Mm" or ref_species == "Rn":
