@@ -159,9 +159,11 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
             PAML_path = protein_folder_path + "/PAML_" + protein
             os.makedirs(PAML_path)
         
-            # copy control_file from working directory into protein_folder_path
+            # make and copy control_file from working directory into protein_folder_path
             #control_file = "control_file.ctl"
-            control_file.make_control_file(wdir)
+            if not os.path.isfile(wdir + "control_file.ctl"):
+                control_file.make_control_file(wdir)
+
             shutil.copy("control_file.ctl", PAML_path + "/control_file.ctl")
         
             # align the final cds sequences
