@@ -19,6 +19,7 @@ Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 
 from freeda import fasta_reader
 from freeda import genomes_preprocessing
+from freeda import control_file
 from Bio.Align.Applications import MafftCommandline
 from Bio import pairwise2
 from Bio import AlignIO
@@ -159,8 +160,9 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
             os.makedirs(PAML_path)
         
             # copy control_file from working directory into protein_folder_path
-            control_file = "control_file.ctl"
-            shutil.copy("control_file.ctl", PAML_path + "/" + control_file)
+            #control_file = "control_file.ctl"
+            control_file.make_control_file(wdir)
+            shutil.copy("control_file.ctl", PAML_path + "/control_file.ctl")
         
             # align the final cds sequences
             out_msa = align_final_cds(protein, final_cds_file, result_path, aligner)
@@ -246,7 +248,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
             message = "\n.........Running PAML for protein: %s.........\n" % protein
             print(message)
             
-            M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path, control_file)
+            M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path)
 
             if M8_M7 is not None and M8_M7 < 0.05:
                 prots_under_pos_sel.append(protein)
@@ -552,7 +554,8 @@ def eliminate_all_insertions(protein_folder_path, out_msa):
 
 
 
-def run_PAML(wdir, protein, PAML_path, control_file):
+def run_PAML(wdir, protein, PAML_path):
+    """Runs PAML by calling the control file"""
 
     from Bio.Phylo.PAML import codeml
     from Bio.Phylo.PAML.chi2 import cdf_chi2
@@ -562,7 +565,7 @@ def run_PAML(wdir, protein, PAML_path, control_file):
     
     # run PAML
     cml = codeml.Codeml(alignment="input.phy", tree="gene.tree", out_file="output_PAML", working_dir=PAML_path)
-    cml.run(control_file)
+    cml.run("control_file.ctl")
     results = codeml.read("output_PAML")
     ns_sites = results.get("NSsites")
     
