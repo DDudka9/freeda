@@ -10,6 +10,7 @@ Created on Wed Mar 24 19:01:01 2021
 from freeda import input_extractor
 import re
 import logging
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def reorder_alignment(in_filename, out_filename):

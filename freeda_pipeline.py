@@ -241,7 +241,7 @@ import os
 
 
 def freeda_pipeline(wdir=None, ref_species=None, t=None):
-    # current directory must be the "Data" folder
+    """Main function running all freeda pipeline from command line"""
 
     if wdir is None:
         wdir = os.getcwd() + "/"

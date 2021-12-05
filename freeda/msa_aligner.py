@@ -11,10 +11,6 @@ Runs MAFFT using a BioPython wrapper.
 
 from freeda import fasta_reader
 from Bio.Align.Applications import MafftCommandline
-from Bio.Align.Applications import MSAProbsCommandline
-from Bio.Align.Applications import ProbconsCommandline
-from Bio.Align.Applications import PrankCommandline
-from Bio.Align.Applications import ClustalwCommandline
 from Bio.Application import ApplicationError
 import os
 import re
@@ -23,6 +19,7 @@ import glob
 import time
 import logging
 import subprocess
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def run_msa(MSA_path, aligner):

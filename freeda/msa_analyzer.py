@@ -21,6 +21,7 @@ import logging
 import re
 import shutil
 import glob
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons, aligner):

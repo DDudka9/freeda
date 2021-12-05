@@ -36,6 +36,7 @@ class TextHandler(logging.Handler):
 
 
 
+
 # THIS IS NOT NEEDED -> doesnt work
 
 

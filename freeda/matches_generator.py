@@ -12,6 +12,7 @@ of genomic loci of interest
 
 import pandas as pd
 import logging
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 def generate_matches(match_path, t, protein_name, genome_name, genome_index):
     columns = ["qseqid", "sseqid", "qstart", "qend", "sstart", "send",
@@ -80,12 +81,12 @@ def threshold_matches(matches, t, protein_name, genome_name): # works well
             m = matches[threshold]
             matches_above_threshold = m
 
-    side_note = "-------------------------------------------------\n" \
+    message = "-------------------------------------------------\n" \
         "\n----- Protein: " + protein_name + " in genome: " + genome_name + \
         " -> matches identity threshold used: "+ str(t) + "\n" \
         "\n-------------------------------------------------\n"
-    print(side_note)
-    logging.info(side_note)
+    print(message)
+    logging.info(message)
         
     # get rid of duplicated contig names
     selected_matches = matches_above_threshold[["sseqid", "sstart", \

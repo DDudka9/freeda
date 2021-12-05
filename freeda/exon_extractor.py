@@ -13,6 +13,7 @@ from freeda import matches_generator
 from freeda import matches_processor
 from freeda import msa_aligner
 from freeda import msa_analyzer
+from freeda import TextHandler
 import datetime
 import glob
 import time
@@ -22,21 +23,33 @@ import os
 import re
 
 
-def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins, all_genomes, aligner):
+def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins, all_genomes, aligner, gui=None,
+                          logging_window=None):
     """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
 
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
     result_path = wdir + "Results" + day + "/"
+    log_filename = "FREEDA" + day + ".log"
 
     folder_generator.generate_folders(result_path, all_proteins, all_genomes)
 
-    # initiate log file to record PAML analysis by reseting the handlers
+    # initiate log file to record FREEDA analysis by reseting the handlers
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
-    log_filename = "FREEDA" + day + ".log"
-    logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(message)s")
+
+    if gui:
+        # make a new handler
+        text_handler = TextHandler.TextHandler(logging_window)
+        # configure the new logger
+        logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(message)s")
+        logger = logging.getLogger()
+        logger.addHandler(text_handler)
+
+    else:
+        # configure the logger
+        logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(message)s")
 
     # make a list of paths with blast tables
     all_blasts = [blast for blast in glob.glob(blast_output_path + "*.txt")]

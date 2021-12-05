@@ -20,6 +20,7 @@ Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 from freeda import fasta_reader
 from freeda import genomes_preprocessing
 from freeda import control_file
+from freeda import TextHandler
 from Bio.Align.Applications import MafftCommandline
 from Bio import pairwise2
 from Bio import AlignIO
@@ -38,17 +39,31 @@ import copy
 import pyensembl
 
 
-def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
+def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner, gui=None, logging_window=None):
+    """Main function controlling building final alignments, gene trees and PAML anaylsis"""
+
+    logging.info("======================== PAML ANALYSIS ========================")
 
     failed_paml = []
     start_time = time.time()
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
-        
+    PAML_logfile_name = "PAML" + day + ".log"
+
     # initiate log file to record PAML analysis by reseting the handlers
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
-    PAML_logfile_name = "PAML" + day + ".log"
-    logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
+
+    if gui:
+        # make a new handler
+        text_handler = TextHandler.TextHandler(logging_window)
+        # configure the logger
+        logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
+        logger = logging.getLogger()
+        logger.addHandler(text_handler)
+
+    else:
+        # configure the logger
+        logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
     
     # make an empty template for all possible species
     all_species = [names[0] for names in genomes_preprocessing.get_names(ref_species)]
@@ -248,8 +263,9 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
         
             # run PAML
             message = "\n.........Running PAML for protein: %s.........\n" % protein
-            print(message)
-            
+            #print(message)
+            logging.info(message)
+
             M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path)
 
             if M8_M7 is not None and M8_M7 < 0.05:

@@ -18,7 +18,6 @@ Protein names need to be stored in "proteins.txt" file one per line:
 Outputs tabulated text files per protein per genomes.
 
 """
-from zipfile import BadZipFile
 
 from freeda import genomes_preprocessing
 import subprocess
@@ -32,14 +31,12 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 def run_blast(wdir, ref_species, all_proteins):
     """Runs tblastn based on NCBI makedatabase routine."""
 
-    #genomes_file_dir = wdir + "genomes.txt"
     database_path = wdir + "Genomes/"
     query_path = wdir + "Blast_input/"
     output_path = wdir + "Blast_output/"
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means " \
             "bitscore length means pident means mismatch means gapopen means qlen means slen means"
-    
-    #genomes = [genome.rstrip("\n") for genome in open(genomes_file_dir, "r").readlines()]
+
     all_genomes = genomes_preprocessing.get_names(ref_species)
     genomes = [names[1] for names in all_genomes]
 
