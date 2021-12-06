@@ -72,6 +72,8 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
     
     shutil.move(wdir + "all_matched_adaptive_sites_ref.txt", result_path + "all_matched_adaptive_sites_ref.txt")
 
+    return final_PAML_log_dict
+
 
 def get_alignment_matching_structure(result_path, ref_species, protein, dictionary):
     """Generates protein alignment matching 3D structure"""
@@ -160,7 +162,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
             
             # record protein name
             if line.startswith(" --------- *"):
-                protein = line.replace("-","").replace(" ","").replace("*","").rstrip("\n")
+                protein = line.replace("-", "").replace(" ", "").replace("*", "").rstrip("\n")
                 if protein in failed_paml:
                     continue
                 PAML_log_dict["Protein name"].append(protein)
@@ -168,7 +170,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
 
             # record species
             if start_recording is True and line.startswith(" Final species"):
-                species = line.split(":")[1].split("[")[1].replace("]", "").replace("\n","").replace("'", "")
+                species = line.split(":")[1].split("[")[1].replace("]", "").replace("\n", "").replace("'", "")
                 nr_species = line.split(":")[1].split(" ")[1]
                 PAML_log_dict["Nr of species analyzed"].append(nr_species)
                 PAML_log_dict["Species"].append(species)
@@ -352,7 +354,6 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
     excel_filename = "PAML_result" + day + ".xlsx"
     wb.save(excel_filename)
     shutil.move(wdir + excel_filename, result_path)
-
 
 
 def plot_PAML(wdir, result_path, protein, nr_of_species_total, ref_species, proteins_under_positive_selection):

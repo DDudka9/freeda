@@ -181,7 +181,7 @@ def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_s
     if not get_pymol_script(wdir, ref_species, dictionary, protein,
                             protein_structure_path, proteins_under_positive_selection, offset, domains):
         # copy the structure model into the result file for user to estimate where the sites might be
-        copy_void_structure(wdir, ref_species, protein, result_path)
+        #copy_void_structure(wdir, ref_species, protein, result_path) -> doesnt work
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?

@@ -42,7 +42,7 @@ import pyensembl
 def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner, gui=None, logging_window=None):
     """Main function controlling building final alignments, gene trees and PAML anaylsis"""
 
-    logging.info("======================== PAML ANALYSIS ========================")
+    logging.info("\n\n======================== PAML ANALYSIS ========================")
 
     failed_paml = []
     start_time = time.time()
@@ -263,7 +263,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner, gui
         
             # run PAML
             message = "\n.........Running PAML for protein: %s.........\n" % protein
-            #print(message)
+            print(message)
             logging.info(message)
 
             M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path)
@@ -758,7 +758,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, filename):
                 matches += 1
 
         score = matches/len(ref_cds.replace("-", ""))
-        message = "Alignment score for species : %s = %s" % (species.rstrip("\n"), score)
+        message = "Alignment score for species : %s = %s" % (species.replace(">", "").rstrip("\n"), score)
         print(message)
         logging.info(message)
 
