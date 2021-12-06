@@ -20,6 +20,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #       6) Make result window -> DONE
 #       7) Make the main window smaller
 #       8) Make Analyse button non-responsive if no wdir, clade, threshold or gene name -> DONE
+#       9) Do not allow duplications -> DONE
 
 
 from freeda import input_extractor
@@ -82,6 +83,18 @@ def check_input():
         logging.info("...FATAL_ERROR... : Choose at least one gene")
         ready = False
 
+    # check if there are duplications in user input (but not empty entries)
+    if len(all_proteins) != len(set(all_proteins)):
+        if gene_name1.get() == gene_name2.get() and gene_name1.get() != "":
+            logging.info("...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        if gene_name2.get() == gene_name3.get() and gene_name2.get() != "":
+            logging.info("...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        if gene_name3.get() == gene_name1.get() and gene_name3.get() != "":
+            logging.info("...FATAL_ERROR... : Choose different gene names")
+            ready = False
+
     return ready
 
 
@@ -101,6 +114,7 @@ def freeda_pipeline():
     protein1 = gene_name1.get()
     protein2 = gene_name2.get()
     protein3 = gene_name3.get()
+
 
     # get user defined sites
     # gene 1
@@ -150,7 +164,7 @@ def freeda_pipeline():
 
     # check if provided gene names are present in ensembl object for ref assembly
     expected_proteins = [protein1, protein2, protein3]
-    all_proteins = [protein for protein in expected_proteins if protein is not ""]
+    all_proteins = set([protein for protein in expected_proteins if protein is not ""])
 
     if not input_extractor.validate_gene_names(all_proteins, all_genes_ensembl):
         return
