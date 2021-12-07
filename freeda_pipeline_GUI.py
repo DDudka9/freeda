@@ -16,11 +16,13 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #       2) STOP button -> DONE
 #       3) Analyse button should block after pushing -> DONE
 #       4) Allow deleting the first letter -> DONE
-#       5) Connect sites and duplicated expected
+#       5) Connect sites and duplicated expecte d
 #       6) Make result window -> DONE
 #       7) Make the main window smaller
 #       8) Make Analyse button non-responsive if no wdir, clade, threshold or gene name -> DONE
 #       9) Do not allow duplications -> DONE
+#      10) Add alphafold direct download
+#      -> subprocess.call(["wget", "-O", "/Volumes/DamianEx_2/Data/Test.pdb", "https://alphafold.ebi.ac.uk/files/AF-F4HVG8-F1-model_v1.pdb"])
 
 
 from freeda import input_extractor
@@ -40,6 +42,8 @@ import os
 import re
 import logging
 import threading
+import subprocess
+
 
 
 def thread_freeda():
@@ -67,32 +71,32 @@ def check_input():
     ready = True
 
     if not wdirectory.get():
-        logging.info("...FATAL_ERROR... : Choose working directory")
+        logging.info("\n...FATAL_ERROR... : Choose working directory")
         ready = False
 
     if not clade.get():
-        logging.info("...FATAL_ERROR... : Choose clade")
+        logging.info("\n...FATAL_ERROR... : Choose clade")
         ready = False
 
     if not threshold.get():
-        logging.info("...FATAL_ERROR... : Choose search depth")
+        logging.info("\n...FATAL_ERROR... : Choose search depth")
         ready = False
 
     all_proteins = [gene_name1.get(), gene_name2.get(), gene_name3.get()]
     if not any(all_proteins):
-        logging.info("...FATAL_ERROR... : Choose at least one gene")
+        logging.info("\n...FATAL_ERROR... : Choose at least one gene")
         ready = False
 
     # check if there are duplications in user input (but not empty entries)
     if len(all_proteins) != len(set(all_proteins)):
         if gene_name1.get() == gene_name2.get() and gene_name1.get() != "":
-            logging.info("...FATAL_ERROR... : Choose different gene names")
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
             ready = False
         if gene_name2.get() == gene_name3.get() and gene_name2.get() != "":
-            logging.info("...FATAL_ERROR... : Choose different gene names")
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
             ready = False
         if gene_name3.get() == gene_name1.get() and gene_name3.get() != "":
-            logging.info("...FATAL_ERROR... : Choose different gene names")
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
             ready = False
 
     return ready
@@ -232,6 +236,9 @@ def freeda_pipeline():
         result_path = exon_extractor.analyse_blast_results(wdir, wdir + "Blast_output/",
                                                            ref_species, int(t), all_proteins, all_genomes, aligner, gui,
                                                            logging_window)
+        # set a StringVar for GUI
+        result_path_var.set(result_path)
+
     else:
         message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
               "no matches above the identity threshold used : %s -> use a lower one " \
@@ -281,6 +288,9 @@ def freeda_pipeline():
             #         "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
 
     logging.info("\nYou reached the end of FREEDA pipeline.")
+
+    result_path_var.set(result_path)
+    alignment_button1["state"] = "enable"
 
 
 def check_gene_name(gene_name, op):
@@ -333,35 +343,45 @@ def get_results(final_PAML_log_dict):
     proteins = final_PAML_log_dict["Protein name"]
     lrts = final_PAML_log_dict["M8 vs M7 (LRT)"]
     pvalues = final_PAML_log_dict["M8 vs M7 (p-value)"]
+    coverage = final_PAML_log_dict["CDS Coverage"]
+    species = final_PAML_log_dict["Nr of species analyzed"]
 
     if gene_name1.get():
         g1_results_var.set(proteins.pop(0))
         g1_lrt_var.set(round(float(lrts.pop(0)), ndigits=3))
         pvalue = round(float(pvalues.pop(0)), ndigits=4)
-        g1_pvalue_var.set(pvalue)
+        if pvalue < 0.001:
+            g1_pvalue_var.set("<0.001")
         if pvalue < 0.05:
             g1_pos_sel_var.set("YES")
             g1_pos_sel_entry.config(foreground="magenta")
         else:
             g1_pos_sel_var.set("NO")
             g1_pos_sel_entry.config(foreground="black")
+        g1_coverage_var.set(coverage.pop(0))
+        g1_species_var.set(species.pop(0))
 
     if gene_name2.get():
         g2_results_var.set(proteins.pop(0))
         g2_lrt_var.set(round(float(lrts.pop(0)), ndigits=3))
         pvalue = round(float(pvalues.pop(0)), ndigits=4)
-        g2_pvalue_var.set(pvalue)
+        if pvalue < 0.001:
+            g2_pvalue_var.set("<0.001")
         if pvalue < 0.05:
             g2_pos_sel_var.set("YES")
             g2_pos_sel_entry.config(foreground="magenta")
         else:
             g2_pos_sel_var.set("NO")
             g2_pos_sel_entry.config(foreground="black")
+        g2_coverage_var.set(coverage.pop(0))
+        g2_species_var.set(species.pop(0))
 
     if gene_name3.get():
         g3_results_var.set(proteins.pop(0))
         g3_lrt_var.set(round(float(lrts.pop(0)), ndigits=3))
         pvalue = round(float(pvalues.pop(0)), ndigits=4)
+        if pvalue < 0.001:
+            g3_pvalue_var.set("<0.001")
         g3_pvalue_var.set(pvalue)
         if pvalue < 0.05:
             g3_pos_sel_var.set("YES")
@@ -369,12 +389,20 @@ def get_results(final_PAML_log_dict):
         else:
             g3_pos_sel_var.set("NO")
             g3_pos_sel_entry.config(foreground="black")
+        g3_coverage_var.set(coverage.pop(0))
+        g3_species_var.set(species.pop(0))
 
 
-def get_alignment():
+def get_alignment():  # doesnt work
+
+    directory = "/Volumes/DamianEx_2/Data/Results-12-06-2021-21-44/"
+    result_path_var.get()
+    if os.path.isfile(directory + gene_name1.get() + "_Mm.pse"):
+        filename = filedialog.askopenfilename(initialdir=directory, title="Select file",
+                                                   filetypes=(("pse files", "*.pse"), ("all files","*.*")))
+        subprocess.call([filename])
 
     return
-
 
 # set up the main window
 root = Tk()
@@ -439,42 +467,42 @@ gene3_frame.columnconfigure(3, weight=2, uniform="group1")
 output_frame = ttk.Frame(mainframe, relief="sunken", padding="5 5 5 5")
 output_frame.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=5)
 # let all columns resize
-output_frame.columnconfigure((0, 1, 2, 3), weight=1, uniform="group1")
-output_frame.columnconfigure((4, 5, 6), weight=2, uniform="group1")
+output_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
+output_frame.columnconfigure((6, 7, 8), weight=1, uniform="group1")
 
 # create a logging window
 logging_frame = ttk.Frame(output_frame, relief="ridge", padding="5 5 5 5")
-logging_frame.grid(column=0, row=0, columnspan=7, sticky=(N, W, E, S), padx=5, pady=5)
+logging_frame.grid(column=0, row=0, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
 
 # create results frame
 results_labelframe = ttk.LabelFrame(output_frame, text="Results window")
-results_labelframe.grid(column=0, row=1, columnspan=7, padx=5, pady=5, sticky=(N, W))
-results_labelframe.columnconfigure((0, 1, 2, 3), weight=1, uniform="group1")
-results_labelframe.columnconfigure((4, 5, 6), weight=2, uniform="group1")
+results_labelframe.grid(column=0, row=1, columnspan=9, padx=5, pady=5, sticky=(N, W))
+results_labelframe.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
+results_labelframe.columnconfigure((6, 7, 8), weight=2, uniform="group1")
 
 # create results labels frame
 results_labels = ttk.Frame(results_labelframe, padding="5 5 5 5")
-results_labels.grid(column=0, row=3, columnspan=7, sticky=(N, W, E, S), padx=5, pady=5)
-results_labels.columnconfigure((0, 1, 2, 3), weight=1, uniform="group1")
-results_labels.columnconfigure((4, 5, 6), weight=2, uniform="group1")
+results_labels.grid(column=0, row=3, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
+results_labels.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
+results_labels.columnconfigure((6, 7, 8), weight=2, uniform="group1")
 
 # create user gene 1 result frame
 g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g1_results_frame.grid(column=0, row=4, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
-g1_results_frame.columnconfigure((0, 1, 2, 3), weight=1, uniform="group1")
-g1_results_frame.columnconfigure((4, 5, 6), weight=2, uniform="group1")
+g1_results_frame.grid(column=0, row=4, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
+g1_results_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
+g1_results_frame.columnconfigure((6, 7, 8), weight=2, uniform="group1")
 
 # create user gene 2 result frame
 g2_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g2_results_frame.grid(column=0, row=5, columnspan=7, sticky=(N, W, E, S), padx=5, pady=5)
-g2_results_frame.columnconfigure((0, 1, 2, 3), weight=1, uniform="group1")
-g2_results_frame.columnconfigure((4, 5, 6), weight=2, uniform="group1")
+g2_results_frame.grid(column=0, row=5, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
+g2_results_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
+g2_results_frame.columnconfigure((6, 7, 8), weight=2, uniform="group1")
 
 # create user gene 3 result frame
 g3_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g3_results_frame.grid(column=0, row=6, columnspan=7, sticky=(N, W, E, S), padx=5, pady=5)
-g3_results_frame.columnconfigure((0, 1, 2, 3), weight=1, uniform="group1")
-g3_results_frame.columnconfigure((4, 5, 6), weight=2, uniform="group1")
+g3_results_frame.grid(column=0, row=6, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
+g3_results_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
+g3_results_frame.columnconfigure((6, 7, 8), weight=2, uniform="group1")
 
 
 # CHECKS
@@ -659,6 +687,8 @@ site33_label.grid(column=3, row=19, padx=5, pady=2, sticky=(W))
 
 # BUTTONS
 
+result_path_var = StringVar()
+
 # Working directory button
 wdir_button = ttk.Button(input_frame, text="Set working directory", command=get_wdir)
 wdir_button.grid(column=0, row=21, sticky=(N, W, E, S), padx=5, pady=2)
@@ -675,42 +705,44 @@ abort_button = ttk.Button(input_frame, text="ABORT", state="normal", command=abo
 abort_button.grid(column=3, row=22, padx=5, pady=2, sticky=(W))
 
 # RESULTS button
-results_button = ttk.Button(results_labelframe, text="Results sheet", state="normal",
+results_button = ttk.Button(results_labelframe, text="Results sheet", state="disabled",
                             command=lambda x="Results sheet": get_results(x))
 results_button.grid(column=0, row=7, columnspan=3, sticky=(W), padx=5, pady=5)
 
 # ALIGNMENT BUTTONS
-alignment_button1 = ttk.Button(g1_results_frame, text="Alignment", state="normal", command=get_results)
-alignment_button1.grid(column=4, row=0, sticky=(W, E), padx=5, pady=5)
-alignment_button2 = ttk.Button(g2_results_frame, text="Alignment", state="normal", command=get_results)
-alignment_button2.grid(column=4, row=0, sticky=(W, E), padx=5, pady=5)
-alignment_button3 = ttk.Button(g3_results_frame, text="Alignment", state="normal", command=get_results)
-alignment_button3.grid(column=4, row=0, sticky=(W, E), padx=5, pady=5)
+alignment_button1 = ttk.Button(g1_results_frame, text="Alignment", state="disabled", command=get_alignment)
+alignment_button1.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
+alignment_button2 = ttk.Button(g2_results_frame, text="Alignment", state="disabled", command=get_results)
+alignment_button2.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
+alignment_button3 = ttk.Button(g3_results_frame, text="Alignment", state="disabled", command=get_results)
+alignment_button3.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
 
 # PAML graph buttons
-PAML_graph_button1 = ttk.Button(g1_results_frame, text="PAML graph", state="normal", command=get_results)
-PAML_graph_button1.grid(column=5, row=0, sticky=(W, E), padx=5, pady=5)
-PAML_graph_button2 = ttk.Button(g2_results_frame, text="PAML graph", state="normal", command=get_results)
-PAML_graph_button2.grid(column=5, row=0, sticky=(W, E), padx=5, pady=5)
-PAML_graph_button3 = ttk.Button(g3_results_frame, text="PAML graph", state="normal", command=get_results)
-PAML_graph_button3.grid(column=5, row=0, sticky=(W, E), padx=5, pady=5)
+PAML_graph_button1 = ttk.Button(g1_results_frame, text="Residues", state="disabled", command=get_results)
+PAML_graph_button1.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
+PAML_graph_button2 = ttk.Button(g2_results_frame, text="Residues", state="disabled", command=get_results)
+PAML_graph_button2.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
+PAML_graph_button3 = ttk.Button(g3_results_frame, text="Residues", state="disabled", command=get_results)
+PAML_graph_button3.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
 
 # Structure buttons
-structure_button1 = ttk.Button(g1_results_frame, text="Structure", state="normal", command=get_results)
-structure_button1.grid(column=6, row=0, sticky=(W, E), padx=5, pady=5)
-structure_button2 = ttk.Button(g2_results_frame, text="Structure", state="normal", command=get_results)
-structure_button2.grid(column=6, row=0, sticky=(W, E), padx=5, pady=5)
-structure_button3 = ttk.Button(g3_results_frame, text="Structure", state="normal", command=get_results)
-structure_button3.grid(column=6, row=0, sticky=(W, E), padx=5, pady=5)
+structure_button1 = ttk.Button(g1_results_frame, text="Structure", state="disabled", command=get_results)
+structure_button1.grid(column=8, row=0, sticky=(W, E), padx=2, pady=5)
+structure_button2 = ttk.Button(g2_results_frame, text="Structure", state="disabled", command=get_results)
+structure_button2.grid(column=8, row=0, sticky=(W, E), padx=2, pady=5)
+structure_button3 = ttk.Button(g3_results_frame, text="Structure", state="disabled", command=get_results)
+structure_button3.grid(column=8, row=0, sticky=(W, E), padx=2, pady=5)
 
 
 # LABELS
 
 #ttk.Label(results_frame, text="Results window").grid(column=0, row=0, sticky=(W))
-ttk.Label(results_labels, text="Gene").grid(column=0, row=3, padx=5)
-ttk.Label(results_labels, text="Pos. sel.").grid(column=1, row=3, padx=5)
-ttk.Label(results_labels, text="LRT").grid(column=2, row=3, padx=5)
-ttk.Label(results_labels, text="p-value").grid(column=3, row=3, padx=5)
+ttk.Label(results_labels, text="Gene").grid(column=0, row=3)
+ttk.Label(results_labels, text="P. sel.").grid(column=1, row=3)
+ttk.Label(results_labels, text="LRT").grid(column=2, row=3)
+ttk.Label(results_labels, text="p-value").grid(column=3, row=3)
+ttk.Label(results_labels, text="CDS").grid(column=4, row=3)
+ttk.Label(results_labels, text="species").grid(column=5, row=3)
 
 # ENTRIES
 
@@ -731,6 +763,15 @@ g1_pvalue_var = StringVar()
 g1_pvalue_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_pvalue_var, justify='center')
 g1_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g1_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
+g1_coverage_var = StringVar()
+g1_coverage_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_coverage_var, justify='center')
+g1_coverage_entry.grid(column=4, row=0, sticky=(W))
+g1_coverage_entry.config(foreground="black")  # text will be black despite disabled state
+g1_species_var = StringVar()
+g1_species_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_species_var, justify='center')
+g1_species_entry.grid(column=5, row=0, sticky=(W))
+g1_species_entry.config(foreground="black")  # text will be black despite disabled state
+
 
 # gene 2 results
 g2_results_var = StringVar()
@@ -749,6 +790,14 @@ g2_pvalue_var = StringVar()
 g2_pvalue_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_pvalue_var, justify='center')
 g2_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g2_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
+g2_coverage_var = StringVar()
+g2_coverage_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_coverage_var, justify='center')
+g2_coverage_entry.grid(column=4, row=0, sticky=(W))
+g2_coverage_entry.config(foreground="black")  # text will be black despite disabled state
+g2_species_var = StringVar()
+g2_species_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_species_var, justify='center')
+g2_species_entry.grid(column=5, row=0, sticky=(W))
+g2_species_entry.config(foreground="black")  # text will be black despite disabled state
 
 # gene 3 results
 g3_results_var = StringVar()
@@ -767,6 +816,14 @@ g3_pvalue_var = StringVar()
 g3_pvalue_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_pvalue_var, justify='center')
 g3_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g3_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
+g3_coverage_var = StringVar()
+g3_coverage_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_coverage_var, justify='center')
+g3_coverage_entry.grid(column=4, row=0, sticky=(W))
+g3_coverage_entry.config(foreground="black")  # text will be black despite disabled state
+g3_species_var = StringVar()
+g3_species_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_species_var, justify='center')
+g3_species_entry.grid(column=5, row=0, sticky=(W))
+g3_species_entry.config(foreground="black")  # text will be black despite disabled state
 
 
 

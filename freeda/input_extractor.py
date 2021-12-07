@@ -279,21 +279,6 @@ def get_uniprot_id(ref_species, protein):
 def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids):
     """Finds and extracts structure prediction model from AlphaFold database for the species"""
 
-    if ref_species == "Mm":
-        handle = "MOUSE"
-    elif ref_species == "Rn":
-        handle = "RAT"
-    elif ref_species == "Hs":
-        handle = "HUMAN"
-
-    # ALPHA FOLD DOES NOT SUPPORT CATS or DOGS SO FREEDA IS DIRECTED TO FAIL WHEN SEARCHING HUMAN DATABASE
-    elif ref_species == "Fc":
-        handle = "HUMAN"
-    elif ref_species == "Cf":
-        handle = "HUMAN"
-    elif ref_species == "Gg":
-        handle = "HUMAN"
-
     # make folder to host the structure prediction
     structure_path = wdir + "Structures/" + protein + "_" + ref_species
     if not os.path.isdir(structure_path):
@@ -303,63 +288,42 @@ def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids)
     clear_structure_files(structure_path)
 
     # find prediction model based on possible uniprot ids for the protein
-    path_to_ref_species_structures = [path for path in glob.glob(wdir + "*") if path.endswith(handle + ".tar")][0]
-    tar = tarfile.open(path_to_ref_species_structures)
     message = "\nLooking for structure in AlphaFold database for: %s ...\n" % protein
     logging.info(message)
-    #print("\nLooking for structure in AlphaFold database for: %s ...\n" % protein)
-    all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]  # getnames() takes longest
-    # this assumes that there is only one prediction model for a given protein in AlphaFold
-    all_structures_compressed = [s for s in set(all_structures) if s.split("-")[1] in possible_uniprot_ids]
 
-    # try finding the structure
     model_seq = ""
-    uniprot_id = None
+    protein_filepath = wdir + protein + "_" + ref_species + ".pdb"
 
-    try:
-        structure_filename_compressed = all_structures_compressed[0]
-        uniprot_id = structure_filename_compressed.split("-")[1]
+    for uniprot_id in possible_uniprot_ids:
+        # gets a temp file
+        stderr = subprocess.call(["wget", "-O", wdir + "protein.pdb",
+                                  "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + "-F1-model_v1.pdb"])
+        # stderr ERROR 404: Not Found is outputs 8
+        if stderr == 8:
+            os.remove(wdir + "protein.pdb")
+        # rename the temp file
+        else:
+            os.rename(wdir + "protein.pdb", protein_filepath)
 
-        # extract a compressed model
-        path_to_tarfile = wdir + structure_filename_compressed
-        tar.extract(structure_filename_compressed)
+    if not os.path.isfile(wdir + protein + "_" + ref_species + ".pdb"):
+        message = "...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND " \
+                  "-> Cannot overlay FREEDA results onto a 3D structure\n" % protein
+        logging.info(message)
+        with open(structure_path + "/model_incompatible.txt", "w") as f:
+            f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
 
-        # need to use subprocess to decompress (tarfile or gunzip modules don't work directly)
-        cmd = ["gunzip", path_to_tarfile] # deletes zipped file automatically
-        subprocess.call(cmd)
+        return model_seq, uniprot_id
 
-        # define path to decompressed file and move to Structures folder
-        structure_filename_decompressed = structure_filename_compressed.replace(".gz", "")
-        path_to_tarfile_decompressed = wdir + structure_filename_decompressed
-
-        # silence warnings from Biopython about missing header in model (has to follow import)
-        import warnings
-        from Bio import BiopythonWarning
-        warnings.simplefilter('ignore', BiopythonWarning)
-
+    else:
         # get model sequence and length
-        with open(path_to_tarfile_decompressed, 'r') as pdb_file:
+        with open(protein_filepath, 'r') as pdb_file:
             for record in SeqIO.parse(pdb_file, 'pdb-atom'):
                 model_seq = record.seq
 
         message = "Based on uniprot id: %s structure prediction for protein: %s has been found (%s aa)" \
-                                                  % (uniprot_id, protein, len(model_seq))
+                  % (uniprot_id, protein, len(model_seq))
         logging.info(message)
-        #print("Based on uniprot id: %s structure prediction for protein: %s has been found (%s aa)"
-        #                                          % (uniprot_id, protein, len(model_seq)))
-        shutil.move(path_to_tarfile_decompressed, structure_path + "/" + structure_filename_decompressed)
-
-        return model_seq, uniprot_id
-
-    # didnt find structure
-    except IndexError:
-        message = "...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND " \
-              "-> Cannot overlay FREEDA results onto a 3D structure\n" % protein
-        logging.info(message)
-        #print("...SUGGESTION... : You can use your own model "
-        #      "(ex. from PDB; fragments are ok but no sequence mismatches!)\n")
-        with open(structure_path + "/model_incompatible.txt", "w") as f:
-            f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
+        shutil.move(protein_filepath, structure_path + "/" + protein + "_" + ref_species + ".pdb")
 
         return model_seq, uniprot_id
 
@@ -1044,6 +1008,94 @@ def check_microexons(wdir, protein_name, ref_species):
 
 """
 
+OLD VERSION:
+
+def fetch_structure_prediction(wdir, ref_species, protein, possible_uniprot_ids):
+    Finds and extracts structure prediction model from AlphaFold database for the species
+
+    if ref_species == "Mm":
+        handle = "MOUSE"
+    elif ref_species == "Rn":
+        handle = "RAT"
+    elif ref_species == "Hs":
+        handle = "HUMAN"
+
+    # ALPHA FOLD DOES NOT SUPPORT CATS or DOGS SO FREEDA IS DIRECTED TO FAIL WHEN SEARCHING HUMAN DATABASE
+    elif ref_species == "Fc":
+        handle = "HUMAN"
+    elif ref_species == "Cf":
+        handle = "HUMAN"
+    elif ref_species == "Gg":
+        handle = "HUMAN"
+
+    # make folder to host the structure prediction
+    structure_path = wdir + "Structures/" + protein + "_" + ref_species
+    if not os.path.isdir(structure_path):
+        os.makedirs(structure_path)
+
+    # remove all non pdb files and all hidden files
+    clear_structure_files(structure_path)
+
+    # find prediction model based on possible uniprot ids for the protein
+    path_to_ref_species_structures = [path for path in glob.glob(wdir + "*") if path.endswith(handle + ".tar")][0]
+    tar = tarfile.open(path_to_ref_species_structures)
+    message = "\nLooking for structure in AlphaFold database for: %s ...\n" % protein
+    logging.info(message)
+    #print("\nLooking for structure in AlphaFold database for: %s ...\n" % protein)
+    all_structures = [name for name in tar.getnames() if name.endswith(".pdb.gz")]  # getnames() takes longest
+    # this assumes that there is only one prediction model for a given protein in AlphaFold
+    all_structures_compressed = [s for s in set(all_structures) if s.split("-")[1] in possible_uniprot_ids]
+
+    # try finding the structure
+    model_seq = ""
+    uniprot_id = None
+
+    try:
+        structure_filename_compressed = all_structures_compressed[0]
+        uniprot_id = structure_filename_compressed.split("-")[1]
+
+        # extract a compressed model
+        path_to_tarfile = wdir + structure_filename_compressed
+        tar.extract(structure_filename_compressed)
+
+        # need to use subprocess to decompress (tarfile or gunzip modules don't work directly)
+        cmd = ["gunzip", path_to_tarfile] # deletes zipped file automatically
+        subprocess.call(cmd)
+
+        # define path to decompressed file and move to Structures folder
+        structure_filename_decompressed = structure_filename_compressed.replace(".gz", "")
+        path_to_tarfile_decompressed = wdir + structure_filename_decompressed
+
+        # silence warnings from Biopython about missing header in model (has to follow import)
+        import warnings
+        from Bio import BiopythonWarning
+        warnings.simplefilter('ignore', BiopythonWarning)
+
+        # get model sequence and length
+        with open(path_to_tarfile_decompressed, 'r') as pdb_file:
+            for record in SeqIO.parse(pdb_file, 'pdb-atom'):
+                model_seq = record.seq
+
+        message = "Based on uniprot id: %s structure prediction for protein: %s has been found (%s aa)" \
+                                                  % (uniprot_id, protein, len(model_seq))
+        logging.info(message)
+        #print("Based on uniprot id: %s structure prediction for protein: %s has been found (%s aa)"
+        #                                          % (uniprot_id, protein, len(model_seq)))
+        shutil.move(path_to_tarfile_decompressed, structure_path + "/" + structure_filename_decompressed)
+
+        return model_seq, uniprot_id
+
+    # didnt find structure
+    except IndexError:
+        message = "...WARNING... : Structure prediction for protein: %s HAS NOT BEEN FOUND " \
+              "-> Cannot overlay FREEDA results onto a 3D structure\n" % protein
+        logging.info(message)
+        #print("...SUGGESTION... : You can use your own model "
+        #      "(ex. from PDB; fragments are ok but no sequence mismatches!)\n")
+        with open(structure_path + "/model_incompatible.txt", "w") as f:
+            f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
+
+        return model_seq, uniprot_id
 
 
 
