@@ -348,47 +348,79 @@ def get_results(final_PAML_log_dict):
 
     if gene_name1.get():
         g1_results_var.set(proteins.pop(0))
-        g1_lrt_var.set(round(float(lrts.pop(0)), ndigits=3))
-        pvalue = round(float(pvalues.pop(0)), ndigits=4)
-        if pvalue < 0.001:
-            g1_pvalue_var.set("<0.001")
-        if pvalue < 0.05:
-            g1_pos_sel_var.set("YES")
-            g1_pos_sel_entry.config(foreground="magenta")
+        lrt = lrts.pop(0)
+        if lrt == "None":
+            g1_lrt_var.set("NA")
         else:
-            g1_pos_sel_var.set("NO")
-            g1_pos_sel_entry.config(foreground="black")
+            g1_lrt_var.set(round(float(lrt), ndigits=3))
+
+        pvalue = pvalues.pop(0)
+        if pvalue == "None":
+            g1_pvalue_var.set("NA")
+        else:
+            if pvalue <= 0.001:
+                g1_pvalue_var.set("<0.001")
+            if pvalue > 0.001:
+                g1_pvalue_var.set(round(float(pvalue), ndigits=3))
+                if pvalue < 0.05:
+                    g1_pos_sel_var.set("YES")
+                    g1_pos_sel_entry.config(foreground="magenta")
+            if pvalue >= 0.05:
+                g1_pos_sel_var.set("NO")
+                g1_pos_sel_entry.config(foreground="black")
+
         g1_coverage_var.set(coverage.pop(0))
         g1_species_var.set(species.pop(0))
 
     if gene_name2.get():
         g2_results_var.set(proteins.pop(0))
-        g2_lrt_var.set(round(float(lrts.pop(0)), ndigits=3))
-        pvalue = round(float(pvalues.pop(0)), ndigits=4)
-        if pvalue < 0.001:
-            g2_pvalue_var.set("<0.001")
-        if pvalue < 0.05:
-            g2_pos_sel_var.set("YES")
-            g2_pos_sel_entry.config(foreground="magenta")
+        lrt = lrts.pop(0)
+        if lrt == "None":
+            g2_lrt_var.set("NA")
         else:
-            g2_pos_sel_var.set("NO")
-            g2_pos_sel_entry.config(foreground="black")
+            g2_lrt_var.set(round(float(lrt), ndigits=3))
+
+        pvalue = pvalues.pop(0)
+        if pvalue == "None":
+            g2_pvalue_var.set("NA")
+        else:
+            if pvalue <= 0.001:
+                g2_pvalue_var.set("<0.001")
+            if pvalue > 0.001:
+                g2_pvalue_var.set(round(float(pvalue), ndigits=3))
+                if pvalue < 0.05:
+                    g2_pos_sel_var.set("YES")
+                    g2_pos_sel_entry.config(foreground="magenta")
+            if pvalue >= 0.05:
+                g2_pos_sel_var.set("NO")
+                g2_pos_sel_entry.config(foreground="black")
+
         g2_coverage_var.set(coverage.pop(0))
         g2_species_var.set(species.pop(0))
 
     if gene_name3.get():
         g3_results_var.set(proteins.pop(0))
-        g3_lrt_var.set(round(float(lrts.pop(0)), ndigits=3))
-        pvalue = round(float(pvalues.pop(0)), ndigits=4)
-        if pvalue < 0.001:
-            g3_pvalue_var.set("<0.001")
-        g3_pvalue_var.set(pvalue)
-        if pvalue < 0.05:
-            g3_pos_sel_var.set("YES")
-            g3_pos_sel_entry.config(foreground="magenta")
+        lrt = lrts.pop(0)
+        if lrt == "None":
+            g3_lrt_var.set("NA")
         else:
-            g3_pos_sel_var.set("NO")
-            g3_pos_sel_entry.config(foreground="black")
+            g3_lrt_var.set(round(float(lrt), ndigits=3))
+
+        pvalue = pvalues.pop(0)
+        if pvalue == "None":
+            g3_pvalue_var.set("NA")
+        else:
+            if pvalue <= 0.001:
+                g3_pvalue_var.set("<0.001")
+            if pvalue > 0.001:
+                g3_pvalue_var.set(round(float(pvalue), ndigits=3))
+                if pvalue < 0.05:
+                    g3_pos_sel_var.set("YES")
+                    g3_pos_sel_entry.config(foreground="magenta")
+            if pvalue >= 0.05:
+                g3_pos_sel_var.set("NO")
+                g3_pos_sel_entry.config(foreground="black")
+
         g3_coverage_var.set(coverage.pop(0))
         g3_species_var.set(species.pop(0))
 
