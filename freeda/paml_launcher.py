@@ -42,8 +42,6 @@ import pyensembl
 def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner, gui=None, logging_window=None):
     """Main function controlling building final alignments, gene trees and PAML anaylsis"""
 
-    logging.info("\n\n======================== PAML ANALYSIS ========================")
-
     failed_paml = []
     start_time = time.time()
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
@@ -64,7 +62,9 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner, gui
     else:
         # configure the logger
         logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
-    
+
+    logging.info("\n\n======================== PAML ANALYSIS ========================")
+
     # make an empty template for all possible species
     all_species = [names[0] for names in genomes_preprocessing.get_names(ref_species)]
 

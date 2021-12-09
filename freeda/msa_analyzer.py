@@ -24,7 +24,8 @@ import glob
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons, aligner):
+def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exons, expected_exons, aligner,
+                all_proteins_dict=None):
     """Analyses MSA per contig -> finds exons, clones them into cds"""
 
     # make a dictionary with exon number as key and sequences, names as values -> include microexons as empty lists
@@ -50,7 +51,8 @@ def analyse_MSA(wdir, ref_species, MSA_path, protein_name, genome_name, ref_exon
         cds, locus, gene = index_positions(seqs)
         # find all exons in contig locus if no retrotransposition was detected
         exons, possible_retrotransposition, synteny, RETRO_score, duplication_score \
-            = exon_finder.find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons)
+            = exon_finder.find_exons(protein_name, cds, locus, gene, contig_name, ref_exons,
+                                     expected_exons, all_proteins_dict)
         # skip this contig if possible retrotransposition event was detected
         # likelihood of false positive RETRO is more than 1 per 3 intronic exons
         # skip also contigs that are likely duplications or tandem repetitions

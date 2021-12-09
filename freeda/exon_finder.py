@@ -19,7 +19,7 @@ retrotransposition. It also calls synteny and duplications.
 import logging
 
 
-def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # works well
+def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons, all_proteins_dict=None): # works well
     """Finds and calls exons based on the cds and exon make-up from reference species"""
 
     last_exon = expected_exons[-1]
@@ -49,8 +49,11 @@ def find_exons(cds, locus, gene, contig_name, ref_exons, expected_exons): # work
     Cterm_synteny_message = None
     single_exon = True
     non_ACGT = False
+    duplication_score_parameter = False
 
-    duplication_score_parameter = False # THIS WILL BE PART OF NEW MODULE
+    if all_proteins_dict:
+        if all_proteins_dict[protein][0] is True:
+            duplication_score_parameter = True
 
     # all sequences are in capital letters at this point
     list_of_non_ACGT = ["N", "Y", "R", "W", "S", "K", "M", "D", "H", "V", "B", "X"]

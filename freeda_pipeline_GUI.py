@@ -54,8 +54,11 @@ def thread_freeda():
         # makes a deamon thread allowing it to be killed anytime (though not advised generally)
         freeda_thread.daemon = True
         freeda_thread.start()
+        block_user_entries()
     else:
         logging.info("\n--------------- TRY AGAIN :D -------------------\n")
+        # unblock user input entries
+        ublock_user_entries()
 
 
 def abort_freeda():
@@ -102,6 +105,84 @@ def check_input():
     return ready
 
 
+def block_user_entries():
+    """Blocks the user input entries"""
+
+    # disable user input entries
+    name1.configure(state="disabled")
+    name2.configure(state="disabled")
+    name3.configure(state="disabled")
+
+    site11_start.configure(state="disabled")
+    site11_end.configure(state="disabled")
+    site11_label.configure(state="disabled")
+    site12_start.configure(state="disabled")
+    site12_end.configure(state="disabled")
+    site12_label.configure(state="disabled")
+    site13_start.configure(state="disabled")
+    site13_end.configure(state="disabled")
+    site13_label.configure(state="disabled")
+
+    site21_start.configure(state="disabled")
+    site21_end.configure(state="disabled")
+    site21_label.configure(state="disabled")
+    site22_start.configure(state="disabled")
+    site22_end.configure(state="disabled")
+    site22_label.configure(state="disabled")
+    site23_start.configure(state="disabled")
+    site23_end.configure(state="disabled")
+    site23_label.configure(state="disabled")
+
+    site31_start.configure(state="disabled")
+    site31_end.configure(state="disabled")
+    site31_label.configure(state="disabled")
+    site32_start.configure(state="disabled")
+    site32_end.configure(state="disabled")
+    site32_label.configure(state="disabled")
+    site33_start.configure(state="disabled")
+    site33_end.configure(state="disabled")
+    site33_label.configure(state="disabled")
+
+
+def ublock_user_entries():
+    """Unblocks the disabled entries allowing running FREEDA again"""
+
+    # disable user input entries
+    name1.configure(state="normal")
+    name2.configure(state="normal")
+    name3.configure(state="normal")
+
+    site11_start.configure(state="normal")
+    site11_end.configure(state="normal")
+    site11_label.configure(state="normal")
+    site12_start.configure(state="normal")
+    site12_end.configure(state="normal")
+    site12_label.configure(state="normal")
+    site13_start.configure(state="normal")
+    site13_end.configure(state="normal")
+    site13_label.configure(state="normal")
+
+    site21_start.configure(state="normal")
+    site21_end.configure(state="normal")
+    site21_label.configure(state="normal")
+    site22_start.configure(state="normal")
+    site22_end.configure(state="normal")
+    site22_label.configure(state="normal")
+    site23_start.configure(state="normal")
+    site23_end.configure(state="normal")
+    site23_label.configure(state="normal")
+
+    site31_start.configure(state="normal")
+    site31_end.configure(state="normal")
+    site31_label.configure(state="normal")
+    site32_start.configure(state="normal")
+    site32_end.configure(state="normal")
+    site32_label.configure(state="normal")
+    site33_start.configure(state="normal")
+    site33_end.configure(state="normal")
+    site33_label.configure(state="normal")
+
+
 def freeda_pipeline():
     """Main function running all freeda pipeline"""
 
@@ -115,30 +196,20 @@ def freeda_pipeline():
     wdir = wdirectory.get() + "/"
     ref_species = clade.get()
     t = threshold.get()
-    protein1 = gene_name1.get()
-    protein2 = gene_name2.get()
-    protein3 = gene_name3.get()
-
-
-    # get user defined sites
-    # gene 1
-    gene1_site1_start = site11_start.get()
-    gene1_site1_end = site11_end.get()
-    gene1_site1_label = site11_label.get()
-
-    gene1_site2_start = site12_start.get()
-    gene1_site2_end = site12_end.get()
-    gene1_site2_label = site12_label.get()
-
-    gene1_site3_start = site13_start.get()
-    gene1_site3_end = site13_end.get()
-    gene1_site3_label = site13_label.get()
-
-    # gene 2
-    gene2_site1_start = site21_start.get()
-
-    # gene 3
-    gene3_site1_start = site31_start.get()
+    all_proteins_dict = {gene_name1.get(): [dup1_var.get(),
+                                    [site11_label.get(), site11_start.get(), site11_end.get()],
+                                    [site12_label.get(), site12_start.get(), site12_end.get()],
+                                    [site13_label.get(), site13_start.get(), site13_end.get()]],
+                         gene_name2.get(): [dup2_var.get(),
+                                    [site21_label.get(), site21_start.get(), site21_end.get()],
+                                    [site22_label.get(), site22_start.get(), site22_end.get()],
+                                    [site23_label.get(), site23_start.get(), site23_end.get()]],
+                         gene_name3.get(): [dup3_var.get(),
+                                    [site31_label.get(), site31_start.get(), site31_end.get()],
+                                    [site32_label.get(), site32_start.get(), site32_end.get()],
+                                    [site33_label.get(), site33_start.get(), site33_end.get()]]}
+    # get a list of proteins
+    all_proteins = [protein for protein in all_proteins_dict if protein != ""]
 
     global logging_window
 
@@ -165,10 +236,6 @@ def freeda_pipeline():
     # generate a reference Genome object
     ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
         biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
-
-    # check if provided gene names are present in ensembl object for ref assembly
-    expected_proteins = [protein1, protein2, protein3]
-    all_proteins = set([protein for protein in expected_proteins if protein is not ""])
 
     if not input_extractor.validate_gene_names(all_proteins, all_genes_ensembl):
         return
@@ -235,7 +302,7 @@ def freeda_pipeline():
     if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_proteins):
         result_path = exon_extractor.analyse_blast_results(wdir, wdir + "Blast_output/",
                                                            ref_species, int(t), all_proteins, all_genomes, aligner, gui,
-                                                           logging_window)
+                                                           logging_window, all_proteins_dict)
         # set a StringVar for GUI
         result_path_var.set(result_path)
 
@@ -274,7 +341,7 @@ def freeda_pipeline():
         # check if model seq and input seq match and check if exactly one model exists
         elif structure_builder.check_structure(wdir, ref_species, protein):
             successful = structure_builder.run_pymol(wdir, ref_species, result_path, protein, prots_under_pos_sel,
-                                                                 offset=None)
+                                                                 all_proteins_dict)
             if not successful:
                 message = "\nThe structure for : %s was not built successfully." % protein
                 logging.info(message)
@@ -289,8 +356,11 @@ def freeda_pipeline():
 
     logging.info("\nYou reached the end of FREEDA pipeline.")
 
-    result_path_var.set(result_path)
-    alignment_button1["state"] = "enable"
+    # allow user to run freeda again
+    ublock_user_entries()
+
+    #result_path_var.set(result_path)
+    #alignment_button1["state"] = "enable"
 
 
 def check_gene_name(gene_name, op):
@@ -321,13 +391,29 @@ def check_functional_residues(residue, op):
     analyze_button.state(["!disabled"] if valid else ["disabled"])
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[0-9]+$", residue) is not None
+        ok_so_far = re.match(r"^(?![\s\S])|[0-9]+$", residue) is not None  # ^(?![\s\S]) -> completely empty
         if not ok_so_far:
             error_message2.set(message2)
         return ok_so_far
     elif op == "focusout":
         if not valid:
             error_message2.set(message2)
+    return valid
+
+
+def check_label(label, op):
+    """Checks if user provided a valid label name"""
+    # accept only entry starting with one capital letter followed by small or big letters or numbers
+    valid = re.match(r"^[A-Za-z0-9]+$", label) is not None
+    # button can be clicked only if gene names are valid
+    analyze_button.state(["!disabled"] if valid else ["disabled"])
+    # keystroke validation
+    if op == "key":
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None  # ^(?![\s\S]) -> completely empty
+        return ok_so_far
+    elif op == "focusout":
+        if valid:
+            analyze_button.state(["!disabled"])
     return valid
 
 
@@ -358,13 +444,14 @@ def get_results(final_PAML_log_dict):
         if pvalue == "None":
             g1_pvalue_var.set("NA")
         else:
+            pvalue = float(pvalue)
+            if pvalue < 0.05:
+                g1_pos_sel_var.set("YES")
+                g1_pos_sel_entry.config(foreground="magenta")
             if pvalue <= 0.001:
                 g1_pvalue_var.set("<0.001")
             if pvalue > 0.001:
                 g1_pvalue_var.set(round(float(pvalue), ndigits=3))
-                if pvalue < 0.05:
-                    g1_pos_sel_var.set("YES")
-                    g1_pos_sel_entry.config(foreground="magenta")
             if pvalue >= 0.05:
                 g1_pos_sel_var.set("NO")
                 g1_pos_sel_entry.config(foreground="black")
@@ -384,13 +471,14 @@ def get_results(final_PAML_log_dict):
         if pvalue == "None":
             g2_pvalue_var.set("NA")
         else:
+            pvalue = float(pvalue)
+            if pvalue < 0.05:
+                g2_pos_sel_var.set("YES")
+                g2_pos_sel_entry.config(foreground="magenta")
             if pvalue <= 0.001:
                 g2_pvalue_var.set("<0.001")
             if pvalue > 0.001:
                 g2_pvalue_var.set(round(float(pvalue), ndigits=3))
-                if pvalue < 0.05:
-                    g2_pos_sel_var.set("YES")
-                    g2_pos_sel_entry.config(foreground="magenta")
             if pvalue >= 0.05:
                 g2_pos_sel_var.set("NO")
                 g2_pos_sel_entry.config(foreground="black")
@@ -410,13 +498,14 @@ def get_results(final_PAML_log_dict):
         if pvalue == "None":
             g3_pvalue_var.set("NA")
         else:
+            pvalue = float(pvalue)
+            if pvalue < 0.05:
+                g3_pos_sel_var.set("YES")
+                g3_pos_sel_entry.config(foreground="magenta")
             if pvalue <= 0.001:
                 g3_pvalue_var.set("<0.001")
             if pvalue > 0.001:
                 g3_pvalue_var.set(round(float(pvalue), ndigits=3))
-                if pvalue < 0.05:
-                    g3_pos_sel_var.set("YES")
-                    g3_pos_sel_entry.config(foreground="magenta")
             if pvalue >= 0.05:
                 g3_pos_sel_var.set("NO")
                 g3_pos_sel_entry.config(foreground="black")
@@ -510,36 +599,37 @@ logging_frame.grid(column=0, row=0, columnspan=9, sticky=(N, W, E, S), padx=5, p
 results_labelframe = ttk.LabelFrame(output_frame, text="Results window")
 results_labelframe.grid(column=0, row=1, columnspan=9, padx=5, pady=5, sticky=(N, W))
 results_labelframe.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
-results_labelframe.columnconfigure((6, 7, 8), weight=2, uniform="group1")
+results_labelframe.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create results labels frame
 results_labels = ttk.Frame(results_labelframe, padding="5 5 5 5")
 results_labels.grid(column=0, row=3, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
 results_labels.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
-results_labels.columnconfigure((6, 7, 8), weight=2, uniform="group1")
+results_labels.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 1 result frame
 g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g1_results_frame.grid(column=0, row=4, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
 g1_results_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
-g1_results_frame.columnconfigure((6, 7, 8), weight=2, uniform="group1")
+g1_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 2 result frame
 g2_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g2_results_frame.grid(column=0, row=5, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
 g2_results_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
-g2_results_frame.columnconfigure((6, 7, 8), weight=2, uniform="group1")
+g2_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 3 result frame
 g3_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g3_results_frame.grid(column=0, row=6, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
 g3_results_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
-g3_results_frame.columnconfigure((6, 7, 8), weight=2, uniform="group1")
+g3_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
 
 # CHECKS
 check_gene_name_wrapper = (settings_frame.register(check_gene_name), "%P", "%V")
 check_functional_residues = (settings_frame.register(check_functional_residues), "%P", "%V")
+check_label = (settings_frame.register(check_label), "%P", "%V")
 
 # ERRORS
 error_message1 = StringVar()
@@ -605,9 +695,9 @@ gene_name1 = StringVar()
 ttk.Label(gene1_frame, text="Gene name").grid(column=0, row=11, padx=6, sticky=(W))
 name1 = ttk.Entry(gene1_frame, textvariable=gene_name1, validate="all", validatecommand=check_gene_name_wrapper)
 name1.grid(column=0, row=12, padx=5, pady=2, sticky=(W))
-dup1 = StringVar()
+dup1_var = BooleanVar()
 ttk.Checkbutton(gene1_frame, text="Duplication expected", #command=duplication_expected,
-                              variable=dup1, onvalue="on", offvalue="off").grid(column=0, row=13, padx=6, sticky=(W))
+                        variable=dup1_var, onvalue=1, offvalue=0).grid(column=0, row=13, padx=6, sticky=(W))
 
 s11_start = StringVar()
 s11_end = StringVar()
@@ -616,7 +706,7 @@ site11_start = ttk.Entry(gene1_frame, textvariable=s11_start, validate="all", va
 site11_start.grid(column=1, row=11, padx=5, pady=2, sticky=(W))
 site11_end = ttk.Entry(gene1_frame, textvariable=s11_end, validate="all", validatecommand=check_functional_residues)
 site11_end.grid(column=2, row=11, padx=5, pady=2, sticky=(W))
-site11_label = ttk.Entry(gene1_frame, textvariable=s11_label, validate="all")
+site11_label = ttk.Entry(gene1_frame, textvariable=s11_label, validate="all", validatecommand=check_label)
 site11_label.grid(column=3, row=11, padx=5, pady=2, sticky=(W))
 
 s12_start = StringVar()
@@ -626,7 +716,7 @@ site12_start = ttk.Entry(gene1_frame, textvariable=s12_start, validate="all", va
 site12_start.grid(column=1, row=12, padx=5, pady=2, sticky=(W))
 site12_end = ttk.Entry(gene1_frame, textvariable=s12_end, validate="all", validatecommand=check_functional_residues)
 site12_end.grid(column=2, row=12, padx=5, pady=2, sticky=(W))
-site12_label = ttk.Entry(gene1_frame, textvariable=s12_label, validate="all")
+site12_label = ttk.Entry(gene1_frame, textvariable=s12_label, validate="all", validatecommand=check_label)
 site12_label.grid(column=3, row=12, padx=5, pady=2, sticky=(W))
 
 s13_start = StringVar()
@@ -636,7 +726,7 @@ site13_start = ttk.Entry(gene1_frame, textvariable=s13_start, validate="all", va
 site13_start.grid(column=1, row=13, padx=5, pady=2, sticky=(W))
 site13_end = ttk.Entry(gene1_frame, textvariable=s13_end, validate="all", validatecommand=check_functional_residues)
 site13_end.grid(column=2, row=13, padx=5, pady=2, sticky=(W))
-site13_label = ttk.Entry(gene1_frame, textvariable=s13_label, validate="all")
+site13_label = ttk.Entry(gene1_frame, textvariable=s13_label, validate="all", validatecommand=check_label)
 site13_label.grid(column=3, row=13, padx=5, pady=2, sticky=(W))
 
 # USER INPUT GENE 2
@@ -644,9 +734,9 @@ gene_name2 = StringVar()
 ttk.Label(gene2_frame, text="Gene name").grid(column=0, row=14, padx=6, sticky=(W))
 name2 = ttk.Entry(gene2_frame, textvariable=gene_name2, validate="all", validatecommand=check_gene_name_wrapper)
 name2.grid(column=0, row=15, padx=5, pady=5, sticky=(W))
-dup2 = StringVar()
+dup2_var = BooleanVar()
 ttk.Checkbutton(gene2_frame, text="Duplication expected", #command=duplication_expected,
-                              variable=dup2, onvalue="on", offvalue="off").grid(column=0, row=16, padx=6, sticky=(W))
+                        variable=dup2_var, onvalue=1, offvalue=0).grid(column=0, row=16, padx=6, sticky=(W))
 
 s21_start = StringVar()
 s21_end = StringVar()
@@ -655,7 +745,7 @@ site21_start = ttk.Entry(gene2_frame, textvariable=s21_start, validate="all", va
 site21_start.grid(column=1, row=14, padx=5, pady=2, sticky=(W))
 site21_end = ttk.Entry(gene2_frame, textvariable=s21_end, validate="all", validatecommand=check_functional_residues)
 site21_end.grid(column=2, row=14, padx=5, pady=2, sticky=(W))
-site21_label = ttk.Entry(gene2_frame, textvariable=s21_label, validate="all")
+site21_label = ttk.Entry(gene2_frame, textvariable=s21_label, validate="all", validatecommand=check_label)
 site21_label.grid(column=3, row=14, padx=5, pady=2, sticky=(W))
 
 s22_start = StringVar()
@@ -665,7 +755,7 @@ site22_start = ttk.Entry(gene2_frame, textvariable=s22_start, validate="all", va
 site22_start.grid(column=1, row=15, padx=5, pady=2, sticky=(W))
 site22_end = ttk.Entry(gene2_frame, textvariable=s22_end, validate="all", validatecommand=check_functional_residues)
 site22_end.grid(column=2, row=15, padx=5, pady=2, sticky=(W))
-site22_label = ttk.Entry(gene2_frame, textvariable=s22_label, validate="all")
+site22_label = ttk.Entry(gene2_frame, textvariable=s22_label, validate="all", validatecommand=check_label)
 site22_label.grid(column=3, row=15, padx=5, pady=2, sticky=(W))
 
 s23_start = StringVar()
@@ -675,7 +765,7 @@ site23_start = ttk.Entry(gene2_frame, textvariable=s23_start, validate="all", va
 site23_start.grid(column=1, row=16, padx=5, pady=2, sticky=(W))
 site23_end = ttk.Entry(gene2_frame, textvariable=s23_end, validate="all", validatecommand=check_functional_residues)
 site23_end.grid(column=2, row=16, padx=5, pady=2, sticky=(W))
-site23_label = ttk.Entry(gene2_frame, textvariable=s23_label, validate="all")
+site23_label = ttk.Entry(gene2_frame, textvariable=s23_label, validate="all", validatecommand=check_label)
 site23_label.grid(column=3, row=16, padx=5, pady=2, sticky=(W))
 
 # USER INPUT GENE 3
@@ -683,9 +773,9 @@ gene_name3 = StringVar()
 ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, sticky=(W))
 name3 = ttk.Entry(gene3_frame, textvariable=gene_name3, validate="all", validatecommand=check_gene_name_wrapper)
 name3.grid(column=0, row=18, padx=5, pady=5, sticky=(W))
-dup3 = StringVar()
+dup3_var = BooleanVar()
 ttk.Checkbutton(gene3_frame, text="Duplication expected", #command=duplication_expected,
-                              variable=dup3, onvalue="on", offvalue="off").grid(column=0, row=19, padx=6, sticky=(W))
+                        variable=dup3_var, onvalue=1, offvalue=0).grid(column=0, row=19, padx=6, sticky=(W))
 
 s31_start = StringVar()
 s31_end = StringVar()
@@ -694,7 +784,7 @@ site31_start = ttk.Entry(gene3_frame, textvariable=s31_start, validate="all", va
 site31_start.grid(column=1, row=17, padx=5, pady=2, sticky=(W))
 site31_end = ttk.Entry(gene3_frame, textvariable=s31_end, validate="all", validatecommand=check_functional_residues)
 site31_end.grid(column=2, row=17, padx=5, pady=2, sticky=(W))
-site31_label = ttk.Entry(gene3_frame, textvariable=s31_label, validate="all")
+site31_label = ttk.Entry(gene3_frame, textvariable=s31_label, validate="all", validatecommand=check_label)
 site31_label.grid(column=3, row=17, padx=5, pady=2, sticky=(W))
 
 s32_start = StringVar()
@@ -704,7 +794,7 @@ site32_start = ttk.Entry(gene3_frame, textvariable=s32_start, validate="all", va
 site32_start.grid(column=1, row=18, padx=5, pady=2, sticky=(W))
 site32_end = ttk.Entry(gene3_frame, textvariable=s32_end, validate="all", validatecommand=check_functional_residues)
 site32_end.grid(column=2, row=18, padx=5, pady=2, sticky=(W))
-site32_label = ttk.Entry(gene3_frame, textvariable=s32_label, validate="all")
+site32_label = ttk.Entry(gene3_frame, textvariable=s32_label, validate="all", validatecommand=check_label)
 site32_label.grid(column=3, row=18, padx=5, pady=2, sticky=(W))
 
 s33_start = StringVar()
@@ -714,7 +804,7 @@ site33_start = ttk.Entry(gene3_frame, textvariable=s33_start, validate="all", va
 site33_start.grid(column=1, row=19, padx=5, pady=2, sticky=(W))
 site33_end = ttk.Entry(gene3_frame, textvariable=s33_end, validate="all", validatecommand=check_functional_residues)
 site33_end.grid(column=2, row=19, padx=5, pady=2, sticky=(W))
-site33_label = ttk.Entry(gene3_frame, textvariable=s33_label, validate="all")
+site33_label = ttk.Entry(gene3_frame, textvariable=s33_label, validate="all", validatecommand=check_label)
 site33_label.grid(column=3, row=19, padx=5, pady=2, sticky=(W))
 
 # BUTTONS
@@ -742,35 +832,35 @@ results_button = ttk.Button(results_labelframe, text="Results sheet", state="dis
 results_button.grid(column=0, row=7, columnspan=3, sticky=(W), padx=5, pady=5)
 
 # ALIGNMENT BUTTONS
-alignment_button1 = ttk.Button(g1_results_frame, text="Alignment", state="disabled", command=get_alignment)
-alignment_button1.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-alignment_button2 = ttk.Button(g2_results_frame, text="Alignment", state="disabled", command=get_results)
-alignment_button2.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-alignment_button3 = ttk.Button(g3_results_frame, text="Alignment", state="disabled", command=get_results)
-alignment_button3.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
+#alignment_button1 = ttk.Button(g1_results_frame, text="Alignment", state="disabled", command=get_alignment)
+#alignment_button1.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
+#alignment_button2 = ttk.Button(g2_results_frame, text="Alignment", state="disabled", command=get_results)
+#alignment_button2.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
+#alignment_button3 = ttk.Button(g3_results_frame, text="Alignment", state="disabled", command=get_results)
+#alignment_button3.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
 
 # PAML graph buttons
 PAML_graph_button1 = ttk.Button(g1_results_frame, text="Residues", state="disabled", command=get_results)
-PAML_graph_button1.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
+PAML_graph_button1.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
 PAML_graph_button2 = ttk.Button(g2_results_frame, text="Residues", state="disabled", command=get_results)
-PAML_graph_button2.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
+PAML_graph_button2.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
 PAML_graph_button3 = ttk.Button(g3_results_frame, text="Residues", state="disabled", command=get_results)
-PAML_graph_button3.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
+PAML_graph_button3.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
 
 # Structure buttons
 structure_button1 = ttk.Button(g1_results_frame, text="Structure", state="disabled", command=get_results)
-structure_button1.grid(column=8, row=0, sticky=(W, E), padx=2, pady=5)
+structure_button1.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
 structure_button2 = ttk.Button(g2_results_frame, text="Structure", state="disabled", command=get_results)
-structure_button2.grid(column=8, row=0, sticky=(W, E), padx=2, pady=5)
+structure_button2.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
 structure_button3 = ttk.Button(g3_results_frame, text="Structure", state="disabled", command=get_results)
-structure_button3.grid(column=8, row=0, sticky=(W, E), padx=2, pady=5)
+structure_button3.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
 
 
 # LABELS
 
 #ttk.Label(results_frame, text="Results window").grid(column=0, row=0, sticky=(W))
 ttk.Label(results_labels, text="Gene").grid(column=0, row=3)
-ttk.Label(results_labels, text="P. sel.").grid(column=1, row=3)
+ttk.Label(results_labels, text="Pos. sel.").grid(column=1, row=3)
 ttk.Label(results_labels, text="LRT").grid(column=2, row=3)
 ttk.Label(results_labels, text="p-value").grid(column=3, row=3)
 ttk.Label(results_labels, text="CDS").grid(column=4, row=3)

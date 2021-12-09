@@ -24,7 +24,7 @@ import re
 
 
 def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins, all_genomes, aligner, gui=None,
-                          logging_window=None):
+                          logging_window=None, all_proteins_dict=None):
     """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
@@ -79,7 +79,7 @@ def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins,
                 msa_aligner.run_msa(MSA_path, aligner)
                 # return potential exons for a current protein in current genome
                 msa_analyzer.analyse_MSA(wdir, ref_species, MSA_path, protein_name,
-                                         genome_name, ref_exons, expected_exons, aligner)
+                                         genome_name, ref_exons, expected_exons, aligner, all_proteins_dict)
                 # mark that this blast result has been analysed
                 message = "\nFinished running protein: '%s' from genome: '%s'\n" \
                     % (protein_name, genome_name)

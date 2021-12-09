@@ -467,8 +467,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                     # check if model seq and input seq match and check if exactly one model exists
                     elif structure_builder.check_structure(wdir, ref_species, protein):
                         successful = structure_builder.run_pymol(wdir, ref_species, result_path,
-                                                                 protein, prots_under_pos_sel,
-                                                                 offset=None)
+                                                                 protein, prots_under_pos_sel)
                         if not successful:
                             print("\nThe structure for : %s was not built successfully." % protein)
                             continue
@@ -501,8 +500,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
             # check if model seq and input seq match and check if exactly one model exists
             elif structure_builder.check_structure(wdir, ref_species, protein):
                 successful = structure_builder.run_pymol(wdir, ref_species, result_path,
-                                                         protein, prots_under_pos_sel,
-                                                         offset=None)
+                                                         protein, prots_under_pos_sel)
                 if not successful:
                     print("\nThe structure for : %s was not built successfully." % protein)
                     continue
