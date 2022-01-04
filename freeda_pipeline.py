@@ -10,19 +10,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 """
 
 """
-ISSUE -> Reference genome (mouse) lacks gene name Ap2m1 -> but ensembl has it, model was found so whats the problem? -> gene_name issue?
-
-SUGGESTIONS:
-#               Use Mo for prediction of sequence accuracy -> compare with NCBI Mo
-#               Bioservices 1.8.1 release is ready -> not sure if I need to update from 1.7.12
-#               Use pytest -> make TestClass for all tests and use "test_*.py" notation for the testing module
-#               Check if NCBI datasets can give uniprot ID -> is it better than pyensembl?
-#               To check operation system -> os.uname().sysname -> macOS is "Darwin", linux is "Linux"
-#               Figure out how to bypass the nead for pyensembl install release
-#               Use colorlog module to colour the log files
-#               Get full gene name list and pass it to GUI -> user can only pick valid gene names
-#               CONTINUE TESTING -> allowed first exons to be divergent (08_21_2021) -> but it doesnt work -> N-term needs to pass synteny check first
-
 
 ----------- * Nudt11 * -----------
 
@@ -37,8 +24,6 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 
 
 -> its a protein coding gene with 2 exons where exon 2 is a SINGLE nucleaotide (A) - part of the STOP
-
-
 
 
 
@@ -80,135 +65,18 @@ Traceback (most recent call last):
 KeyError: 'Prdm9'
 
 
-I am listing this as an answer instead of editing my question because someone might find it useful. If I have made an error please let me know. The problem appears to be with using the BioPython MuscleCommandLine wrapper in this fashion. I was not able to pass any command line options to muscle through the wrapper when calling through a subprocess. My modified code for this is below.
-
-cmd = ['muscle', "-quiet", "-maxiters", "1", "-diags"]
-
-read_list = (SeqRecord(Seq(seq, IUPAC.unambiguous_dna), str(index)) for index, seq in enumerate(grouped_reads_list))
-
-muscle = Popen(cmd, stdin=PIPE, stdout=PIPE, universal_newlines=True)
-
-SeqIO.write(read_list, muscle.stdin, "fasta")  # Send sequences to Muscle in FASTA format.
-muscle.stdin.close()
-
-align = AlignIO.read(muscle.stdout, 'fasta')  # Capture output from muscle and get it into FASTA format in an object.
-
-muscle.stdout.close()
-
-consensus_read = AlignInfo.SummaryInfo(align).dumb_consensus(threshold=0.6, ambiguous="N", consensus_alpha=IUPAC.ambiguous_dna)
-return str(consensus_read)
-
 
 """
 
 # TODO:
-#    0) ESSENTIAL -> I took down the ACGT incompatibility check between cds and gene but CENPR (ITGB3BP) in primates
-#                           Gorilla has one exon with such issue -> most exons were eliminated (<0.60 alignment)
-#                           but one got in (exon 4) on 0.61 alignment and perfect introns; also exon 2 is 0.66
-#                           SOLUTION: raise check to 0.65 ?
-#                           I also fixed N_score and C_score bug that allowed passing if one was >0.75
 #    0) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
-#    0) ESSENTIAL -> for some reason Phasanidae sometimes generates excel sheet sometimes not;
-#                       -> all_matched_adaptive_sites_ref not generated -> cose TLR5 was all empty
-#    0) IDEA -> add a checkpoint for input -> align cds and gene -> if any bp doesnt align well -> fail that protein
-#    0) ESSENTIAL -> > 350kb long gene TEX11 in Pt shows different number of exons in different contigs!
-#                           -> tandem repeat
 #    0) ESSENTIAL -> cloned cds frameshift check should not penalize gaps or at least not say "frameshift"
 #                               because Cj in NRLP11 is called frameshift despite having just an exon missing
-#    0) ESSENTIAL -> make sure that the cross-species check works well, so far Ive seen only 100 percent scores
-#    0) ESSENTIAL -> handle exception raised by muscle on Ptprd -> DONE
-#    0) ESSENTIAL -> test if 18bp is a good microexons threshold -> Cenpc1, Ptprd, Slc8a1
-#                   -> Cenpc1 aligned well
-#                   -> Ptprd crashed cose it makes 2.3MB files to align -> ApplicationError
-#                                   -> but whatever got aligned it has done it well, 18bp microexon (6) included
-#                   -> Slc8a1 -> 18bp microexon was detected well in Mi -> try rattus -> also OK
-#                   SOLUTIION : Exception handling -> Bio.ApplicationError -> rename to FAILED_to_align
-#                           -> it looks like the application went on without issues to the next species
-#    0) NOTE -> Cenpb Pd, Mn, Gd are best for working on avoiding "missing" exons when N-tip only is missing
-#    0) NOTE -> coverage value in PAML excel sheet does not include microexons (but its intrinsically a small value)
-#    0) ESSENTIAL -> "None" is not the best info for M2a etc tests in PAML excel file -> check literature
-#    0) UPGRADE -> Species column in PAML excel sheet should be wider -> make a csv file?
-#    0) ESSENTIAL -> Should all 17 + 1 rodent genomes be used? Some may introduce problematic alignments
-#                           and mixed duplications events -> Ha, Pd, Mn, Gd, Ap, Ay -> eliminated Ha
-#    0) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
-#                   -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
-#    0) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
-#           SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#    0) ESSENTIAL -> test using different aligners - not for user - (Clustal Omega, Muscle)
-#                   -> Muscle works now (maxiter 2) -> Cenpx looks identical as mafft, tiny bit faster than mafft
-#                   -> test on harder aligments (Cenpc1, Cenpt, Cenpo, Izumo1)
-#                   -> muscle (maxiters 2) is faster than mafft (about 30%)
-#                                   but fails on partial contigs sometimes (Cenpc1 Gd) -> test on final alignment
-#                                   -> muscle often allows parts of actual exons to align in other exons
-#                                         (which are often missing or intronic)
-#                                         -> generating false RETRO (Haus8 Gd aligned_rev_comp_JADRCF010453847.1__rev)
-#                                       -> sometimes fails to call good number of exons Haus8 Rd JADRCG010009828.1__rev
-#                                   -> final FREEDA result is identical for mafft and muscle (maxiters 2) for Cenpc1,
-#                                                                                       Cenpt, Cenpo and Izumo1
-#                                   -> muscle final alignment is very similar to mafft (nearly identical)
-#                                   -> but muscle failed to align huge Ptprd -> file not found
-#                                               -> handle exception and allow cose generally muscle yields similar
-#                                                           results and its about 30% faster
-#                   -> clustalw2 made very bad alignments
-#                   -> tried Probcons both wrapper and command line -> failed
-#                   -> prank takes way too long but try to test it on final alignment
-#    2) ISSUE  -> Ptprd-206 -> 5,6,8 microexons and 500kb gene (9bp, 18bp, 12bp)
-#               -> Slc8a1-203 -> 5 and 6 ar4 are consecutive microexons (15bp, 18bp)
-#                   -> "stich" missing bp in that case as if it was a single microexon
-#                  SOLUTION : no good solution for that so far, stiching exons does not help cose of flanking exons
-#                           -> but lowering the limit to < 18bp would fix both of these instances
-#    3) ISSUE   -> Refactor : change "protein_name" to "gene_name" and "protein" to "gene_name"
-#    4) ISSUE   -> Fix the bioservices issue (Brian) -> in virtual box and pyinstaller the colorlog module
-#                   doesnt have "logging" attribute -> deprecated in python 3.8 ?
-#    5) ISSUE   -> flanks are as big as the split_large_contigs function -> might be getting same matches
-#                      on artificially different contigs??? -> requires testing but probably not (CD46)
-#               -> CD46 C-terminus was successfully recovered!!! (so larger flanks help -> need to be
-#                           paired with higher thresholds though)
-#               -> Try dynamic flanking -> 10kb if gene < 30kb and 30kb if gene > 30kb
-#               -> CD46 ended up NOT passing positive selection tests (LRT 2.24) -> try to run it with species tree?
-#                               (but the gene tree looks fine)
-#               -> try to test flanks 10kb with blastn on CD46 -> NEED TO HAVE CDS IN BLAST INPUT
-#                           -> it recovers most exons at 30 t but not all (MULATTA 13 exon missing)
-#    6) Use Apbb1 - Ay -> contig LIPJ01008178.1__rev -> exon 11 has one single N and it gets thrown out
-#                           -> fix conservatively? -> or more conservative would be to delete that base
-#                           -> gBlocks will take care of the frameshift
-#    7) AP2M1 -> cannot overlay on 3D structure cose of microexon but should still show model
 #    8) ISSUE with "STOP codon detected in LAST exon (24) in Gorilla Numa1 -> last exon is microexon (25)
 #                   so its missing but finder thinks there is a STOP in 24 (which there is not)
 #           -> also C-term synteny check should not run if last exon is missing (currently exon 24
 #                           in Gorilla is syntenic) -> probably DONE
 #           -> also add bp number to microexon info in model_incompatible.txt file and log it in exon finder -> DONE
-#    9)  TESTING run time for same protein using higher blast thresholds (50 and 70)
-#    10)  ISSUE with CD46 primates -> 10-13 exons found only in mulatta -> check blast file
-#                       Consider running a blastn (nucleotide) instead of tblastn (protein)
-#                                -> tried that, still doesnt find all exons
-#                       Consider extending the arms above 10kb to 30kb to check if thats the issue
-#                               (probably same as CD55)
-#    11) ISSUE with defining parameters:
-#           Define a module for tweaking parameters (advanced_parameters.py)
-#               - duplication restriction (switches on the duplication score)
-#               - flanking arms (default 10kb) -> recommend for large introns (ex. primate default to 30kb)
-#               - blast threshold
-#               - homology threshold
-#               - synteny threshold
-#               - coverage threshold
-#               - non_ACGT corrector (to mirror CDS position)
-#               - pymol residues
-#               - input known sites
-#    12) ISSUE with BEB results for non-adaptive proteins:
-#            Something weird about Bub1 -> lots of >0.90 sites but M7 higher than M8
-#            Same with Cenp-W
-#            Not sure what the solution is -> I made sure proteins that do not score in M8 vs M7 are not visualized
-#    13) ISSUE with the cds_cloner function (requires refactoring) -> hard to solve, probably best left as is
-#           Cloner module needs revision to get hamming distance duplication comparison compare
-#           the actual duplicated exons and not only the number of exon they carry
-#           test on Aurkc Ap
-#           test on Nlrp5 Ap BDUI01009531.1__rev
-#    14) ISSUE with exon_finding function:
-#           Single non_ACGT bases currently lead to whole exon loss
-#           SOLUTION: THINK ABOUT FLIPPING non_ACGT INTO CORRESPONDING CDS POSITION (conservative)
-#           this could save these exons! -> better woould be to just delete that base and let frameshit be taken care of by Gblocks
-#           this function should target only single base non_ACGT and flag these exons -> test on Cxxc1 Ap aligned_rev_comp_BDUI01029349.1__rev exon 7
 #    15) ISSUE with early STOP codons :
 #           THERE IS AN ISSUE WITH: if earlier STOP present in other species then
 #           ref species gets translated normally and final_ref_dict is +1
@@ -220,13 +88,6 @@ return str(consensus_read)
 #    16) ISSUE with correction:
 #           THERE IS AN ERROR IN HAUS8 CORRECTION function -> not same lengths?
 #           check the print screen
-#    18) ISSUE with running Ap2m1:
-#           How come "Contig too short to check C-term synteny 0bp aligned" for contig 81143 in genome11 Ap2m1
-#           SOLUTION: Probably connected to exon4 being a 6bp microexon and NOT deleted from exon input but
-#           There are 13 exons expected instead of 11 -> exon 12 is skipped for some reason; alignment looks good
-#           Also alignment of single exons from exon 7 is messed up (linux default file order problem again?)
-#           early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
-#           but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
 
 print("\nImporting all modules and libraries...\n")
 
@@ -530,7 +391,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Gg")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=70)
 

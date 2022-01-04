@@ -613,7 +613,7 @@ def run_PAML(wdir, protein, PAML_path):
         LRT2 = False
     
     # run chi2 statistics to get p values
-    if LRT1 != False:
+    if LRT1 is not False:
         M2a_M1a = cdf_chi2(df_M2a_M1a, LRT1)
     else:
         LRT1 = None
@@ -622,7 +622,7 @@ def run_PAML(wdir, protein, PAML_path):
         print(message)
         logging.info(message)
     
-    if LRT2 != False:
+    if LRT2 is not False:
         M8_M7 = cdf_chi2(df_M8_M7, LRT2)
     else:
         LRT2 = None
