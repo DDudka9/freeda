@@ -73,7 +73,7 @@ def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_proteins,
                 # generate matches dataframe
                 matches = matches_generator.generate_matches(match_path, t, protein_name, genome_name, genome_index)
                 # process the final dataframe
-                MSA_path = matches_processor.process_matches(wdir, matches, cds, gene, result_path,
+                MSA_path = matches_processor.process_matches(ref_species, wdir, matches, cds, gene, result_path,
                                                              protein_name, genome_name, genome_index)
                 # run MSA and write them into files
                 msa_aligner.run_msa(MSA_path, aligner)

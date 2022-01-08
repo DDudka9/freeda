@@ -246,7 +246,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
                         # if last exon
                         if exon == list(ref_exons.keys())[-1]:
                             # check if there is a STOP codon
-                            STOP = check_stop_codon(aligned_seqs[0][1], aligned_seqs[1][1], exon)
+                            #check_stop_codon(aligned_seqs[0][1], aligned_seqs[1][1], exon)
                             # converting the nucleotides into a string
                             locus_exon_string = "".join(locus_exon.values())
                             # mark that this exon was already cloned
@@ -775,29 +775,6 @@ def collect_sequences(path):
     return seqs
 
 
-def check_stop_codon(last_ref_species_exon, last_locus_exon, exon_number): # works well
-
-    # define the STOP codon based on the last ref species exon
-    TAG_codon_pos = last_ref_species_exon.rfind("TAG")
-    TGA_codon_pos = last_ref_species_exon.rfind("TGA")
-    TAA_codon_pos = last_ref_species_exon.rfind("TAA")
-    STOP_codon_pos = max(TAG_codon_pos, TGA_codon_pos, TAA_codon_pos)
-    STOP = False
-    STOP_locus_exon = last_locus_exon[STOP_codon_pos : STOP_codon_pos + 3]
-
-    # check if the STOP codon is present
-    if STOP_locus_exon == "TAG" or STOP_locus_exon == "TGA" or STOP_locus_exon == "TAA":
-        STOP = True
-        message = ("\nSTOP codon detected in LAST exon (%s)" % exon_number)
-        print(message)
-        logging.info(message)
-    else:
-        message = ("\nSTOP codon NOT detected in LAST exon (%s)" % exon_number)
-        print(message)
-        logging.info(message)
-
-    return STOP
-
 
 """
         # check C-term introny
@@ -817,4 +794,26 @@ def check_stop_codon(last_ref_species_exon, last_locus_exon, exon_number): # wor
     C_score = C_matches / (50 - C_indels)
     print("    C_score : %s " % C_score)
     
+def check_stop_codon(last_ref_species_exon, last_locus_exon, exon_number):
+    #Checks for a STOP codon in the last exon (does not look at microexons)
+
+    # define the STOP codon based on the last ref species exon
+    TAG_codon_pos = last_ref_species_exon.rfind("TAG")
+    TGA_codon_pos = last_ref_species_exon.rfind("TGA")
+    TAA_codon_pos = last_ref_species_exon.rfind("TAA")
+    STOP_codon_pos = max(TAG_codon_pos, TGA_codon_pos, TAA_codon_pos)
+    STOP_locus_exon = last_locus_exon[STOP_codon_pos : STOP_codon_pos + 3]
+
+    # check if the STOP codon is present
+    if STOP_locus_exon == "TAG" or STOP_locus_exon == "TGA" or STOP_locus_exon == "TAA":
+        STOP = True
+        message = ("\nSTOP codon detected in LAST exon (%s)" % exon_number)
+        print(message)
+        logging.info(message)
+    else:
+        message = ("\nSTOP codon NOT detected in LAST exon (%s)" % exon_number)
+        print(message)
+        logging.info(message)
+    
+
 """

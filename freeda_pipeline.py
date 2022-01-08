@@ -11,21 +11,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 """
 
------------ * Nudt11 * -----------
-
-Looking for structure in AlphaFold database for: Nudt11 ...
-
-Based on uniprot id: P0C028 structure prediction for protein: Nudt11 has been found (164 aa)
-
-Exons FAILED to assemble expected CDS for: Nudt11-201
-
-
-...FATAL ERROR... : Input data generation FAILED for protein: Nudt11 -> exiting the pipeline now...
-
-
--> its a protein coding gene with 2 exons where exon 2 is a SINGLE nucleaotide (A) - part of the STOP
-
-
 
  --------- * Prdm9 * --------- 
 
@@ -72,11 +57,7 @@ KeyError: 'Prdm9'
 #    0) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
 #    0) ESSENTIAL -> cloned cds frameshift check should not penalize gaps or at least not say "frameshift"
 #                               because Cj in NRLP11 is called frameshift despite having just an exon missing
-#    8) ISSUE with "STOP codon detected in LAST exon (24) in Gorilla Numa1 -> last exon is microexon (25)
-#                   so its missing but finder thinks there is a STOP in 24 (which there is not)
-#           -> also C-term synteny check should not run if last exon is missing (currently exon 24
-#                           in Gorilla is syntenic) -> probably DONE
-#           -> also add bp number to microexon info in model_incompatible.txt file and log it in exon finder -> DONE
+#                                    -> I have to rerun it with lower threshold because Cj did not blast enough
 #    15) ISSUE with early STOP codons :
 #           THERE IS AN ISSUE WITH: if earlier STOP present in other species then
 #           ref species gets translated normally and final_ref_dict is +1
@@ -85,9 +66,6 @@ KeyError: 'Prdm9'
 #           TO FIX: dashes in the MAFFT alignment (need to remove these positions before
 #           counting codons -> test on Haus8)
 #           08_21_2021 -> I dont really know what this comment mean
-#    16) ISSUE with correction:
-#           THERE IS AN ERROR IN HAUS8 CORRECTION function -> not same lengths?
-#           check the print screen
 
 print("\nImporting all modules and libraries...\n")
 
@@ -391,9 +369,9 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Gg")
+                        help="specify reference organism (default is mouse)", type=str, default="Cf")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=70)
+                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=60)
 
     args = parser.parse_args()
     freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)

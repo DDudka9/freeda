@@ -259,7 +259,6 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
 
         # paint user residues if indicated
         if all_proteins_dict:
-            color = "yellow"
             dup, label1, label2, label3 = all_proteins_dict[protein]  # dup variable not used here
             # make sure label is present, end is bigger than start, end is within the protein length
             # do not allow start larger than end; do not allow end larger than total length
@@ -270,9 +269,9 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
                 f.write("color " + "grey90" + ", resi " + label1[1] + "-" + label1[2] + "\n")
                 middle = round((int(label1[2]) - int(label1[1])) / 2 + int(label1[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label1[0] + '")\n')
-                residues = [str(residue) for residue in range(int(label1[1]), int(label1[2]) + 1, 1)]
-                for residue in residues:
-                    f.write("show sticks, resi " + residue + "\n")
+                #residues = [str(residue) for residue in range(int(label1[1]), int(label1[2]) + 1, 1)]
+                #for residue in residues:
+                #    f.write("show sticks, resi " + residue + "\n")
 
             if all(label2) \
                 and (int(label2[1]) <= int(label2[2])) \
@@ -280,9 +279,9 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
                 f.write("color " + "yellow" + ", resi " + label2[1] + "-" + label2[2] + "\n")
                 middle = round((int(label2[2]) - int(label2[1])) / 2 + int(label2[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label2[0] + '")\n')
-                residues = [str(residue) for residue in range(int(label2[1]), int(label2[2]) + 1, 1)]
-                for residue in residues:
-                    f.write("show sticks, resi " + residue + "\n")
+                #residues = [str(residue) for residue in range(int(label2[1]), int(label2[2]) + 1, 1)]
+                #for residue in residues:
+                #    f.write("show sticks, resi " + residue + "\n")
 
             if all(label3) \
                 and (int(label3[1]) <= int(label3[2])) \
@@ -290,9 +289,9 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
                 f.write("color " + "sand" + ", resi " + label3[1] + "-" + label3[2] + "\n")
                 middle = round((int(label3[2]) - int(label3[1])) / 2 + int(label3[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label3[0] + '")\n')
-                residues = [str(residue) for residue in range(int(label3[1]), int(label3[2])+1, 1)]
-                for residue in residues:
-                    f.write("show sticks, resi " + residue + "\n")
+                #residues = [str(residue) for residue in range(int(label3[1]), int(label3[2])+1, 1)]
+                #for residue in residues:
+                #    f.write("show sticks, resi " + residue + "\n")
 
         # PyMOL command to color adaptive residues
         for site, features in matched_adaptive_sites_ref.items():

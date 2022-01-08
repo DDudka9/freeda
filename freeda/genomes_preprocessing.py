@@ -2139,29 +2139,15 @@ def get_names(ref_species, ref_genome=False):
                       ("Ne", "LEUCOGENYS_genome", "GCA_006542625.1"),
                       ("Mu", "MULATTA_genome", "GCA_008058575.1"),
                       ("Pu", "ANUBIS_genome", "GCA_008728515.1"),
-                      ("Pp", "PITHECIA_genome", "GCA_004026645.1"),   # added White-faced saki
                       ("Cs", "SABAEUS_genome", "GCA_015252025.1"),
                       ("Pi", "TEPHROSCELES_genome", "GCA_002776525.3"),  # added Colobus monkey
+                      ("Pp", "PITHECIA_genome", "GCA_004026645.1"),  # added White-faced saki
                       ("An", "NANCYMAAE_genome", "GCA_000952055.2"),  # added Ma's night monkey
                       ("Cj", "JACCHUS_genome", "GCA_011100535.2"),
                       ("Sb", "BOLIVIENSIS_genome", "GCA_016699345.1"),  # added Squirrel monkey
                       ("Ag", "GEOFFROYI_genome", "GCA_004024785.1"))}  # added Spider monkey
                       # ("Mm", "MURINUS_genome", "GCA_000165445.3"),  # added Mouse lemur
                       # ("Og", "GARNETTI_genome", "GCA_000181295.3"))}   # added Galago lemur
-
-    # Felidae (diverged 15 myo - too narrow)
-    cat_dict = {"Fc": (("Fh", "Felischaus_genome", "GCA_019924945.1"),  # (jungle cat)
-                      ("Pt", "Pantheratigris_genome", "GCA_018350195.2"),  # (tiger)
-                      ("Pl", "Pantheraleo_genome", "GCA_018350215.1"),   # (lion)
-                      ("Pp", "Pantherapardus_genome", "GCA_001857705.1"),  #  (leopard)
-                      ("Pv", "Prionailurusviverrinus_genome", "GCA_018119265.1"),  #  (fishing cat)
-                      ("Lq", "Leopardisgeoffroyi_genome", "GCA_018350155.1"),  # Leopardus geoffroyi
-                      ("Lc", "Lynxcanadensis_genome", "GCA_007474595.2"),  #  (lynx)
-                      ("Aj", "Acinonyxjubatus_genome", "GCA_003709585.1"),  #  (cheetah)
-                      ("Pc", "Pumaconcolor_genome", "GCA_003327715.1"),  # (puma)
-                      ("Py", "Pumayagouaroundi_genome", "GCA_014898765.1"),  #  (jaguarundi)
-                      ("Po", "Pantheraonca_genome", "GCA_004023805.1"),  #  (jaguar)
-                      ("Cc", "Caracalcaracal_genome", "GCA_016801355.1"))}  #  (caracal)
 
     # Carnivora (diverged 50 myo)
     carnivora_cat_dict = {"Fc": (("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
@@ -2305,6 +2291,19 @@ def map_assembly_contigs(wdir):
 
 """
 
+    # Felidae (diverged 15 myo - too narrow)
+    cat_dict = {"Fc": (("Fh", "Felischaus_genome", "GCA_019924945.1"),  # (jungle cat)
+                      ("Pt", "Pantheratigris_genome", "GCA_018350195.2"),  # (tiger)
+                      ("Pl", "Pantheraleo_genome", "GCA_018350215.1"),   # (lion)
+                      ("Pp", "Pantherapardus_genome", "GCA_001857705.1"),  #  (leopard)
+                      ("Pv", "Prionailurusviverrinus_genome", "GCA_018119265.1"),  #  (fishing cat)
+                      ("Lq", "Leopardisgeoffroyi_genome", "GCA_018350155.1"),  # Leopardus geoffroyi
+                      ("Lc", "Lynxcanadensis_genome", "GCA_007474595.2"),  #  (lynx)
+                      ("Aj", "Acinonyxjubatus_genome", "GCA_003709585.1"),  #  (cheetah)
+                      ("Pc", "Pumaconcolor_genome", "GCA_003327715.1"),  # (puma)
+                      ("Py", "Pumayagouaroundi_genome", "GCA_014898765.1"),  #  (jaguarundi)
+                      ("Po", "Pantheraonca_genome", "GCA_004023805.1"),  #  (jaguar)
+                      ("Cc", "Caracalcaracal_genome", "GCA_016801355.1"))}  #  (caracal)
 
 
 

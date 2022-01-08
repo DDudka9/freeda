@@ -14,7 +14,10 @@ import pandas as pd
 import logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
+
 def generate_matches(match_path, t, protein_name, genome_name, genome_index):
+    """Generates matches based on the blast results"""
+
     columns = ["qseqid", "sseqid", "qstart", "qend", "sstart", "send",
                "evalue", "bitscore", "length", "pident", "mismatch", 
                "gapopen", "qlen", "slen"]
@@ -136,11 +139,11 @@ def split_large_contigs(dataframes):
                 contig_name = row[0]
                 new_matches.iloc[index] = matches.iloc[index]
                 continue
-            if start - new_matches.iloc[index-1][1] < 30000:
+            if start - new_matches.iloc[index-1][1] < 30000:   # temporary from 30000
                 new_matches.iloc[index] = matches.iloc[index]
                 new_matches.at[index, "sseqid"] = contig_name
                 continue
-            if start - new_matches.iloc[index-1][1] > 30000:
+            if start - new_matches.iloc[index-1][1] > 30000:   # temporary from 30000
                 contig_name = row[0] + "__" + str(number)
                 number += 1
                 new_matches.iloc[index] = matches.iloc[index]

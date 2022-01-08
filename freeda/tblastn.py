@@ -25,11 +25,14 @@ import os
 import glob
 import time
 import logging
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+#logging.basicConfig(filename="tblast_temp.log", level=logging.INFO, format="%(message)s")
 
 
 def run_blast(wdir, ref_species, all_proteins):
     """Runs tblastn based on NCBI makedatabase routine."""
+
+    #open("tblast_temp.log", "w")
 
     database_path = wdir + "Genomes/"
     query_path = wdir + "Blast_input/"

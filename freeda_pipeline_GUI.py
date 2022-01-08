@@ -9,21 +9,59 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 """
 
+
+"""
+
+ --------- * CENPP * --------- 
+
+
+Alignment score for species : Cf = 1.0
+[]
+
+...WARNING... : Failed PAML analysis for : CENPP -> probably not enough species in the alignment (e.g. poor alignment of repetitive regions)
+
+ --------------->  PAML analysis completed in 0.008117254575093586 minutes or 0.00013528810607062446 hours
+Exception in thread Thread-3:
+Traceback (most recent call last):
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/threading.py", line 926, in _bootstrap_inner
+    self.run()
+  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/threading.py", line 870, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline_GUI.py", line 445, in freeda_pipeline
+    final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins,
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline_GUI.py", line 538, in get_results
+    def get_results(final_PAML_log_dict):
+TypeError: 'NoneType' object is not subscriptable
+
+"""
+
 # TODO
-#       0) Add 30kb overhangs for primates
+#       0) Double check all the assemblies (I swapped white faced saki in order)
 #       1) Add a test -> if Data folder doesnt have a specific file -> run test on primates CENPX or ask user to do it?
 #       2) Talk to Mike about who to ask concering licenses
 #       3) Fix nomenclature -> "intronic"
 #                           -> "protein/protein_name" -> gene_name
 #                           -> "None" is not the best info for M2a etc tests in PAML excel file -> 0 (zero)
+#                           -> eliminate aligner option
+#                           -> fill out missing docstrings
 #       4) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
-#       5) Finish the GUI -> remove residues and structure
-#                           -> add 2 more genes
+#                             -> shallow search is not enough to get all exons !!! (1, 6, 7, 8 missing in all species)
+#                              -> medium (50) was the same -> test what happens if 2
+#                                  -> ACTUALLY -> 6,7,8 exons were found (about 68-71 threshold) but STICHED WRONG
+#                                                           (reversed order)
+#                                   -> changed threshold in GUI to 60
+#               -> its likely due to matches generator module assuming >30kb distances to be too large for genes
+#                   -> LutraLutra genome rev matches were stiched as for !!!
+#                   -> use debug mode to investigate matches generation in CENPP Felis Catus
+#               -> extending intragenic regions to beyond 30000 -> until 200000 generated 20x bigger files
+#               but did stich the matches in correct order in Ursus genome -> thats just a temp fix, not sustainable
+#                       -> it did rescue the matches (all in one contig)
+#           -> DOUBLE CHEKED -> it seems I was wrong, order is right -> but exons wouldnt align cose of
+#           the size of the contig, which explains why 200kb margin allows normal alignment
 #       6) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
 #                  -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
 #       7) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #          SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#      11) Increase gene number to 5 and binding sites
 #      12) Use Hyland et al. 2021 Gen Biol Evol for testing -> TRIP protein in mammals
 
 from freeda import input_extractor
@@ -43,8 +81,6 @@ import os
 import re
 import logging
 import threading
-import subprocess
-
 
 
 def thread_freeda():
@@ -56,6 +92,9 @@ def thread_freeda():
         freeda_thread.daemon = True
         freeda_thread.start()
         block_user_entries()
+        # erase previous results
+        clear_results()
+
     else:
         logging.info("\n--------------- TRY AGAIN :D -------------------\n")
         # unblock user input entries
@@ -67,6 +106,26 @@ def abort_freeda():
 
     root.quit()
     root.destroy()
+
+
+def raise_logger():
+    """Raises a logger for the GUI"""
+
+    global logging_window
+
+    # LOGGER
+    logging_label = ttk.Label(logging_frame, text="Events window (logged to 'FREEDA*.log' and 'PAML*.log')")
+    logging_label.grid(column=0, row=0, columnspan=4, sticky=(W))
+    logging_window = ScrolledText.ScrolledText(logging_frame, state="disabled", wrap="none")
+    logging_window.grid(column=0, row=1, columnspan=7, sticky=(N, W, E, S))
+    logging_window.configure(font='TkFixedFont')
+
+    # create handlers of the logging window
+    text_handler = TextHandler.TextHandler(logging_window)
+    # Logging configuration
+    logging.basicConfig(format="%(message)s")  # level=logging.INFO,
+    logger = logging.getLogger()
+    logger.addHandler(text_handler)
 
 
 def check_input():
@@ -82,11 +141,11 @@ def check_input():
         logging.info("\n...FATAL_ERROR... : Choose clade")
         ready = False
 
-    if not threshold.get():
-        logging.info("\n...FATAL_ERROR... : Choose search depth")
-        ready = False
+    #if not threshold.get():
+    #    logging.info("\n...FATAL_ERROR... : Choose search depth")
+    #    ready = False
 
-    all_proteins = [gene_name1.get(), gene_name2.get(), gene_name3.get()]
+    all_proteins = [gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name5.get()]
     if not any(all_proteins):
         logging.info("\n...FATAL_ERROR... : Choose at least one gene")
         ready = False
@@ -96,10 +155,31 @@ def check_input():
         if gene_name1.get() == gene_name2.get() and gene_name1.get() != "":
             logging.info("\n...FATAL_ERROR... : Choose different gene names")
             ready = False
-        if gene_name2.get() == gene_name3.get() and gene_name2.get() != "":
+        elif gene_name1.get() == gene_name3.get() and gene_name3.get() != "":
             logging.info("\n...FATAL_ERROR... : Choose different gene names")
             ready = False
-        if gene_name3.get() == gene_name1.get() and gene_name3.get() != "":
+        elif gene_name1.get() == gene_name4.get() and gene_name1.get() != "":
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        elif gene_name1.get() == gene_name5.get() and gene_name1.get() != "":
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        elif gene_name2.get() == gene_name3.get() and gene_name2.get() != "":
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        elif gene_name2.get() == gene_name4.get() and gene_name2.get() != "":
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        elif gene_name2.get() == gene_name5.get() and gene_name2.get() != "":
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        elif gene_name3.get() == gene_name4.get() and gene_name3.get() != "":
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        elif gene_name3.get() == gene_name5.get() and gene_name3.get() != "":
+            logging.info("\n...FATAL_ERROR... : Choose different gene names")
+            ready = False
+        elif gene_name4.get() == gene_name5.get() and gene_name4.get() != "":
             logging.info("\n...FATAL_ERROR... : Choose different gene names")
             ready = False
 
@@ -115,17 +195,21 @@ def block_user_entries():
     carnivores.configure(state="disabled")
     birds.configure(state="disabled")
 
-    deep_radiobutton.configure(state="disabled")
-    medium_radiobutton.configure(state="disabled")
-    shallow_radiobutton.configure(state="disabled")
+    #deep_radiobutton.configure(state="disabled")
+    #medium_radiobutton.configure(state="disabled")
+    #shallow_radiobutton.configure(state="disabled")
 
     name1.configure(state="disabled")
     name2.configure(state="disabled")
     name3.configure(state="disabled")
+    name4.configure(state="disabled")
+    name5.configure(state="disabled")
 
     dup1_button.configure(state="disabled")
     dup2_button.configure(state="disabled")
     dup3_button.configure(state="disabled")
+    dup4_button.configure(state="disabled")
+    dup5_button.configure(state="disabled")
 
     site11_start.configure(state="disabled")
     site11_end.configure(state="disabled")
@@ -157,6 +241,26 @@ def block_user_entries():
     site33_end.configure(state="disabled")
     site33_label.configure(state="disabled")
 
+    site41_start.configure(state="disabled")
+    site41_end.configure(state="disabled")
+    site41_label.configure(state="disabled")
+    site42_start.configure(state="disabled")
+    site42_end.configure(state="disabled")
+    site42_label.configure(state="disabled")
+    site43_start.configure(state="disabled")
+    site43_end.configure(state="disabled")
+    site43_label.configure(state="disabled")
+
+    site51_start.configure(state="disabled")
+    site51_end.configure(state="disabled")
+    site51_label.configure(state="disabled")
+    site52_start.configure(state="disabled")
+    site52_end.configure(state="disabled")
+    site52_label.configure(state="disabled")
+    site53_start.configure(state="disabled")
+    site53_end.configure(state="disabled")
+    site53_label.configure(state="disabled")
+
     wdir_button.configure(state="disabled")
     wdir_entry.configure(state="disabled")
 
@@ -170,17 +274,21 @@ def ublock_user_entries():
     carnivores.configure(state="normal")
     birds.configure(state="normal")
 
-    deep_radiobutton.configure(state="normal")
-    medium_radiobutton.configure(state="normal")
-    shallow_radiobutton.configure(state="normal")
+    #deep_radiobutton.configure(state="normal")
+    #medium_radiobutton.configure(state="normal")
+    #shallow_radiobutton.configure(state="normal")
 
     name1.configure(state="normal")
     name2.configure(state="normal")
     name3.configure(state="normal")
+    name4.configure(state="normal")
+    name5.configure(state="normal")
 
     dup1_button.configure(state="normal")
     dup2_button.configure(state="normal")
     dup3_button.configure(state="normal")
+    dup4_button.configure(state="normal")
+    dup5_button.configure(state="normal")
 
     site11_start.configure(state="normal")
     site11_end.configure(state="normal")
@@ -212,8 +320,157 @@ def ublock_user_entries():
     site33_end.configure(state="normal")
     site33_label.configure(state="normal")
 
+    site41_start.configure(state="normal")
+    site41_end.configure(state="normal")
+    site41_label.configure(state="normal")
+    site42_start.configure(state="normal")
+    site42_end.configure(state="normal")
+    site42_label.configure(state="normal")
+    site43_start.configure(state="normal")
+    site43_end.configure(state="normal")
+    site43_label.configure(state="normal")
+
+    site51_start.configure(state="normal")
+    site51_end.configure(state="normal")
+    site51_label.configure(state="normal")
+    site52_start.configure(state="normal")
+    site52_end.configure(state="normal")
+    site52_label.configure(state="normal")
+    site53_start.configure(state="normal")
+    site53_end.configure(state="normal")
+    site53_label.configure(state="normal")
+
     wdir_button.configure(state="normal")
     wdir_entry.configure(state="normal")
+
+
+def clear_results():
+    """Erases the results from the previous run"""
+
+    g1_results_entry.configure(state="normal")
+    g1_results_entry.delete(0, 'end')
+    g1_results_entry.configure(state="disabled")
+    g1_pos_sel_entry.configure(state="normal")
+    g1_pos_sel_entry.delete(0, 'end')
+    g1_pos_sel_entry.configure(state="disabled")
+    g1_lrt_entry.configure(state="normal")
+    g1_lrt_entry.delete(0, 'end')
+    g1_lrt_entry.configure(state="disabled")
+    g1_pvalue_entry.configure(state="normal")
+    g1_pvalue_entry.delete(0, 'end')
+    g1_pvalue_entry.configure(state="disabled")
+    g1_coverage_entry.configure(state="normal")
+    g1_coverage_entry.delete(0, 'end')
+    g1_coverage_entry.configure(state="disabled")
+    g1_species_entry.configure(state="normal")
+    g1_species_entry.delete(0, 'end')
+    g1_species_entry.configure(state="disabled")
+    g1_adapt_less_entry.configure(state="normal")
+    g1_adapt_less_entry.delete(0, 'end')
+    g1_adapt_less_entry.configure(state="disabled")
+    g1_adapt_more_entry.configure(state="normal")
+    g1_adapt_more_entry.delete(0, 'end')
+    g1_adapt_more_entry.configure(state="disabled")
+
+    g2_results_entry.configure(state="normal")
+    g2_results_entry.delete(0, 'end')
+    g2_results_entry.configure(state="disabled")
+    g2_pos_sel_entry.configure(state="normal")
+    g2_pos_sel_entry.delete(0, 'end')
+    g2_pos_sel_entry.configure(state="disabled")
+    g2_lrt_entry.configure(state="normal")
+    g2_lrt_entry.delete(0, 'end')
+    g2_lrt_entry.configure(state="disabled")
+    g2_pvalue_entry.configure(state="normal")
+    g2_pvalue_entry.delete(0, 'end')
+    g2_pvalue_entry.configure(state="disabled")
+    g2_coverage_entry.configure(state="normal")
+    g2_coverage_entry.delete(0, 'end')
+    g2_coverage_entry.configure(state="disabled")
+    g2_species_entry.configure(state="normal")
+    g2_species_entry.delete(0, 'end')
+    g2_species_entry.configure(state="disabled")
+    g2_adapt_less_entry.configure(state="normal")
+    g2_adapt_less_entry.delete(0, 'end')
+    g2_adapt_less_entry.configure(state="disabled")
+    g2_adapt_more_entry.configure(state="normal")
+    g2_adapt_more_entry.delete(0, 'end')
+    g2_adapt_more_entry.configure(state="disabled")
+
+    g3_results_entry.configure(state="normal")
+    g3_results_entry.delete(0, 'end')
+    g3_results_entry.configure(state="disabled")
+    g3_pos_sel_entry.configure(state="normal")
+    g3_pos_sel_entry.delete(0, 'end')
+    g3_pos_sel_entry.configure(state="disabled")
+    g3_lrt_entry.configure(state="normal")
+    g3_lrt_entry.delete(0, 'end')
+    g3_lrt_entry.configure(state="disabled")
+    g3_pvalue_entry.configure(state="normal")
+    g3_pvalue_entry.delete(0, 'end')
+    g3_pvalue_entry.configure(state="disabled")
+    g3_coverage_entry.configure(state="normal")
+    g3_coverage_entry.delete(0, 'end')
+    g3_coverage_entry.configure(state="disabled")
+    g3_species_entry.configure(state="normal")
+    g3_species_entry.delete(0, 'end')
+    g3_species_entry.configure(state="disabled")
+    g3_adapt_less_entry.configure(state="normal")
+    g3_adapt_less_entry.delete(0, 'end')
+    g3_adapt_less_entry.configure(state="disabled")
+    g3_adapt_more_entry.configure(state="normal")
+    g3_adapt_more_entry.delete(0, 'end')
+    g3_adapt_more_entry.configure(state="disabled")
+
+    g4_results_entry.configure(state="normal")
+    g4_results_entry.delete(0, 'end')
+    g4_results_entry.configure(state="disabled")
+    g4_pos_sel_entry.configure(state="normal")
+    g4_pos_sel_entry.delete(0, 'end')
+    g4_pos_sel_entry.configure(state="disabled")
+    g4_lrt_entry.configure(state="normal")
+    g4_lrt_entry.delete(0, 'end')
+    g4_lrt_entry.configure(state="disabled")
+    g4_pvalue_entry.configure(state="normal")
+    g4_pvalue_entry.delete(0, 'end')
+    g4_pvalue_entry.configure(state="disabled")
+    g4_coverage_entry.configure(state="normal")
+    g4_coverage_entry.delete(0, 'end')
+    g4_coverage_entry.configure(state="disabled")
+    g4_species_entry.configure(state="normal")
+    g4_species_entry.delete(0, 'end')
+    g4_species_entry.configure(state="disabled")
+    g4_adapt_less_entry.configure(state="normal")
+    g4_adapt_less_entry.delete(0, 'end')
+    g4_adapt_less_entry.configure(state="disabled")
+    g4_adapt_more_entry.configure(state="normal")
+    g4_adapt_more_entry.delete(0, 'end')
+    g4_adapt_more_entry.configure(state="disabled")
+
+    g5_results_entry.configure(state="normal")
+    g5_results_entry.delete(0, 'end')
+    g5_results_entry.configure(state="disabled")
+    g5_pos_sel_entry.configure(state="normal")
+    g5_pos_sel_entry.delete(0, 'end')
+    g5_pos_sel_entry.configure(state="disabled")
+    g5_lrt_entry.configure(state="normal")
+    g5_lrt_entry.delete(0, 'end')
+    g5_lrt_entry.configure(state="disabled")
+    g5_pvalue_entry.configure(state="normal")
+    g5_pvalue_entry.delete(0, 'end')
+    g5_pvalue_entry.configure(state="disabled")
+    g5_coverage_entry.configure(state="normal")
+    g5_coverage_entry.delete(0, 'end')
+    g5_coverage_entry.configure(state="disabled")
+    g5_species_entry.configure(state="normal")
+    g5_species_entry.delete(0, 'end')
+    g5_species_entry.configure(state="disabled")
+    g5_adapt_less_entry.configure(state="normal")
+    g5_adapt_less_entry.delete(0, 'end')
+    g5_adapt_less_entry.configure(state="disabled")
+    g5_adapt_more_entry.configure(state="normal")
+    g5_adapt_more_entry.delete(0, 'end')
+    g5_adapt_more_entry.configure(state="disabled")
 
 
 def freeda_pipeline():
@@ -228,7 +485,8 @@ def freeda_pipeline():
     # get user input
     wdir = wdirectory.get() + "/"
     ref_species = clade.get()
-    t = threshold.get()
+    #t = threshold.get()
+    t = 60
     all_proteins_dict = {gene_name1.get(): [dup1_var.get(),
                                     [site11_label.get(), site11_start.get(), site11_end.get()],
                                     [site12_label.get(), site12_start.get(), site12_end.get()],
@@ -240,11 +498,33 @@ def freeda_pipeline():
                          gene_name3.get(): [dup3_var.get(),
                                     [site31_label.get(), site31_start.get(), site31_end.get()],
                                     [site32_label.get(), site32_start.get(), site32_end.get()],
-                                    [site33_label.get(), site33_start.get(), site33_end.get()]]}
+                                    [site33_label.get(), site33_start.get(), site33_end.get()]],
+                         gene_name4.get(): [dup4_var.get(),
+                                    [site41_label.get(), site41_start.get(), site41_end.get()],
+                                    [site42_label.get(), site42_start.get(), site42_end.get()],
+                                    [site43_label.get(), site43_start.get(), site43_end.get()]],
+                         gene_name5.get(): [dup5_var.get(),
+                                    [site51_label.get(), site51_start.get(), site51_end.get()],
+                                    [site52_label.get(), site52_start.get(), site52_end.get()],
+                                    [site53_label.get(), site53_start.get(), site53_end.get()]]}
     # get a list of proteins
     all_proteins = [protein for protein in all_proteins_dict if protein != ""]
 
     global logging_window
+
+    # LOGGER
+    logging_label = ttk.Label(logging_frame, text="Events window (logged to 'FREEDA*.log' and 'PAML*.log')")
+    logging_label.grid(column=0, row=0, columnspan=4, sticky=(W))
+    logging_window = ScrolledText.ScrolledText(logging_frame, state="disabled", wrap="none")
+    logging_window.grid(column=0, row=1, columnspan=7, sticky=(N, W, E, S))
+    logging_window.configure(font='TkFixedFont')
+
+    # create handlers of the logging window
+    text_handler = TextHandler.TextHandler(logging_window)
+    # Logging configuration
+    logging.basicConfig(format="%(message)s")  # level=logging.INFO,
+    logger = logging.getLogger()
+    logger.addHandler(text_handler)
 
     # change working directory to user indicated
     os.chdir(wdir)
@@ -366,7 +646,12 @@ def freeda_pipeline():
     final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins,
                                                                nr_of_species_total_dict, ref_species, PAML_logfile_name,
                                                                day, prots_under_pos_sel, failed_paml)
-    get_results(final_PAML_log_dict)
+    # in case PAML failed and dict wasnt created
+    if final_PAML_log_dict:
+        get_results(final_PAML_log_dict)
+    else:
+        ublock_user_entries()
+        return
 
     # run PyMOL
     for protein in all_proteins:
@@ -396,6 +681,9 @@ def freeda_pipeline():
     # allow user to run freeda again
     ublock_user_entries()
 
+    # reset the logger to avoid writing into the previous log file
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
 
 
 def check_gene_name(gene_name, op):
@@ -587,17 +875,97 @@ def get_results(final_PAML_log_dict):
         g3_adapt_more_var.set(adapt_more_number)
         g3_adapt_more_entry.config(foreground="magenta")
 
+    if gene_name4.get():
+        g4_results_var.set(proteins.pop(0))
+        lrt = lrts.pop(0)
+        if lrt == "None":
+            g4_lrt_var.set("0")
+        else:
+            g4_lrt_var.set(round(float(lrt), ndigits=4))
 
-def get_alignment():  # doesnt work
+        pvalue = pvalues.pop(0)
+        if pvalue == "None":
+            g4_pvalue_var.set("1")
+            g4_pos_sel_var.set("NO")
+            g4_pos_sel_entry.config(foreground="black")
+        else:
+            pvalue = float(pvalue)
+            if pvalue < 0.05:
+                g4_pos_sel_var.set("YES")
+                g4_pos_sel_entry.config(foreground="magenta")
+            if pvalue <= 0.001:
+                g4_pvalue_var.set("<0.001")
+            if pvalue > 0.001:
+                g4_pvalue_var.set(round(float(pvalue), ndigits=4))
+            if pvalue >= 0.05:
+                g4_pos_sel_var.set("NO")
+                g4_pos_sel_entry.config(foreground="black")
 
-    directory = "/Volumes/DamianEx_2/Data/Results-12-06-2021-21-44/"
-    result_path_var.get()
-    if os.path.isfile(directory + gene_name1.get() + "_Mm.pse"):
-        filename = filedialog.askopenfilename(initialdir=directory, title="Select file",
-                                                   filetypes=(("pse files", "*.pse"), ("all files","*.*")))
-        subprocess.call([filename])
+        g4_coverage_var.set(coverage.pop(0))
+        g4_species_var.set(species.pop(0))
 
-    return
+        adapt_less_number = adapt_less.pop(0).split(" ")[0]
+        if adapt_less_number == "Not":
+            adapt_less_number = 0
+        g4_adapt_less_var.set(adapt_less_number)
+
+        adapt_more_number = adapt_more.pop(0).split(" ")[0]
+        if adapt_more_number == "Not":
+            adapt_more_number = 0
+        g4_adapt_more_var.set(adapt_more_number)
+        g4_adapt_more_entry.config(foreground="magenta")
+
+    if gene_name5.get():
+        g5_results_var.set(proteins.pop(0))
+        lrt = lrts.pop(0)
+        if lrt == "None":
+            g5_lrt_var.set("0")
+        else:
+            g5_lrt_var.set(round(float(lrt), ndigits=4))
+
+        pvalue = pvalues.pop(0)
+        if pvalue == "None":
+            g5_pvalue_var.set("1")
+            g5_pos_sel_var.set("NO")
+            g5_pos_sel_entry.config(foreground="black")
+        else:
+            pvalue = float(pvalue)
+            if pvalue < 0.05:
+                g5_pos_sel_var.set("YES")
+                g5_pos_sel_entry.config(foreground="magenta")
+            if pvalue <= 0.001:
+                g5_pvalue_var.set("<0.001")
+            if pvalue > 0.001:
+                g5_pvalue_var.set(round(float(pvalue), ndigits=4))
+            if pvalue >= 0.05:
+                g5_pos_sel_var.set("NO")
+                g5_pos_sel_entry.config(foreground="black")
+
+        g5_coverage_var.set(coverage.pop(0))
+        g5_species_var.set(species.pop(0))
+
+        adapt_less_number = adapt_less.pop(0).split(" ")[0]
+        if adapt_less_number == "Not":
+            adapt_less_number = 0
+        g5_adapt_less_var.set(adapt_less_number)
+
+        adapt_more_number = adapt_more.pop(0).split(" ")[0]
+        if adapt_more_number == "Not":
+            adapt_more_number = 0
+        g5_adapt_more_var.set(adapt_more_number)
+        g5_adapt_more_entry.config(foreground="magenta")
+
+
+#def get_alignment():  # doesnt work
+
+#    directory = "/Volumes/DamianEx_2/Data/Results-12-06-2021-21-44/"
+#    result_path_var.get()
+#    if os.path.isfile(directory + gene_name1.get() + "_Mm.pse"):
+#        filename = filedialog.askopenfilename(initialdir=directory, title="Select file",
+#                                                   filetypes=(("pse files", "*.pse"), ("all files","*.*")))
+#        subprocess.call([filename])
+#
+#    return
 
 # set up the main window
 root = Tk()
@@ -628,42 +996,70 @@ input_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create logo frame
 logo_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-logo_frame.grid(column=0, row=0, columnspan=1, rowspan=3, sticky=(N, W, E, S), padx=5, pady=5)
+logo_frame.grid(column=0, row=0, columnspan=1, sticky=(N, W, E, S), padx=5, pady=5)
+#logo_frame_style = ttk.Style()
+#logo_frame_style.configure("TFrame", background="white")
 
 # create settings frame
 settings_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-settings_frame.grid(column=1, row=0, columnspan=3, rowspan=3, sticky=(N, W, E, S), padx=5, pady=5)
+settings_frame.grid(column=1, row=0, columnspan=3, sticky=(N, W, E, S), padx=5, pady=5)
+settings_frame.columnconfigure(0, weight=1, uniform="group1")
+settings_frame.columnconfigure((1, 2, 3), weight=1, uniform="group1")
 
 # create a gene 1 frame
-gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-gene1_frame.grid(column=0, row=11, columnspan=4, sticky=(N, W, E, S), padx=5, pady=5)
+gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene1_frame.grid(column=0, row=11, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
 # let all columns resize
 gene1_frame.columnconfigure(0, weight=3, minsize=50, uniform="group1")
 gene1_frame.columnconfigure((1, 2), weight=1, minsize=50, uniform="group1")
 gene1_frame.columnconfigure(3, weight=2, minsize=50, uniform="group1")
 
 # create a gene 2 frame
-gene2_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-gene2_frame.grid(column=0, row=14, columnspan=4, sticky=(N, W, E, S), padx=5, pady=5)
+gene2_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene2_frame.grid(column=0, row=14, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
 # let all columns resize
 gene2_frame.columnconfigure(0, weight=3, uniform="group1")
 gene2_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene2_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene 3 frame
-gene3_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-gene3_frame.grid(column=0, row=17, columnspan=4, sticky=(N, W, E, S), padx=5, pady=5)
+gene3_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene3_frame.grid(column=0, row=17, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
 # let all columns resize
 gene3_frame.columnconfigure(0, weight=3, uniform="group1")
 gene3_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene3_frame.columnconfigure(3, weight=2, uniform="group1")
+
+# create a gene 4 frame
+gene4_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene4_frame.grid(column=0, row=18, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+# let all columns resize
+gene4_frame.columnconfigure(0, weight=3, uniform="group1")
+gene4_frame.columnconfigure((1, 2), weight=1, uniform="group1")
+gene4_frame.columnconfigure(3, weight=2, uniform="group1")
+
+# create a gene 5 frame
+gene5_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene5_frame.grid(column=0, row=19, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+# let all columns resize
+gene5_frame.columnconfigure(0, weight=3, uniform="group1")
+gene5_frame.columnconfigure((1, 2), weight=1, uniform="group1")
+gene5_frame.columnconfigure(3, weight=2, uniform="group1")
+
+# create a gene working directory frame
+wdir_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+wdir_frame.grid(column=0, row=20, columnspan=5, sticky=(N, W, E, S), padx=5, pady=2)
+# let all columns resize
+wdir_frame.columnconfigure(0, weight=3, uniform="group1")
+wdir_frame.columnconfigure(1, weight=5, uniform="group1")
+wdir_frame.columnconfigure((2, 3), weight=2, uniform="group1")
 
 # create output frame
 output_frame = ttk.Frame(mainframe, relief="sunken", padding="5 5 5 5")
 output_frame.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=5)
 # let all columns resize
 output_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
-output_frame.columnconfigure((6, 7, 8), weight=1, uniform="group1")
+#output_frame.columnconfigure((6, 7, 8), weight=1, uniform="group1")
 
 # create a logging window
 logging_frame = ttk.Frame(output_frame, relief="ridge", padding="5 5 5 5")
@@ -671,19 +1067,19 @@ logging_frame.grid(column=0, row=0, columnspan=9, sticky=(N, W, E, S), padx=5, p
 
 # create results frame
 results_labelframe = ttk.LabelFrame(output_frame, text="Results window")
-results_labelframe.grid(column=0, row=1, columnspan=8, padx=5, pady=5, sticky=(N, W))
+results_labelframe.grid(column=0, row=1, columnspan=8, padx=5, pady=2, sticky=(N, W))
 results_labelframe.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 #results_labelframe.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create results labels frame upper
 results_labels_upper = ttk.Frame(results_labelframe, padding="2 2 2 2")
-results_labels_upper.grid(column=0, row=2, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
+results_labels_upper.grid(column=0, row=2, columnspan=8, sticky=(N, W, E, S), padx=5, pady=2)
 results_labels_upper.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 #results_labels.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create results labels frame
-results_labels = ttk.Frame(results_labelframe, padding="5 5 5 5")
-results_labels.grid(column=0, row=3, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+results_labels = ttk.Frame(results_labelframe, padding="2 2 2 2")
+results_labels.grid(column=0, row=3, columnspan=8, sticky=(N, W, E, S), padx=5, pady=2)
 results_labels.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 #results_labels.columnconfigure((6, 7), weight=2, uniform="group1")
 
@@ -705,6 +1101,18 @@ g3_results_frame.grid(column=0, row=6, columnspan=8, sticky=(N, W, E, S), padx=5
 g3_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 #g3_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
+# create user gene 4 result frame
+g4_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
+g4_results_frame.grid(column=0, row=7, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g4_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
+#g3_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
+
+# create user gene 5 result frame
+g5_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
+g5_results_frame.grid(column=0, row=8, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g5_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
+#g3_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
+
 
 # CHECKS
 check_gene_name_wrapper = (settings_frame.register(check_gene_name), "%P", "%V")
@@ -723,45 +1131,51 @@ error_label2 = ttk.Label(input_frame, font="TkSmallCaptionFont", foreground="mag
 error_label2.grid(column=0, row=23, columnspan=4, padx=5, pady=2, sticky="w")
 
 # LOGO
-canvas = Canvas(logo_frame, width=200, height=200)
-canvas.pack()
-freeda_img = ImageTk.PhotoImage(Image.open(os.getcwd() + "/freeda_img.png"))
-canvas.create_image(100, 100, image=freeda_img)
+canvas = Canvas(logo_frame, width=200, height=50)
+canvas.pack(expand=True)
+#canvas.grid(column=0, row=0, rowspan=3, sticky=(N, W, E, S))
+freeda_img = ImageTk.PhotoImage(Image.open(os.getcwd() + "/freeda_img4.png"))
+canvas.create_image(100, 30, anchor=CENTER, image=freeda_img)
 
 # LOGGER
-logging_label = ttk.Label(logging_frame, text="Events window (logged to 'FREEDA*.log' and 'PAML*.log')")
-logging_label.grid(column=0, row=0, columnspan=4, sticky=(W))
-logging_window = ScrolledText.ScrolledText(logging_frame, state="disabled", wrap="none")
-logging_window.grid(column=0, row=1, columnspan=7, sticky=(N, W, E, S))
-logging_window.configure(font='TkFixedFont')
+raise_logger()
+
+# LOGGER
+#logging_label = ttk.Label(logging_frame, text="Events window (logged to 'FREEDA*.log' and 'PAML*.log')")
+#logging_label.grid(column=0, row=0, columnspan=4, sticky=(W))
+#logging_window = ScrolledText.ScrolledText(logging_frame, state="disabled", wrap="none")
+#logging_window.grid(column=0, row=1, columnspan=7, sticky=(N, W, E, S))
+#logging_window.configure(font='TkFixedFont')
+
 # create handlers of the logging window
-text_handler = TextHandler.TextHandler(logging_window)
+#text_handler = TextHandler.TextHandler(logging_window)
 # Logging configuration
-logging.basicConfig(format="%(message)s")  # level=logging.INFO,
-logger = logging.getLogger()
-logger.addHandler(text_handler)
+#logging.basicConfig(format="%(message)s")  # level=logging.INFO,
+#logger = logging.getLogger()
+#logger.addHandler(text_handler)
 
 # CLADE
 clade = StringVar()
-ttk.Label(settings_frame, text="Clade").grid(column=0, row=0, pady=5, sticky=(W))
+#ttk.Label(settings_frame, text="Clade").grid(column=0, row=0, pady=5, sticky=(W))
 rodents = ttk.Radiobutton(settings_frame, text="Rodents (mouse <-> rat)", variable=clade, value="Mm")
-rodents.grid(column=0, row=1, columnspan=2, sticky=(W))
+rodents.grid(column=0, row=1, columnspan=3, sticky=(W))
 primates = ttk.Radiobutton(settings_frame, text="Primates (human <-> spider monkey)", variable=clade, value="Hs")
-primates.grid(column=0, row=2, columnspan=2, sticky=(W))
-carnivores = ttk.Radiobutton(settings_frame, text="Carnivores (cat <-> dog)", variable=clade, value="Cf")
-carnivores.grid(column=0, row=3, columnspan=2, sticky=(W))
+primates.grid(column=0, row=2, columnspan=4, sticky=(W))
+carnivores = ttk.Radiobutton(settings_frame, text="Carnivores (dog <-> cat)", variable=clade, value="Cf")
+carnivores.grid(column=0, row=3, columnspan=3, sticky=(W))
 birds = ttk.Radiobutton(settings_frame, text="Birds (chicken <-> quail)", variable=clade, value="Gg")
-birds.grid(column=0, row=4, columnspan=2, sticky=(W))
+birds.grid(column=0, row=4, columnspan=3, sticky=(W))
 
 # BLAST THRESHOLD
-threshold = IntVar()
-ttk.Label(settings_frame, text="Blast search").grid(column=0, row=5, pady=5, sticky=(W))
-deep_radiobutton = ttk.Radiobutton(settings_frame, text="Deep", variable=threshold,value=30)
-deep_radiobutton.grid(column=0, row=6, sticky=(W))
-medium_radiobutton = ttk.Radiobutton(settings_frame, text="Medium (recommended)", variable=threshold, value=50)
-medium_radiobutton.grid(column=0, row=7, sticky=(W))
-shallow_radiobutton = ttk.Radiobutton(settings_frame, text="Shallow", variable=threshold, value=70)
-shallow_radiobutton.grid(column=0, row=8, sticky=(W))
+#threshold = IntVar()
+#ttk.Label(settings_frame, text="Search").grid(column=0, row=5, pady=5, sticky=(W))
+#shallow_radiobutton = ttk.Radiobutton(settings_frame, text="Shallow", variable=threshold, value=70)
+#shallow_radiobutton.grid(column=1, row=5, sticky=(W))
+#medium_radiobutton = ttk.Radiobutton(settings_frame, text="Medium", variable=threshold, value=50)
+#medium_radiobutton.grid(column=2, row=5, sticky=(W))
+#deep_radiobutton = ttk.Radiobutton(settings_frame, text="Deep", variable=threshold, value=30)
+#deep_radiobutton.grid(column=3, row=5, sticky=(W))
+
 
 # RESIDUES
 ttk.Label(input_frame, text="Indicate functional residues -----> ").grid(column=0, row=9, columnspan=2,
@@ -772,144 +1186,224 @@ ttk.Label(input_frame, text="label").grid(column=3, row=9)
 
 # USER INPUT GENE 1
 gene_name1 = StringVar()
-ttk.Label(gene1_frame, text="Gene name").grid(column=0, row=11, padx=6, sticky=(W))
+ttk.Label(gene1_frame, text="Gene name").grid(column=0, row=11, padx=6, pady=1, sticky=(W))
 name1 = ttk.Entry(gene1_frame, textvariable=gene_name1, validate="all", validatecommand=check_gene_name_wrapper)
-name1.grid(column=0, row=12, padx=5, pady=2, sticky=(W))
+name1.grid(column=0, row=12, padx=5, pady=1, sticky=(W))
 dup1_var = BooleanVar()
 dup1_button = ttk.Checkbutton(gene1_frame, text="Duplication expected", variable=dup1_var, onvalue=1, offvalue=0)
-dup1_button.grid(column=0, row=13, padx=6, sticky=(W))
+dup1_button.grid(column=0, row=13, padx=6, pady=1, sticky=(W))
 
 s11_start = StringVar()
 s11_end = StringVar()
 s11_label = StringVar()
 site11_start = ttk.Entry(gene1_frame, textvariable=s11_start, validate="all", validatecommand=check_functional_residues)
-site11_start.grid(column=1, row=11, padx=5, pady=2, sticky=(W))
+site11_start.grid(column=1, row=11, padx=5, pady=1, sticky=(W))
 site11_end = ttk.Entry(gene1_frame, textvariable=s11_end, validate="all", validatecommand=check_functional_residues)
-site11_end.grid(column=2, row=11, padx=5, pady=2, sticky=(W))
+site11_end.grid(column=2, row=11, padx=5, pady=1, sticky=(W))
 site11_label = ttk.Entry(gene1_frame, textvariable=s11_label, validate="all", validatecommand=check_label)
-site11_label.grid(column=3, row=11, padx=5, pady=2, sticky=(W))
+site11_label.grid(column=3, row=11, padx=5, pady=1, sticky=(W))
 
 s12_start = StringVar()
 s12_end = StringVar()
 s12_label = StringVar()
 site12_start = ttk.Entry(gene1_frame, textvariable=s12_start, validate="all", validatecommand=check_functional_residues)
-site12_start.grid(column=1, row=12, padx=5, pady=2, sticky=(W))
+site12_start.grid(column=1, row=12, padx=5, pady=1, sticky=(W))
 site12_end = ttk.Entry(gene1_frame, textvariable=s12_end, validate="all", validatecommand=check_functional_residues)
-site12_end.grid(column=2, row=12, padx=5, pady=2, sticky=(W))
+site12_end.grid(column=2, row=12, padx=5, pady=1, sticky=(W))
 site12_label = ttk.Entry(gene1_frame, textvariable=s12_label, validate="all", validatecommand=check_label)
-site12_label.grid(column=3, row=12, padx=5, pady=2, sticky=(W))
+site12_label.grid(column=3, row=12, padx=5, pady=1, sticky=(W))
 
 s13_start = StringVar()
 s13_end = StringVar()
 s13_label = StringVar()
 site13_start = ttk.Entry(gene1_frame, textvariable=s13_start, validate="all", validatecommand=check_functional_residues)
-site13_start.grid(column=1, row=13, padx=5, pady=2, sticky=(W))
+site13_start.grid(column=1, row=13, padx=5, pady=1, sticky=(W))
 site13_end = ttk.Entry(gene1_frame, textvariable=s13_end, validate="all", validatecommand=check_functional_residues)
-site13_end.grid(column=2, row=13, padx=5, pady=2, sticky=(W))
+site13_end.grid(column=2, row=13, padx=5, pady=1, sticky=(W))
 site13_label = ttk.Entry(gene1_frame, textvariable=s13_label, validate="all", validatecommand=check_label)
-site13_label.grid(column=3, row=13, padx=5, pady=2, sticky=(W))
+site13_label.grid(column=3, row=13, padx=5, pady=1, sticky=(W))
 
 # USER INPUT GENE 2
 gene_name2 = StringVar()
-ttk.Label(gene2_frame, text="Gene name").grid(column=0, row=14, padx=6, sticky=(W))
+ttk.Label(gene2_frame, text="Gene name").grid(column=0, row=14, padx=6, pady=1, sticky=(W))
 name2 = ttk.Entry(gene2_frame, textvariable=gene_name2, validate="all", validatecommand=check_gene_name_wrapper)
-name2.grid(column=0, row=15, padx=5, pady=5, sticky=(W))
+name2.grid(column=0, row=15, padx=5, pady=1, sticky=(W))
 dup2_var = BooleanVar()
 dup2_button = ttk.Checkbutton(gene2_frame, text="Duplication expected", variable=dup2_var, onvalue=1, offvalue=0)
-dup2_button.grid(column=0, row=16, padx=6, sticky=(W))
+dup2_button.grid(column=0, row=16, padx=6, pady=1, sticky=(W))
 
 s21_start = StringVar()
 s21_end = StringVar()
 s21_label = StringVar()
 site21_start = ttk.Entry(gene2_frame, textvariable=s21_start, validate="all", validatecommand=check_functional_residues)
-site21_start.grid(column=1, row=14, padx=5, pady=2, sticky=(W))
+site21_start.grid(column=1, row=14, padx=5, pady=1, sticky=(W))
 site21_end = ttk.Entry(gene2_frame, textvariable=s21_end, validate="all", validatecommand=check_functional_residues)
-site21_end.grid(column=2, row=14, padx=5, pady=2, sticky=(W))
+site21_end.grid(column=2, row=14, padx=5, pady=1, sticky=(W))
 site21_label = ttk.Entry(gene2_frame, textvariable=s21_label, validate="all", validatecommand=check_label)
-site21_label.grid(column=3, row=14, padx=5, pady=2, sticky=(W))
+site21_label.grid(column=3, row=14, padx=5, pady=1, sticky=(W))
 
 s22_start = StringVar()
 s22_end = StringVar()
 s22_label = StringVar()
 site22_start = ttk.Entry(gene2_frame, textvariable=s22_start, validate="all", validatecommand=check_functional_residues)
-site22_start.grid(column=1, row=15, padx=5, pady=2, sticky=(W))
+site22_start.grid(column=1, row=15, padx=5, pady=1, sticky=(W))
 site22_end = ttk.Entry(gene2_frame, textvariable=s22_end, validate="all", validatecommand=check_functional_residues)
-site22_end.grid(column=2, row=15, padx=5, pady=2, sticky=(W))
+site22_end.grid(column=2, row=15, padx=5, pady=1, sticky=(W))
 site22_label = ttk.Entry(gene2_frame, textvariable=s22_label, validate="all", validatecommand=check_label)
-site22_label.grid(column=3, row=15, padx=5, pady=2, sticky=(W))
+site22_label.grid(column=3, row=15, padx=5, pady=1, sticky=(W))
 
 s23_start = StringVar()
 s23_end = StringVar()
 s23_label = StringVar()
 site23_start = ttk.Entry(gene2_frame, textvariable=s23_start, validate="all", validatecommand=check_functional_residues)
-site23_start.grid(column=1, row=16, padx=5, pady=2, sticky=(W))
+site23_start.grid(column=1, row=16, padx=5, pady=1, sticky=(W))
 site23_end = ttk.Entry(gene2_frame, textvariable=s23_end, validate="all", validatecommand=check_functional_residues)
-site23_end.grid(column=2, row=16, padx=5, pady=2, sticky=(W))
+site23_end.grid(column=2, row=16, padx=5, pady=1, sticky=(W))
 site23_label = ttk.Entry(gene2_frame, textvariable=s23_label, validate="all", validatecommand=check_label)
-site23_label.grid(column=3, row=16, padx=5, pady=2, sticky=(W))
+site23_label.grid(column=3, row=16, padx=5, pady=1, sticky=(W))
 
 # USER INPUT GENE 3
 gene_name3 = StringVar()
-ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, sticky=(W))
+ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, pady=2, sticky=(W))
 name3 = ttk.Entry(gene3_frame, textvariable=gene_name3, validate="all", validatecommand=check_gene_name_wrapper)
 name3.grid(column=0, row=18, padx=5, pady=5, sticky=(W))
 dup3_var = BooleanVar()
 dup3_button = ttk.Checkbutton(gene3_frame, text="Duplication expected", variable=dup3_var, onvalue=1, offvalue=0)
-dup3_button.grid(column=0, row=19, padx=6, sticky=(W))
+dup3_button.grid(column=0, row=19, padx=6, pady=2, sticky=(W))
 
 s31_start = StringVar()
 s31_end = StringVar()
 s31_label = StringVar()
 site31_start = ttk.Entry(gene3_frame, textvariable=s31_start, validate="all", validatecommand=check_functional_residues)
-site31_start.grid(column=1, row=17, padx=5, pady=2, sticky=(W))
+site31_start.grid(column=1, row=17, padx=5, pady=1, sticky=(W))
 site31_end = ttk.Entry(gene3_frame, textvariable=s31_end, validate="all", validatecommand=check_functional_residues)
-site31_end.grid(column=2, row=17, padx=5, pady=2, sticky=(W))
+site31_end.grid(column=2, row=17, padx=5, pady=1, sticky=(W))
 site31_label = ttk.Entry(gene3_frame, textvariable=s31_label, validate="all", validatecommand=check_label)
-site31_label.grid(column=3, row=17, padx=5, pady=2, sticky=(W))
+site31_label.grid(column=3, row=17, padx=5, pady=1, sticky=(W))
 
 s32_start = StringVar()
 s32_end = StringVar()
 s32_label = StringVar()
 site32_start = ttk.Entry(gene3_frame, textvariable=s32_start, validate="all", validatecommand=check_functional_residues)
-site32_start.grid(column=1, row=18, padx=5, pady=2, sticky=(W))
+site32_start.grid(column=1, row=18, padx=5, pady=1, sticky=(W))
 site32_end = ttk.Entry(gene3_frame, textvariable=s32_end, validate="all", validatecommand=check_functional_residues)
-site32_end.grid(column=2, row=18, padx=5, pady=2, sticky=(W))
+site32_end.grid(column=2, row=18, padx=5, pady=1, sticky=(W))
 site32_label = ttk.Entry(gene3_frame, textvariable=s32_label, validate="all", validatecommand=check_label)
-site32_label.grid(column=3, row=18, padx=5, pady=2, sticky=(W))
+site32_label.grid(column=3, row=18, padx=5, pady=1, sticky=(W))
 
 s33_start = StringVar()
 s33_end = StringVar()
 s33_label = StringVar()
 site33_start = ttk.Entry(gene3_frame, textvariable=s33_start, validate="all", validatecommand=check_functional_residues)
-site33_start.grid(column=1, row=19, padx=5, pady=2, sticky=(W))
+site33_start.grid(column=1, row=19, padx=5, pady=1, sticky=(W))
 site33_end = ttk.Entry(gene3_frame, textvariable=s33_end, validate="all", validatecommand=check_functional_residues)
-site33_end.grid(column=2, row=19, padx=5, pady=2, sticky=(W))
+site33_end.grid(column=2, row=19, padx=5, pady=1, sticky=(W))
 site33_label = ttk.Entry(gene3_frame, textvariable=s33_label, validate="all", validatecommand=check_label)
-site33_label.grid(column=3, row=19, padx=5, pady=2, sticky=(W))
+site33_label.grid(column=3, row=19, padx=5, pady=1, sticky=(W))
+
+# USER INPUT GENE 4
+gene_name4 = StringVar()
+ttk.Label(gene4_frame, text="Gene name").grid(column=0, row=20, padx=6, pady=1, sticky=(W))
+name4 = ttk.Entry(gene4_frame, textvariable=gene_name4, validate="all", validatecommand=check_gene_name_wrapper)
+name4.grid(column=0, row=21, padx=5, pady=1, sticky=(W))
+dup4_var = BooleanVar()
+dup4_button = ttk.Checkbutton(gene4_frame, text="Duplication expected", variable=dup4_var, onvalue=1, offvalue=0)
+dup4_button.grid(column=0, row=22, padx=6, pady=1, sticky=(W))
+
+s41_start = StringVar()
+s41_end = StringVar()
+s41_label = StringVar()
+site41_start = ttk.Entry(gene4_frame, textvariable=s41_start, validate="all", validatecommand=check_functional_residues)
+site41_start.grid(column=1, row=20, padx=5, pady=1, sticky=(W))
+site41_end = ttk.Entry(gene4_frame, textvariable=s41_end, validate="all", validatecommand=check_functional_residues)
+site41_end.grid(column=2, row=20, padx=5, pady=1, sticky=(W))
+site41_label = ttk.Entry(gene4_frame, textvariable=s41_label, validate="all", validatecommand=check_label)
+site41_label.grid(column=3, row=20, padx=5, pady=1, sticky=(W))
+
+s42_start = StringVar()
+s42_end = StringVar()
+s42_label = StringVar()
+site42_start = ttk.Entry(gene4_frame, textvariable=s42_start, validate="all", validatecommand=check_functional_residues)
+site42_start.grid(column=1, row=21, padx=5, pady=1, sticky=(W))
+site42_end = ttk.Entry(gene4_frame, textvariable=s42_end, validate="all", validatecommand=check_functional_residues)
+site42_end.grid(column=2, row=21, padx=5, pady=1, sticky=(W))
+site42_label = ttk.Entry(gene4_frame, textvariable=s42_label, validate="all", validatecommand=check_label)
+site42_label.grid(column=3, row=21, padx=5, pady=1, sticky=(W))
+
+s43_start = StringVar()
+s43_end = StringVar()
+s43_label = StringVar()
+site43_start = ttk.Entry(gene4_frame, textvariable=s43_start, validate="all", validatecommand=check_functional_residues)
+site43_start.grid(column=1, row=22, padx=5, pady=1, sticky=(W))
+site43_end = ttk.Entry(gene4_frame, textvariable=s43_end, validate="all", validatecommand=check_functional_residues)
+site43_end.grid(column=2, row=22, padx=5, pady=1, sticky=(W))
+site43_label = ttk.Entry(gene4_frame, textvariable=s43_label, validate="all", validatecommand=check_label)
+site43_label.grid(column=3, row=22, padx=5, pady=1, sticky=(W))
+
+# USER INPUT GENE 5
+gene_name5 = StringVar()
+ttk.Label(gene5_frame, text="Gene name").grid(column=0, row=23, padx=6, pady=1, sticky=(W))
+name5 = ttk.Entry(gene5_frame, textvariable=gene_name5, validate="all", validatecommand=check_gene_name_wrapper)
+name5.grid(column=0, row=24, padx=5, pady=1, sticky=(W))
+dup5_var = BooleanVar()
+dup5_button = ttk.Checkbutton(gene5_frame, text="Duplication expected", variable=dup5_var, onvalue=1, offvalue=0)
+dup5_button.grid(column=0, row=25, padx=6, pady=1, sticky=(W))
+
+s51_start = StringVar()
+s51_end = StringVar()
+s51_label = StringVar()
+site51_start = ttk.Entry(gene5_frame, textvariable=s51_start, validate="all", validatecommand=check_functional_residues)
+site51_start.grid(column=1, row=23, padx=5, pady=1, sticky=(W))
+site51_end = ttk.Entry(gene5_frame, textvariable=s51_end, validate="all", validatecommand=check_functional_residues)
+site51_end.grid(column=2, row=23, padx=5, pady=1, sticky=(W))
+site51_label = ttk.Entry(gene5_frame, textvariable=s51_label, validate="all", validatecommand=check_label)
+site51_label.grid(column=3, row=23, padx=5, pady=1, sticky=(W))
+
+s52_start = StringVar()
+s52_end = StringVar()
+s52_label = StringVar()
+site52_start = ttk.Entry(gene5_frame, textvariable=s52_start, validate="all", validatecommand=check_functional_residues)
+site52_start.grid(column=1, row=24, padx=5, pady=1, sticky=(W))
+site52_end = ttk.Entry(gene5_frame, textvariable=s52_end, validate="all", validatecommand=check_functional_residues)
+site52_end.grid(column=2, row=24, padx=5, pady=1, sticky=(W))
+site52_label = ttk.Entry(gene5_frame, textvariable=s52_label, validate="all", validatecommand=check_label)
+site52_label.grid(column=3, row=24, padx=5, pady=1, sticky=(W))
+
+s53_start = StringVar()
+s53_end = StringVar()
+s53_label = StringVar()
+site53_start = ttk.Entry(gene5_frame, textvariable=s53_start, validate="all", validatecommand=check_functional_residues)
+site53_start.grid(column=1, row=25, padx=5, pady=1, sticky=(W))
+site53_end = ttk.Entry(gene5_frame, textvariable=s53_end, validate="all", validatecommand=check_functional_residues)
+site53_end.grid(column=2, row=25, padx=5, pady=1, sticky=(W))
+site53_label = ttk.Entry(gene5_frame, textvariable=s53_label, validate="all", validatecommand=check_label)
+site53_label.grid(column=3, row=25, padx=5, pady=1, sticky=(W))
+
+
 
 # BUTTONS
 
 result_path_var = StringVar()
 
 # Working directory button
-wdir_button = ttk.Button(input_frame, text="Set working directory", command=get_wdir)
-wdir_button.grid(column=0, row=21, sticky=(N, W, E, S), padx=5, pady=2)
+wdir_button = ttk.Button(wdir_frame, text="Set directory", command=get_wdir)
+wdir_button.grid(column=0, row=0, sticky=(N, W, E, S), padx=1, pady=2)
 wdirectory = StringVar()
-wdir_entry = ttk.Entry(input_frame, textvariable=wdirectory)
-wdir_entry.grid(column=1, row=21, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+wdir_entry = ttk.Entry(wdir_frame, textvariable=wdirectory)
+wdir_entry.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=2)  # columnspan=4
 
 # ANALYZE button
-analyze_button = ttk.Button(input_frame, text="Analyze", state="normal", command=thread_freeda)  # default="active"
-analyze_button.grid(column=1, row=22, columnspan=2, padx=5, pady=2, sticky=(E))
+analyze_button = ttk.Button(wdir_frame, text="Analyze", state="normal", command=thread_freeda)  # default="active"
+analyze_button.grid(column=2, row=0, pady=2, sticky=(W))  # columnspan=2
 
 # ABORT button
-abort_button = ttk.Button(input_frame, text="ABORT", state="normal", command=abort_freeda)  # default="active"
-abort_button.grid(column=3, row=22, padx=5, pady=2, sticky=(W))
+abort_button = ttk.Button(wdir_frame, text="ABORT", state="normal", command=abort_freeda)  # default="active"
+abort_button.grid(column=3, row=0,  pady=2, sticky=(W))
 
 # RESULTS button
-results_button = ttk.Button(results_labelframe, text="Results sheet", state="disabled",
-                            command=lambda x="Results sheet": get_results(x))
-results_button.grid(column=0, row=7, columnspan=3, sticky=(W), padx=5, pady=5)
+#results_button = ttk.Button(results_labelframe, text="Results sheet", state="disabled",
+#                            command=lambda x="Results sheet": get_results(x))
+#results_button.grid(column=0, row=7, columnspan=3, sticky=(W), padx=5, pady=5)
 
 # ALIGNMENT BUTTONS
 #alignment_button1 = ttk.Button(g1_results_frame, text="Alignment", state="disabled", command=get_alignment)
@@ -944,7 +1438,7 @@ ttk.Label(results_labels, text="Gene").grid(column=0, row=3)
 ttk.Label(results_labels, text="Pos. select.").grid(column=1, row=3)
 ttk.Label(results_labels, text="LRT").grid(column=2, row=3)
 ttk.Label(results_labels, text="p-value").grid(column=3, row=3)
-ttk.Label(results_labels, text="CDS").grid(column=4, row=3)
+ttk.Label(results_labels, text="CDS cover.").grid(column=4, row=3)
 ttk.Label(results_labels, text="species").grid(column=5, row=3)
 ttk.Label(results_labels, text="pr < 0.9").grid(column=6, row=3)
 ttk.Label(results_labels, text="pr >= 0.9").grid(column=7, row=3)
@@ -1053,6 +1547,77 @@ g3_adapt_more_var = StringVar()
 g3_adapt_more_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_adapt_more_var, justify='center')
 g3_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g3_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
+
+
+# gene 4 results
+g4_results_var = StringVar()
+g4_results_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_results_var, justify='center')
+g4_results_entry.grid(column=0, row=0, sticky=(W))
+g4_results_entry.config(foreground="black")  # text will be black despite disabled state
+g4_pos_sel_var = StringVar()
+g4_pos_sel_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_pos_sel_var, justify='center')
+g4_pos_sel_entry.grid(column=1, row=0, sticky=(W))
+g4_pos_sel_entry.config(foreground="black")  # text will be black despite disabled state
+g4_lrt_var = StringVar()
+g4_lrt_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_lrt_var, justify='center')
+g4_lrt_entry.grid(column=2, row=0, sticky=(W))
+g4_lrt_entry.config(foreground="black")  # text will be black despite disabled state
+g4_pvalue_var = StringVar()
+g4_pvalue_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_pvalue_var, justify='center')
+g4_pvalue_entry.grid(column=3, row=0, sticky=(W))
+g4_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
+g4_coverage_var = StringVar()
+g4_coverage_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_coverage_var, justify='center')
+g4_coverage_entry.grid(column=4, row=0, sticky=(W))
+g4_coverage_entry.config(foreground="black")  # text will be black despite disabled state
+g4_species_var = StringVar()
+g4_species_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_species_var, justify='center')
+g4_species_entry.grid(column=5, row=0, sticky=(W))
+g4_species_entry.config(foreground="black")  # text will be black despite disabled state
+g4_adapt_less_var = StringVar()
+g4_adapt_less_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_adapt_less_var, justify='center')
+g4_adapt_less_entry.grid(column=6, row=0, sticky=(W))
+g4_adapt_less_entry.config(foreground="black")  # text will be black despite disabled state
+g4_adapt_more_var = StringVar()
+g4_adapt_more_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_adapt_more_var, justify='center')
+g4_adapt_more_entry.grid(column=7, row=0, sticky=(W))
+g4_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
+
+
+# gene 5 results
+g5_results_var = StringVar()
+g5_results_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_results_var, justify='center')
+g5_results_entry.grid(column=0, row=0, sticky=(W))
+g5_results_entry.config(foreground="black")  # text will be black despite disabled state
+g5_pos_sel_var = StringVar()
+g5_pos_sel_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_pos_sel_var, justify='center')
+g5_pos_sel_entry.grid(column=1, row=0, sticky=(W))
+g5_pos_sel_entry.config(foreground="black")  # text will be black despite disabled state
+g5_lrt_var = StringVar()
+g5_lrt_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_lrt_var, justify='center')
+g5_lrt_entry.grid(column=2, row=0, sticky=(W))
+g5_lrt_entry.config(foreground="black")  # text will be black despite disabled state
+g5_pvalue_var = StringVar()
+g5_pvalue_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_pvalue_var, justify='center')
+g5_pvalue_entry.grid(column=3, row=0, sticky=(W))
+g5_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
+g5_coverage_var = StringVar()
+g5_coverage_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_coverage_var, justify='center')
+g5_coverage_entry.grid(column=4, row=0, sticky=(W))
+g5_coverage_entry.config(foreground="black")  # text will be black despite disabled state
+g5_species_var = StringVar()
+g5_species_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_species_var, justify='center')
+g5_species_entry.grid(column=5, row=0, sticky=(W))
+g5_species_entry.config(foreground="black")  # text will be black despite disabled state
+g5_adapt_less_var = StringVar()
+g5_adapt_less_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_adapt_less_var, justify='center')
+g5_adapt_less_entry.grid(column=6, row=0, sticky=(W))
+g5_adapt_less_entry.config(foreground="black")  # text will be black despite disabled state
+g5_adapt_more_var = StringVar()
+g5_adapt_more_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_adapt_more_var, justify='center')
+g5_adapt_more_entry.grid(column=7, row=0, sticky=(W))
+g5_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
+
 
 
 

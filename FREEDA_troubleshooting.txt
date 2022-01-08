@@ -883,3 +883,31 @@ return str(consensus_read)
 #           early STOP remover function worked well -> post trimming it was easier to align hence difference in "no_STOP" alignment length
 #           but since last 4 single exons were aligned poorly, the stop codons were missing/were displaced in other species
 #               -> not sure what that was about but it looks good now (01/03/2022)
+
+#    8) ISSUE with "STOP codon detected in LAST exon (24) in Gorilla Numa1 -> last exon is microexon (25)
+#                   so its missing but finder thinks there is a STOP in 24 (which there is not)
+#                           -> disabled STOP check function (01/05/2022)
+#           -> also C-term synteny check should not run if last exon is missing (currently exon 24
+#                           in Gorilla is syntenic) -> thats ok (01/05/2022)
+#           -> also add bp number to microexon info in model_incompatible.txt file and log it in exon finder -> DONE
+
+----------- * Nudt11 * -----------
+
+Looking for structure in AlphaFold database for: Nudt11 ...
+
+Based on uniprot id: P0C028 structure prediction for protein: Nudt11 has been found (164 aa)
+
+Exons FAILED to assemble expected CDS for: Nudt11-201
+
+
+...FATAL ERROR... : Input data generation FAILED for protein: Nudt11 -> exiting the pipeline now...
+
+
+-> its a protein coding gene with 2 exons where exon 2 is a SINGLE nucleaotide (A) - part of the STOP
+
+# -> Wrong annotation in ensemble -> decided not to do anything about it
+
+#       0) If user runs GUI again without closing the initial logs about alphafold and blast go into PREVIOUS PAML log!!
+#               -> no clue how to fix that, resetting handlers in main erases gui handlers, outside doesnt do anything
+#               -> FIXED by resetting handlers after pipeline is finishes and raising a new logger when it starts
+#       0) Add 30kb overhangs for primates -> DONE
