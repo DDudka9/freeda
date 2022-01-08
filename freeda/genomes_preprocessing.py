@@ -2265,17 +2265,6 @@ def map_assembly_contigs(wdir):
         # need keys
         indexed_contigs = {row[0]: row[1:] for row in rows}
 
-    #mapped_contigs_dict = {}
-    #for contig in contigs:  # comes from ensembl release
-    #    for indexed_contig in indexed_contigs:  # comes from pybedtools indexed ref genome .fai file
-    #        for available_contig, features in all_contigs.items():  # comes from the ncbi assembly file
-    #            if available_contig in contig and indexed_contig in features[3]:
-    #                mapped_contigs_dict[contig] = indexed_contig
-    #            elif contig in features[3]:
-    #                mapped_contigs_dict[contig] = features[3]
-    #            elif contig in features[1]: #  and "random" not in available_contig:
-    #                mapped_contigs_dict[contig] = features[3]
-
     mapped_contigs_dict = {}
     for contig in contigs:
         for available_contig, features in all_contigs.items():

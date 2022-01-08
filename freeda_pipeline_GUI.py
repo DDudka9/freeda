@@ -28,7 +28,7 @@ Traceback (most recent call last):
   File "/Users/damian/anaconda3/envs/py37/lib/python3.7/threading.py", line 870, in run
     self._target(*self._args, **self._kwargs)
   File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline_GUI.py", line 445, in freeda_pipeline
-    final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins,
+    final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
   File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline_GUI.py", line 538, in get_results
     def get_results(final_PAML_log_dict):
 TypeError: 'NoneType' object is not subscriptable
@@ -36,35 +36,36 @@ TypeError: 'NoneType' object is not subscriptable
 """
 
 # TODO
+#       0) Figures:
+#               1) Accuracy - Show both ways (rat and mouse)
+#                           - Show mafft vs muscle
+#                           - Show dealing with duplications (Pot1a and Pot1b?)
+#                           - Show dealing with tandem sequences (Mug1, Mug2; Hoxd9, Hoxd10)
+#                           - Show dealing with large introns (Cenpp)
+#                           - Show dealing with microexons (Cenpx)
+#                           - Show dealing with premature STOP (Haus...)
+#                           - Show dealing with uncalled bases (Mug1 Caroli contig FMAL02029158.1__rev)
+#       0) Mug1 Spicilegus has 36 exons and many hits -> runs finally with a 90 threshold and many exons are missing
+#               -> allow more matches than 40? Issue might be that duplications will be picked up more easily
+#               -> compare Mug1 exons got from caroli / pahari or rat to exons of Mug2 in these species
+#               -> run Mug1 and Mug2 with 30kb margins to comapre with 200kb
+#       0) Use debugger to go through the matches_processor module and make sure docstrings are correct
 #       0) Double check all the assemblies (I swapped white faced saki in order)
 #       1) Add a test -> if Data folder doesnt have a specific file -> run test on primates CENPX or ask user to do it?
 #       2) Talk to Mike about who to ask concering licenses
 #       3) Fix nomenclature -> "intronic"
-#                           -> "protein/protein_name" -> gene_name
+#                           -> "gene/gene_name" -> gene_name
 #                           -> "None" is not the best info for M2a etc tests in PAML excel file -> 0 (zero)
 #                           -> eliminate aligner option
 #                           -> fill out missing docstrings
-#       4) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
-#                             -> shallow search is not enough to get all exons !!! (1, 6, 7, 8 missing in all species)
-#                              -> medium (50) was the same -> test what happens if 2
-#                                  -> ACTUALLY -> 6,7,8 exons were found (about 68-71 threshold) but STICHED WRONG
-#                                                           (reversed order)
-#                                   -> changed threshold in GUI to 60
-#               -> its likely due to matches generator module assuming >30kb distances to be too large for genes
-#                   -> LutraLutra genome rev matches were stiched as for !!!
-#                   -> use debug mode to investigate matches generation in CENPP Felis Catus
-#               -> extending intragenic regions to beyond 30000 -> until 200000 generated 20x bigger files
-#               but did stich the matches in correct order in Ursus genome -> thats just a temp fix, not sustainable
-#                       -> it did rescue the matches (all in one contig)
-#           -> DOUBLE CHEKED -> it seems I was wrong, order is right -> but exons wouldnt align cose of
-#           the size of the contig, which explains why 200kb margin allows normal alignment
 #       6) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
 #                  -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
 #       7) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #          SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#      12) Use Hyland et al. 2021 Gen Biol Evol for testing -> TRIP protein in mammals
+#      12) Use Hyland et al. 2021 Gen Biol Evol for testing -> TRIP gene in mammals
 
 from freeda import input_extractor
+from freeda import folder_generator
 from freeda import tblastn
 from freeda import exon_extractor
 from freeda import paml_launcher
@@ -145,13 +146,13 @@ def check_input():
     #    logging.info("\n...FATAL_ERROR... : Choose search depth")
     #    ready = False
 
-    all_proteins = [gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name5.get()]
-    if not any(all_proteins):
+    all_genes = [gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name5.get()]
+    if not any(all_genes):
         logging.info("\n...FATAL_ERROR... : Choose at least one gene")
         ready = False
 
     # check if there are duplications in user input (but not empty entries)
-    if len(all_proteins) != len(set(all_proteins)):
+    if len(all_genes) != len(set(all_genes)):
         if gene_name1.get() == gene_name2.get() and gene_name1.get() != "":
             logging.info("\n...FATAL_ERROR... : Choose different gene names")
             ready = False
@@ -487,7 +488,7 @@ def freeda_pipeline():
     ref_species = clade.get()
     #t = threshold.get()
     t = 60
-    all_proteins_dict = {gene_name1.get(): [dup1_var.get(),
+    all_genes_dict = {gene_name1.get(): [dup1_var.get(),
                                     [site11_label.get(), site11_start.get(), site11_end.get()],
                                     [site12_label.get(), site12_start.get(), site12_end.get()],
                                     [site13_label.get(), site13_start.get(), site13_end.get()]],
@@ -507,8 +508,8 @@ def freeda_pipeline():
                                     [site51_label.get(), site51_start.get(), site51_end.get()],
                                     [site52_label.get(), site52_start.get(), site52_end.get()],
                                     [site53_label.get(), site53_start.get(), site53_end.get()]]}
-    # get a list of proteins
-    all_proteins = [protein for protein in all_proteins_dict if protein != ""]
+    # get a list of genes
+    all_genes = [gene for gene in all_genes_dict if gene != ""]
 
     global logging_window
 
@@ -534,7 +535,7 @@ def freeda_pipeline():
     # ----------------------------------------#
 
     # generate basic folders for input if not present
-    input_extractor.generate_basic_folders(wdir)
+    folder_generator.generate_basic_folders(wdir)
 
     # get settings
     aligner = "mafft"
@@ -550,7 +551,7 @@ def freeda_pipeline():
     ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
         biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
 
-    if not input_extractor.validate_gene_names(all_proteins, all_genes_ensembl):
+    if not input_extractor.validate_gene_names(all_genes, all_genes_ensembl):
         ublock_user_entries()
         return
 
@@ -562,63 +563,63 @@ def freeda_pipeline():
         ublock_user_entries()
         return
 
-    # get names of proteins
+    # get names of genes
 
-    for protein in all_proteins:
+    for gene in all_genes:
 
-        message = "\n----------- * %s * -----------" % protein
+        message = "\n----------- * %s * -----------" % gene
         logging.info(message)
         #level = logging.WARNING
         #logger.log(level, message)   # DOESNT WORK
-        #print("\n----------- * %s * -----------" % protein)
+        #print("\n----------- * %s * -----------" % gene)
         # get structure prediction model from AlphaFold
-        possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, protein)
+        possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene)
         model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
-                                                                               protein, possible_uniprot_ids)
+                                                                               gene, possible_uniprot_ids)
         # get sequence input from ensembl
         input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
             wdir, ref_species, ref_genomes_path,
             ref_genome_contigs_dict, ensembl, biotype,
-            protein, model_seq, uniprot_id
+            gene, model_seq, uniprot_id
         )
 
         if input_correct:
-            message = "\nInput data have been generated for protein: %s\n\n" % protein
+            message = "\nInput data have been generated for gene: %s\n\n" % gene
             logging.info(message)
-            #print("\nInput data have been generated for protein: %s\n\n" % protein)
+            #print("\nInput data have been generated for gene: %s\n\n" % gene)
 
         if not input_correct:
-            message = "\n...FATAL ERROR... : Input data generation FAILED for protein: %s " \
-                      "- please remove from analysis -> exiting the pipeline now...\n" % protein
+            message = "\n...FATAL ERROR... : Input data generation FAILED for gene: %s " \
+                      "- please remove from analysis -> exiting the pipeline now...\n" % gene
             logging.info(message)
-            #print("\n...FATAL ERROR... : Input data generation FAILED for protein: %s - please remove from analysis"
-            #      " -> exiting the pipeline now...\n" % protein)
+            #print("\n...FATAL ERROR... : Input data generation FAILED for gene: %s - please remove from analysis"
+            #      " -> exiting the pipeline now...\n" % gene)
             ublock_user_entries()
             return
 
         if not model_matches_input:
             message = "\n...WARNING... : No matching structure prediction model is available for : %s " \
-                  "-> cannot overlay FREEDA results onto a 3D structure\n" % protein
+                  "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
             logging.info(message)
             #print("...WARNING... : No matching structure prediction model is available for : %s "
-            #      "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
-            #print("...WARNING... : Protein will still be analyzed using PAML but without 3D structure overlay\n")
+            #      "-> cannot overlay FREEDA results onto a 3D structure\n" % gene)
+            #print("...WARNING... : gene will still be analyzed using PAML but without 3D structure overlay\n")
 
     # ----------------------------------------#
     ######## RUN BLAST ########
     # ----------------------------------------#
 
     print("Checking genome blast databases...")
-    tblastn.run_blast(wdir, ref_species, all_proteins)
+    tblastn.run_blast(wdir, ref_species, all_genes)
 
     # ----------------------------------------#
     ######## RUN EXON FINDING ########
     # ----------------------------------------#
 
-    if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_proteins):
+    if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_genes):
         result_path = exon_extractor.analyse_blast_results(wdir, wdir + "Blast_output/",
-                                                           ref_species, int(t), all_proteins, all_genomes, aligner, gui,
-                                                           logging_window, all_proteins_dict)
+                                                           ref_species, int(t), all_genes, all_genomes, aligner, gui,
+                                                           logging_window, all_genes_dict)
         # set a StringVar for GUI
         result_path_var.set(result_path)
 
@@ -639,13 +640,13 @@ def freeda_pipeline():
 
     # run PAML
     nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
-            prots_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species, result_path,
-                                                                  all_proteins, aligner, gui, logging_window)
+            genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species, result_path,
+                                                                  all_genes, aligner, gui, logging_window)
 
     # visualize PAML result
-    final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_proteins,
+    final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
                                                                nr_of_species_total_dict, ref_species, PAML_logfile_name,
-                                                               day, prots_under_pos_sel, failed_paml)
+                                                               day, genes_under_pos_sel, failed_paml)
     # in case PAML failed and dict wasnt created
     if final_PAML_log_dict:
         get_results(final_PAML_log_dict)
@@ -654,27 +655,27 @@ def freeda_pipeline():
         return
 
     # run PyMOL
-    for protein in all_proteins:
+    for gene in all_genes:
 
         # do not allow further analysis of failed paml runs
-        if protein in failed_paml:
+        if gene in failed_paml:
             continue
 
         # check if model seq and input seq match and check if exactly one model exists
-        elif structure_builder.check_structure(wdir, ref_species, protein):
-            successful = structure_builder.run_pymol(wdir, ref_species, result_path, protein, prots_under_pos_sel,
-                                                                 all_proteins_dict)
+        elif structure_builder.check_structure(wdir, ref_species, gene):
+            successful = structure_builder.run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel,
+                                                                 all_genes_dict)
             if not successful:
-                message = "\nThe structure for : %s was not built successfully." % protein
+                message = "\nThe structure for : %s was not built successfully." % gene
                 logging.info(message)
-                #print("\nThe structure for : %s was not built successfully." % protein)
+                #print("\nThe structure for : %s was not built successfully." % gene)
                 continue
         else:
             message = "\nPrediction model for : %s DOES NOT match input sequence" \
-                     "-> cannot overlay FREEDA results onto a 3D structure\n" % protein
+                     "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
             logging.info(message)
             #print("\nPrediction model for : %s DOES NOT match input sequence "
-            #         "-> cannot overlay FREEDA results onto a 3D structure\n" % protein)
+            #         "-> cannot overlay FREEDA results onto a 3D structure\n" % gene)
 
     logging.info("\nYou reached the end of FREEDA pipeline.")
 
@@ -745,9 +746,9 @@ def get_wdir():
 
 
 def get_results(final_PAML_log_dict):
-    """Fetches key PAML results for each protein"""
+    """Fetches key PAML results for each gene"""
 
-    proteins = final_PAML_log_dict["Protein name"]
+    genes = final_PAML_log_dict["Gene name"]
     lrts = final_PAML_log_dict["M8 vs M7 (LRT)"]
     pvalues = final_PAML_log_dict["M8 vs M7 (p-value)"]
     coverage = final_PAML_log_dict["CDS Coverage"]
@@ -756,7 +757,7 @@ def get_results(final_PAML_log_dict):
     adapt_more = final_PAML_log_dict["Sites with pr >= 0.90"]
 
     if gene_name1.get():
-        g1_results_var.set(proteins.pop(0))
+        g1_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
         if lrt == "None":
             g1_lrt_var.set("0")
@@ -796,7 +797,7 @@ def get_results(final_PAML_log_dict):
         g1_adapt_more_entry.config(foreground="magenta")
 
     if gene_name2.get():
-        g2_results_var.set(proteins.pop(0))
+        g2_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
         if lrt == "None":
             g2_lrt_var.set("0")
@@ -836,7 +837,7 @@ def get_results(final_PAML_log_dict):
         g2_adapt_more_entry.config(foreground="magenta")
 
     if gene_name3.get():
-        g3_results_var.set(proteins.pop(0))
+        g3_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
         if lrt == "None":
             g3_lrt_var.set("0")
@@ -876,7 +877,7 @@ def get_results(final_PAML_log_dict):
         g3_adapt_more_entry.config(foreground="magenta")
 
     if gene_name4.get():
-        g4_results_var.set(proteins.pop(0))
+        g4_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
         if lrt == "None":
             g4_lrt_var.set("0")
@@ -916,7 +917,7 @@ def get_results(final_PAML_log_dict):
         g4_adapt_more_entry.config(foreground="magenta")
 
     if gene_name5.get():
-        g5_results_var.set(proteins.pop(0))
+        g5_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
         if lrt == "None":
             g5_lrt_var.set("0")

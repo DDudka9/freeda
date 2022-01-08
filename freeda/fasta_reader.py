@@ -112,13 +112,13 @@ def read_fasta_record(record):
     return header, seq
 
 
-def find_gene_and_cds(wdir, protein_name, ref_species):  # USEFUL IF MANUAL (non-one line) INPUT
+def find_gene_and_cds(wdir, gene, ref_species):  # USEFUL IF MANUAL (non-one line) INPUT
     """Reads exons, CDS and gene of reference species making sure CDS is a one-liner"""
 
-    ref_exons, expected_exons = get_ref_exons(wdir, protein_name, ref_species)
+    ref_exons, expected_exons = get_ref_exons(wdir, gene, ref_species)
 
     # open according cds fasta file
-    with open(wdir + "Coding_sequences/" + protein_name + "_" + ref_species + "_cds.fasta", "r") as f:
+    with open(wdir + "Coding_sequences/" + gene + "_" + ref_species + "_cds.fasta", "r") as f:
         make_linear = [line.rstrip("\n") for line in f.readlines()]
         for line in make_linear:
             if line.startswith(">"):
@@ -129,16 +129,16 @@ def find_gene_and_cds(wdir, protein_name, ref_species):  # USEFUL IF MANUAL (non
     cds = cds_linear
 
     # open according gene fasta file
-    with open(wdir + "Genes/" + protein_name + "_" + ref_species + "_gene.fasta", "r") as f:
+    with open(wdir + "Genes/" + gene + "_" + ref_species + "_gene.fasta", "r") as f:
         gene = f.read()
 
     return cds, gene, ref_exons, expected_exons
 
 
-def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
+def get_ref_exons(wdir, gene, ref_species, at_input=False):
     """Reads reference species exons from input exons file into a dict used to cloned each single exon from MSA"""
 
-    # get path to the exons for given protein
+    # get path to the exons for given gene
 
     ref_exons = {}
     seq_recorded = False
@@ -146,7 +146,7 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
     seq = ""
     # microexons = []
 
-    with open(wdir + "Exons/" + protein_name + "_" + ref_species + "_exons.fasta", "r") as f:
+    with open(wdir + "Exons/" + gene + "_" + ref_species + "_exons.fasta", "r") as f:
         file = f.read()
 
         for line in re.split("\n", file):
@@ -179,7 +179,7 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
 
         #if exon_total_length % 3 != 0:
         #    message = "\n...WARNING... : CDS of %s in ref species is NOT in frame." \
-        #              % protein_name
+        #              % gene
         #    print(message)
         #    logging.info(message)
 
@@ -188,13 +188,13 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
         # dont print and log it if function used by input extractor module
         if at_input is False:
             message = "........................................................................\n\n" \
-                      "ANALYZING PROTEIN: %s \n\n" \
+                      "ANALYZING GENE: %s \n\n" \
                       "........................................................................\n\n" \
-                      "Expected exons : %s" % (protein_name, str(expected_exons))
+                      "Expected exons : %s" % (gene, str(expected_exons))
             logging.info(message)
 
         # flag potential microexons
-        microexons = input_extractor.check_microexons(wdir, protein_name, ref_species)
+        microexons = input_extractor.check_microexons(wdir, gene, ref_species)
 
         # dont print and log it if function used by input extractor module
         if at_input is False:

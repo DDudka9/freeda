@@ -911,3 +911,18 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 #               -> no clue how to fix that, resetting handlers in main erases gui handlers, outside doesnt do anything
 #               -> FIXED by resetting handlers after pipeline is finishes and raising a new logger when it starts
 #       0) Add 30kb overhangs for primates -> DONE
+
+#       4) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
+#                             -> shallow search is not enough to get all exons !!! (1, 6, 7, 8 missing in all species)
+#                              -> medium (50) was the same -> test what happens if 2
+#                                  -> ACTUALLY -> 6,7,8 exons were found (about 68-71 threshold) but STICHED WRONG
+#                                                           (reversed order)
+#                                   -> changed threshold in GUI to 60
+#               -> its likely due to matches generator module assuming >30kb distances to be too large for genes
+#                   -> LutraLutra genome rev matches were stiched as for !!!
+#                   -> use debug mode to investigate matches generation in CENPP Felis Catus
+#               -> extending intragenic regions to beyond 30000 -> until 200000 generated 20x bigger files
+#               but did stich the matches in correct order in Ursus genome -> thats just a temp fix, not sustainable
+#                       -> it did rescue the matches (all in one contig)
+#           -> DOUBLE CHEKED -> it seems I was wrong, order is right -> but exons wouldnt align cose of
+#           the size of the contig, which explains why 200kb margin allows normal alignment

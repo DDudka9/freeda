@@ -19,8 +19,8 @@ retrotransposition. It also calls synteny and duplications.
 import logging
 
 
-def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons, all_proteins_dict=None): # works well
-    """Finds and calls exons based on the cds and exon make-up from reference species"""
+def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, expected_exons, all_genes_dict=None):
+    """Finds and calls exons based on the cds_seq and exon make-up from reference species"""
 
     last_exon = expected_exons[-1]
     exons = {}
@@ -51,31 +51,31 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
     non_ACGT = False
     duplication_score_parameter = False
 
-    if all_proteins_dict:
-        if all_proteins_dict[protein][0] is True:
+    if all_genes_dict:
+        if all_genes_dict[gene_name][0] is True:
             duplication_score_parameter = True
 
     # all sequences are in capital letters at this point
     list_of_non_ACGT = ["N", "Y", "R", "W", "S", "K", "M", "D", "H", "V", "B", "X"]
 
-    for position in cds:
+    for position in cds_seq:
 
         # NON-CODING REGION IN REF SPECIES
 
-        if exon_checked is False and cds[position] == "-":
+        if exon_checked is False and cds_seq[position] == "-":
             continue
 
-        # fail any contig where ref cds does not align with the ref gene -> likely a tandem duplication region
-        #if cds[position] != "-" and cds[position] != gene[position]:
+        # fail any contig where ref cds_seq does not align with the ref gene_seq -> likely a tandem duplication region
+        #if cds_seq[position] != "-" and cds_seq[position] != gene_seq[position]:
         #    message = "\nContig %s likely contains a tandem repetition preventing robust exon calling -> skipped" \
         #              % contig_name
         #    print(message)
         #    logging.info(message)
         #    return None, None, None, None, None
 
-        # EXON STARTS IN REF SPECIES -> define N-term for contig locus
+        # EXON STARTS IN REF SPECIES -> define N-term for contig locus_seq
 
-        if exon_checked is False and cds[position] == gene[position]:
+        if exon_checked is False and cds_seq[position] == gene_seq[position]:
 
             exon_number += 1
 
@@ -83,7 +83,7 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
             if exon_number not in expected_exons:
                 exon_number += 1
 
-            exon = cds[position]
+            exon = cds_seq[position]
             exon_start = position
             exon_checked = True
             exon_missing = False
@@ -92,17 +92,17 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
             divergent_introns = False
 
             # check if there is an exon in the analysed contig
-            if locus[position] in "ACTG":
+            if locus_seq[position] in "ACTG":
 
                 # check if this exon is intronic at N-term
-                if check_introny(position, last_bp, cds, locus, gene) is True:
+                if check_introny(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                     introny_at_Nterm = True
 
-                    # check if its the first exon based on ref species cds
+                    # check if its the first exon based on ref species cds_seq
                     if exon_number == 1:
 
                         # check synteny
-                        if check_synteny_Nterm(position, locus, gene) is True:
+                        if check_synteny_Nterm(position, locus_seq, gene_seq) is True:
                             N_term_synteny = True
 
                         # do not allow introny in first exon if not syntenic (often RETRO have 5UTR)
@@ -112,11 +112,11 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
                 else:
                     try:
                         # check possible retrotransposition since no intron attached
-                        if locus[position-1] == "-" \
-                                and locus[position-4] == "-" \
-                                and locus[position-7] == "-":
+                        if locus_seq[position-1] == "-" \
+                                and locus_seq[position-4] == "-" \
+                                and locus_seq[position-7] == "-":
 
-                            N_term_retrotransposition = check_retrotransposition(position, last_bp, cds, locus, gene)
+                            N_term_retrotransposition = check_retrotransposition(position, last_bp, cds_seq, locus_seq, gene_seq)
 
                             # check for very divergent introns (will be counted intronic)
                             # does not allow the first exon to have divergent introns (possibly not-syntenic exon)
@@ -129,7 +129,7 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
                     except KeyError:
                         introny_at_Nterm = False
 
-                #elif homology_check(position, last_bp, cds, locus, gene) is True:
+                #elif homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                 #    divergent_introns = True
 
             # this exon seems to be missing from the contig
@@ -138,36 +138,36 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
 
         # EXON CONTINUES IN REF SPECIES (includes first bp)
 
-        if exon_checked is True and cds[position] == gene[position]:
+        if exon_checked is True and cds_seq[position] == gene_seq[position]:
 
             # clone that position
-            exon = exon + cds[position]
+            exon = exon + cds_seq[position]
 
             # check for non_ACGT positions
-            if locus[position] in list_of_non_ACGT:
+            if locus_seq[position] in list_of_non_ACGT:
                 non_ACGT = True
 
-            # count insertions in the analysed locus
-            if cds[position] == "-" and gene[position] == "-" and locus[position] != "-":
+            # count insertions in the analysed locus_seq
+            if cds_seq[position] == "-" and gene_seq[position] == "-" and locus_seq[position] != "-":
 
                 # Ns in insertions lead to misalignment
-                if locus[position] == "N":
+                if locus_seq[position] == "N":
                     insertion_with_N = True
 
                 if insertion == 0:
                     insertion = 1
                     continue
-                    #m = "insertion: %s %s" % (insertion, locus[position])
+                    #m = "insertion: %s %s" % (insertion, locus_seq[position])
                     #print(m)
                     #logging.info(m)
                 if insertion > 0:
                     insertion = insertion + 1
-                    #m = "insertion: %s %s" % (insertion, locus[position])
+                    #m = "insertion: %s %s" % (insertion, locus_seq[position])
                     #print(m)
                     #logging.info(m)
 
             # count deletions as well
-            elif locus[position] == "-":
+            elif locus_seq[position] == "-":
 
                 if insertion == 0:
                     insertion = -1
@@ -182,22 +182,22 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
 
         # EXON ENDS IN REF SPECIES -> define C-term
 
-        if exon_checked is True and cds[position] == "-" and gene[position] != "-":
+        if exon_checked is True and cds_seq[position] == "-" and gene_seq[position] != "-":
 
             # mark start of the non-coding sequence
             last_bp = True
             exon_checked = False
 
             # check introny first
-            if check_introny(position, last_bp, cds, locus, gene) is True:
+            if check_introny(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                 introny_at_Cterm = True
 
-            # check if its the last exon based on ref species cds
+            # check if its the last exon based on ref species cds_seq
             if exon_number == last_exon:
 
                 # check synteny
                 # WARNING: average 800bp 3'UTRs in mammals make synteny check at C-term not very efficient (most contigs too short)
-                C_term_synteny, Cterm_synteny_message = check_synteny_Cterm(position, locus, gene)
+                C_term_synteny, Cterm_synteny_message = check_synteny_Cterm(position, locus_seq, gene_seq)
                 if C_term_synteny is False:
 
                     # do not allow introny in last exon if not syntenic (often RETRO have 5UTR)
@@ -206,19 +206,19 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
             # check for very divergent introns (will be counted intronic) -> does not allow divergent introns in last exon
             elif introny_at_Cterm is False \
                 and exon_number != list(ref_exons.keys())[-1] \
-                and homology_check(position, last_bp, cds, locus, gene) is True:
+                and homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                 divergent_introns = True
 
             # swapped retro check and divergent exons statements (10/02/2021)
             # check possible retrotransposition since no intron attached
             else:
                 try:
-                    if locus[position] == "-" \
-                                and locus[position+3] == "-" \
-                                and locus[position+6] == "-" \
-                                and locus[position-1] not in "-N":
+                    if locus_seq[position] == "-" \
+                                and locus_seq[position+3] == "-" \
+                                and locus_seq[position+6] == "-" \
+                                and locus_seq[position-1] not in "-N":
 
-                        if check_retrotransposition(position, last_bp, cds, locus, gene) is True:
+                        if check_retrotransposition(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                             C_term_retrotransposition = True
                 # KeyError triggered when match at the edge of alignment)
                 except KeyError:
@@ -560,12 +560,12 @@ def find_exons(protein, cds, locus, gene, contig_name, ref_exons, expected_exons
     return exons, possible_retrotransposition, synteny, RETRO_score, duplication_score
 
 
-def check_introny(position, last_bp, cds, locus, gene): # works well
+def check_introny(position, last_bp, cds_seq, locus_seq, gene_seq): # works well
 
     # default state of introny is false
     introny = False
 
-    max_length = len(locus)
+    max_length = len(locus_seq)
     extension1 = 100
     extension2 = 50
     extension3 = 20
@@ -661,19 +661,19 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
             #logging.info(message)
             return introny
 
-        # ADDED "cds[i] == "-":" at 5.30pm on 03/04/2021
+        # ADDED "cds_seq[i] == "-":" at 5.30pm on 03/04/2021
 
         # count matches and mismatches along the extension
-        elif stretch_length < extension and cds[i] == "-":
+        elif stretch_length < extension and cds_seq[i] == "-":
 
             if indels < allowed_indels:
 
-                # count but dont yet add locus indels to stretch length
-                if locus[i] == "-" or gene[i] == "-":
+                # count but dont yet add locus_seq indels to stretch length
+                if locus_seq[i] == "-" or gene_seq[i] == "-":
                     indels += 1
                     continue
 
-                elif locus[i] == gene[i]:
+                elif locus_seq[i] == gene_seq[i]:
                     matches += 1
                     stretch_length += 1
 
@@ -682,12 +682,12 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
 
             if indels >= allowed_indels:
 
-                # count and add locus indels to stretch length
-                if locus[i] == "-" or gene[i] == "-":
+                # count and add locus_seq indels to stretch length
+                if locus_seq[i] == "-" or gene_seq[i] == "-":
                     stretch_length += 1
                     continue
 
-                elif locus[i] == gene[i]:
+                elif locus_seq[i] == gene_seq[i]:
                     matches += 1
                     stretch_length += 1
 
@@ -698,7 +698,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
         elif stretch_length == extension and rolling_hd >= homology_threshold:
 
             # check homology inwards before calling introny
-            homology = homology_check(starting_position, last_bp, cds, locus, gene)
+            homology = homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq)
             if homology is True:
                 introny = True
                 return introny
@@ -707,7 +707,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
 
         # the introny check function clashed with another exon -> no introny as default
         # sometimes single bp would be coopted from introns and be treated as start of another exon
-        elif cds[i] != "-" and cds[i-1] != "-":
+        elif cds_seq[i] != "-" and cds_seq[i-1] != "-":
             message = "introny = %s ------ another exon interferes with introny check -> no introny" % introny
             print(message)
             logging.info(message)
@@ -727,7 +727,7 @@ def check_introny(position, last_bp, cds, locus, gene): # works well
     return introny
 
 
-def homology_check(starting_position, last_bp, cds, locus, gene):
+def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
     """Checks exon homology if: ambigous introny, RETRO suspected or truncation suspected at N-term"""
     # runs only when ambigous introny (100bp stretch with 0.80 homology) or RETRO suspected
 
@@ -753,18 +753,18 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
                 #logging.info(message)
                 #print(message)
 
-                if locus[i] == cds[i]:
+                if locus_seq[i] == cds_seq[i]:
                     matches += 1
                     stretch_length += 1
                     continue
 
                 # dont count indels within min stretch
-                elif locus[i] == "-" or cds[i] == "-":
+                elif locus_seq[i] == "-" or cds_seq[i] == "-":
                     indels += 1
                     continue
 
                 # rare case of homology check going beyond the exon in question
-                elif locus[i] == "-" or gene[i] == "-":
+                elif locus_seq[i] == "-" or gene_seq[i] == "-":
                     indels += 1
                     continue
 
@@ -805,12 +805,12 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
 
                 # not ready to call homology
                 elif rolling_hd < homology_threshold and stretch_length < max_stretch_length:
-                    if locus[i] == cds[i]:
+                    if locus_seq[i] == cds_seq[i]:
                         matches += 1
                         stretch_length += 1
 
                     # mismatch or indel
-                    if locus[i] != cds[i]:
+                    if locus_seq[i] != cds_seq[i]:
                         stretch_length += 1
 
             # too many indels with too little bp aligned (RISK OF LOOSING RETRO EXONS WITH PERIPHERAL INDELS)
@@ -818,7 +818,7 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
                 return homology
 
             # end of the exon
-            if cds[i] != gene[i]:
+            if cds_seq[i] != gene_seq[i]:
                 return homology
 
         # if loop is finished and homology not called -> default False 
@@ -838,18 +838,18 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
                 #print(message)
                 #logging.info(message)
 
-                if locus[i] == cds[i]:
+                if locus_seq[i] == cds_seq[i]:
                     matches += 1
                     stretch_length += 1
                     continue
 
                 # dont count indels within min stretch
-                elif locus[i] == "-" or cds[i] == "-":
+                elif locus_seq[i] == "-" or cds_seq[i] == "-":
                     indels += 1
                     continue
 
                 # rare case of homology check going beyond the exon in question
-                elif locus[i] == "-" or gene[i] == "-":
+                elif locus_seq[i] == "-" or gene_seq[i] == "-":
                     indels += 1
                     continue
 
@@ -890,12 +890,12 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
 
                 # not ready to call homology
                 elif stretch_length < max_stretch_length and rolling_hd < homology_threshold:
-                    if locus[i] == cds[i]:
+                    if locus_seq[i] == cds_seq[i]:
                         matches += 1
                         stretch_length += 1
 
                     # mismatch or indel
-                    if locus[i] != cds[i]:
+                    if locus_seq[i] != cds_seq[i]:
                         stretch_length += 1
 
             # too many indels with too little bp aligned (RISK OF LOOSING RETRO EXONS WITH PERIPHERAL INDELS)
@@ -903,14 +903,14 @@ def homology_check(starting_position, last_bp, cds, locus, gene):
                 return homology
 
             # end of the exon
-            if cds[i] != gene[i]:
+            if cds_seq[i] != gene_seq[i]:
                 return homology
 
         # if loop is finished and homology not called -> default False        
         return homology
 
 
-def check_synteny_Nterm(starting_position, locus, gene):
+def check_synteny_Nterm(starting_position, locus_seq, gene_seq):
 
     synteny = False
     UTR_length = 200
@@ -934,16 +934,16 @@ def check_synteny_Nterm(starting_position, locus, gene):
     for i in range(starting_position, starting_position - UTR_length + 1, -1):
 
         # skip indels
-        if locus[i] == "-" or gene[i] == "-":
+        if locus_seq[i] == "-" or gene_seq[i] == "-":
             continue
 
         # match
-        elif locus[i] == gene[i]:
+        elif locus_seq[i] == gene_seq[i]:
             matches += 1
             stretch_length += 1
 
         # mismatch
-        elif locus[i] != gene[i]:
+        elif locus_seq[i] != gene_seq[i]:
             stretch_length += 1
 
     # avoid divisions over 0
@@ -980,7 +980,7 @@ def check_synteny_Nterm(starting_position, locus, gene):
     return synteny
 
 
-def check_synteny_Cterm(starting_position, locus, gene):
+def check_synteny_Cterm(starting_position, locus_seq, gene_seq):
 
     synteny = False
     UTR_length = 200
@@ -989,7 +989,7 @@ def check_synteny_Cterm(starting_position, locus, gene):
     homology_threshold = 0.75
 
     # if contig too short, call lack of synteny
-    if starting_position + UTR_length > len(locus):
+    if starting_position + UTR_length > len(locus_seq):
 
         Cterm_synteny_message = "\n.............Alignment is too short to check C-term synteny \n"
         return synteny, Cterm_synteny_message
@@ -998,16 +998,16 @@ def check_synteny_Cterm(starting_position, locus, gene):
     for i in range(starting_position, starting_position + UTR_length):
 
         # skip indels
-        if locus[i] == "-" or gene[i] == "-":
+        if locus_seq[i] == "-" or gene_seq[i] == "-":
             continue
 
         # match
-        elif locus[i] == gene[i]:
+        elif locus_seq[i] == gene_seq[i]:
             matches += 1
             stretch_length += 1
 
         # mismatch
-        elif locus[i] != gene[i]:
+        elif locus_seq[i] != gene_seq[i]:
             stretch_length += 1
 
 
@@ -1036,11 +1036,11 @@ def check_synteny_Cterm(starting_position, locus, gene):
     return synteny, Cterm_synteny_message
 
 
-def check_retrotransposition(position, last_bp, cds, locus, gene): # runs only when introny is False
+def check_retrotransposition(position, last_bp, cds_seq, locus_seq, gene_seq):  # runs only when introny is False
 
     retrotransposition = False
 
-    if homology_check(position, last_bp, cds, locus, gene) is True:
+    if homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
         retrotransposition = True
         return retrotransposition
     else:

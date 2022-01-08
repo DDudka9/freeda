@@ -28,7 +28,7 @@ import shutil
 import subprocess
 
 
-def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs, protein_name,
+def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs, gene_name,
               genome_name, final_exon_number, ref_exons, MSA_path, aligner):
     
     # get a dictionary with all the contigs and how many exons they have
@@ -116,7 +116,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
                 exons = [exon_nr for exon_nr, cs in duplicated_exons.items() if winner in cs]
                 for exon_nr in exons:
                     total_hd_normalized += hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner,
-                                                    preselected_exons_overhangs, MSA_path, protein_name, aligner)
+                                                    preselected_exons_overhangs, MSA_path, gene_name, aligner)
                 winners_hd_normalized[winner] = total_hd_normalized
                 contigs_hd_analyzed[winner] = total_hd_normalized
 
@@ -209,7 +209,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
                     # if yes, and this exon wasnt yet cloned -> run MSA against ref species exon
                     if contig[0] == seq[0] and cds_composition[exon] == "":
                         in_filename, out_filename = generate_single_exon_MSA(wdir, ref_species, seq[1], contig[0], exon,
-                                                                    protein_name, ref_exons, MSA_path, seq[2], aligner)
+                                                                    gene_name, ref_exons, MSA_path, seq[2], aligner)
                         # collect the aligned sequences
                         aligned_seqs = collect_sequences(in_filename + out_filename)
 
@@ -291,8 +291,8 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
     # clone the final cds
     cloned_cds = "".join([value[1] for key, value in pre_cloned_cds.items()])
 
-    message1 = "\nCDS for %s protein in %s is composed of %s/%s exons from contigs: \n%s" \
-            % (protein_name, genome_name, final_exon_number-final_missing_exons_count,
+    message1 = "\nCDS for %s gene in %s is composed of %s/%s exons from contigs: \n%s" \
+            % (gene_name, genome_name, final_exon_number-final_missing_exons_count,
                final_exon_number, final_exon_breakdown)
     print(message1)
     logging.info(message1)
@@ -310,7 +310,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
 
 
 def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselected_exons_overhangs,
-                                    MSA_path, protein_name, aligner):
+                                    MSA_path, gene_name, aligner):
     """Compares ref exon to the presumptive exon in order to pick between >1 exon candidate -> picks more conserved."""
 
     # determine the name for the file to MSA
@@ -326,7 +326,7 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
         sequence = [(seq, genomic) for (contig_name, seq, genomic) in e if contig_name == winner]
         f.write(">_" + "exon_" + str(exon_nr) + "_" + str(winner) + "\n")
         f.write(sequence[0][0] + "\n")
-        f.write(">_" + protein_name + "gene\n")
+        f.write(">_" + gene_name + "gene\n")
         f.write(sequence[0][1])
 
     # prepare handles for msa
@@ -490,7 +490,7 @@ def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
     return len(mismatches)
 
 
-def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, protein_name,
+def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, gene_name,
                              ref_exons, MSA_path, genomic_locus, aligner):
     """Writes into a file a reference single exon, part of the presumptive locus encoding it in a searched genome
     and a part of the reference genome encoding that exon"""
@@ -498,10 +498,10 @@ def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, p
     filename = "exon_" + str(exon_number) + "_to_align.fasta"
     with open(filename, "w") as f:
         # write ref species exon first
-        f.write(">_" + ref_species + "__" + protein_name + "_exon_" + str(exon_number))
+        f.write(">_" + ref_species + "__" + gene_name + "_exon_" + str(exon_number))
         f.write("\n" + ref_exons[exon_number][1])
         # write the locus_exon second
-        f.write("\n>_" + contig_name + "_" + protein_name + "_exon_" + str(exon_number))
+        f.write("\n>_" + contig_name + "_" + gene_name + "_exon_" + str(exon_number))
         f.write("\n" + seq)
         # write the gene sequence third
         f.write("\n>_" + contig_name + "_gene")
