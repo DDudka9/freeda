@@ -29,9 +29,6 @@ def run_msa(MSA_path, aligner):
     # get path to all separate MSA files 
     for in_filename in glob.glob(MSA_path + "to_align*.fasta"):
 
-        #if aligner == "clustalw":
-        #    cline = ClustalwCommandline("clustalw2", infile=in_filename)
-
         # check if its a rev_comp file
         if re.search(r"to_align_rev_comp", in_filename):
             # for each MSA path find contig name; make it a string with group method
@@ -40,8 +37,6 @@ def run_msa(MSA_path, aligner):
         elif re.search(r"to_align_", in_filename):
             # for each MSA path find contig name; make it a string with group method
             out_filename = "aligned_" + re.search(r"(?<=to_align_).*$", in_filename).group()
-
-        #mafft_cline = MafftCommandline(input=in_filename)
 
         # run msa and record standard output and standard error
         start_time = time.time()

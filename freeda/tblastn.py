@@ -11,11 +11,11 @@ Fasta genome names need to be stored in "genomes.txt" file one per line using on
     xxxxx_xxxxx.fasta
     yyyyy_yyyyy.fasta
     
-Protein names need to be stored in "proteins.txt" file one per line:
+Gene names need to be stored in "genes.txt" file one per line:
     aaaaa
     bbbbb
 
-Outputs tabulated text files per protein per genomes.
+Outputs tabulated text files per gene per genomes.
 
 """
 
@@ -29,16 +29,14 @@ import logging
 #logging.basicConfig(filename="tblast_temp.log", level=logging.INFO, format="%(message)s")
 
 
-def run_blast(wdir, ref_species, all_proteins):
+def run_blast(wdir, ref_species, all_genes):
     """Runs tblastn based on NCBI makedatabase routine."""
-
-    #open("tblast_temp.log", "w")
 
     database_path = wdir + "Genomes/"
     query_path = wdir + "Blast_input/"
     output_path = wdir + "Blast_output/"
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means " \
-            "bitscore length means pident means mismatch means gapopen means qlen means slen means"
+           "bitscore length means pident means mismatch means gapopen means qlen means slen means"
 
     all_genomes = genomes_preprocessing.get_names(ref_species)
     genomes = [names[1] for names in all_genomes]
@@ -50,20 +48,21 @@ def run_blast(wdir, ref_species, all_proteins):
 
     # make sure database for each genome already exists or is successfully built
     for genome in genomes:
-        genome_file_database = check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False)
+        genome_file_database = check_genome_present(ref_species, database_path, genome, ref_genome=False)
         # failed to build database
         if genome_file_database is False:
             return None
     
     # perform blast
     for genome in genomes:
-        for protein in all_proteins:
+        for gene in all_genes:
             database = database_path + genome + ".fasta"
-            query = query_path + protein + "_" + ref_species + "_protein.fasta"
-            output = output_path + protein + "_" + genome + ".txt"
-            to_blast = ["tblastn", "-db", database, "-query", query, "-out", output, "-outfmt", form, "-num_threads", "8"]
-            message = "\nPerforming tblastn for protein: %s from genome: %s\n" % (protein, genome)
-            #print("\nPerforming tblastn for protein: %s from genome: %s\n" % (protein, genome))
+            query = query_path + gene + "_" + ref_species + "_protein.fasta"
+            output = output_path + gene + "_" + genome + ".txt"
+            to_blast = ["tblastn", "-db", database, "-query", query, "-out", output, "-outfmt",
+                        form, "-num_threads", "8"]
+            message = "\nPerforming tblastn for gene: %s from genome: %s\n" % (gene, genome)
+            #print("\nPerforming tblastn for gene: %s from genome: %s\n" % (gene, genome))
             logging.info(message)
             subprocess.call(to_blast)
 
@@ -72,7 +71,7 @@ def run_blast(wdir, ref_species, all_proteins):
     return
 
 
-def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False):
+def check_genome_present(ref_species, database_path, genome, ref_genome=False):
     """Checks if a given genome is present. Unpacks and unzips genomes downloaded from NCBI Assembly.
     Non-ncbi assemblies must be prepared as ".fasta" files conform with "genomes.txt" names.
     It also looks for reference genome if key-only argument reference_genome is invoked."""
@@ -273,7 +272,8 @@ def download_genome(genome, accession_nr, database_path):
     start_time = time.time()
     filepath_1 = database_path + genome + ".zip"
     # need to exclude genomic cds because its also ".fna" which confuses the concatenation
-    cmd1 = ["datasets", "download", "genome", "accession", accession_nr, "--exclude-genomic-cds", "--filename", filepath_1]
+    cmd1 = ["datasets", "download", "genome", "accession", accession_nr, "--exclude-genomic-cds", "--filename",
+            filepath_1]
     subprocess.call(cmd1, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb')) # mute output and cautions
 
     # unzip all chromosomes into single file
@@ -418,15 +418,15 @@ def unzip_genome(wdir, genome, accession_nr, database_path):
  "            # to avoid duplications\n"
  "            if [string for string in all_files if pattern in string] == []:\n"
  "                \n"
- "                protein = protein.lstrip(\"\n\").rstrip(\"\n\")\n"
+ "                gene = gene.lstrip(\"\n\").rstrip(\"\n\")\n"
  "                database = database_path + genome\n"
- "                query = query_path + protein + \"_\" + ref_species + \"_protein.fasta\"\n"
- "                output = output_path + protein + \"_\" + genome + \".txt\"\n"
+ "                query = query_path + gene + \"_\" + ref_species + \"_protein.fasta\"\n"
+ "                output = output_path + gene + \"_\" + genome + \".txt\"\n"
  "                to_blast = [\"tblastn\", \"-db\", database, \"-query\", query, \"-out\", output, \"-outfmt\", form, \"-num_threads\", \"5\"]\n"
  "                subprocess.call(to_blast)\n"
  "            \n"
  "            else:\n"
- "                print(\"\nProtein: %s from genome: %s -> was already blasted.\" % (protein, genome))    \n"
+ "                print(\"\nGene: %s from genome: %s -> was already blasted.\" % (gene, genome))    \n"
  "\n"
  "\n"
  "\n"

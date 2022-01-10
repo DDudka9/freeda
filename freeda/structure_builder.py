@@ -5,7 +5,7 @@ Created on Sun Jun 27 20:35:28 2021
 
 @author: damian
 
-Generates a PyMOL script and runs it internally. Saves the PyMOL session per protein.
+Generates a PyMOL script and runs it internally. Saves the PyMOL session per gene.
 
 """
 
@@ -26,7 +26,7 @@ import simplejson.errors
 # Brian Akins
 
 # METHOD: get_interpro(uniprot_id), interacts with the InterPro REST API.
-# INPUT:  A string containing the Uniprot ID of a target protein.
+# INPUT:  A string containing the Uniprot ID of a target gene.
 # OUTPUT: A requests Response object. To interact with this object, use:
 #         .status_code, .headers['content-type'], .encoding, .text, or .json()
 # More info on the API URL architecture can be found at
@@ -83,10 +83,10 @@ def protein_domains(uniprot_id):
     return output_dict
 
 
-def get_domains(wdir, ref_species, protein):
+def get_domains(wdir, ref_species, gene):
     """Based on uniprot id gets domain layout from Interpro API : name and coordinates"""
 
-    structure_filepath = wdir + "Structures/" + protein + "_" + ref_species
+    structure_filepath = wdir + "Structures/" + gene + "_" + ref_species
 
     # if input matched AlphaFold model then Uniprot ID is found in that file
     try:
@@ -114,7 +114,7 @@ def get_domains(wdir, ref_species, protein):
                 domains[name] = coordinates
             count = 20
 
-        # no Interpro data for this protein
+        # no Interpro data for this gene
         except simplejson.errors.JSONDecodeError:
             return domains
         # requested url wasnt pulled correctly
@@ -124,10 +124,10 @@ def get_domains(wdir, ref_species, protein):
     return domains
 
 
-def check_structure(wdir, ref_species, protein):
+def check_structure(wdir, ref_species, gene):
     """Checks presence of a structure prediction model for a given protein"""
 
-    structure_model_path = wdir + "Structures/" + protein + "_" + ref_species
+    structure_model_path = wdir + "Structures/" + gene + "_" + ref_species
     model_file_list = os.listdir(structure_model_path)
     unwanted_files = [file for file in model_file_list if file.startswith(".") or file.endswith(".png")]
 
@@ -163,32 +163,32 @@ def check_structure(wdir, ref_species, protein):
         return False
 
 
-def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_selection, all_proteins_dict):
+def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selection, all_genes_dict):
     """Runs PyMOL with overlaid adaptive sites"""
 
     structures_path = wdir + "Structures"
-    protein_structure_path = structures_path + "/" + protein + "_" + ref_species + "/"
-    final_model_name = protein + "_" + ref_species + ".pse"
+    protein_structure_path = structures_path + "/" + gene + "_" + ref_species + "/"
+    final_model_name = gene + "_" + ref_species + ".pse"
 
     # get dict of adaptives sites matched to input sequence
     with open(result_path + "all_matched_adaptive_sites_ref.txt", "r") as f:
         dictionary = literal_eval(f.read())
 
     # get domain names and coordinates from Interpro API
-    domains = get_domains(wdir, ref_species, protein)
+    domains = get_domains(wdir, ref_species, gene)
 
     # obtain a pymol script based on the model
-    if not get_pymol_script(wdir, ref_species, dictionary, protein,
-                            protein_structure_path, proteins_under_positive_selection, domains, all_proteins_dict):
+    if not get_pymol_script(wdir, ref_species, dictionary, gene,
+                            protein_structure_path, genes_under_positive_selection, domains, all_genes_dict):
         # copy the structure model into the result file for user to estimate where the sites might be
-        #copy_void_structure(wdir, ref_species, protein, result_path) -> doesnt work
+        #copy_void_structure(wdir, ref_species, gene, result_path) -> doesnt work
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
     pymol_command = "pymol -cq structure_overlay.pml"
     stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE).communicate()
-    # move and overwrite if "structure_overlay.pml" exists in Structure folder for the protein
+    # move and overwrite if "structure_overlay.pml" exists in Structure folder for the gene
     shutil.move(os.path.join(wdir, "structure_overlay.pml"),
                 os.path.join(protein_structure_path, "structure_overlay.pml"))
     # move the model with overlaid residues into Results folder
@@ -197,27 +197,27 @@ def run_pymol(wdir, ref_species, result_path, protein, proteins_under_positive_s
     return True
 
 
-def get_pymol_script(wdir, ref_species, dictionary, protein,
-                     protein_structure_path, proteins_under_positive_selection, domains, all_proteins_dict):
+def get_pymol_script(wdir, ref_species, dictionary, gene,
+                     protein_structure_path, genes_under_positive_selection, domains, all_genes_dict):
     """Gets a PyMOL script that will be passed into PyMOL automatically"""
 
     paint_sites = False
 
-    # paint sites of proteins likely under positive selection
-    if protein in proteins_under_positive_selection:
+    # paint sites of genes likely under positive selection
+    if gene in genes_under_positive_selection:
         paint_sites = True
 
-    matched_adaptive_sites_ref = dictionary[protein]
-    structure_prediction_path = wdir + "Structures/" + protein + "_" + ref_species
+    matched_adaptive_sites_ref = dictionary[gene]
+    structure_prediction_path = wdir + "Structures/" + gene + "_" + ref_species
 
     if len(os.listdir(structure_prediction_path)) == 0:
-        print("\nNo structure prediction model is present for: %s -> cannot run PyMOL" % protein)
+        print("\nNo structure prediction model is present for: %s -> cannot run PyMOL" % gene)
         return False
 
     with open("structure_overlay.pml", "w") as f:
 
         # PyMOL command to load model
-        structure_model_path = wdir + "Structures/" + protein + "_" + ref_species
+        structure_model_path = wdir + "Structures/" + gene + "_" + ref_species
 
         # select the model (check_structure function removed all hidden files)
         model = [file for file in os.listdir(structure_model_path) if file.endswith(".pdb")][0]
@@ -258,8 +258,8 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
                 current_coordinates = coordinates
 
         # paint user residues if indicated
-        if all_proteins_dict:
-            dup, label1, label2, label3 = all_proteins_dict[protein]  # dup variable not used here
+        if all_genes_dict:
+            dup, label1, label2, label3 = all_genes_dict[gene]  # dup variable not used here
             # make sure label is present, end is bigger than start, end is within the protein length
             # do not allow start larger than end; do not allow end larger than total length
 
@@ -347,33 +347,24 @@ def get_pymol_script(wdir, ref_species, dictionary, protein,
         f.write("set ray_opaque_background, on\n")
 
         # PyMOL command to save as figure (NO LICENSE PRINTS A NO LICENSE ON IMAGE)
-        f.write("png " + protein_structure_path + protein + "_" + ref_species + ".png, width=12cm, height=8cm, "
+        f.write("png " + protein_structure_path + gene + "_" + ref_species + ".png, width=12cm, height=8cm, "
                                                                                 "dpi=300, ray=1\n")
 
         # PyMOL command to save the session
-        f.write("save " + protein_structure_path + protein + "_" + ref_species + ".pse")
+        f.write("save " + protein_structure_path + gene + "_" + ref_species + ".pse")
 
     return True
 
 
 
-
-
-#cenpt_uniprot = 'Q3TJM4'
-#cenpo_uniprot = 'Q9BU64'
-#test_cenpt = protein_domains(cenpt_uniprot)
-#test_cenpo = protein_domains(cenpo_uniprot)
-#print(test_cenpt)
-#print(test_cenpo)
-
 """
 
-def copy_void_structure(wdir, ref_species, protein, result_path): -> DOES NOT COPY METADATA -> STRUCTURE NOT COPIED
+def copy_void_structure(wdir, ref_species, gene, result_path): -> DOES NOT COPY METADATA -> STRUCTURE NOT COPIED
     #Copies an unannotated structure prediction model into the result folder
 
     structures_path = wdir + "Structures"
-    protein_structure_path = structures_path + "/" + protein + "_" + ref_species + "/"
-    new_filename = protein + "_" + ref_species + "_incompatible.pdb"
+    protein_structure_path = structures_path + "/" + gene + "_" + ref_species + "/"
+    new_filename = gene + "_" + ref_species + "_incompatible.pdb"
 
     files = glob.iglob(os.path.join(protein_structure_path, "*.pdb"))
     for path in files:
@@ -384,7 +375,7 @@ def copy_void_structure(wdir, ref_species, protein, result_path): -> DOES NOT CO
             os.rename(result_path + filename, result_path + new_filename)
 
 # THIS IS NOT NEEDED ANYMORE:
-def compare_model_with_input(wdir, ref_species, protein, model_seq):
+def compare_model_with_input(wdir, ref_species, gene, model_seq):
     
     # silence warnings from Biopython about missing header in model (has to follow import)
     #import warnings
@@ -393,12 +384,12 @@ def compare_model_with_input(wdir, ref_species, protein, model_seq):
     
     # get input protein sequence used for blast
     blast_input_path = wdir + "Blast_input/"
-    input_seq_filename = protein + "_" + ref_species + "_protein.fasta"
+    input_seq_filename = gene + "_" + ref_species + "_protein.fasta"
     with open(blast_input_path + input_seq_filename) as f:
         input_seq = f.readlines()[1]
 
     # get protein sequence of the model
-    #structure_model_path = wdir + "Structures/" + protein + "_" + ref_species
+    #structure_model_path = wdir + "Structures/" + gene + "_" + ref_species
     #model_filename = [model for model in os.listdir(structure_model_path) if model.endswith(".pdb")][0]
     #model_path = structure_model_path + "/" + model_filename
     
@@ -409,27 +400,27 @@ def compare_model_with_input(wdir, ref_species, protein, model_seq):
     # compare sequences and do not allow model overlay if sequences differ
     if input_seq != model_seq:
         print("\n...WARNING... Protein sequence generated DOES NOT match the model for: %s\n" \
-                                              "-> cannot run PyMOL\n" % protein)
+                                              "-> cannot run PyMOL\n" % gene)
         print("Input sequence:\n%s\n" % input_seq)
         print("Model sequence:\n%s\n" % model_seq)
         return
     
     else:
-        print("\nProtein sequence generated matches the model for protein: %s" % protein)
+        print("\nProtein sequence generated matches the model for gene: %s" % gene)
         return
 
 
 # THIS IS PROBABLY NOT NEEDED:
 def check_all_structures(wdir, ref_species):
-    Checks presence of structure prediction models for all proteins
+    Checks presence of structure prediction models for all genes
    
-    all_proteins = [protein.rstrip("\n") for protein in open(wdir + "proteins.txt", "r").readlines()]
-    missing_structures = [check_structure(wdir, ref_species, protein) for protein in all_proteins]
+    all_genes = [gene.rstrip("\n") for gene in open(wdir + "genes.txt", "r").readlines()]
+    missing_structures = [check_structure(wdir, ref_species, gene) for gene in all_genes]
     missing_structures_final = [structure for structure in missing_structures if structure is not None]
     
     if missing_structures_final:
         print("...WARNING... (FREEDA) I did not find clear structure prediction models for: %s" % missing_structures_final)
-        print("...WARNING... (FREEDA) I cannot overlay adaptive sites for these proteins\n")
+        print("...WARNING... (FREEDA) I cannot overlay adaptive sites for these genes\n")
 
     return missing_structures_final
 

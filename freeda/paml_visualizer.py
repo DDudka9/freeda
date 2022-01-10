@@ -6,19 +6,15 @@ Created on Sun May  9 14:12:04 2021
 @author: damian
 """
 
-from freeda import paml_launcher
 from freeda import fasta_reader
-
 from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import pairwise2
-
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 from json import dump
-
 import re
 import os
 import shutil
@@ -30,34 +26,34 @@ import pandas as pd
 import math
 
 
-def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_dict,
-                         ref_species, PAML_logfile_name, day, proteins_under_positive_selection, failed_paml):
-    """Analyses PAML results for each protein unless no PAML result available"""
+def analyse_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
+                         ref_species, PAML_logfile_name, day, genes_under_positive_selection, failed_paml):
+    """Analyses PAML results for each gene unless no PAML result available"""
 
     all_matched_adaptive_sites_ref = {}
     
-    for protein in all_proteins:
+    for gene in all_genes:
 
-        if protein not in failed_paml:
+        if gene not in failed_paml:
         
-            protein_folder = result_path + protein + "/"
-            if os.path.exists(protein_folder + protein + "_PAML_analysis.tif"):
-                message = "\n***************\n\n PAML analysis graph for : %s already exists" % protein
+            gene_folder = result_path + gene + "/"
+            if os.path.exists(gene_folder + gene + "_PAML_analysis.tif"):
+                message = "\n***************\n\n PAML analysis graph for : %s already exists" % gene
                 print(message)
                 logging.info(message)
         
             else:
-                nr_of_species_total = nr_of_species_total_dict[protein]
-                matched_adaptive_sites_ref = plot_PAML(wdir, result_path, protein,
+                nr_of_species_total = nr_of_species_total_dict[gene]
+                matched_adaptive_sites_ref = plot_PAML(wdir, result_path, gene,
                                                    nr_of_species_total, ref_species,
-                                                   proteins_under_positive_selection)
-                all_matched_adaptive_sites_ref[protein] = matched_adaptive_sites_ref
+                                                   genes_under_positive_selection)
+                all_matched_adaptive_sites_ref[gene] = matched_adaptive_sites_ref
 
     # get protein alignment that matches 3D structure
-    for protein in all_proteins:
+    for gene in all_genes:
         try:
-            get_alignment_matching_structure(result_path, ref_species, protein, all_matched_adaptive_sites_ref)
-        # if all_matched_adaptive_sites_ref dictionary was not generated (all proteins failed paml)
+            get_alignment_matching_structure(result_path, ref_species, gene, all_matched_adaptive_sites_ref)
+        # if all_matched_adaptive_sites_ref dictionary was not generated (all genes failed paml)
         except KeyError:
             return
 
@@ -75,12 +71,12 @@ def analyse_PAML_results(wdir, result_path, all_proteins, nr_of_species_total_di
     return final_PAML_log_dict
 
 
-def get_alignment_matching_structure(result_path, ref_species, protein, dictionary):
-    """Generates protein alignment matching 3D structure"""
+def get_alignment_matching_structure(result_path, ref_species, gene, dictionary):
+    """Generates gene alignment matching 3D structure"""
 
-    # get protein alignment corresponding to unedited reference protein
-    aa_features_dict = dictionary[protein]
-    filename = protein + "_protein_alignment.fasta"
+    # get gene alignment corresponding to unedited reference gene
+    aa_features_dict = dictionary[gene]
+    filename = gene + "_protein_alignment.fasta"
     all_seq_dict = fasta_reader.alignment_file_to_dict(result_path, ref_species, filename)
 
     # remove alignment file (not needed)
@@ -118,7 +114,7 @@ def get_alignment_matching_structure(result_path, ref_species, protein, dictiona
             else:
                 new_seq_dict[species][position] = "-"
 
-    with open(result_path + protein + "_protein_alignment.fasta", "w") as f:
+    with open(result_path + gene + "_protein_alignment.fasta", "w") as f:
         for species in new_seq_dict:
             f.write(species + "\n")
             # reconstruct sequence
@@ -130,7 +126,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
     """Reads the output PAML and finds LRTs and computes p-values for M2a-M1a and M8-M7 models"""
 
     # prepare the dict storing the PAML result
-    PAML_log_dict = {"Protein name": [],
+    PAML_log_dict = {"Gene name": [],
                         "Nr of species analyzed": [],
                         "Species": [],
                         "CDS Coverage": [],
@@ -141,12 +137,12 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                         "Sites with pr < 0.90": [],
                         "Sites with pr >= 0.90": []}
 
-    # mark proteins that failed paml
+    # mark genes that failed paml
     if failed_paml:
-        for protein in failed_paml:
+        for gene in failed_paml:
             for key, values in PAML_log_dict.items():
-                if key == "Protein name":
-                    PAML_log_dict[key].append(protein)
+                if key == "Gene name":
+                    PAML_log_dict[key].append(gene)
                 else:
                     PAML_log_dict[key].append("-")
 
@@ -160,12 +156,12 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
 
         for line in file:
             
-            # record protein name
+            # record gene name
             if line.startswith(" --------- *"):
-                protein = line.replace("-", "").replace(" ", "").replace("*", "").rstrip("\n")
-                if protein in failed_paml:
+                gene = line.replace("-", "").replace(" ", "").replace("*", "").rstrip("\n")
+                if gene in failed_paml:
                     continue
-                PAML_log_dict["Protein name"].append(protein)
+                PAML_log_dict["Gene name"].append(gene)
                 start_recording = True 
 
             # record species
@@ -236,15 +232,15 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
 
                 PAML_log_dict["M8 vs M7 (p-value)"].append(M8_vs_M7_pvalue)
                     
-                # does not report adaptive sites in proteins failing M8 vs M7 test
+                # does not report adaptive sites in genes failing M8 vs M7 test
                 if M8_vs_M7_pvalue == "None" or float(M8_vs_M7_pvalue) >= 0.05:
                     PAML_log_dict["Sites with pr < 0.90"].append("Not likely")
                     PAML_log_dict["Sites with pr >= 0.90"].append("Not likely")
                 
-                # remove adaptive sites from proteins that are not rapidly evolving
+                # remove adaptive sites from genes that are not rapidly evolving
                 if M8_vs_M7_pvalue != "None" and float(M8_vs_M7_pvalue) <= 0.05:
                         
-                    matched_dict = all_matched_adaptive_sites_ref[protein]
+                    matched_dict = all_matched_adaptive_sites_ref[gene]
                     mild_sites = {}
                     strong_sites = {}
         
@@ -356,29 +352,29 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
     shutil.move(wdir + excel_filename, result_path)
 
 
-def plot_PAML(wdir, result_path, protein, nr_of_species_total, ref_species, proteins_under_positive_selection):
+def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_positive_selection):
     """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
     
-    # get ref and final aa sequence for a protein
-    ref_sequence_record, final_sequence_record = get_ref_and_final_seqs(wdir, protein, result_path, ref_species)
+    # get ref and final aa sequence for a gene
+    ref_sequence_record, final_sequence_record = get_ref_and_final_seqs(wdir, gene, result_path, ref_species)
     # organise them into easy to search dictionaries
     ref_species_dict, final_ref_species_dict, final_length = organise_ref_and_final_seqs(ref_sequence_record, final_sequence_record)
     # map the aa residues between the ref and final sequences
     mapped_ref_and_final_residues_dict = map_ref_and_final_residues(ref_sequence_record, final_sequence_record)
     # find dN/dS omega ratio per site based on "rst" file (final only for now)
-    omega_dict = get_omegas(protein, result_path, final_length)
+    omega_dict = get_omegas(gene, result_path, final_length)
     # read PAML output file to find which residues are rapidly evolving in the final seq
-    adaptive_sites_dict = get_adaptive_sites(result_path, protein)
+    adaptive_sites_dict = get_adaptive_sites(result_path, gene)
     # find these residues in the ref sequence
     matched_adaptive_sites_ref = match_adaptive_sites_to_ref(final_ref_species_dict,
             mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict)
     # mark the sites that were not analyzed by PAML
     final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
     # record and write breakdown of adaptive sites overlay to ref cds
-    record_adaptive_sites(final_dict_to_plot, protein, proteins_under_positive_selection)
+    record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection)
     # plot omegas and probabilities
-    make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein,
-                nr_of_species_total, proteins_under_positive_selection)
+    make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
+                nr_of_species_total, genes_under_positive_selection)
 
     return matched_adaptive_sites_ref
 
@@ -395,11 +391,12 @@ def mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues
     return matched_adaptive_sites_ref
 
 
-def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_positive_selection):
-    """Makes a uniprot format representation of each residue in aa seq of reference species (number, selection, presence)"""
+def record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection):
+    """Makes a uniprot format representation of each residue in aa seq of reference species
+    (number, selection, presence)"""
 
     annotate_selection = False
-    if protein_name in proteins_under_positive_selection:
+    if gene in genes_under_positive_selection:
         annotate_selection = True
 
     # row_residues and row_features are well set
@@ -468,7 +465,7 @@ def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_posit
                 row_features = row_features + "\n"
             continue
 
-        # do not annotate probabilities if protein not under positive selection
+        # do not annotate probabilities if gene not under positive selection
         if not annotate_selection:
             residue = values[0]
             row_features = row_features + " "
@@ -505,16 +502,15 @@ def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_posit
                 row_residues = row_residues + "\n"
                 row_features = row_features + "\n"
 
-
     positions = row_positions.split("\n")
     features = row_features.split("\n")
     residues = row_residues.split("\n")
     
     if len(positions) == len(features) == len(residues):
     
-        message = ("\n\n.........................................."
-            "\n\nReference sequence for %s with adaptive sites:"
-            "\n\n . means pr >= 0.70 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % protein_name
+        message = ("\n\n.........................................." 
+                   "\n\nReference sequence for %s with adaptive sites:"
+                   "\n\n . means pr >= 0.70 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % gene
         print(message)
         logging.info(message)
         
@@ -543,11 +539,11 @@ def record_adaptive_sites(final_dict_to_plot, protein_name, proteins_under_posit
         logging.info(residues)
 
 
-def get_ref_protein_seq(wdir, protein_name, ref_species):
+def get_ref_protein_seq(wdir, gene, ref_species):
     """Gets the protein sequenced used for blast"""
 
     # open according cds fasta file
-    with open(wdir + "Blast_input/" + protein_name + "_" + ref_species + "_protein.fasta", "r") as f:
+    with open(wdir + "Blast_input/" + gene + "_" + ref_species + "_protein.fasta", "r") as f:
         sequence = ""
         cds = f.readlines()
         for line in cds[1:]:
@@ -555,24 +551,23 @@ def get_ref_protein_seq(wdir, protein_name, ref_species):
     return sequence
     
 
-def get_ref_and_final_seqs(wdir, protein_name, result_path, ref_species):
+def get_ref_and_final_seqs(wdir, gene, result_path, ref_species):
     """Recovers aa seq of reference species from input and a final one after Gblocks"""
     
-    protein_path = result_path + "/" + protein_name
+    gene_path = result_path + "/" + gene
 
     # get record object for the ref protein sequence
-    ref_sequence = get_ref_protein_seq(wdir, protein_name, ref_species)
+    ref_sequence = get_ref_protein_seq(wdir, gene, ref_species)
     ref_sequence_Seq_object = Seq(ref_sequence)
-    #ref_ref_Seq_object = ref_sequence_Seq.translate()
     ref_sequence_record = SeqRecord(ref_sequence_Seq_object)
     
     # get record object for the final protein sequence
     pattern = "translated.fasta"
-    all_files = os.listdir(protein_path)
+    all_files = os.listdir(gene_path)
     
     for file in all_files:
         if pattern in file and "reduced" not in file and not file.startswith("."):
-            post_Gblocks_translated_file_path = protein_path + "/" + file
+            post_Gblocks_translated_file_path = gene_path + "/" + file
     
     alignment = AlignIO.read(post_Gblocks_translated_file_path, "fasta")
     all_seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
@@ -637,7 +632,8 @@ def map_ref_and_final_residues(ref_sequence_record, final_sequence_record):
     return mapped_ref_and_final_residues_dict
 
 
-def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict):
+def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_residues_dict, adaptive_sites_dict,
+                                omega_dict):
     """Matches sites under positive selection from seq post Gblocks onto the one used for blast input (ref species)"""
     
     # overlay the final residue dictionary with probability for positive selection
@@ -690,10 +686,10 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
     return matched_adaptive_sites_ref
 
 
-def get_omegas(protein_name, result_path, final_length):
+def get_omegas(gene, result_path, final_length):
     """Gets Dn/Ds ratio (omega) for each site in aa seq of reference species"""
     
-    PAML_output_file_path = result_path + protein_name + "/PAML_" + protein_name
+    PAML_output_file_path = result_path + gene + "/PAML_" + gene
     
     PAML_result_dict = {}
     for i in range(1, final_length+1):
@@ -746,7 +742,6 @@ def get_omegas(protein_name, result_path, final_length):
         values = [element for element in values if element != ""]
         # record value only for recurrently changing sites where omega is likely > 1 (not all > 1 are in M8 class 11 !!)
         if int((values[-4]).lstrip("(").rstrip(")")) == 11:
-        #if float(values[-1]) > 0.001:
             omega_dict[residue] = float(values[-3])
         else:
             omega_dict[residue] = 0.000
@@ -754,10 +749,10 @@ def get_omegas(protein_name, result_path, final_length):
     return omega_dict
 
 
-def get_adaptive_sites(result_path, protein):
+def get_adaptive_sites(result_path, gene):
     """Reads the PAML output files and finds which sites are likely under positive selection (BEB)"""
     
-    PAML_output_file_path = result_path + "/" + protein + "/PAML_" + protein
+    PAML_output_file_path = result_path + "/" + gene + "/PAML_" + gene
     with open(PAML_output_file_path + "/output_PAML", "r") as f:
         
         adaptive_sites_dict = {}
@@ -798,8 +793,8 @@ def get_adaptive_sites(result_path, protein):
     return adaptive_sites_dict
 
 
-def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein, nr_of_species_total,
-                proteins_under_positive_selection):
+def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_species_total,
+                genes_under_positive_selection):
     """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites
     under positive selection"""
 
@@ -833,8 +828,8 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein, nr_
     
         present.append(features[3])
 
-    # reset probabilities for proteins unlikely under positive selection
-    if protein not in proteins_under_positive_selection:
+    # reset probabilities for genes unlikely under positive selection
+    if gene not in genes_under_positive_selection:
         for i in range(len(probabilities)):
             # mark missing residues
             if present[i] == 0:
@@ -857,7 +852,7 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein, nr_
         clade = "Phasanidae"
 
     # plot recurrently changing sites (put it 11 bin of M8 model with postmean omega > 1.0)
-    plt.subplot(311, title="PAML analysis - %s (%s - %s species)" % (protein, clade, nr_of_species_total))
+    plt.subplot(311, title="PAML analysis - %s (%s - %s species)" % (gene, clade, nr_of_species_total))
     plt.ylabel("Posterior mean\n omega")
     plt.axis([1.0, sites[-1], 0, roof + 1.1])
     plt.ylim(1.0, roof + 1.1)
@@ -887,13 +882,10 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, protein, nr_
     plt.bar(sites, probabilities, color=clrs3)
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     
-    figure_name = protein + "_PAML_analysis"
-    protein_path = result_path + "/" + protein
+    figure_name = gene + "_PAML_analysis"
     plt.savefig(figure_name + ".tif", dpi=300, bbox_inches="tight")
-    #plt.savefig(figure_name + ".svg", dpi=300, bbox_inches="tight")
     
     shutil.move(wdir + figure_name + ".tif", result_path + figure_name + ".tif")
-    #shutil.move(figure_name + ".svg", protein_path)
 
 
     

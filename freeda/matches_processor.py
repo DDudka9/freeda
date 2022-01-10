@@ -198,13 +198,14 @@ def make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_na
 
 
 def process_fasta_file(fasta_name, contig, result_path, gene, genome_name):
-    """Stiches presumable exons into a  """
+    """Stiches presumable exons together (reverse complements if needed) and writes back into a fasta file"""
 
     # reverse complement if "sstart" > "send" (marked as rev == True)
     global rev
     fasta_path = result_path + gene + "/" + genome_name + "/Fasta/above_threshold"
 
     if rev is True:
+        # reverse complements and stiches presumable exons together
         reverse_complement(fasta_name, gene, genome_name, contig)
         # move the reverse complemented fasta file to Fasta folder
         global rev_comp_filename
@@ -221,14 +222,14 @@ def process_fasta_file(fasta_name, contig, result_path, gene, genome_name):
 
 
 def exons_stich(fasta_name, gene, genome_name):
-    """Stiches presumable exons together"""
+    """Stiches presumable exons together and writes into a file"""
 
     header, seq = read_seq(fasta_name)
     write_seq(header, seq, gene, genome_name, fasta_name)
     
 
 def read_seq(fasta_name):
-    """Reads a fasta fasta file witg presumbale exon sequence"""
+    """Reads a fasta file with presumbale exon sequence"""
 
     with open(fasta_name) as i:
         seq = ""
@@ -239,6 +240,7 @@ def read_seq(fasta_name):
                 header = header + "_" + head
             else:
                 seq = seq + line.rstrip("\n").upper()
+
     return header, seq
    
     
@@ -355,6 +357,7 @@ def get_prefix_suffix(ref_species, start, seq_length):
     while suffix < seq_length and suffix < length:
         suffix += 1
         longest_suffix = suffix
+
     return longest_prefix, longest_suffix
 
 
@@ -378,6 +381,7 @@ def generate_files_to_MSA(contig, cds, gene, fasta_path):
 
     o.close()
     shutil.move(name, MSA_path)
+
     return MSA_path  
 
 

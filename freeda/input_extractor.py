@@ -289,11 +289,7 @@ def generate_ref_genome_object(wdir, ref_species):
     # make sure ref species genome (reference genome) is present
     ref_genomes_path = wdir + "Reference_genomes/"
     # check if reference genome is present -> exit if not
-    ref_genome_present = tblastn.check_genome_present(wdir,
-                                                      ref_species,
-                                                      ref_genomes_path,
-                                                      ref_genome_name,
-                                                      ref_genome=True)
+    ref_genome_present = tblastn.check_genome_present(ref_species, ref_genomes_path, ref_genome_name, ref_genome=True)
 
     logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
     # get ref assembly database

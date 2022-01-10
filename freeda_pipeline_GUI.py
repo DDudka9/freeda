@@ -40,15 +40,21 @@ TypeError: 'NoneType' object is not subscriptable
 #               1) Accuracy - Show both ways (rat and mouse)
 #                           - Show mafft vs muscle
 #                           - Show dealing with duplications (Pot1a and Pot1b?)
-#                           - Show dealing with tandem sequences (Mug1, Mug2; Hoxd9, Hoxd10)
+#                           - Show dealing with tandem sequences (Hoxd9, Hoxd10)
+#                                   -> warning that it cannot distinguish tandem duplications
+#                                               that are too recent, especially in lower quality genomes (Mug1, Mug2)
 #                           - Show dealing with large introns (Cenpp)
 #                           - Show dealing with microexons (Cenpx)
 #                           - Show dealing with premature STOP (Haus...)
 #                           - Show dealing with uncalled bases (Mug1 Caroli contig FMAL02029158.1__rev)
 #       0) Mug1 Spicilegus has 36 exons and many hits -> runs finally with a 90 threshold and many exons are missing
 #               -> allow more matches than 40? Issue might be that duplications will be picked up more easily
+#               -> run Ttk kinase on higher matches available
 #               -> compare Mug1 exons got from caroli / pahari or rat to exons of Mug2 in these species
 #               -> run Mug1 and Mug2 with 30kb margins to comapre with 200kb
+#               -> number of matches allowed dependent on number of exons?
+#               -> Mug1 200 matches limit 20000 margins recovered most likely the correct Mug1 Rn
+#       0) Add a large protein feature -> E.g. Mug1 1500aa -> max 100 matches
 #       0) Use debugger to go through the matches_processor module and make sure docstrings are correct
 #       0) Double check all the assemblies (I swapped white faced saki in order)
 #       1) Add a test -> if Data folder doesnt have a specific file -> run test on primates CENPX or ask user to do it?
