@@ -184,7 +184,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                     M2a_vs_M1a_LRT = LRT1[1].replace(" ", "") + "-" + LRT1[2]
                 if LRT1[1].endswith("e") is False:
                     M2a_vs_M1a_LRT = LRT1[1].replace(" ", "")
-                if M2a_vs_M1a_LRT != "None":
+                if M2a_vs_M1a_LRT != "1":
                     M2a_vs_M1a_LRT = round(float(M2a_vs_M1a_LRT), 4)
                     if M2a_vs_M1a_LRT == 0.0:
                         M2a_vs_M1a_LRT = 0.0001
@@ -195,7 +195,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                     M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2].rstrip("\n")
                 if LRT2[1].endswith("e") is False:
                     M8_vs_M7_LRT = LRT2[1].replace(" ", "").rstrip("\n")
-                if M8_vs_M7_LRT != "None":
+                if M8_vs_M7_LRT != "1":
                     M8_vs_M7_LRT = round(float(M8_vs_M7_LRT), 4)
                     if M8_vs_M7_LRT == 0.0:
                         M8_vs_M7_LRT = 0.0001
@@ -209,10 +209,10 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 p_value1 = line.split(":")[1].split("and")[0].split("-")
                 # catch "e-" notation because it gets split
                 if p_value1[1].endswith("e") is True:
-                    M2a_vs_M1a_pvalue = p_value1[1].replace(" ","") + "-" + p_value1[2]
+                    M2a_vs_M1a_pvalue = p_value1[1].replace(" ", "") + "-" + p_value1[2]
                 if p_value1[1].endswith("e") is False:
-                    M2a_vs_M1a_pvalue = p_value1[1].replace(" ","")
-                if M2a_vs_M1a_pvalue != "None":
+                    M2a_vs_M1a_pvalue = p_value1[1].replace(" ", "")
+                if M2a_vs_M1a_pvalue != "1":
                     M2a_vs_M1a_pvalue = round(float(M2a_vs_M1a_pvalue), 4)
                     if M2a_vs_M1a_pvalue == 0.0:
                         M2a_vs_M1a_pvalue = 0.0001
@@ -222,10 +222,10 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 p_value2 = line.split(":")[1].split("and")[1].split("-")
                 # catch "e-" notation because it gets split
                 if p_value2[1].endswith("e"):
-                    M8_vs_M7_pvalue = p_value2[1].replace(" ","") + "-" + p_value2[2].rstrip("\n")
+                    M8_vs_M7_pvalue = p_value2[1].replace(" ", "") + "-" + p_value2[2].rstrip("\n")
                 if p_value2[1].endswith("e") is False:
-                    M8_vs_M7_pvalue = p_value2[1].replace(" ","").rstrip("\n")
-                if M8_vs_M7_pvalue != "None":
+                    M8_vs_M7_pvalue = p_value2[1].replace(" ", "").rstrip("\n")
+                if M8_vs_M7_pvalue != "1":
                     M8_vs_M7_pvalue = round(float(M8_vs_M7_pvalue), 4)
                     if M8_vs_M7_pvalue == 0.0:
                         M8_vs_M7_pvalue = 0.0001
@@ -233,12 +233,12 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 PAML_log_dict["M8 vs M7 (p-value)"].append(M8_vs_M7_pvalue)
                     
                 # does not report adaptive sites in genes failing M8 vs M7 test
-                if M8_vs_M7_pvalue == "None" or float(M8_vs_M7_pvalue) >= 0.05:
+                if float(M8_vs_M7_pvalue) >= 0.05:
                     PAML_log_dict["Sites with pr < 0.90"].append("Not likely")
                     PAML_log_dict["Sites with pr >= 0.90"].append("Not likely")
                 
                 # remove adaptive sites from genes that are not rapidly evolving
-                if M8_vs_M7_pvalue != "None" and float(M8_vs_M7_pvalue) <= 0.05:
+                if float(M8_vs_M7_pvalue) <= 0.05:
                         
                     matched_dict = all_matched_adaptive_sites_ref[gene]
                     mild_sites = {}
@@ -256,8 +256,8 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                             if float(values[2]) >= 0.90:
                                 strong_sites[adaptive_site] = probability
                         
-                    mild_sites_to_append = (str(len(mild_sites)) + " " + str(mild_sites)).replace("'","")
-                    strong_sites_to_append = (str(len(strong_sites)) + " " + str(strong_sites)).replace("'","")
+                    mild_sites_to_append = (str(len(mild_sites)) + " " + str(mild_sites)).replace("'", "")
+                    strong_sites_to_append = (str(len(strong_sites)) + " " + str(strong_sites)).replace("'", "")
                         
                     PAML_log_dict["Sites with pr < 0.90"].append(mild_sites_to_append)
                     PAML_log_dict["Sites with pr >= 0.90"].append(strong_sites_to_append)
@@ -293,11 +293,11 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
         head = heads.pop(0)
         ws.cell(row=1, column=header_count, value=head)
         
-        header.font = Font(bold = True, name = "Arial", size = 10)
-        double = Side(border_style = "thin")
-        header.border = Border(top = double, left = double, right = double, bottom = double)
-        header.alignment = Alignment(horizontal = "center", vertical = "center")
-        header.fill = PatternFill("solid", fgColor = "00FFCC00")    
+        header.font = Font(bold=True, name="Arial", size=10)
+        double = Side(border_style="thin")
+        header.border = Border(top=double, left=double, right=double, bottom=double)
+        header.alignment = Alignment(horizontal="center", vertical="center")
+        header.fill = PatternFill("solid", fgColor="00FFCC00")
         header_count += 1
     
     all_rows = []
@@ -331,10 +331,10 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
             
             # record a header of new column
             if one_entry == "0":
-                head = [key for number, key in enumerate(final_PAML_log_dict.keys(),1) if number == column_count][0]
+                head = [key for number, key in enumerate(final_PAML_log_dict.keys(), 1) if number == column_count][0]
                 
                 # always goes into the first row
-                ws.cell(row=1, column=column_count, value=head.replace("'",""))
+                ws.cell(row=1, column=column_count, value=head.replace("'", ""))
             
             # record entry
             else:
@@ -344,7 +344,7 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
     # make all rows centered
     for row in ws.iter_rows():
         for cell in row:
-            cell.alignment = Alignment(horizontal = "center", vertical = "center")
+            cell.alignment = Alignment(horizontal="center", vertical="center")
     
     # save the excel document
     excel_filename = "PAML_result" + day + ".xlsx"

@@ -8,16 +8,9 @@ Created on Wed Mar 24 18:55:36 2021
 Extracts single exons looking at exon/intron bounderies based on exons from ref species
 Clones and stiches the exons into a final cds for given genome.
 
-CURRENTLY (03_24_2021) THERE IS NO ALTERNATIVE STOP CODON SEARCH FUNCTION ->
-# under assumption that Mm coding sequnce is would miss whatever insertion would
-# happen in the other sequences and so PAML would be blind to it
-# however this way a possible deletion in last exon would still be cloned
-# because of "soft frameshift" rule that allows cloning frameshifts in last exon
-
 """
 
 from Bio.Align.Applications import MafftCommandline
-from Bio.Align.Applications import ClustalwCommandline
 from Bio import AlignIO
 from freeda import fasta_reader
 import glob
@@ -28,12 +21,13 @@ import shutil
 import subprocess
 
 
-def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs, gene_name,
+def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contigs, gene_name,
               genome_name, final_exon_number, ref_exons, MSA_path, aligner):
+    """Clones cds for given genome based on the found exons"""
     
     # get a dictionary with all the contigs and how many exons they have
     all_contigs_dict = {}
-    for contig in most_intronic_contigs:
+    for contig in most_intron_contigs:
         contig_name, exon_nr = contig
         all_contigs_dict[contig_name] = exon_nr
     
@@ -41,10 +35,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
     missing_exons = []
     duplicated_exons = {}
     for e in range(1, len(preselected_exons_overhangs)+1):
-        # microexons are not expected in the preselected exons
-        #if e in microexons:
-        #    continue
-        
+
         # if an exon is missing, add it to missing exons
         if preselected_exons_overhangs[e] == []:
             missing_exons.append(e)
@@ -72,7 +63,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
     # for each duplicated exon, try to get a winner (most exons)
     for exon_nr, contigs in duplicated_exons.items():
         contigs_dict = {}
-        for contig in most_intronic_contigs:
+        for contig in most_intron_contigs:
             contig_name, nr_of_exons = contig
             if contig_name in contigs:
                 contigs_dict[contig_name] = nr_of_exons
@@ -116,7 +107,8 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
                 exons = [exon_nr for exon_nr, cs in duplicated_exons.items() if winner in cs]
                 for exon_nr in exons:
                     total_hd_normalized += hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner,
-                                                    preselected_exons_overhangs, MSA_path, gene_name, aligner)
+                                                                           preselected_exons_overhangs, MSA_path,
+                                                                           gene_name, aligner)
                 winners_hd_normalized[winner] = total_hd_normalized
                 contigs_hd_analyzed[winner] = total_hd_normalized
 
@@ -137,8 +129,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
                 print(message1)
                 logging.info(message1)
                 
-                message2 = "\n   ---->Contig " + winner + \
-                                " was selected as most conserved"
+                message2 = "\n   ---->Contig " + winner + " was selected as most conserved"
                 print(message2)
                 logging.info(message2)
             
@@ -157,7 +148,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
     final_winners = set()
     for exon_nr, contigs in duplicated_exons.items():
         contigs_dict = {}
-        for contig in most_intronic_contigs:
+        for contig in most_intron_contigs:
             contig_name, nr_of_exons = contig
             # skip contigs that are both winners and losers
             if contig_name in losing_contigs or contig_name in winning_and_losing_contigs:
@@ -176,40 +167,41 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
         except ValueError:
             continue
         
-    # refill the list of most intronic contigs
-    most_intronic_contigs_without_duplicates = []
+    # refill the list of most intron contigs
+    most_intron_contigs_without_duplicates = []
     for contig in dup_exons_set:
         if contig in final_winners:
             c = contig, all_contigs_dict[contig]
             # append only the final winners that were never losers in any comparison
-            most_intronic_contigs_without_duplicates.append(c)
+            most_intron_contigs_without_duplicates.append(c)
     # add to the list also all the contigs that didnt carry duplicated exons
-    for contig in most_intronic_contigs:
+    for contig in most_intron_contigs:
         c, exons_nr = contig
         if c not in dup_exons_set:
-            most_intronic_contigs_without_duplicates.append(contig)
+            most_intron_contigs_without_duplicates.append(contig)
             
-    # finally clone cds using new most intronic contig list
-    most_intronic_contigs = most_intronic_contigs_without_duplicates
+    # finally clone cds using new most intron contig list
+    most_intron_contigs = most_intron_contigs_without_duplicates
     cloned_cds = ""
     # make a scaffold for recording which exons was taken from which contig
     cds_composition = {exon: "" for exon, contigs in preselected_exons_overhangs.items()}
     
     # dictionary to collect sequences before finally stiching exons together
     pre_cloned_cds = {}
-    exons_with_frameshifts = []
-    # clone exon sequences from contigs (contigs with most intronic exons are prioritized)
+    #exons_with_frameshifts = []
+    # clone exon sequences from contigs (contigs with most intron exons are prioritized)
     for exon, contigs in preselected_exons_overhangs.items():
         # disregard missing exons
         if contigs != []:
-            # look which contig has most intronic exons
-            for contig in most_intronic_contigs:
+            # look which contig has most intron exons
+            for contig in most_intron_contigs:
                 # look if a given contig contains a given exon
                 for seq in preselected_exons_overhangs[exon]:
                     # if yes, and this exon wasnt yet cloned -> run MSA against ref species exon
                     if contig[0] == seq[0] and cds_composition[exon] == "":
                         in_filename, out_filename = generate_single_exon_MSA(wdir, ref_species, seq[1], contig[0], exon,
-                                                                    gene_name, ref_exons, MSA_path, seq[2], aligner)
+                                                                             gene_name, ref_exons, MSA_path, seq[2],
+                                                                             aligner)
                         # collect the aligned sequences
                         aligned_seqs = collect_sequences(in_filename + out_filename)
 
@@ -217,72 +209,27 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
                         # indexing positions in the alignement
                         ref_species_exon, locus_exon = index_positions_exons(aligned_seqs)
 
-                        # check frameshift (DISABLED)
-                        frameshift = False
-                        #frameshift = check_frameshift(ref_species_exon, locus_exon)
-                        
-                        # check if its not the last exon
-                        if exon != list(ref_exons.keys())[-1] and frameshift is False:
-                            # converting the nucleotides into a string
-                            locus_exon_string = "".join(locus_exon.values())
-                            # mark that this exon was already cloned
-                            cds_composition[exon] = contig[0]
-                            pre_cloned_cds[exon] = contig[0], locus_exon_string 
-                            break 
-                        
-                        # if frameshift detected and not last exon
-                        if frameshift is True and exon != list(ref_exons.keys())[-1]:
-                            # log the frameshift
-                            message = "   ...WARNING... : FRAMESHIFT detected in contig " \
-                                    + contig[0] + " in exon nr: %s" % str(exon)
-                            print(message)
-                            logging.info(message)
-                            # mark that this exon was already counted but not cloned
-                            cds_composition[exon] = "FRAMESHIFT"
-                            exons_with_frameshifts.append(exon)
-                            pre_cloned_cds[exon] = contig[0], ""
-                            break
-
-                        # if last exon
-                        if exon == list(ref_exons.keys())[-1]:
-                            # check if there is a STOP codon
-                            #check_stop_codon(aligned_seqs[0][1], aligned_seqs[1][1], exon)
-                            # converting the nucleotides into a string
-                            locus_exon_string = "".join(locus_exon.values())
-                            # mark that this exon was already cloned
-                            cds_composition[exon] = contig[0]
-                            pre_cloned_cds[exon] = contig[0], locus_exon_string
-                            if frameshift is True:
-                                exons_with_frameshifts.append(exon)
-                                # log the frameshift
-                                message = "   ...WARNING... : FRAMESHIFT detected in contig " \
-                                    + contig[0] + " in the LAST exon nr: %s (allowed)" % str(exon)
-                                print(message)
-                                logging.info(message)
-                                
-                            break
+                        # converting the nucleotides into a string
+                        locus_exon_string = "".join(locus_exon.values())
+                        # mark that this exon was already cloned
+                        cds_composition[exon] = contig[0]
+                        pre_cloned_cds[exon] = contig[0], locus_exon_string
+                        break
     
     # count how many exons are missing in the final cds cloned
     final_missing_exons_count = 0
     final_missing_exons = []
     
     # define which contigs were rejected
-    rejected_contigs = set()
     final_exon_breakdown = {}
-    for exon, contig in cds_composition.items():
-        if contig == "FRAMESHIFT":
-            rejected_contigs.add(pre_cloned_cds[exon][0])
-    
+
     # run again through cds_composition and draw final breakdown
     for exon, contig in cds_composition.items():
-        if contig in rejected_contigs:
-            final_exon_breakdown[exon] = pre_cloned_cds[exon][0] + \
-                " contains FRAMESHIFT in exons: " + str(exons_with_frameshifts) \
-                                                    + " (not cloned)"
-            continue
-        if "FRAMESHIFT" not in contig and contig != "":
+
+        if contig != "":
             final_exon_breakdown[exon] = contig
             continue
+
         else:
             final_exon_breakdown[exon] = "missing"
             final_missing_exons_count += 1
@@ -300,11 +247,6 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_cont
     message2 = "\nMissing exons: %s" % str(final_missing_exons).lstrip("[").rstrip("]")
     print(message2)
     logging.info(message2)
-    
-    #message3 = "\nDuplicated exons (contigs with RETRO_score >= 0.4 were excluded): %s" \
-    #    % str(duplicated_exons.keys()).lstrip("dict_keys([").rstrip("])")
-    #print(message3)
-    #logging.info(message3)
     
     return cloned_cds 
 
@@ -365,11 +307,7 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
             " in exon nr: %s" % str(exon_nr)
         print(message)
         logging.info(message)
-    
-    
-    # write a checkpoint that will limit exon checking to only overlapping exons in winner contigs
-    
-    
+
     # find hamming distance for them
     hd = hamming_distance_frameshift(ref_exon, compared_exon, exon_nr, ref_exons)
     message = "   Hamming distance for contig " + winner + " exon nr: %s is %s" \
@@ -393,6 +331,7 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
     
     
 def index_positions_exons(seqs):
+    """Indexes nucleotides for each exon into a dictionary"""
 
     ref_exon = seqs[0][1]
     compared_exon = seqs[1][1]
@@ -414,43 +353,36 @@ def index_positions_exons(seqs):
 
 
 def check_frameshift(ref_exon, compared_exon):
+    """Checks if there is any frameshifts in the given exon. It cannot detect frameshifts at the end of contigs"""
 
     frameshift = False
     end_of_contig = False
-    oe = ref_exon
-    ce = compared_exon
     nr_of_insertions = 0
     nr_of_deletions = 0
     
-    # check if there are dashes in oe dictionary (insertion in ce)
-    if "-" in oe.values():
+    # check if there are dashes in ref_exon dictionary (insertion in compared_exon)
+    if "-" in ref_exon.values():
         # count them
         count = 0
         lam = lambda pos: count + 1
-        nr_of_insertions = len([lam(pos) for pos, value in oe.items() if value == "-"])
-        
-        # check if the dashes are in the end of the exon (likely end of contig)
-        
-        # THIS FUNCTION CANNOT DETECT FRAMESHIFTS AT THE END OF CONTIGS (ex. Cdk5rap2 An exon 11 NC_047662.1)
-        # track back last 3 positions -> trim if frameshift detected -> clone the rest
-        
+        nr_of_insertions = len([lam(pos) for pos, value in ref_exon.items() if value == "-"])
         end_of_contig = True
-        for nt in ce.values():
+        for nt in compared_exon.values():
             if nt == "-":
                 end_of_contig = True
             else:
                 end_of_contig = False
     
-    if end_of_contig == True:
+    if end_of_contig is True:
         frameshift = False
         return frameshift
 
-    # check if there are dashes in ce dictionary (deletion in ce)
-    if "-" in oe.values() and end_of_contig == False:
+    # check if there are dashes in compared_exon dictionary (deletion in compared_exon)
+    if "-" in ref_exon.values() and end_of_contig is False:
         # count them
         count = 0
         lam = lambda pos: count + 1
-        nr_of_deletions = len([lam(pos) for pos, value in ce.items() if value == "-"])
+        nr_of_deletions = len([lam(pos) for pos, value in compared_exon.items() if value == "-"])
     
     # make sure that indels altogether dont offset the frame
     if (nr_of_insertions - nr_of_deletions) % 3 != 0:
@@ -461,6 +393,7 @@ def check_frameshift(ref_exon, compared_exon):
 
 
 def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
+    """Checks hamming distance between likely duplicated exons. Frameshifts are penalized,"""
 
     indels_p = 0
     indels_q = 0
@@ -482,7 +415,7 @@ def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
             end_of_contig = False
     
     # trigger highest possible hd if frameshift detected        
-    if end_of_contig == False:
+    if end_of_contig is False:
         if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(ref_species_exons.keys())[-1]:
             
             return float("inf")
@@ -572,9 +505,9 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
     if 0.60 <= score <= 0.75:  # Cenpu Ay _LIPJ01001187.1__rev_Cenpu_exon_5 0.6363636363636364 -> legit
 
         # check if both flanks of the poorly aligned cloned exon are homologous to reference introns
-        double_introny = check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned)
+        double_intron = check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned)
 
-        if double_introny is False:
+        if double_intron is False:
 
             message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > 0.75, questionable " \
                       "= 0.60-0.75, poor < 0.60) and lack of two flanking introns " \
@@ -631,10 +564,10 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
         return
 
 
-def check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned):
-    """Checks introny of a single exon alignment. Exon overhangs are always 50bp long."""
+def check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned):
+    """Checks intron of a single exon alignment. Exon overhangs are always 50bp long."""
 
-    double_introny = True
+    double_intron = True
 
     N_mismatches = 0
     N_indels = 0
@@ -643,10 +576,10 @@ def check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligne
 
     for position, bp in enumerate(cloned_exon_aligned):
 
-        # check N-term introny
+        # check N-term intron
         if position < 50:
 
-            # expecting intronic regions (sometimes there are trailing true exonic bp that will also be penalized here)
+            # expecting intron regions (sometimes there are trailing true exonic bp that will also be penalized here)
             if ref_exon_aligned[position] != "-":
                 N_mismatches += 1
 
@@ -679,10 +612,10 @@ def check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligne
                 else:
                     pass
 
-        # check C-term introny
+        # check C-term intron
         if position > (len(cloned_exon_aligned) - 50):
 
-            # expecting intronic regions (sometimes there are trailing true exonic bp that will also be penalized here)
+            # expecting intron regions (sometimes there are trailing true exonic bp that will also be penalized here)
             if ref_exon_aligned[position] != "-":
                 C_mismatches += 1
 
@@ -726,9 +659,9 @@ def check_introny_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligne
     logging.info(message)
 
     if N_score < 0.75 or C_score < 0.75:
-        double_introny = False
+        double_intron = False
 
-    return double_introny
+    return double_intron
 
 
 def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename, aligner):
@@ -766,6 +699,7 @@ def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename
 
 
 def collect_sequences(path):
+    """Collects sequences from an alignment into a list."""
 
     # use biopython to read alignment file
     alignment = AlignIO.read(path, "fasta")
@@ -775,45 +709,53 @@ def collect_sequences(path):
     return seqs
 
 
+"""
+
+                        # check frameshift (DISABLED) -> allows frameshits
+                        frameshift = False
+                        #frameshift = check_frameshift(ref_species_exon, locus_exon)
+                        
+                        # check if its not the last exon
+                        if exon != list(ref_exons.keys())[-1] and frameshift is False:
+                            # converting the nucleotides into a string
+                            locus_exon_string = "".join(locus_exon.values())
+                            # mark that this exon was already cloned
+                            cds_composition[exon] = contig[0]
+                            pre_cloned_cds[exon] = contig[0], locus_exon_string 
+                            break 
+                        
+                        # if frameshift detected and not last exon
+                        if frameshift is True and exon != list(ref_exons.keys())[-1]:
+                            # log the frameshift
+                            message = "   ...WARNING... : FRAMESHIFT detected in contig " \
+                                    + contig[0] + " in exon nr: %s" % str(exon)
+                            print(message)
+                            logging.info(message)
+                            # mark that this exon was already counted but not cloned
+                            cds_composition[exon] = "FRAMESHIFT"
+                            exons_with_frameshifts.append(exon)
+                            pre_cloned_cds[exon] = contig[0], ""
+                            break
+
+                        # if last exon
+                        if exon == list(ref_exons.keys())[-1]:
+                            # check if there is a STOP codon
+                            #check_stop_codon(aligned_seqs[0][1], aligned_seqs[1][1], exon)
+                            # converting the nucleotides into a string
+                            locus_exon_string = "".join(locus_exon.values())
+                            # mark that this exon was already cloned
+                            cds_composition[exon] = contig[0]
+                            pre_cloned_cds[exon] = contig[0], locus_exon_string
+                            if frameshift is True:
+                                exons_with_frameshifts.append(exon)
+                                # log the frameshift
+                                message = "   ...WARNING... : FRAMESHIFT detected in contig " \
+                                    + contig[0] + " in the LAST exon nr: %s (allowed)" % str(exon)
+                                print(message)
+                                logging.info(message)
+                                
+                            break
+
 
 """
-        # check C-term introny
-        if position > (len(cloned_exon_aligned) - 50):
-            # match
-            if bp == gene_aligned[position]:
-                C_matches += 1
-            # deletion in locus
-            elif bp == "-" and C_indels < 10:
-                C_indels += 1
-            # insertion in locus
-            elif bp != "-" and C_indels < 10:
-                C_indels += 1
 
-    N_score = N_matches / (50 - N_indels)
-    print("    N_score : %s " % N_score)
-    C_score = C_matches / (50 - C_indels)
-    print("    C_score : %s " % C_score)
-    
-def check_stop_codon(last_ref_species_exon, last_locus_exon, exon_number):
-    #Checks for a STOP codon in the last exon (does not look at microexons)
-
-    # define the STOP codon based on the last ref species exon
-    TAG_codon_pos = last_ref_species_exon.rfind("TAG")
-    TGA_codon_pos = last_ref_species_exon.rfind("TGA")
-    TAA_codon_pos = last_ref_species_exon.rfind("TAA")
-    STOP_codon_pos = max(TAG_codon_pos, TGA_codon_pos, TAA_codon_pos)
-    STOP_locus_exon = last_locus_exon[STOP_codon_pos : STOP_codon_pos + 3]
-
-    # check if the STOP codon is present
-    if STOP_locus_exon == "TAG" or STOP_locus_exon == "TGA" or STOP_locus_exon == "TAA":
-        STOP = True
-        message = ("\nSTOP codon detected in LAST exon (%s)" % exon_number)
-        print(message)
-        logging.info(message)
-    else:
-        message = ("\nSTOP codon NOT detected in LAST exon (%s)" % exon_number)
-        print(message)
-        logging.info(message)
-    
-
-"""

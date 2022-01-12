@@ -75,12 +75,12 @@ def threshold_matches(matches, t, gene, genome_name):
     
     # get only columns of interest and check that there is less than 40 matches (to reduce MSA time)
     matches_above_threshold = matches[threshold]
-    if len(matches_above_threshold) <= 200:  # changed to 100 01/09/2022
+    if len(matches_above_threshold) <= 100:  # changed to 100 01/09/2022
         pass
     
     # if not, increase identity threshold until getting < 40 matches
     else:
-        while len(matches_above_threshold) > 200:  # changed to 100 01/09/2022
+        while len(matches_above_threshold) > 100:  # changed to 100 01/09/2022
             t = t + 5
             threshold = matches["pident"] > t
             m = matches[threshold]

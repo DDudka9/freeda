@@ -264,7 +264,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
 
             M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path)
 
-            if M8_M7 is not None and M8_M7 < 0.05:
+            if M8_M7 < 0.05:
                 prots_under_pos_sel.append(gene)
 
             message = "\n -> PAML p-values for gene %s : M2a v M1a - %s and M8 v M7 - %s" \
@@ -610,8 +610,8 @@ def run_PAML(wdir, gene, PAML_path):
     if LRT1 is not False:
         M2a_M1a = cdf_chi2(df_M2a_M1a, LRT1)
     else:
-        LRT1 = None
-        M2a_M1a = None
+        LRT1 = 0
+        M2a_M1a = 1
         message = "\n M1a model is more likely than M2a model."
         print(message)
         logging.info(message)
@@ -619,8 +619,8 @@ def run_PAML(wdir, gene, PAML_path):
     if LRT2 is not False:
         M8_M7 = cdf_chi2(df_M8_M7, LRT2)
     else:
-        LRT2 = None
-        M8_M7 = None
+        LRT2 = 0
+        M8_M7 = 1
         message = "\n M7 model is more likely than M8 model."
         print(message)
         logging.info(message)
@@ -640,8 +640,6 @@ def run_RAxML(gene, gene_folder_path, out_Gblocks):
     """Makes a gene tree using RAxML"""
 
     tree_name = gene + "_Tree"
-    #RAxML_cline = ["raxmlHPC", "-f", "a", "-s", translated_path, "-n", tree_name,
-    #               "-m", "PROTGAMMAAUTO", "-p", "1985", "-x", "2020", "-#", "100"]
 
     RAxML_cline = ["raxmlHPC", "-f", "a", "-s", out_Gblocks, "-n", tree_name,
                    "-m", "GTRGAMMA", "-p", "12345", "-x", "12345", "-#", "100"]
@@ -656,7 +654,6 @@ def run_RAxML(gene, gene_folder_path, out_Gblocks):
     if result == 0:
         message = "\n Best gene tree was found for gene : %s " % gene
         print(message)
-        #logging.info(message)
 
     # triggers "FileNotFound" exception that is handled
     else:

@@ -10,31 +10,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 """
 
 
-"""
-
- --------- * CENPP * --------- 
-
-
-Alignment score for species : Cf = 1.0
-[]
-
-...WARNING... : Failed PAML analysis for : CENPP -> probably not enough species in the alignment (e.g. poor alignment of repetitive regions)
-
- --------------->  PAML analysis completed in 0.008117254575093586 minutes or 0.00013528810607062446 hours
-Exception in thread Thread-3:
-Traceback (most recent call last):
-  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/threading.py", line 926, in _bootstrap_inner
-    self.run()
-  File "/Users/damian/anaconda3/envs/py37/lib/python3.7/threading.py", line 870, in run
-    self._target(*self._args, **self._kwargs)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline_GUI.py", line 445, in freeda_pipeline
-    final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline_GUI.py", line 538, in get_results
-    def get_results(final_PAML_log_dict):
-TypeError: 'NoneType' object is not subscriptable
-
-"""
-
 # TODO
 #       0) Figures:
 #               1) Accuracy - Show both ways (rat and mouse)
@@ -49,8 +24,10 @@ TypeError: 'NoneType' object is not subscriptable
 #                           - Show dealing with uncalled bases (Mug1 Caroli contig FMAL02029158.1__rev)
 #       0) Mug1 Spicilegus has 36 exons and many hits -> runs finally with a 90 threshold and many exons are missing
 #               -> allow more matches than 40? Issue might be that duplications will be picked up more easily
-#               -> run Ttk kinase on higher matches available
+#               -> run Ttk kinase on higher matches available -> OK, went fast, 17 genomes in 45min
 #               -> compare Mug1 exons got from caroli / pahari or rat to exons of Mug2 in these species
+#                       -> Spicilegus Mug1 and Mug2 picked the same contig unfortunately,
+#                                       hamming distance was marginally different
 #               -> run Mug1 and Mug2 with 30kb margins to comapre with 200kb
 #               -> number of matches allowed dependent on number of exons?
 #               -> Mug1 200 matches limit 20000 margins recovered most likely the correct Mug1 Rn
@@ -60,14 +37,21 @@ TypeError: 'NoneType' object is not subscriptable
 #       1) Add a test -> if Data folder doesnt have a specific file -> run test on primates CENPX or ask user to do it?
 #       2) Talk to Mike about who to ask concering licenses
 #       3) Fix nomenclature -> "intronic"
-#                           -> "gene/gene_name" -> gene_name
+#                           -> "gene/gene_name" -> gene_name -> DONE
 #                           -> "None" is not the best info for M2a etc tests in PAML excel file -> 0 (zero)
-#                           -> eliminate aligner option
+#                                   -> DONE (test!)
+#                           -> eliminate aligner option (at the end when figure is done)
 #                           -> fill out missing docstrings
 #       6) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
-#                  -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8
+#                  -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8 -> not anymore
+#                   -> decided to stick to M7 and M8 with caveat that they can produce false positives
+#                           (Berlin and Smith BMC Ecology and Evolution 2005)
+#                           -> recommend checking M1a vs M2a test as well as its conservative
+#                                   -> positive in both is most likely positive
 #       7) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
 #          SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
+#                       -> I deactivated frameshifts functions in cds cloner module (FOR BOTH NORMAL AND HD RUNS)
+#                               -> test using Oip5, Cdk5rap2, Sgo2b, Haus2, Clasp1, Aspm
 #      12) Use Hyland et al. 2021 Gen Biol Evol for testing -> TRIP gene in mammals
 
 from freeda import input_extractor
@@ -148,10 +132,6 @@ def check_input():
         logging.info("\n...FATAL_ERROR... : Choose clade")
         ready = False
 
-    #if not threshold.get():
-    #    logging.info("\n...FATAL_ERROR... : Choose search depth")
-    #    ready = False
-
     all_genes = [gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name5.get()]
     if not any(all_genes):
         logging.info("\n...FATAL_ERROR... : Choose at least one gene")
@@ -201,10 +181,6 @@ def block_user_entries():
     primates.configure(state="disabled")
     carnivores.configure(state="disabled")
     birds.configure(state="disabled")
-
-    #deep_radiobutton.configure(state="disabled")
-    #medium_radiobutton.configure(state="disabled")
-    #shallow_radiobutton.configure(state="disabled")
 
     name1.configure(state="disabled")
     name2.configure(state="disabled")
@@ -280,10 +256,6 @@ def ublock_user_entries():
     primates.configure(state="normal")
     carnivores.configure(state="normal")
     birds.configure(state="normal")
-
-    #deep_radiobutton.configure(state="normal")
-    #medium_radiobutton.configure(state="normal")
-    #shallow_radiobutton.configure(state="normal")
 
     name1.configure(state="normal")
     name2.configure(state="normal")
@@ -492,7 +464,6 @@ def freeda_pipeline():
     # get user input
     wdir = wdirectory.get() + "/"
     ref_species = clade.get()
-    #t = threshold.get()
     t = 60
     all_genes_dict = {gene_name1.get(): [dup1_var.get(),
                                     [site11_label.get(), site11_start.get(), site11_end.get()],
@@ -565,7 +536,6 @@ def freeda_pipeline():
     if not ref_genome_present:
         message = "\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n"
         logging.info(message)
-        #print("\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n")
         ublock_user_entries()
         return
 
@@ -575,9 +545,6 @@ def freeda_pipeline():
 
         message = "\n----------- * %s * -----------" % gene
         logging.info(message)
-        #level = logging.WARNING
-        #logger.log(level, message)   # DOESNT WORK
-        #print("\n----------- * %s * -----------" % gene)
         # get structure prediction model from AlphaFold
         possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene)
         model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
@@ -592,14 +559,11 @@ def freeda_pipeline():
         if input_correct:
             message = "\nInput data have been generated for gene: %s\n\n" % gene
             logging.info(message)
-            #print("\nInput data have been generated for gene: %s\n\n" % gene)
 
         if not input_correct:
             message = "\n...FATAL ERROR... : Input data generation FAILED for gene: %s " \
                       "- please remove from analysis -> exiting the pipeline now...\n" % gene
             logging.info(message)
-            #print("\n...FATAL ERROR... : Input data generation FAILED for gene: %s - please remove from analysis"
-            #      " -> exiting the pipeline now...\n" % gene)
             ublock_user_entries()
             return
 
@@ -607,9 +571,6 @@ def freeda_pipeline():
             message = "\n...WARNING... : No matching structure prediction model is available for : %s " \
                   "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
             logging.info(message)
-            #print("...WARNING... : No matching structure prediction model is available for : %s "
-            #      "-> cannot overlay FREEDA results onto a 3D structure\n" % gene)
-            #print("...WARNING... : gene will still be analyzed using PAML but without 3D structure overlay\n")
 
     # ----------------------------------------#
     ######## RUN BLAST ########
@@ -634,9 +595,6 @@ def freeda_pipeline():
               "no matches above the identity threshold used : %s -> use a lower one " \
               "-> exiting the pipeline now..." % t
         logging.info(message)
-        #print("\n     ...FATAL ERROR... : Genome of at least one species contains "
-        #      "no matches above the identity threshold used : %s -> use a lower one "
-        #      "-> exiting the pipeline now..." % t)
         ublock_user_entries()
         return
 
@@ -674,14 +632,11 @@ def freeda_pipeline():
             if not successful:
                 message = "\nThe structure for : %s was not built successfully." % gene
                 logging.info(message)
-                #print("\nThe structure for : %s was not built successfully." % gene)
                 continue
         else:
             message = "\nPrediction model for : %s DOES NOT match input sequence" \
                      "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
             logging.info(message)
-            #print("\nPrediction model for : %s DOES NOT match input sequence "
-            #         "-> cannot overlay FREEDA results onto a 3D structure\n" % gene)
 
     logging.info("\nYou reached the end of FREEDA pipeline.")
 
@@ -717,8 +672,6 @@ def check_functional_residues(residue, op):
     error_message2.set("")
     # accept only entry starting with one capital letter followed by small or big letters or numbers
     valid = re.match(r"^[1-9]{1}([0-9]{0,3}$)", residue) is not None  # max 4 digits, first one not a zero
-    # button can be clicked only if gene names are valid
-    #analyze_button.state(["!disabled"] if valid else ["disabled"])
     # keystroke validation
     if op == "key":
         ok_so_far = re.match(r"^(?![\s\S])|[0-9]+$", residue) is not None  # ^(?![\s\S]) -> completely empty
@@ -735,8 +688,6 @@ def check_label(label, op):
     """Checks if user provided a valid label name"""
     # accept only entry starting with one capital letter followed by small or big letters or numbers
     valid = re.match(r"^[A-Za-z0-9]+$", label) is not None
-    # button can be clicked only if gene names are valid
-    #analyze_button.state(["!disabled"] if valid else ["disabled"])
     # keystroke validation
     if op == "key":
         ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None  # ^(?![\s\S]) -> completely empty
@@ -963,23 +914,11 @@ def get_results(final_PAML_log_dict):
         g5_adapt_more_entry.config(foreground="magenta")
 
 
-#def get_alignment():  # doesnt work
-
-#    directory = "/Volumes/DamianEx_2/Data/Results-12-06-2021-21-44/"
-#    result_path_var.get()
-#    if os.path.isfile(directory + gene_name1.get() + "_Mm.pse"):
-#        filename = filedialog.askopenfilename(initialdir=directory, title="Select file",
-#                                                   filetypes=(("pse files", "*.pse"), ("all files","*.*")))
-#        subprocess.call([filename])
-#
-#    return
-
 # set up the main window
 root = Tk()
+
 root.maxsize(width=1280, height=725)
-#root.maxsize(width=100, height=100)
 root.resizable(False, False)
-#run = True
 
 root.title("FREEDA - Finder of Rapidly Evolving Exons in De novo Assemblies")
 root.columnconfigure(0, weight=1)
@@ -1004,8 +943,6 @@ input_frame.columnconfigure(3, weight=2, uniform="group1")
 # create logo frame
 logo_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
 logo_frame.grid(column=0, row=0, columnspan=1, sticky=(N, W, E, S), padx=5, pady=5)
-#logo_frame_style = ttk.Style()
-#logo_frame_style.configure("TFrame", background="white")
 
 # create settings frame
 settings_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
@@ -1066,7 +1003,6 @@ output_frame = ttk.Frame(mainframe, relief="sunken", padding="5 5 5 5")
 output_frame.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=5)
 # let all columns resize
 output_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
-#output_frame.columnconfigure((6, 7, 8), weight=1, uniform="group1")
 
 # create a logging window
 logging_frame = ttk.Frame(output_frame, relief="ridge", padding="5 5 5 5")
@@ -1076,50 +1012,41 @@ logging_frame.grid(column=0, row=0, columnspan=9, sticky=(N, W, E, S), padx=5, p
 results_labelframe = ttk.LabelFrame(output_frame, text="Results window")
 results_labelframe.grid(column=0, row=1, columnspan=8, padx=5, pady=2, sticky=(N, W))
 results_labelframe.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#results_labelframe.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create results labels frame upper
 results_labels_upper = ttk.Frame(results_labelframe, padding="2 2 2 2")
 results_labels_upper.grid(column=0, row=2, columnspan=8, sticky=(N, W, E, S), padx=5, pady=2)
 results_labels_upper.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#results_labels.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create results labels frame
 results_labels = ttk.Frame(results_labelframe, padding="2 2 2 2")
 results_labels.grid(column=0, row=3, columnspan=8, sticky=(N, W, E, S), padx=5, pady=2)
 results_labels.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#results_labels.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 1 result frame
 g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g1_results_frame.grid(column=0, row=4, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
 g1_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#g1_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 2 result frame
 g2_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g2_results_frame.grid(column=0, row=5, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
 g2_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#g2_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 3 result frame
 g3_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g3_results_frame.grid(column=0, row=6, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
 g3_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#g3_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 4 result frame
 g4_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g4_results_frame.grid(column=0, row=7, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
 g4_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#g3_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
 
 # create user gene 5 result frame
 g5_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
 g5_results_frame.grid(column=0, row=8, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
 g5_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
-#g3_results_frame.columnconfigure((6, 7), weight=2, uniform="group1")
-
 
 # CHECKS
 check_gene_name_wrapper = (settings_frame.register(check_gene_name), "%P", "%V")
@@ -1140,26 +1067,11 @@ error_label2.grid(column=0, row=23, columnspan=4, padx=5, pady=2, sticky="w")
 # LOGO
 canvas = Canvas(logo_frame, width=200, height=50)
 canvas.pack(expand=True)
-#canvas.grid(column=0, row=0, rowspan=3, sticky=(N, W, E, S))
 freeda_img = ImageTk.PhotoImage(Image.open(os.getcwd() + "/freeda_img4.png"))
 canvas.create_image(100, 30, anchor=CENTER, image=freeda_img)
 
 # LOGGER
 raise_logger()
-
-# LOGGER
-#logging_label = ttk.Label(logging_frame, text="Events window (logged to 'FREEDA*.log' and 'PAML*.log')")
-#logging_label.grid(column=0, row=0, columnspan=4, sticky=(W))
-#logging_window = ScrolledText.ScrolledText(logging_frame, state="disabled", wrap="none")
-#logging_window.grid(column=0, row=1, columnspan=7, sticky=(N, W, E, S))
-#logging_window.configure(font='TkFixedFont')
-
-# create handlers of the logging window
-#text_handler = TextHandler.TextHandler(logging_window)
-# Logging configuration
-#logging.basicConfig(format="%(message)s")  # level=logging.INFO,
-#logger = logging.getLogger()
-#logger.addHandler(text_handler)
 
 # CLADE
 clade = StringVar()
@@ -1387,9 +1299,7 @@ site53_label = ttk.Entry(gene5_frame, textvariable=s53_label, validate="all", va
 site53_label.grid(column=3, row=25, padx=5, pady=1, sticky=(W))
 
 
-
 # BUTTONS
-
 result_path_var = StringVar()
 
 # Working directory button
@@ -1407,39 +1317,7 @@ analyze_button.grid(column=2, row=0, pady=2, sticky=(W))  # columnspan=2
 abort_button = ttk.Button(wdir_frame, text="ABORT", state="normal", command=abort_freeda)  # default="active"
 abort_button.grid(column=3, row=0,  pady=2, sticky=(W))
 
-# RESULTS button
-#results_button = ttk.Button(results_labelframe, text="Results sheet", state="disabled",
-#                            command=lambda x="Results sheet": get_results(x))
-#results_button.grid(column=0, row=7, columnspan=3, sticky=(W), padx=5, pady=5)
-
-# ALIGNMENT BUTTONS
-#alignment_button1 = ttk.Button(g1_results_frame, text="Alignment", state="disabled", command=get_alignment)
-#alignment_button1.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-#alignment_button2 = ttk.Button(g2_results_frame, text="Alignment", state="disabled", command=get_results)
-#alignment_button2.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-#alignment_button3 = ttk.Button(g3_results_frame, text="Alignment", state="disabled", command=get_results)
-#alignment_button3.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-
-# PAML graph buttons
-#PAML_graph_button1 = ttk.Button(g1_results_frame, text="Residues", state="disabled", command=get_results)
-#PAML_graph_button1.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-#PAML_graph_button2 = ttk.Button(g2_results_frame, text="Residues", state="disabled", command=get_results)
-#PAML_graph_button2.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-#PAML_graph_button3 = ttk.Button(g3_results_frame, text="Residues", state="disabled", command=get_results)
-#PAML_graph_button3.grid(column=6, row=0, sticky=(W, E), padx=2, pady=5)
-
-# Structure buttons
-#structure_button1 = ttk.Button(g1_results_frame, text="Structure", state="disabled", command=get_results)
-#structure_button1.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
-#structure_button2 = ttk.Button(g2_results_frame, text="Structure", state="disabled", command=get_results)
-#structure_button2.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
-#structure_button3 = ttk.Button(g3_results_frame, text="Structure", state="disabled", command=get_results)
-#structure_button3.grid(column=7, row=0, sticky=(W, E), padx=2, pady=5)
-
-
 # LABELS
-
-#ttk.Label(results_frame, text="Results window").grid(column=0, row=0, sticky=(W))
 ttk.Label(results_labels_upper, text="nr of adapt. residues").grid(column=7, row=2, columnspan=2, sticky=(E), padx=15)
 ttk.Label(results_labels, text="Gene").grid(column=0, row=3)
 ttk.Label(results_labels, text="Pos. select.").grid(column=1, row=3)
@@ -1451,7 +1329,6 @@ ttk.Label(results_labels, text="pr < 0.9").grid(column=6, row=3)
 ttk.Label(results_labels, text="pr >= 0.9").grid(column=7, row=3)
 
 # ENTRIES
-
 # gene 1 results
 g1_results_var = StringVar()
 g1_results_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_results_var, justify='center')
@@ -1625,23 +1502,5 @@ g5_adapt_more_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_adap
 g5_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g5_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
-
-
-
-
-#ttk.Label(mainframe, text="Gene name").grid(column=0, row=11, sticky=(W))
-
-#threshold = StringVar()
-#threshold_label = ttk.Label(mainframe, textvariable=threshold).grid(column=1, row=1, sticky=(E))
-#threshold_entry = ttk.Entry(mainframe, textvariable=threshold, width=2).grid(column=1, row=1, sticky=(W))
-
-
-# make button to run the pipeline
-#button = ttk.Button(mainframe, text="Analyze", default="active", command=freeda.freeda_pipeline)
-# will execute script attached to the button when left mouse clicked
-#root.bind("<ButtonPress-1>", lambda e: button.invoke())
-
-
-#root.after(1000, freeda_pipeline)
 
 root.mainloop()

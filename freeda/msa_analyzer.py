@@ -152,7 +152,7 @@ def clone_exons_overhangs(seqs, exons):
     for exon, features in exons.items():
 
         # unpack boundary tuple
-        start, end, introny, exon_number, big_insertion = features
+        start, end, intron, exon_number, big_insertion = features
 
         # define locus sequence
         locus = seqs[2][1]
@@ -161,7 +161,7 @@ def clone_exons_overhangs(seqs, exons):
         # clone exons
         locus_exon = locus[start+prefix:end+suffix]
         gene_exon = gene[start+prefix:end+suffix]
-        cloned_exons_overhangs.append((locus_exon, gene_exon, introny, exon_number, big_insertion))
+        cloned_exons_overhangs.append((locus_exon, gene_exon, intron, exon_number, big_insertion))
 
     return cloned_exons_overhangs
 
@@ -176,25 +176,25 @@ def preselect_exons_overhangs(cloned_exons_overhangs, expected_exons, microexons
         # unpack exons and their features per contig
         contig_name, exons = contig_exons
         
-        # count each time introny changes in a locus
+        # count each time intron changes in a locus
         missing_exon_detection = 0
         intr = False
-        for exon, genomic, introny, exon_number, big_insertion in exons:
-            if introny == intr:
+        for exon, genomic, intron, exon_number, big_insertion in exons:
+            if intron == intr:
                 continue
             else:
-                intr = introny
+                intr = intron
                 missing_exon_detection += 1
                 
-        # log that possibly introny check was too strict for an exon in this contig
+        # log that possibly intron check was too strict for an exon in this contig
         if missing_exon_detection > 2:
-            message = "\n       Possible introny missed by the code in contig: %s" % contig_name
+            message = "\n       Possible intron missed by the code in contig: %s" % contig_name
             print(message)
             logging.info(message)
 
         intronic_exons.append([(final_exon_number, contig_name, exon, genomic) for
-                               exon, genomic, introny, final_exon_number, big_insertion in exons
-                               if introny is True and big_insertion is False])
+                               exon, genomic, intron, final_exon_number, big_insertion in exons
+                               if intron is True and big_insertion is False])
             
         sorted_exons = sorted([entry for entry in intronic_exons if entry != []])
 
