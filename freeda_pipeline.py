@@ -11,44 +11,14 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 """
 
-
- --------- * Prdm9 * --------- 
-
-
-Alignment score for species : >Mm = -0.8530805687203792
-...WARNING... : CDS for species : >Mm in Prdm9 gene contains a frameshift -> eliminated from alignment
-
-Alignment score for species : >Ay = -1.0793838862559242
-...WARNING... : CDS for species : >Ay in Prdm9 gene contains a frameshift -> eliminated from alignment
-
-Alignment score for species : >An = -1.0209320695102686
-...WARNING... : CDS for species : >An in Prdm9 gene contains a frameshift -> eliminated from alignment
-
-Alignment score for species : >Rs = 0.872827804107425
-Alignment score for species : >Rn = -1.032780410742496
-...WARNING... : CDS for species : >Rn in Prdm9 gene contains a frameshift -> eliminated from alignment
-
- 
- WARNING : Insertions in positions in ref MSA deleted: [1491, 1492, 1493, 1958, 3698, 3699]
- 
----- Insertions detected in Prdm9 alignment -> these bp positions were removed in all species forcing conserved alignment
-
-[]
-
-...WARNING... : Failed PAML analysis for : Prdm9 -> probably not enough species in the alignment (e.g. poor alignment of repetitive regions)
-
- --------------->  PAML analysis completed in 0.01356441577275594 minutes or 0.00022607386112213134 hours
 Traceback (most recent call last):
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 434, in <module>
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 378, in <module>
     freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 356, in freeda_pipeline
-    day, genes_under_pos_sel, failed_paml)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_visualizer.py", line 57, in analyse_PAML_results
-    get_alignment_matching_structure(result_path, ref_species, gene, all_matched_adaptive_sites_ref)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda/paml_visualizer.py", line 75, in get_alignment_matching_structure
-    aa_features_dict = dictionary[gene]
-KeyError: 'Prdm9'
+  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 310, in freeda_pipeline
+    gene, genes_under_pos_sel)
+TypeError: run_pymol() missing 1 required positional argument: 'all_genes_dict'
 
+Process finished with exit code 1
 
 
 """
@@ -370,7 +340,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Cf")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=60)
 

@@ -210,6 +210,7 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
         logging.info(message)
         with open(structure_path + "/model_incompatible.txt", "w") as f:
             f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
+        uniprot_id = None
 
         return model_seq, uniprot_id
 

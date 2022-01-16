@@ -309,7 +309,7 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
         logging.info(message)
 
     # find hamming distance for them
-    hd = hamming_distance_frameshift(ref_exon, compared_exon, exon_nr, ref_exons)
+    hd = hamming_distance_frameshift(ref_exon, compared_exon)  #  compared_exon, exon_nr, ref_exons
     message = "   Hamming distance for contig " + winner + " exon nr: %s is %s" \
         % (str(exon_nr), str(hd))
     print(message)
@@ -320,14 +320,17 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
     shutil.move(out_filename, MSA_path + "Duplicated_exons/")
 
     # if there is a frameshift and its not the last exon, reject this contig
-    if frameshift is True and exon_nr != list(ref_exons)[-1]:
-        hd_normalized = float("inf")
-        
-        return hd_normalized
-    else:
-        # normalize hd to ref species exon (prior MSA; without indels)
-        hd_normalized = hd/len(ref_exons[exon_nr][1])
-        return hd_normalized    
+    #if frameshift is True and exon_nr != list(ref_exons)[-1]:
+    #    hd_normalized = float("inf")
+    #    return hd_normalized
+    #else:
+    #    # normalize hd to ref species exon (prior MSA; without indels)
+    #    hd_normalized = hd/len(ref_exons[exon_nr][1])
+
+    #    return hd_normalized
+    hd_normalized = hd / len(ref_exons[exon_nr][1])
+
+    return hd_normalized
     
     
 def index_positions_exons(seqs):
@@ -392,7 +395,7 @@ def check_frameshift(ref_exon, compared_exon):
         return frameshift
 
 
-def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
+def hamming_distance_frameshift(p, q):  # exon_nr, ref_species_exons
     """Checks hamming distance between likely duplicated exons. Frameshifts are penalized,"""
 
     indels_p = 0
@@ -407,18 +410,18 @@ def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
             indels_q = indels_q + 1
     
     # check if the dashes are in the end of the exon (likely end of contig)
-    end_of_contig = True
-    for nt in q.values():
-        if nt == "-":
-            end_of_contig = True
-        else:
-            end_of_contig = False
+    #end_of_contig = True
+    #for nt in q.values():
+    #    if nt == "-":
+    #        end_of_contig = True
+    #    else:
+    #        end_of_contig = False
     
     # trigger highest possible hd if frameshift detected        
-    if end_of_contig is False:
-        if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(ref_species_exons.keys())[-1]:
+    #if end_of_contig is False:
+    #    if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(ref_species_exons.keys())[-1]:
             
-            return float("inf")
+    #        return float("inf")
 
     return len(mismatches)
 
@@ -710,6 +713,41 @@ def collect_sequences(path):
 
 
 """
+
+OLD with frameshift check
+
+def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
+    Checks hamming distance between likely duplicated exons. Frameshifts are penalized,
+
+    indels_p = 0
+    indels_q = 0
+    mismatches = []
+    for i in range (len(p)):
+        if p[i] != q[i]:
+            mismatches.insert(0,i)
+        if p[i] == "-":
+            indels_p = indels_p + 1
+        if q[i] == "-":
+            indels_q = indels_q + 1
+    
+    # check if the dashes are in the end of the exon (likely end of contig)
+    #end_of_contig = True
+    #for nt in q.values():
+    #    if nt == "-":
+    #        end_of_contig = True
+    #    else:
+    #        end_of_contig = False
+    
+    # trigger highest possible hd if frameshift detected        
+    #if end_of_contig is False:
+    #    if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(ref_species_exons.keys())[-1]:
+            
+    #        return float("inf")
+
+    return len(mismatches)
+
+
+
 
                         # check frameshift (DISABLED) -> allows frameshits
                         frameshift = False

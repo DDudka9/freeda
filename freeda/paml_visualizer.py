@@ -54,8 +54,10 @@ def analyse_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
         try:
             get_alignment_matching_structure(result_path, ref_species, gene, all_matched_adaptive_sites_ref)
         # if all_matched_adaptive_sites_ref dictionary was not generated (all genes failed paml)
+        # or no species in alignment (no protein alignment)
         except KeyError:
-            return
+            #return
+            continue
 
     # prepare a dict with PAML stats
     final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml)
@@ -143,8 +145,10 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
             for key, values in PAML_log_dict.items():
                 if key == "Gene name":
                     PAML_log_dict[key].append(gene)
+                #elif "p-value" in key:
+                #    PAML_log_dict[key].append("1")
                 else:
-                    PAML_log_dict[key].append("-")
+                    PAML_log_dict[key].append("NA")
 
     # extract PAML results from PAML log file
     PAML_log_path = result_path + PAML_logfile_name
@@ -180,22 +184,26 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
             if start_recording is True and line.startswith(" PAML LRTs"):
                 
                 LRT1 = line.split(":")[1].split("and")[0].split("-")
-                if LRT1[1].endswith("e") is True:
-                    M2a_vs_M1a_LRT = LRT1[1].replace(" ", "") + "-" + LRT1[2]
-                if LRT1[1].endswith("e") is False:
-                    M2a_vs_M1a_LRT = LRT1[1].replace(" ", "")
-                if M2a_vs_M1a_LRT != "1":
+                #if LRT1[1].endswith("e") is True:
+                #    M2a_vs_M1a_LRT = LRT1[1].replace(" ", "") + "-" + LRT1[2]
+                #if LRT1[1].endswith("e") is False:
+                M2a_vs_M1a_LRT = LRT1[1].replace(" ", "")
+                if LRT1[1] == "(0)":
+                    M2a_vs_M1a_LRT = "(0)"
+                if M2a_vs_M1a_LRT != "(0)":
                     M2a_vs_M1a_LRT = round(float(M2a_vs_M1a_LRT), 4)
                     if M2a_vs_M1a_LRT == 0.0:
                         M2a_vs_M1a_LRT = 0.0001
 
                 LRT2 = line.split(":")[1].split("and")[1].split("-")
                 # catch "e-" notation because it gets split
-                if LRT2[1].endswith("e") is True:
-                    M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2].rstrip("\n")
-                if LRT2[1].endswith("e") is False:
-                    M8_vs_M7_LRT = LRT2[1].replace(" ", "").rstrip("\n")
-                if M8_vs_M7_LRT != "1":
+                #if LRT2[1].endswith("e") is True:
+                #    M8_vs_M7_LRT = LRT2[1].replace(" ", "") + "-" + LRT2[2].rstrip("\n")
+                #if LRT2[1].endswith("e") is False:
+                M8_vs_M7_LRT = LRT2[1].replace(" ", "").rstrip("\n")
+                if LRT2[1] == "(0)":
+                    M8_vs_M7_LRT = "(0)"
+                if M8_vs_M7_LRT != "(0)":
                     M8_vs_M7_LRT = round(float(M8_vs_M7_LRT), 4)
                     if M8_vs_M7_LRT == 0.0:
                         M8_vs_M7_LRT = 0.0001
@@ -208,10 +216,10 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 
                 p_value1 = line.split(":")[1].split("and")[0].split("-")
                 # catch "e-" notation because it gets split
-                if p_value1[1].endswith("e") is True:
-                    M2a_vs_M1a_pvalue = p_value1[1].replace(" ", "") + "-" + p_value1[2]
-                if p_value1[1].endswith("e") is False:
-                    M2a_vs_M1a_pvalue = p_value1[1].replace(" ", "")
+                #if p_value1[1].endswith("e") is True:
+                #    M2a_vs_M1a_pvalue = p_value1[1].replace(" ", "") + "-" + p_value1[2]
+                #if p_value1[1].endswith("e") is False:
+                M2a_vs_M1a_pvalue = p_value1[1].replace(" ", "")
                 if M2a_vs_M1a_pvalue != "1":
                     M2a_vs_M1a_pvalue = round(float(M2a_vs_M1a_pvalue), 4)
                     if M2a_vs_M1a_pvalue == 0.0:
@@ -221,10 +229,10 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 
                 p_value2 = line.split(":")[1].split("and")[1].split("-")
                 # catch "e-" notation because it gets split
-                if p_value2[1].endswith("e"):
-                    M8_vs_M7_pvalue = p_value2[1].replace(" ", "") + "-" + p_value2[2].rstrip("\n")
-                if p_value2[1].endswith("e") is False:
-                    M8_vs_M7_pvalue = p_value2[1].replace(" ", "").rstrip("\n")
+                #if p_value2[1].endswith("e"):
+                #    M8_vs_M7_pvalue = p_value2[1].replace(" ", "") + "-" + p_value2[2].rstrip("\n")
+                #if p_value2[1].endswith("e") is False:
+                M8_vs_M7_pvalue = p_value2[1].replace(" ", "").rstrip("\n")
                 if M8_vs_M7_pvalue != "1":
                     M8_vs_M7_pvalue = round(float(M8_vs_M7_pvalue), 4)
                     if M8_vs_M7_pvalue == 0.0:

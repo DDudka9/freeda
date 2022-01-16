@@ -11,6 +11,15 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Hmga2 failed paml cose  exons 4 and 5 never aligned -> blocked Hmga1 from getting structure, no excel file
+#                   -> partially fixed but "0" is dangerous -> excel sheet confused -> go back to "-"
+#                   -> instead of "0" for LRT where M7 or M1a is more likely say "(0)"
+#       0) Issue with Sgo2a -> alpha fold does not have Sgo2a but Sgo2 and Sgo2b -> no solution?
+#       0) Sgo2b picked up in Mu genome cose the other allele seems not present
+#               -> clearly different than other Sgo2a sequences and closer related to Sgo2b of Mm
+#       0) General issue -> Traceback are not logged in, in case of crashing the GUI will not stop
+#                               -> confusing for user
+#                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
 #       0) Figures:
 #               1) Accuracy - Show both ways (rat and mouse)
 #                           - Show mafft vs muscle
@@ -707,35 +716,44 @@ def get_results(final_PAML_log_dict):
 
     genes = final_PAML_log_dict["Gene name"]
     lrts = final_PAML_log_dict["M8 vs M7 (LRT)"]
-    pvalues = final_PAML_log_dict["M8 vs M7 (p-value)"]
+    pvalues_m7m8 = final_PAML_log_dict["M8 vs M7 (p-value)"]
+    pvalues_m1m2 = final_PAML_log_dict["M2a vs M1a (p-value)"]
     coverage = final_PAML_log_dict["CDS Coverage"]
     species = final_PAML_log_dict["Nr of species analyzed"]
     adapt_less = final_PAML_log_dict["Sites with pr < 0.90"]
     adapt_more = final_PAML_log_dict["Sites with pr >= 0.90"]
 
     if gene_name1.get():
+
         g1_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
-        if lrt == "None":
-            g1_lrt_var.set("0")
+        if lrt == "NA":
+            g1_lrt_var.set("NA")
+        elif lrt == "(0)":
+            g1_lrt_var.set("(0)")
         else:
             g1_lrt_var.set(round(float(lrt), ndigits=4))
 
-        pvalue = pvalues.pop(0)
-        if pvalue == "None":
-            g1_pvalue_var.set("1")
-            g1_pos_sel_var.set("NO")
+        pvalue_m7m8 = pvalues_m7m8.pop(0)
+        pvalue_m1m2 = pvalues_m1m2.pop(0)
+        if pvalue_m7m8 == "NA":
+            g1_pvalue_var.set("NA")
+            g1_pos_sel_var.set("NA")
             g1_pos_sel_entry.config(foreground="black")
         else:
-            pvalue = float(pvalue)
-            if pvalue < 0.05:
-                g1_pos_sel_var.set("YES")
+            pvalue_m7m8 = float(pvalue_m7m8)
+            pvalue_m1m2 = float(pvalue_m1m2)
+            if pvalue_m7m8 < 0.05:
+                if pvalue_m1m2 < 0.05:
+                    g1_pos_sel_var.set("YES")
+                else:
+                    g1_pos_sel_var.set("(YES)")
                 g1_pos_sel_entry.config(foreground="magenta")
-            if pvalue <= 0.001:
+            if pvalue_m7m8 <= 0.001:
                 g1_pvalue_var.set("<0.001")
-            if pvalue > 0.001:
-                g1_pvalue_var.set(round(float(pvalue), ndigits=4))
-            if pvalue >= 0.05:
+            if pvalue_m7m8 > 0.001:
+                g1_pvalue_var.set(round(float(pvalue_m7m8), ndigits=4))
+            if pvalue_m7m8 >= 0.05:
                 g1_pos_sel_var.set("NO")
                 g1_pos_sel_entry.config(foreground="black")
 
@@ -756,26 +774,33 @@ def get_results(final_PAML_log_dict):
     if gene_name2.get():
         g2_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
-        if lrt == "None":
-            g2_lrt_var.set("0")
+        if lrt == "NA":
+            g2_lrt_var.set("NA")
+        elif lrt == "(0)":
+            g2_lrt_var.set("(0)")
         else:
             g2_lrt_var.set(round(float(lrt), ndigits=4))
 
-        pvalue = pvalues.pop(0)
-        if pvalue == "None":
-            g2_pvalue_var.set("1")
-            g2_pos_sel_var.set("NO")
+        pvalue_m7m8 = pvalues_m7m8.pop(0)
+        pvalue_m1m2 = pvalues_m1m2.pop(0)
+        if pvalue_m7m8 == "NA":
+            g2_pvalue_var.set("NA")
+            g2_pos_sel_var.set("NA")
             g2_pos_sel_entry.config(foreground="black")
         else:
-            pvalue = float(pvalue)
-            if pvalue < 0.05:
-                g2_pos_sel_var.set("YES")
+            pvalue_m7m8 = float(pvalue_m7m8)
+            pvalue_m1m2 = float(pvalue_m1m2)
+            if pvalue_m7m8 < 0.05:
+                if pvalue_m1m2 < 0.05:
+                    g2_pos_sel_var.set("YES")
+                else:
+                    g2_pos_sel_var.set("(YES)")
                 g2_pos_sel_entry.config(foreground="magenta")
-            if pvalue <= 0.001:
+            if pvalue_m7m8 <= 0.001:
                 g2_pvalue_var.set("<0.001")
-            if pvalue > 0.001:
-                g2_pvalue_var.set(round(float(pvalue), ndigits=4))
-            if pvalue >= 0.05:
+            if pvalue_m7m8 > 0.001:
+                g2_pvalue_var.set(round(float(pvalue_m7m8), ndigits=4))
+            if pvalue_m7m8 >= 0.05:
                 g2_pos_sel_var.set("NO")
                 g2_pos_sel_entry.config(foreground="black")
 
@@ -796,26 +821,33 @@ def get_results(final_PAML_log_dict):
     if gene_name3.get():
         g3_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
-        if lrt == "None":
-            g3_lrt_var.set("0")
+        if lrt == "NA":
+            g3_lrt_var.set("NA")
+        elif lrt == "(0)":
+            g3_lrt_var.set("(0)")
         else:
             g3_lrt_var.set(round(float(lrt), ndigits=4))
 
-        pvalue = pvalues.pop(0)
-        if pvalue == "None":
-            g3_pvalue_var.set("1")
-            g3_pos_sel_var.set("NO")
+        pvalue_m7m8 = pvalues_m7m8.pop(0)
+        pvalue_m1m2 = pvalues_m1m2.pop(0)
+        if pvalue_m7m8 == "NA":
+            g3_pvalue_var.set("NA")
+            g3_pos_sel_var.set("NA")
             g3_pos_sel_entry.config(foreground="black")
         else:
-            pvalue = float(pvalue)
-            if pvalue < 0.05:
-                g3_pos_sel_var.set("YES")
+            pvalue_m7m8 = float(pvalue_m7m8)
+            pvalue_m1m2 = float(pvalue_m1m2)
+            if pvalue_m7m8 < 0.05:
+                if pvalue_m1m2 < 0.05:
+                    g3_pos_sel_var.set("YES")
+                else:
+                    g3_pos_sel_var.set("(YES)")
                 g3_pos_sel_entry.config(foreground="magenta")
-            if pvalue <= 0.001:
+            if pvalue_m7m8 <= 0.001:
                 g3_pvalue_var.set("<0.001")
-            if pvalue > 0.001:
-                g3_pvalue_var.set(round(float(pvalue), ndigits=4))
-            if pvalue >= 0.05:
+            if pvalue_m7m8 > 0.001:
+                g3_pvalue_var.set(round(float(pvalue_m7m8), ndigits=4))
+            if pvalue_m7m8 >= 0.05:
                 g3_pos_sel_var.set("NO")
                 g3_pos_sel_entry.config(foreground="black")
 
@@ -836,26 +868,33 @@ def get_results(final_PAML_log_dict):
     if gene_name4.get():
         g4_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
-        if lrt == "None":
-            g4_lrt_var.set("0")
+        if lrt == "NA":
+            g4_lrt_var.set("NA")
+        elif lrt == "(0)":
+            g4_lrt_var.set("(0)")
         else:
             g4_lrt_var.set(round(float(lrt), ndigits=4))
 
-        pvalue = pvalues.pop(0)
-        if pvalue == "None":
-            g4_pvalue_var.set("1")
-            g4_pos_sel_var.set("NO")
+        pvalue_m7m8 = pvalues_m7m8.pop(0)
+        pvalue_m1m2 = pvalues_m1m2.pop(0)
+        if pvalue_m7m8 == "NA":
+            g4_pvalue_var.set("NA")
+            g4_pos_sel_var.set("NA")
             g4_pos_sel_entry.config(foreground="black")
         else:
-            pvalue = float(pvalue)
-            if pvalue < 0.05:
-                g4_pos_sel_var.set("YES")
+            pvalue_m7m8 = float(pvalue_m7m8)
+            pvalue_m1m2 = float(pvalue_m1m2)
+            if pvalue_m7m8 < 0.05:
+                if pvalue_m1m2 < 0.05:
+                    g4_pos_sel_var.set("YES")
+                else:
+                    g4_pos_sel_var.set("(YES)")
                 g4_pos_sel_entry.config(foreground="magenta")
-            if pvalue <= 0.001:
+            if pvalue_m7m8 <= 0.001:
                 g4_pvalue_var.set("<0.001")
-            if pvalue > 0.001:
-                g4_pvalue_var.set(round(float(pvalue), ndigits=4))
-            if pvalue >= 0.05:
+            if pvalue_m7m8 > 0.001:
+                g4_pvalue_var.set(round(float(pvalue_m7m8), ndigits=4))
+            if pvalue_m7m8 >= 0.05:
                 g4_pos_sel_var.set("NO")
                 g4_pos_sel_entry.config(foreground="black")
 
@@ -876,26 +915,33 @@ def get_results(final_PAML_log_dict):
     if gene_name5.get():
         g5_results_var.set(genes.pop(0))
         lrt = lrts.pop(0)
-        if lrt == "None":
-            g5_lrt_var.set("0")
+        if lrt == "NA":
+            g5_lrt_var.set("NA")
+        elif lrt == "(0)":
+            g5_lrt_var.set("(0)")
         else:
             g5_lrt_var.set(round(float(lrt), ndigits=4))
 
-        pvalue = pvalues.pop(0)
-        if pvalue == "None":
-            g5_pvalue_var.set("1")
-            g5_pos_sel_var.set("NO")
+        pvalue_m7m8 = pvalues_m7m8.pop(0)
+        pvalue_m1m2 = pvalues_m1m2.pop(0)
+        if pvalue_m7m8 == "NA":
+            g5_pvalue_var.set("NA")
+            g5_pos_sel_var.set("NA")
             g5_pos_sel_entry.config(foreground="black")
         else:
-            pvalue = float(pvalue)
-            if pvalue < 0.05:
-                g5_pos_sel_var.set("YES")
+            pvalue_m7m8 = float(pvalue_m7m8)
+            pvalue_m1m2 = float(pvalue_m1m2)
+            if pvalue_m7m8 < 0.05:
+                if pvalue_m1m2 < 0.05:
+                    g5_pos_sel_var.set("YES")
+                else:
+                    g5_pos_sel_var.set("(YES)")
                 g5_pos_sel_entry.config(foreground="magenta")
-            if pvalue <= 0.001:
+            if pvalue_m7m8 <= 0.001:
                 g5_pvalue_var.set("<0.001")
-            if pvalue > 0.001:
-                g5_pvalue_var.set(round(float(pvalue), ndigits=4))
-            if pvalue >= 0.05:
+            if pvalue_m7m8 > 0.001:
+                g5_pvalue_var.set(round(float(pvalue_m7m8), ndigits=4))
+            if pvalue_m7m8 >= 0.05:
                 g5_pos_sel_var.set("NO")
                 g5_pos_sel_entry.config(foreground="black")
 

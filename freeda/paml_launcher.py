@@ -610,7 +610,7 @@ def run_PAML(wdir, gene, PAML_path):
     if LRT1 is not False:
         M2a_M1a = cdf_chi2(df_M2a_M1a, LRT1)
     else:
-        LRT1 = 0
+        LRT1 = "(0)"
         M2a_M1a = 1
         message = "\n M1a model is more likely than M2a model."
         print(message)
@@ -619,14 +619,13 @@ def run_PAML(wdir, gene, PAML_path):
     if LRT2 is not False:
         M8_M7 = cdf_chi2(df_M8_M7, LRT2)
     else:
-        LRT2 = 0
+        LRT2 = "(0)"
         M8_M7 = 1
         message = "\n M7 model is more likely than M8 model."
         print(message)
         logging.info(message)
     
-    message = "\n PAML LRTs for gene %s are : M2a v M1a - %s and M8 v M7 - %s" \
-            % (gene, str(LRT1), str(LRT2))
+    message = "\n PAML LRTs for gene %s are : M2a v M1a - %s and M8 v M7 - %s" % (gene, str(LRT1), str(LRT2))
     print(message)
     logging.info(message)
     

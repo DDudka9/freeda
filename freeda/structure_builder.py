@@ -163,7 +163,7 @@ def check_structure(wdir, ref_species, gene):
         return False
 
 
-def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selection, all_genes_dict):
+def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selection, all_genes_dict=None):
     """Runs PyMOL with overlaid adaptive sites"""
 
     structures_path = wdir + "Structures"
@@ -198,7 +198,7 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selecti
 
 
 def get_pymol_script(wdir, ref_species, dictionary, gene,
-                     protein_structure_path, genes_under_positive_selection, domains, all_genes_dict):
+                     protein_structure_path, genes_under_positive_selection, domains, all_genes_dict=None):
     """Gets a PyMOL script that will be passed into PyMOL automatically"""
 
     paint_sites = False
