@@ -367,14 +367,14 @@ def check_compatibility(ref_species, gene, translated_path):
     score = mismatches/len(distant_seq_dict)
 
     if score < 0.01:
-        message = "\n...NOTE... : Cloned seq for gene %s from %s species is %s percent identical to expected " \
-                  "(indels are ommitted)" % (gene, species, 100 - (score * 100))
+        message = "\n...NOTE... : Cloned seq for gene %s from %s species is %s percent identical to that found " \
+                  "in ensembl (indels are ommitted)" % (gene, species, 100 - (score * 100))
         print(message)
         logging.info(message)
 
     if score > 0.01:
-        message = "\n...WARNING... : Cloned seq for gene %s from %s is only %s percent identical to expected " \
-                  "(indels are ommitted)" % (gene, species, 100 - (score * 100))
+        message = "\n...WARNING... : Cloned seq for gene %s from %s is only %s percent identical to that found " \
+                  "in ensembl (indels are ommitted)" % (gene, species, 100 - (score * 100))
         print(message)
         logging.info(message)
 

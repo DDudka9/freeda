@@ -11,12 +11,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
-#       0) Hmga2 failed paml cose  exons 4 and 5 never aligned -> blocked Hmga1 from getting structure, no excel file
-#                   -> partially fixed but "0" is dangerous -> excel sheet confused -> go back to "-"
-#                   -> instead of "0" for LRT where M7 or M1a is more likely say "(0)"
-#       0) Issue with Sgo2a -> alpha fold does not have Sgo2a but Sgo2 and Sgo2b -> no solution?
-#       0) Sgo2b picked up in Mu genome cose the other allele seems not present
-#               -> clearly different than other Sgo2a sequences and closer related to Sgo2b of Mm
+#       0) Change pr >= 0.9 residues to black if 0
+#       0) Make a file from the list of genomes -> will allow users to add more genomes are more is being sequenced
+#       0) Similar to Cenpn, terf2 rat is only 92% similar to ensembl but 100% identical to uniprot predited sequence
+#                   -> disable the check in the final freeda verison
 #       0) General issue -> Traceback are not logged in, in case of crashing the GUI will not stop
 #                               -> confusing for user
 #                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
@@ -31,36 +29,16 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                           - Show dealing with microexons (Cenpx)
 #                           - Show dealing with premature STOP (Haus...)
 #                           - Show dealing with uncalled bases (Mug1 Caroli contig FMAL02029158.1__rev)
-#       0) Mug1 Spicilegus has 36 exons and many hits -> runs finally with a 90 threshold and many exons are missing
-#               -> allow more matches than 40? Issue might be that duplications will be picked up more easily
-#               -> run Ttk kinase on higher matches available -> OK, went fast, 17 genomes in 45min
-#               -> compare Mug1 exons got from caroli / pahari or rat to exons of Mug2 in these species
-#                       -> Spicilegus Mug1 and Mug2 picked the same contig unfortunately,
-#                                       hamming distance was marginally different
-#               -> run Mug1 and Mug2 with 30kb margins to comapre with 200kb
-#               -> number of matches allowed dependent on number of exons?
-#               -> Mug1 200 matches limit 20000 margins recovered most likely the correct Mug1 Rn
-#       0) Add a large protein feature -> E.g. Mug1 1500aa -> max 100 matches
 #       0) Use debugger to go through the matches_processor module and make sure docstrings are correct
 #       0) Double check all the assemblies (I swapped white faced saki in order)
 #       1) Add a test -> if Data folder doesnt have a specific file -> run test on primates CENPX or ask user to do it?
 #       2) Talk to Mike about who to ask concering licenses
-#       3) Fix nomenclature -> "intronic"
+#       3) Fix nomenclature -> "intronic" -> DONE
 #                           -> "gene/gene_name" -> gene_name -> DONE
 #                           -> "None" is not the best info for M2a etc tests in PAML excel file -> 0 (zero)
-#                                   -> DONE (test!)
+#                                   -> DONE (testing...)
 #                           -> eliminate aligner option (at the end when figure is done)
 #                           -> fill out missing docstrings
-#       6) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
-#                  -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8 -> not anymore
-#                   -> decided to stick to M7 and M8 with caveat that they can produce false positives
-#                           (Berlin and Smith BMC Ecology and Evolution 2005)
-#                           -> recommend checking M1a vs M2a test as well as its conservative
-#                                   -> positive in both is most likely positive
-#       7) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
-#          SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
-#                       -> I deactivated frameshifts functions in cds cloner module (FOR BOTH NORMAL AND HD RUNS)
-#                               -> test using Oip5, Cdk5rap2, Sgo2b, Haus2, Clasp1, Aspm
 #      12) Use Hyland et al. 2021 Gen Biol Evol for testing -> TRIP gene in mammals
 
 from freeda import input_extractor
@@ -768,8 +746,11 @@ def get_results(final_PAML_log_dict):
         adapt_more_number = adapt_more.pop(0).split(" ")[0]
         if adapt_more_number == "Not":
             adapt_more_number = 0
+            g1_adapt_more_entry.config(foreground="black")
+        else:
+            g1_adapt_more_entry.config(foreground="magenta")
         g1_adapt_more_var.set(adapt_more_number)
-        g1_adapt_more_entry.config(foreground="magenta")
+
 
     if gene_name2.get():
         g2_results_var.set(genes.pop(0))
@@ -815,8 +796,10 @@ def get_results(final_PAML_log_dict):
         adapt_more_number = adapt_more.pop(0).split(" ")[0]
         if adapt_more_number == "Not":
             adapt_more_number = 0
+            g2_adapt_more_entry.config(foreground="black")
+        else:
+            g2_adapt_more_entry.config(foreground="magenta")
         g2_adapt_more_var.set(adapt_more_number)
-        g2_adapt_more_entry.config(foreground="magenta")
 
     if gene_name3.get():
         g3_results_var.set(genes.pop(0))
@@ -862,8 +845,10 @@ def get_results(final_PAML_log_dict):
         adapt_more_number = adapt_more.pop(0).split(" ")[0]
         if adapt_more_number == "Not":
             adapt_more_number = 0
+            g3_adapt_more_entry.config(foreground="black")
+        else:
+            g3_adapt_more_entry.config(foreground="magenta")
         g3_adapt_more_var.set(adapt_more_number)
-        g3_adapt_more_entry.config(foreground="magenta")
 
     if gene_name4.get():
         g4_results_var.set(genes.pop(0))
@@ -909,8 +894,10 @@ def get_results(final_PAML_log_dict):
         adapt_more_number = adapt_more.pop(0).split(" ")[0]
         if adapt_more_number == "Not":
             adapt_more_number = 0
+            g4_adapt_more_entry.config(foreground="black")
+        else:
+            g4_adapt_more_entry.config(foreground="magenta")
         g4_adapt_more_var.set(adapt_more_number)
-        g4_adapt_more_entry.config(foreground="magenta")
 
     if gene_name5.get():
         g5_results_var.set(genes.pop(0))
@@ -956,8 +943,10 @@ def get_results(final_PAML_log_dict):
         adapt_more_number = adapt_more.pop(0).split(" ")[0]
         if adapt_more_number == "Not":
             adapt_more_number = 0
+            g5_adapt_more_entry.config(foreground="black")
+        else:
+            g5_adapt_more_entry.config(foreground="magenta")
         g5_adapt_more_var.set(adapt_more_number)
-        g5_adapt_more_entry.config(foreground="magenta")
 
 
 # set up the main window

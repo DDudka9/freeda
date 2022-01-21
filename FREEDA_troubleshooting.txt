@@ -926,3 +926,43 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 #                       -> it did rescue the matches (all in one contig)
 #           -> DOUBLE CHEKED -> it seems I was wrong, order is right -> but exons wouldnt align cose of
 #           the size of the contig, which explains why 200kb margin allows normal alignment
+
+#       0)  Double check if indels are omitted indeed in the translated cds check from opposing species
+#               -> in theory yes but Cenpn shows 93.5% similarity to expected rat
+#                           -> but blast to uniprot shows that these are indels! -> use debug to check alignment
+#                               -> ITS OK -> expected Cenpn in rat from ensembl are variable; freeda Cenpn rat
+#                                                                   is identical to uniprot expected sequence
+
+#       0) Hmga2 failed paml cose  exons 4 and 5 never aligned -> blocked Hmga1 from getting structure, no excel file
+#                   -> partially fixed but "0" is dangerous -> excel sheet confused -> go back to "-"
+#                   -> instead of "0" for LRT where M7 or M1a is more likely say "(0)"
+#                           -> FIXED
+
+#       0) Issue with Sgo2a -> alpha fold does not have Sgo2a but Sgo2 and Sgo2b -> no solution
+
+#       0) Sgo2b picked up in Mu genome cose the other allele seems not present
+#               -> clearly different than other Sgo2a sequences and closer related to Sgo2b of Mm
+#                       -> not possible to distinguish
+
+#       0) Mug1 Spicilegus has 36 exons and many hits -> runs finally with a 90 threshold and many exons are missing
+#               -> allow more matches than 40? Issue might be that duplications will be picked up more easily
+#               -> run Ttk kinase on higher matches available -> OK, went fast, 17 genomes in 45min
+#               -> compare Mug1 exons got from caroli / pahari or rat to exons of Mug2 in these species
+#                       -> Spicilegus Mug1 and Mug2 picked the same contig unfortunately,
+#                                       hamming distance was marginally different
+#               -> run Mug1 and Mug2 with 30kb margins to comapre with 200kb -> 200kb used in final
+#               -> number of matches allowed dependent on number of exons -> settled for fixed threshold of 100
+#               -> Mug1 200 matches limit 20000 margins recovered most likely the correct Mug1 Rn
+
+#       6) ESSENTIAL -> what to call adaptively evolving? -> both M1a vs M2a and M7 vs M8 should be < 0.05 ?
+#                  -> e.g. Cxxc1 is unlinkely rapidly evolving but it scores in M7 vs M8 -> not anymore
+#                   -> decided to stick to M7 and M8 with caveat that they can produce false positives
+#                           (Berlin and Smith BMC Ecology and Evolution 2005)
+#                           -> recommend checking M1a vs M2a test as well as its conservative
+#                                   -> positive in both is most likely positive
+
+#       7) ESSENTIAL -> Sgo2b has a frameshift deletion in exon 6 -> freeda makes it inf and takes Sgo2a as true Sgo2b
+#          SOLUTION : Deactivate frameshift check? Sometimes frameshifts might be real
+#                       -> I deactivated frameshifts functions in cds cloner module (FOR BOTH NORMAL AND HD RUNS)
+#                               -> test using Oip5, Cdk5rap2, Sgo2b, Haus2, Clasp1, Aspm
+#                                   -> seems that frameshift check not necessary to pick up correct sequences
