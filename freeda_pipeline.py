@@ -109,7 +109,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
 
     # get all species and genome names
-    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(ref_species, ref_genome=False)]
+    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)]
 
     #all_species = [names[0] for names in all_names]
     #all_genome_names = [names[1] for names in all_names]

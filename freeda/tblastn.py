@@ -38,7 +38,7 @@ def run_blast(wdir, ref_species, all_genes):
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means " \
            "bitscore length means pident means mismatch means gapopen means qlen means slen means"
 
-    all_genomes = genomes_preprocessing.get_names(ref_species)
+    all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
     genomes = [names[1] for names in all_genomes]
 
     # clear Blast_output folder
@@ -48,7 +48,7 @@ def run_blast(wdir, ref_species, all_genes):
 
     # make sure database for each genome already exists or is successfully built
     for genome in genomes:
-        genome_file_database = check_genome_present(ref_species, database_path, genome, ref_genome=False)
+        genome_file_database = check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False)
         # failed to build database
         if genome_file_database is False:
             return None
@@ -71,7 +71,7 @@ def run_blast(wdir, ref_species, all_genes):
     return
 
 
-def check_genome_present(ref_species, database_path, genome, ref_genome=False):
+def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False):
     """Checks if a given genome is present. Unpacks and unzips genomes downloaded from NCBI Assembly.
     Non-ncbi assemblies must be prepared as ".fasta" files conform with "genomes.txt" names.
     It also looks for reference genome if key-only argument reference_genome is invoked."""
@@ -150,7 +150,7 @@ def check_genome_present(ref_species, database_path, genome, ref_genome=False):
         #print("\nGenome : %s blast database does not exists"
         #      " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome)
 
-        all_genomes = genomes_preprocessing.get_names(ref_species)
+        all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
         accession_nr = [names[2] for names in all_genomes if genome in names][0]
         # download genome
         download_genome(genome, accession_nr, database_path)
@@ -241,7 +241,7 @@ def check_genome_present(ref_species, database_path, genome, ref_genome=False):
 
             # unpack and decompress the genome into a fasta file
             #genome_to_unzip = ref_genome_path + "/" + genome + "zip"
-            all_genomes = genomes_preprocessing.get_names(ref_species, ref_genome=True)
+            all_genomes = genomes_preprocessing.get_names(wdir, ref_species, ref_genome=True)
             accession_nr = all_genomes[2]
             # download genome
             download_genome(genome, accession_nr, ref_genome_path)

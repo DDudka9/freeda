@@ -11,13 +11,29 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
-#       0) Change pr >= 0.9 residues to black if 0
+#       0) Consider PAML FAQ forum
+#       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
+#                                       : "A beginners guide to estimating the non-synonymous to
+#                                                 synonymous rate ratio of all protein-coding genes in a genome"
+#       0) Program to make "denovo codon-based nucleotide alignment" when protein-coding sequences are unreliable or absent":
+#                   -> MACSE "Ranwez et al., 2011 PLoS One"
+#       0) Jeffares et al., 2015 Methods Mol Biol A beginners guide to estimating the non-synonymous to
+#               synonymous rate ratio of all protein-coding genes in a genome
+#                           -> indentity of 70% produces reliable alignments
+#       0) Lccr37a -> leucine rich repetitive protein -> example of protein FREEDA cannot analyse
+#       0) Get rid of the "another intron interpheres with introny check" for clarity
+#       0) Consider showing only 0.95 adaptive sites on structure if more than 20 sites
+#                       or only 0.99 when more than 50 sites -> not sure
+#       0) Either disable the interpro domains or restrict them even more (too overlapping) -> not sure
+#       0) Change pr >= 0.9 residues to black if 0 -> DONE
 #       0) Make a file from the list of genomes -> will allow users to add more genomes are more is being sequenced
+#                   -> DONE
 #       0) Similar to Cenpn, terf2 rat is only 92% similar to ensembl but 100% identical to uniprot predited sequence
 #                   -> disable the check in the final freeda verison
 #       0) General issue -> Traceback are not logged in, in case of crashing the GUI will not stop
 #                               -> confusing for user
 #                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
+#                           -> tried to add it as a try/except statement -> doesnt work
 #       0) Figures:
 #               1) Accuracy - Show both ways (rat and mouse)
 #                           - Show mafft vs muscle
@@ -31,7 +47,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                           - Show dealing with uncalled bases (Mug1 Caroli contig FMAL02029158.1__rev)
 #       0) Use debugger to go through the matches_processor module and make sure docstrings are correct
 #       0) Double check all the assemblies (I swapped white faced saki in order)
-#       1) Add a test -> if Data folder doesnt have a specific file -> run test on primates CENPX or ask user to do it?
 #       2) Talk to Mike about who to ask concering licenses
 #       3) Fix nomenclature -> "intronic" -> DONE
 #                           -> "gene/gene_name" -> gene_name -> DONE
@@ -65,8 +80,9 @@ def thread_freeda():
     """Runs freeda main function in another thread"""
 
     if check_input():
+
         freeda_thread = threading.Thread(target=freeda_pipeline)
-        # makes a deamon thread allowing it to be killed anytime (though not advised generally)
+        # makes a daemon thread allowing it to be killed anytime (though not advised generally)
         freeda_thread.daemon = True
         freeda_thread.start()
         block_user_entries()
@@ -505,7 +521,7 @@ def freeda_pipeline():
     aligner = "mafft"
 
     # get all species and genome names
-    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(ref_species, ref_genome=False)]
+    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)]
 
     # ----------------------------------------#
     ######## GET ALL INPUT DATA  ########
@@ -747,6 +763,8 @@ def get_results(final_PAML_log_dict):
         if adapt_more_number == "Not":
             adapt_more_number = 0
             g1_adapt_more_entry.config(foreground="black")
+        elif adapt_more_number == "NA":
+            g1_adapt_more_entry.config(foreground="black")
         else:
             g1_adapt_more_entry.config(foreground="magenta")
         g1_adapt_more_var.set(adapt_more_number)
@@ -797,6 +815,8 @@ def get_results(final_PAML_log_dict):
         if adapt_more_number == "Not":
             adapt_more_number = 0
             g2_adapt_more_entry.config(foreground="black")
+        elif adapt_more_number == "NA":
+            g2_adapt_more_entry.config(foreground="black")
         else:
             g2_adapt_more_entry.config(foreground="magenta")
         g2_adapt_more_var.set(adapt_more_number)
@@ -845,6 +865,8 @@ def get_results(final_PAML_log_dict):
         adapt_more_number = adapt_more.pop(0).split(" ")[0]
         if adapt_more_number == "Not":
             adapt_more_number = 0
+            g3_adapt_more_entry.config(foreground="black")
+        elif adapt_more_number == "NA":
             g3_adapt_more_entry.config(foreground="black")
         else:
             g3_adapt_more_entry.config(foreground="magenta")
@@ -895,6 +917,8 @@ def get_results(final_PAML_log_dict):
         if adapt_more_number == "Not":
             adapt_more_number = 0
             g4_adapt_more_entry.config(foreground="black")
+        elif adapt_more_number == "NA":
+            g4_adapt_more_entry.config(foreground="black")
         else:
             g4_adapt_more_entry.config(foreground="magenta")
         g4_adapt_more_var.set(adapt_more_number)
@@ -943,6 +967,8 @@ def get_results(final_PAML_log_dict):
         adapt_more_number = adapt_more.pop(0).split(" ")[0]
         if adapt_more_number == "Not":
             adapt_more_number = 0
+            g5_adapt_more_entry.config(foreground="black")
+        elif adapt_more_number == "NA":
             g5_adapt_more_entry.config(foreground="black")
         else:
             g5_adapt_more_entry.config(foreground="magenta")
@@ -1539,3 +1565,4 @@ g5_adapt_more_entry.config(foreground="black")  # text will be black despite dis
 
 
 root.mainloop()
+

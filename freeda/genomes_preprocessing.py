@@ -6,6 +6,10 @@ Created on Mon Jul 19 20:57:13 2021
 @author: damian
 """
 
+from json import dumps
+from ast import literal_eval
+import os
+
 
 def get_ref_genome_contigs_dict(ref_species):
     """Returns a dictionary of contigs in Genome object (ensembl 104; GRCm39) as keys and
@@ -2092,7 +2096,7 @@ def get_ref_genome_contigs_dict(ref_species):
     return ref_genome_contigs_dict
 
 
-def get_names(ref_species, ref_genome=False):
+def get_names(wdir, ref_species, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
 
     mouse_dict = {"Mm": (("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
@@ -2204,32 +2208,89 @@ def get_names(ref_species, ref_genome=False):
     dog_ref_dict = {"Cf": (("Cf", "FAMILIARIS_genome", "GCF_000002285.3"))}  # CanFam3.1
     chicken_ref_dict = {"Gg": (("Gg", "GALLUS_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0
 
-    if ref_species == "Mm" and ref_genome is False:
-        genomes_dict = mouse_dict
-    elif ref_species == "Mm" and ref_genome is True:
-        genomes_dict = mouse_ref_dict
-    elif ref_species == "Rn" and ref_genome is False:
-        genomes_dict = rat_dict
-    elif ref_species == "Rn" and ref_genome is True:
-        genomes_dict = rat_ref_dict
-    elif ref_species == "Hs" and ref_genome is False:
-        genomes_dict = human_dict
-    elif ref_species == "Hs" and ref_genome is True:
-        genomes_dict = human_ref_dict
-    elif ref_species == "Fc" and ref_genome is False:
-        genomes_dict = carnivora_cat_dict
-    elif ref_species == "Fc" and ref_genome is True:
-        genomes_dict = cat_ref_dict
-    elif ref_species == "Cf" and ref_genome is False:
-        genomes_dict = carnivora_dog_dict
-    elif ref_species == "Cf" and ref_genome is True:
-        genomes_dict = dog_ref_dict
-    elif ref_species == "Gg" and ref_genome is False:
-        genomes_dict = phasianidae_dict
-    elif ref_species == "Gg" and ref_genome is True:
-        genomes_dict = chicken_ref_dict
-    else:
-        print("Something went wrong")
+    #if ref_species == "Mm" and ref_genome is False:
+    #    genomes_dict = mouse_dict
+    #elif ref_species == "Mm" and ref_genome is True:
+    #    genomes_dict = mouse_ref_dict
+    #elif ref_species == "Rn" and ref_genome is False:
+    #    genomes_dict = rat_dict
+    #elif ref_species == "Rn" and ref_genome is True:
+    #    genomes_dict = rat_ref_dict
+    #elif ref_species == "Hs" and ref_genome is False:
+    #    genomes_dict = human_dict
+    #elif ref_species == "Hs" and ref_genome is True:
+    #    genomes_dict = human_ref_dict
+    #elif ref_species == "Fc" and ref_genome is False:
+    #    genomes_dict = carnivora_cat_dict
+    #elif ref_species == "Fc" and ref_genome is True:
+    #    genomes_dict = cat_ref_dict
+    #elif ref_species == "Cf" and ref_genome is False:
+    #    genomes_dict = carnivora_dog_dict
+    #elif ref_species == "Cf" and ref_genome is True:
+    #    genomes_dict = dog_ref_dict
+    #elif ref_species == "Gg" and ref_genome is False:
+    #    genomes_dict = phasianidae_dict
+    #elif ref_species == "Gg" and ref_genome is True:
+    #    genomes_dict = chicken_ref_dict
+    #else:
+    #    print("Something went wrong")
+
+    # function used by main to get genomes for analysis
+    if ref_genome is False:
+
+        if ref_species == "Mm":
+            dict_filename = "murinae_genomes.txt"
+        elif ref_species == "Rn":
+            dict_filename = "murinae_genomes_check.txt"
+        elif ref_species == "Hs":
+            dict_filename = "primates_genomes.txt"
+        elif ref_species == "Cf":
+            dict_filename = "carnivores_genomes.txt"
+        elif ref_species == "Fc":
+            dict_filename = "carnivores_genomes_check.txt"
+        elif ref_species == "Gg":
+            dict_filename = "phasanidae_genomes.txt"
+
+        # get genomes from variables
+        if not os.path.isfile(wdir + dict_filename):
+
+            if ref_species == "Mm":
+                genomes_dict = mouse_dict
+            elif ref_species == "Rn":
+                genomes_dict = rat_dict
+            elif ref_species == "Hs":
+                genomes_dict = human_dict
+            elif ref_species == "Fc":
+                genomes_dict = carnivora_cat_dict
+            elif ref_species == "Cf":
+                genomes_dict = carnivora_dog_dict
+            elif ref_species == "Gg":
+                genomes_dict = phasianidae_dict
+
+            with open(wdir + dict_filename, 'w') as f:
+                f.write(dumps(genomes_dict))
+
+        # get genomes from file
+        else:
+
+            with open(wdir + dict_filename, "r") as f:
+                genomes_dict = literal_eval(f.read())
+
+    # function used by input extractor module to get reference genome
+    if ref_genome is True:
+
+        if ref_species == "Mm":
+            genomes_dict = mouse_ref_dict
+        elif ref_species == "Rn":
+            genomes_dict = rat_ref_dict
+        elif ref_species == "Hs":
+            genomes_dict = human_ref_dict
+        elif ref_species == "Fc":
+            genomes_dict = cat_ref_dict
+        elif ref_species == "Cf":
+            genomes_dict = dog_ref_dict
+        elif ref_species == "Gg":
+            genomes_dict = chicken_ref_dict
 
     # collect genomes
     all_genomes = []
