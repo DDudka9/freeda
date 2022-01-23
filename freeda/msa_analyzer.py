@@ -227,11 +227,11 @@ def find_contigs_with_most_intronic_exons(preselected_exons_overhangs):
     return most_intronic_contigs
 
 
-def find_species_abbreviation(ref_species, gene, genome_name, cloned_cds, MSA_path):
+def find_species_abbreviation(wdir, ref_species, gene, genome_name, cloned_cds, MSA_path):
     """Finds species abbreviation."""
 
     # get all genome names and genomes dict with species abbreviations as keys
-    all_genomes = genomes_preprocessing.get_names(ref_species, ref_genome=False)
+    all_genomes = genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)
 
     # refactoring in progress...
     header = [name[0] for name in all_genomes if name[1] == genome_name][0]

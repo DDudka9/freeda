@@ -66,7 +66,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
     logging.info("\n\n======================== PAML ANALYSIS ========================")
 
     # make an empty template for all possible species
-    all_species = [names[0] for names in genomes_preprocessing.get_names(ref_species)]
+    all_species = [names[0] for names in genomes_preprocessing.get_names(wdir, ref_species)]
 
     all_species_dict = {ref_species: ""}
     for species in all_species:
