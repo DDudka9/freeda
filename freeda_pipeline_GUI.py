@@ -615,7 +615,7 @@ def freeda_pipeline():
     # visualize PAML result
     final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
                                                                nr_of_species_total_dict, ref_species, PAML_logfile_name,
-                                                               day, genes_under_pos_sel, failed_paml)
+                                                               day, genes_under_pos_sel, failed_paml, gui)
     # in case PAML failed and dict wasnt created
     if final_PAML_log_dict:
         get_results(final_PAML_log_dict)

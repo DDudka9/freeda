@@ -27,7 +27,7 @@ import math
 
 
 def analyse_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
-                         ref_species, PAML_logfile_name, day, genes_under_positive_selection, failed_paml):
+                         ref_species, PAML_logfile_name, day, genes_under_positive_selection, failed_paml, gui=False):
     """Analyses PAML results for each gene unless no PAML result available"""
 
     all_matched_adaptive_sites_ref = {}
@@ -46,7 +46,7 @@ def analyse_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
                 nr_of_species_total = nr_of_species_total_dict[gene]
                 matched_adaptive_sites_ref = plot_PAML(wdir, result_path, gene,
                                                    nr_of_species_total, ref_species,
-                                                   genes_under_positive_selection)
+                                                   genes_under_positive_selection, gui)
                 all_matched_adaptive_sites_ref[gene] = matched_adaptive_sites_ref
 
     # get protein alignment that matches 3D structure
@@ -360,7 +360,7 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
     shutil.move(wdir + excel_filename, result_path)
 
 
-def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_positive_selection):
+def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_positive_selection, gui):
     """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
     
     # get ref and final aa sequence for a gene
@@ -382,7 +382,7 @@ def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_u
     record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection)
     # plot omegas and probabilities
     make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
-                nr_of_species_total, genes_under_positive_selection)
+                nr_of_species_total, genes_under_positive_selection, gui)
 
     return matched_adaptive_sites_ref
 
@@ -802,7 +802,7 @@ def get_adaptive_sites(result_path, gene):
 
 
 def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_species_total,
-                genes_under_positive_selection):
+                genes_under_positive_selection, gui):
     """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites
     under positive selection"""
 
@@ -846,8 +846,11 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
             else:
                 probabilities[i] = 0
 
-    # set the backend to a non-interactive one -> does not create and destroys GUI windows
-    use('agg')
+
+    if gui:
+        # set the backend to a non-interactive one -> does not create and destroys GUI windows
+        use('agg')
+
     plt.figure()
 
     if ref_species == "Mm" or ref_species == "Rn":
