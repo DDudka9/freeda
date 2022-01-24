@@ -11,6 +11,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Use PosiGene paper for comparison with other programs
+#       0) Users should also be able to visualize alignment -> can I ask them to download Ugene?
 #       0) Consider PAML FAQ forum
 #       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
 #                                       : "A beginners guide to estimating the non-synonymous to

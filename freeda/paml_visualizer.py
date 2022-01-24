@@ -242,8 +242,8 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                     
                 # does not report adaptive sites in genes failing M8 vs M7 test
                 if float(M8_vs_M7_pvalue) >= 0.05:
-                    PAML_log_dict["Sites with pr < 0.90"].append("Not likely")
-                    PAML_log_dict["Sites with pr >= 0.90"].append("Not likely")
+                    PAML_log_dict["Sites with pr < 0.90"].append("Not allowed")
+                    PAML_log_dict["Sites with pr >= 0.90"].append("Not allowed")
                 
                 # remove adaptive sites from genes that are not rapidly evolving
                 if float(M8_vs_M7_pvalue) <= 0.05:
