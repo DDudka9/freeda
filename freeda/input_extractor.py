@@ -20,7 +20,7 @@ import logging
 
 # PYINSTALLER: Check if bedtools is on the path. If not, set the bedtools path to included directory.
 try:
-    pybedtools.helpers._check_bedtools_path(force_check=True)
+    pybedtools.check_for_bedtools(force_check=True)
 except OSError:
     bedtools_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "bedtools", "bin")
     pybedtools.helpers.set_bedtools_path(bedtools_path)
