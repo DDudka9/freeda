@@ -18,6 +18,16 @@ import subprocess
 import shutil
 import logging
 
+# PYINSTALLER: Check if bedtools is on the path. If not, set the bedtools path to included directory.
+try:
+    pybedtools.helpers._check_bedtools_path(force_check=True)
+except OSError:
+    bedtools_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "bedtools", "bin")
+    pybedtools.helpers.set_bedtools_path(bedtools_path)
+    print(f"BEDTools not found in path. Using included version from {bedtools_path}")
+else:
+    print("Using BEDTools found in path.")
+
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
          "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}

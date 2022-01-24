@@ -86,7 +86,7 @@ def analyse_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expec
     final_cds = cloned_cds.replace("N", "")
     
     # write a given gene cds into a file
-    species_name = find_species_abbreviation(ref_species, gene, genome_name, final_cds, MSA_path)
+    species_name = find_species_abbreviation(wdir, ref_species, gene, genome_name, final_cds, MSA_path)
     file_cloned_cds(final_cds, gene, species_name)
 
 
