@@ -11,6 +11,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Test the command line agg workaround
 #       0) Use PosiGene paper for comparison with other programs
 #       0) Users should also be able to visualize alignment -> can I ask them to download Ugene?
 #       0) Consider PAML FAQ forum
@@ -460,197 +461,205 @@ def clear_results():
 def freeda_pipeline():
     """Main function running all freeda pipeline"""
 
-    # use of the pipeline from GUI
-    gui = True
+    # main function is enclosed in a try/except to avoid frozen GUI
+    try:
 
-    # deactivate the analyse button
-    analyze_button["state"] = "disable"
+        # use of the pipeline from GUI
+        gui = True
 
-    # get user input
-    wdir = wdirectory.get() + "/"
-    ref_species = clade.get()
-    t = 60
-    all_genes_dict = {gene_name1.get(): [dup1_var.get(),
-                                    [site11_label.get(), site11_start.get(), site11_end.get()],
-                                    [site12_label.get(), site12_start.get(), site12_end.get()],
-                                    [site13_label.get(), site13_start.get(), site13_end.get()]],
-                         gene_name2.get(): [dup2_var.get(),
-                                    [site21_label.get(), site21_start.get(), site21_end.get()],
-                                    [site22_label.get(), site22_start.get(), site22_end.get()],
-                                    [site23_label.get(), site23_start.get(), site23_end.get()]],
-                         gene_name3.get(): [dup3_var.get(),
-                                    [site31_label.get(), site31_start.get(), site31_end.get()],
-                                    [site32_label.get(), site32_start.get(), site32_end.get()],
-                                    [site33_label.get(), site33_start.get(), site33_end.get()]],
-                         gene_name4.get(): [dup4_var.get(),
-                                    [site41_label.get(), site41_start.get(), site41_end.get()],
-                                    [site42_label.get(), site42_start.get(), site42_end.get()],
-                                    [site43_label.get(), site43_start.get(), site43_end.get()]],
-                         gene_name5.get(): [dup5_var.get(),
-                                    [site51_label.get(), site51_start.get(), site51_end.get()],
-                                    [site52_label.get(), site52_start.get(), site52_end.get()],
-                                    [site53_label.get(), site53_start.get(), site53_end.get()]]}
-    # get a list of genes
-    all_genes = [gene for gene in all_genes_dict if gene != ""]
+        # deactivate the analyse button
+        analyze_button["state"] = "disable"
 
-    global logging_window
+        # get user input
+        wdir = wdirectory.get() + "/"
+        ref_species = clade.get()
+        t = 60
+        all_genes_dict = {gene_name1.get(): [dup1_var.get(),
+                                        [site11_label.get(), site11_start.get(), site11_end.get()],
+                                        [site12_label.get(), site12_start.get(), site12_end.get()],
+                                        [site13_label.get(), site13_start.get(), site13_end.get()]],
+                             gene_name2.get(): [dup2_var.get(),
+                                        [site21_label.get(), site21_start.get(), site21_end.get()],
+                                        [site22_label.get(), site22_start.get(), site22_end.get()],
+                                        [site23_label.get(), site23_start.get(), site23_end.get()]],
+                             gene_name3.get(): [dup3_var.get(),
+                                        [site31_label.get(), site31_start.get(), site31_end.get()],
+                                        [site32_label.get(), site32_start.get(), site32_end.get()],
+                                        [site33_label.get(), site33_start.get(), site33_end.get()]],
+                             gene_name4.get(): [dup4_var.get(),
+                                        [site41_label.get(), site41_start.get(), site41_end.get()],
+                                        [site42_label.get(), site42_start.get(), site42_end.get()],
+                                        [site43_label.get(), site43_start.get(), site43_end.get()]],
+                             gene_name5.get(): [dup5_var.get(),
+                                        [site51_label.get(), site51_start.get(), site51_end.get()],
+                                        [site52_label.get(), site52_start.get(), site52_end.get()],
+                                        [site53_label.get(), site53_start.get(), site53_end.get()]]}
+        # get a list of genes
+        all_genes = [gene for gene in all_genes_dict if gene != ""]
 
-    # LOGGER
-    logging_label = ttk.Label(logging_frame, text="Events window (logged to 'FREEDA*.log' and 'PAML*.log')")
-    logging_label.grid(column=0, row=0, columnspan=4, sticky=(W))
-    logging_window = ScrolledText.ScrolledText(logging_frame, state="disabled", wrap="none")
-    logging_window.grid(column=0, row=1, columnspan=7, sticky=(N, W, E, S))
-    logging_window.configure(font='TkFixedFont')
+        global logging_window
 
-    # create handlers of the logging window
-    text_handler = TextHandler.TextHandler(logging_window)
-    # Logging configuration
-    logging.basicConfig(format="%(message)s")  # level=logging.INFO,
-    logger = logging.getLogger()
-    logger.addHandler(text_handler)
+        # LOGGER
+        logging_label = ttk.Label(logging_frame, text="Events window (logged to 'FREEDA*.log' and 'PAML*.log')")
+        logging_label.grid(column=0, row=0, columnspan=4, sticky=(W))
+        logging_window = ScrolledText.ScrolledText(logging_frame, state="disabled", wrap="none")
+        logging_window.grid(column=0, row=1, columnspan=7, sticky=(N, W, E, S))
+        logging_window.configure(font='TkFixedFont')
 
-    # change working directory to user indicated
-    os.chdir(wdir)
+        # create handlers of the logging window
+        text_handler = TextHandler.TextHandler(logging_window)
+        # Logging configuration
+        logging.basicConfig(format="%(message)s")  # level=logging.INFO,
+        logger = logging.getLogger()
+        logger.addHandler(text_handler)
 
-    # ----------------------------------------#
-    ######## GET USER INPUT ########
-    # ----------------------------------------#
+        # change working directory to user indicated
+        os.chdir(wdir)
 
-    # generate basic folders for input if not present
-    folder_generator.generate_basic_folders(wdir)
+        # ----------------------------------------#
+        ######## GET USER INPUT ########
+        # ----------------------------------------#
 
-    # get settings
-    aligner = "mafft"
+        # generate basic folders for input if not present
+        folder_generator.generate_basic_folders(wdir)
 
-    # get all species and genome names
-    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)]
+        # get settings
+        aligner = "mafft"
 
-    # ----------------------------------------#
-    ######## GET ALL INPUT DATA  ########
-    # ----------------------------------------#
+        # get all species and genome names
+        all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)]
 
-    # generate a reference Genome object
-    ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
-        biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
+        # ----------------------------------------#
+        ######## GET ALL INPUT DATA  ########
+        # ----------------------------------------#
 
-    if not input_extractor.validate_gene_names(all_genes, all_genes_ensembl):
-        ublock_user_entries()
-        return
+        # generate a reference Genome object
+        ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
+            biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
 
-    # stop pipeline if the reference genome is absent
-    if not ref_genome_present:
-        message = "\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n"
-        logging.info(message)
-        ublock_user_entries()
-        return
+        if not input_extractor.validate_gene_names(all_genes, all_genes_ensembl):
+            ublock_user_entries()
+            return
 
-    # get names of genes
-
-    for gene in all_genes:
-
-        message = "\n----------- * %s * -----------" % gene
-        logging.info(message)
-        # get structure prediction model from AlphaFold
-        possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene)
-        model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
-                                                                               gene, possible_uniprot_ids)
-        # get sequence input from ensembl
-        input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
-            wdir, ref_species, ref_genomes_path,
-            ref_genome_contigs_dict, ensembl, biotype,
-            gene, model_seq, uniprot_id
-        )
-
-        if input_correct:
-            message = "\nInput data have been generated for gene: %s\n\n" % gene
-            logging.info(message)
-
-        if not input_correct:
-            message = "\n...FATAL ERROR... : Input data generation FAILED for gene: %s " \
-                      "- please remove from analysis -> exiting the pipeline now...\n" % gene
+        # stop pipeline if the reference genome is absent
+        if not ref_genome_present:
+            message = "\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n"
             logging.info(message)
             ublock_user_entries()
             return
 
-        if not model_matches_input:
-            message = "\n...WARNING... : No matching structure prediction model is available for : %s " \
-                  "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
+        # get names of genes
+
+        for gene in all_genes:
+
+            message = "\n----------- * %s * -----------" % gene
             logging.info(message)
+            # get structure prediction model from AlphaFold
+            possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene)
+            model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
+                                                                                   gene, possible_uniprot_ids)
+            # get sequence input from ensembl
+            input_correct, model_matches_input, microexon_present, microexons = input_extractor.extract_input(
+                wdir, ref_species, ref_genomes_path,
+                ref_genome_contigs_dict, ensembl, biotype,
+                gene, model_seq, uniprot_id
+            )
 
-    # ----------------------------------------#
-    ######## RUN BLAST ########
-    # ----------------------------------------#
-
-    print("Checking genome blast databases...")
-    tblastn.run_blast(wdir, ref_species, all_genes)
-
-    # ----------------------------------------#
-    ######## RUN EXON FINDING ########
-    # ----------------------------------------#
-
-    if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_genes):
-        result_path = exon_extractor.analyse_blast_results(wdir, wdir + "Blast_output/",
-                                                           ref_species, int(t), all_genes, all_genomes, aligner, gui,
-                                                           logging_window, all_genes_dict)
-        # set a StringVar for GUI
-        result_path_var.set(result_path)
-
-    else:
-        message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
-              "no matches above the identity threshold used : %s -> use a lower one " \
-              "-> exiting the pipeline now..." % t
-        logging.info(message)
-        ublock_user_entries()
-        return
-
-    # ----------------------------------------#
-    ######## RUN PAML and PyMOL ########
-    # ----------------------------------------#
-
-    # run PAML
-    nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
-            genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species, result_path,
-                                                                  all_genes, aligner, gui, logging_window)
-
-    # visualize PAML result
-    final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
-                                                               nr_of_species_total_dict, ref_species, PAML_logfile_name,
-                                                               day, genes_under_pos_sel, failed_paml, gui)
-    # in case PAML failed and dict wasnt created
-    if final_PAML_log_dict:
-        get_results(final_PAML_log_dict)
-    else:
-        ublock_user_entries()
-        return
-
-    # run PyMOL
-    for gene in all_genes:
-
-        # do not allow further analysis of failed paml runs
-        if gene in failed_paml:
-            continue
-
-        # check if model seq and input seq match and check if exactly one model exists
-        elif structure_builder.check_structure(wdir, ref_species, gene):
-            successful = structure_builder.run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel,
-                                                                 all_genes_dict)
-            if not successful:
-                message = "\nThe structure for : %s was not built successfully." % gene
+            if input_correct:
+                message = "\nInput data have been generated for gene: %s\n\n" % gene
                 logging.info(message)
-                continue
+
+            if not input_correct:
+                message = "\n...FATAL ERROR... : Input data generation FAILED for gene: %s " \
+                          "- please remove from analysis -> exiting the pipeline now...\n" % gene
+                logging.info(message)
+                ublock_user_entries()
+                return
+
+            if not model_matches_input:
+                message = "\n...WARNING... : No matching structure prediction model is available for : %s " \
+                      "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
+                logging.info(message)
+
+        # ----------------------------------------#
+        ######## RUN BLAST ########
+        # ----------------------------------------#
+
+        print("Checking genome blast databases...")
+        tblastn.run_blast(wdir, ref_species, all_genes)
+
+        # ----------------------------------------#
+        ######## RUN EXON FINDING ########
+        # ----------------------------------------#
+
+        if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_genes):
+            result_path = exon_extractor.analyse_blast_results(wdir, wdir + "Blast_output/",
+                                                               ref_species, int(t), all_genes, all_genomes, aligner, gui,
+                                                               logging_window, all_genes_dict)
+            # set a StringVar for GUI
+            result_path_var.set(result_path)
+
         else:
-            message = "\nPrediction model for : %s DOES NOT match input sequence" \
-                     "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
+            message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
+                  "no matches above the identity threshold used : %s -> use a lower one " \
+                  "-> exiting the pipeline now..." % t
             logging.info(message)
+            ublock_user_entries()
+            return
 
-    logging.info("\nYou reached the end of FREEDA pipeline.")
+        # ----------------------------------------#
+        ######## RUN PAML and PyMOL ########
+        # ----------------------------------------#
 
-    # allow user to run freeda again
-    ublock_user_entries()
+        # run PAML
+        nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
+                genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species, result_path,
+                                                                      all_genes, aligner, gui, logging_window)
 
-    # reset the logger to avoid writing into the previous log file
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
+        # visualize PAML result
+        final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
+                                                                   nr_of_species_total_dict, ref_species, PAML_logfile_name,
+                                                                   day, genes_under_pos_sel, failed_paml, gui)
+        # in case PAML failed and dict wasnt created
+        if final_PAML_log_dict:
+            get_results(final_PAML_log_dict)
+        else:
+            ublock_user_entries()
+            return
+
+        # run PyMOL
+        for gene in all_genes:
+
+            # do not allow further analysis of failed paml runs
+            if gene in failed_paml:
+                continue
+
+            # check if model seq and input seq match and check if exactly one model exists
+            elif structure_builder.check_structure(wdir, ref_species, gene):
+                successful = structure_builder.run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel,
+                                                                     all_genes_dict)
+                if not successful:
+                    message = "\nThe structure for : %s was not built successfully." % gene
+                    logging.info(message)
+                    continue
+            else:
+                message = "\nPrediction model for : %s DOES NOT match input sequence" \
+                         "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
+                logging.info(message)
+
+        logging.info("\nYou reached the end of FREEDA pipeline.")
+
+        # allow user to run freeda again
+        ublock_user_entries()
+
+        # reset the logger to avoid writing into the previous log file
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
+
+    # report exceptions
+    except Exception:
+        logging.exception("\n\n...FATAL ERROR... : Something went wrong (see below). "
+                          "Contact damiandudka0@gmail.com\n\n")
 
 
 def check_gene_name(gene_name, op):
@@ -1565,6 +1574,7 @@ g5_adapt_more_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_adap
 g5_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g5_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
-
-root.mainloop()
-
+try:
+    root.mainloop()
+except KeyboardInterrupt as kie:
+    print("exception in main", kie)
