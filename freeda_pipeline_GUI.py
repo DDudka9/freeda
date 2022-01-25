@@ -11,6 +11,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Use PosiGene paper for comparison with other programs
+#       0) Users should also be able to visualize alignment -> can I ask them to download Ugene?
 #       0) Consider PAML FAQ forum
 #       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
 #                                       : "A beginners guide to estimating the non-synonymous to
@@ -613,7 +615,7 @@ def freeda_pipeline():
     # visualize PAML result
     final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
                                                                nr_of_species_total_dict, ref_species, PAML_logfile_name,
-                                                               day, genes_under_pos_sel, failed_paml)
+                                                               day, genes_under_pos_sel, failed_paml, gui)
     # in case PAML failed and dict wasnt created
     if final_PAML_log_dict:
         get_results(final_PAML_log_dict)
