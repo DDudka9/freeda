@@ -19,7 +19,7 @@ Outputs tabulated text files per gene per genomes.
 
 """
 
-from freeda import genomes_preprocessing
+from freeda import genomes_preprocessing, pyinstaller_compatibility
 import subprocess
 import os
 import glob
@@ -54,12 +54,13 @@ def run_blast(wdir, ref_species, all_genes):
             return None
     
     # perform blast
+    tblastn_path = pyinstaller_compatibility.get_path("tblastn")
     for genome in genomes:
         for gene in all_genes:
             database = database_path + genome + ".fasta"
             query = query_path + gene + "_" + ref_species + "_protein.fasta"
             output = output_path + gene + "_" + genome + ".txt"
-            to_blast = ["tblastn", "-db", database, "-query", query, "-out", output, "-outfmt",
+            to_blast = [tblastn_path, "-db", database, "-query", query, "-out", output, "-outfmt",
                         form, "-num_threads", "8"]
             message = "\nPerforming tblastn for gene: %s from genome: %s\n" % (gene, genome)
             #print("\nPerforming tblastn for gene: %s from genome: %s\n" % (gene, genome))

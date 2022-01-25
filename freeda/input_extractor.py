@@ -7,7 +7,7 @@ Created on Fri Jul  9 22:47:43 2021
 """
 
 from freeda import tblastn
-from freeda import genomes_preprocessing
+from freeda import genomes_preprocessing, pyinstaller_compatibility
 from freeda import fasta_reader
 from bioservices import UniProt
 from Bio import SeqIO
@@ -18,15 +18,14 @@ import subprocess
 import shutil
 import logging
 
-# PYINSTALLER: Check if bedtools is on the path. If not, set the bedtools path to included directory.
-try:
-    pybedtools.check_for_bedtools(force_check=True)
-except OSError:
+# PYINSTALLER: Set bedtools path if package is bundled.
+if pyinstaller_compatibility.is_bundled():
     bedtools_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "bedtools", "bin")
     pybedtools.helpers.set_bedtools_path(bedtools_path)
-    print(f"BEDTools not found in path. Using included version from {bedtools_path}")
+    print(f"FREEDA running from bundle. BEDTools from {bedtools_path}.")
 else:
-    print("Using BEDTools found in path.")
+    pybedtools.helpers.set_bedtools_path("")
+    print("FREEDA running from source. Using BEDTools found in path.")
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
