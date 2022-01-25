@@ -117,45 +117,35 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             genome_file_database = False
 
     # move on to next genome if database present
-    if ref_genome is False and genome_file_database is True:
+    if not ref_genome and genome_file_database is True:
         
         message = "\nGenome : %s blast database already exists" % genome
         logging.info(message)
-        #print("\nGenome : %s blast database already exists" % genome)
-        
         return genome_file_database
     
     # build database on existing genome fasta file if present
-    if ref_genome is False and expected_genome_file in all_files:
+    if not ref_genome and expected_genome_file in all_files:
 
         message = "\nNOT detected database for : %s but %s file is present" \
                              " -> building database...\n" % (genome, expected_genome_file)
         logging.info(message)
-        #print("\nNOT detected database for : %s but %s file is present" \
-        #                     " -> building database...\n" % (genome, expected_genome_file))
-        
         # make database
         make_blast_database(database_path, genome)
         # make sure to assign back this variable to TRUE
         genome_file_database = True
-        
         return genome_file_database
     
     # download the genome as a tar file if both database and tar are missing
-    if ref_genome is False and genome_file_database is False and zip_file not in all_files:
+    if not ref_genome and genome_file_database is False and zip_file not in all_files:
 
         message = "\nGenome : %s blast database does not exists" \
               " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome
         logging.info(message)
-        #print("\nGenome : %s blast database does not exists"
-        #      " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome)
 
         all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
         accession_nr = [names[2] for names in all_genomes if genome in names][0]
         # download genome
         download_genome(genome, accession_nr, database_path)
-        # decompress genome
-        #unzip_genome(wdir, genome, accession_nr, database_path)
         # make database
         make_blast_database(database_path, genome)
 
@@ -167,13 +157,11 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                     genome_found = True
 
         # exit pipeline if fasta genome absent
-        if genome_found is False:
+        if not genome_found:
             genome_file_database = False
             message = "...FATAL_ERROR... : Genome : %s failed to download or decompress" \
                   " -> exciting the pipeline now...\n" % genome
             logging.info(message)
-            #print("...FATAL_ERROR... : Genome : %s failed to download or decompress"
-            #      " -> exciting the pipeline now...\n" % genome)
             return genome_file_database
 
         # validate that the database was generated
@@ -188,38 +176,18 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                 message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
                       " -> exciting the pipeline now...\n" % genome
                 logging.info(message)
-                #print("\n...FATAL_ERROR... : Genome : %s database failed to build"
-                #      " -> exciting the pipeline now...\n" % genome)
                 genome_file_database = False
                 return genome_file_database
 
         genome_file_database = True
 
         # fasta file and databases are present for the genome
-        if genome_found is True and genome_file_database is True:
+        if genome_found and genome_file_database is True:
             genome_file_database = True
             message = "\nGenome : %s was downloaded and decompressed successfully" % genome
             logging.info(message)
-            #print("\nGenome : %s was downloaded and decompressed successfully" % genome)
-
             return genome_file_database
 
-
-    # unpack and unzip if tar file present
-    #if reference_genome is False and genome_file_database is False and tar_file in all_files:
-        
-    #    print("\nNOT detected database for : %s -> building database...\n " % genome)
-        
-    #    # unpack and decompress the genome into a fasta file
-    #    genome_to_unzip = database_path + "/" + genome + ".tar"
-    #    unzip_genome(database_path, genome, genome_to_unzip)
-    #    # remove the tar file
-    #    os.remove(database_path + tar_file)
-    #    # make database
-    #    make_blast_database(database_path, genome)
-    #    # make sure to tick back this parameter to TRUE
-    #    genome_file_database = True
-    
     # unpack and decompress reference genome
     if ref_genome:
         
@@ -227,8 +195,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
 
             message = "\nReference genome : %s is present\n" % genome
             logging.info(message)
-            #print("\nReference genome : %s is present\n" % genome)
-
             return True
             
         elif expected_genome_file not in all_files:
@@ -236,25 +202,11 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             message = "\nReference genome : %s does not exists" \
                               " -> downloading and decompressing it now...\n" % genome
             logging.info(message)
-            #print("\nReference genome : %s does not exists" \
-            #                  " -> downloading and decompressing it now...\n" % genome)
-
-            # unpack and decompress the genome into a fasta file
-            #genome_to_unzip = ref_genome_path + "/" + genome + "zip"
             all_genomes = genomes_preprocessing.get_names(wdir, ref_species, ref_genome=True)
             accession_nr = all_genomes[2]
             # download genome
             download_genome(genome, accession_nr, ref_genome_path)
-            # decompress genome
-            #unzip_genome(wdir, genome, accession_nr, ref_genome_path)
-            # remove the tar file
-            #os.remove(ref_genome_path + tar_file)
             return True
-        
-        #elif expected_genome_file not in all_files and tar_file not in all_files:y
-        #    print("\n...FATAL_ERROR... : Reference genome : %s does not exists and archive file is missing" \
-        #                      " -> exiting the pipeline now...\n" % genome)
-        #    return False
 
     else:
         message = "Else statement when making blast database"
