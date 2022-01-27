@@ -20,7 +20,7 @@ import logging
 
 # PYINSTALLER: Set bedtools path if package is bundled.
 if pyinstaller_compatibility.is_bundled():
-    bedtools_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "bedtools", "bin")
+    bedtools_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "include", "bedtools", "bin")
     pybedtools.helpers.set_bedtools_path(bedtools_path)
     print(f"FREEDA running from bundle. BEDTools from {bedtools_path}.")
 else:

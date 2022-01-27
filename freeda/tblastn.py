@@ -52,9 +52,11 @@ def run_blast(wdir, ref_species, all_genes):
         # failed to build database
         if genome_file_database is False:
             return None
-    
-    # perform blast
+
+    # PYINSTALLER: Set path to tblastn.
     tblastn_path = pyinstaller_compatibility.get_path("tblastn")
+
+    # perform blast
     for genome in genomes:
         for gene in all_genes:
             database = database_path + genome + ".fasta"
