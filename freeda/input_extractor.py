@@ -18,14 +18,9 @@ import subprocess
 import shutil
 import logging
 
-# PYINSTALLER: Set bedtools path if package is bundled.
-if pyinstaller_compatibility.is_bundled():
-    bedtools_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "include", "bedtools", "bin")
-    pybedtools.helpers.set_bedtools_path(bedtools_path)
-    print(f"FREEDA running from bundle. BEDTools from {bedtools_path}.")
-else:
-    pybedtools.helpers.set_bedtools_path("")
-    print("FREEDA running from source. Using BEDTools found in path.")
+# PYINSTALLER: Set bedtools path to a bedtools folder in the FREEDA directory.
+bedtools_path = pyinstaller_compatibility.resource_path('bedtools/bin')
+pybedtools.helpers.set_bedtools_path(bedtools_path)
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",

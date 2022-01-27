@@ -53,8 +53,8 @@ def run_blast(wdir, ref_species, all_genes):
         if genome_file_database is False:
             return None
 
-    # PYINSTALLER: Set path to tblastn.
-    tblastn_path = pyinstaller_compatibility.get_path("tblastn")
+    # PYINSTALLER: Add path to os path variable.
+    tblastn_path = pyinstaller_compatibility.resource_path("tblastn")
 
     # perform blast
     for genome in genomes:

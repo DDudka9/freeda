@@ -17,9 +17,10 @@ def is_bundled():
     return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
 
-def get_path(command):
-    """If in a pyintstaller bundle, returns a path to the input in the 'include' folder. Otherwise, returns command."""
-    if is_bundled():
-        return os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), command)
-    else:
-        return command
+# PYINSTALLER: Update os path variable with location of frozen repository.
+# Using https://stackoverflow.com/a/44352931
+def resource_path(relative_path):
+    """Get absolute path to given relative resource. Works for dev and for PyInstaller."""
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return os.path.join(base_path, relative_path)
+
