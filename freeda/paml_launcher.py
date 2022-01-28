@@ -967,7 +967,7 @@ def run_Gblocks(final_cds_file_no_STOP, gene, result_path, aligner):
     in_filepath = result_path + gene + "/" + final_cds_file_no_STOP
     raw_out_Gblocks_filename = "aligned_" + aligner.upper() + "_Gblocks_" + gene + "_final_no_STOP.fasta"
     # run Gblocks with options: codon ("-t=c") and dont save html file ("-p=n")
-    Gblocks_cline = ["Gblocks", in_filepath, "-t=c", "-p=n"]
+    Gblocks_cline = [pyinstaller_compatibility.resource_path("Gblocks"), in_filepath, "-t=c", "-p=n"]
     result = subprocess.run(Gblocks_cline, capture_output=True)
     # get stdout -> decode to string from bit -> split by lines and get the 5th and 6th
     message = (result.stdout.decode('utf-8').split("\n"))[5:7]
