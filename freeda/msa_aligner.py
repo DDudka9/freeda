@@ -9,7 +9,7 @@ Runs MAFFT using a BioPython wrapper.
 
 """
 
-from freeda import fasta_reader
+from freeda import fasta_reader, pyinstaller_compatibility
 from Bio.Align.Applications import MafftCommandline
 from Bio.Application import ApplicationError
 import os
@@ -51,8 +51,9 @@ def run_msa(MSA_path, aligner):
             # define which aligner is used
             if aligner == "mafft":
 
-                cline = MafftCommandline(input=in_filename, thread=-1)  # thread -1 is suppose to automatically
-                                                                        # calculate physical cores
+                cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path('mafft'),
+                                         input=in_filename,
+                                         thread=-1)  # thread -1 is suppose to automatically calculate physical cores
                 stdout, stderr = cline()
                 stop_time = time.time()
                 message = "Done : in %s minutes" % ((stop_time - start_time) / 60)

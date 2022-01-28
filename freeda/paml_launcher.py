@@ -21,6 +21,7 @@ from freeda import fasta_reader
 from freeda import genomes_preprocessing
 from freeda import control_file
 from freeda import TextHandler
+from freeda import pyinstaller_compatibility
 from Bio.Align.Applications import MafftCommandline
 from Bio import pairwise2
 from Bio import AlignIO
@@ -997,8 +998,9 @@ def align_final_cds(gene, final_cds_file, result_path, aligner):
     # define which aligner is used
     if aligner == "mafft":
 
-        cline = MafftCommandline(input=in_filepath, thread=-1)  # thread -1 is suppose to automatically
-                                                                # calculate physical cores
+        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path('mafft'),
+                                 input=in_filepath,
+                                 thread=-1)  # thread -1 is suppose to automatically calculate physical cores
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename
