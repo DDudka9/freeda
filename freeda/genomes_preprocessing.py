@@ -2099,57 +2099,57 @@ def get_ref_genome_contigs_dict(ref_species):
 def get_names(wdir, ref_species, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
 
-    mouse_dict = {"Mm": (("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
-                      ("Ms", "SPRETUS_genome", "GCA_001624865.1"),
-                      ("Mc", "CAROLI_genome", "GCA_900094665.2"),
-                      ("Mu", "MINUTOIDES_genome", "GCA_902729485.2"),
-                      ("Mp", "PAHARI_genome", "GCA_900095145.2"),
-                      ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
-                      ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
-                      ("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
-                      ("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
-                      ("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
-                      ("Mo", "COUCHA_genome", "GCA_008632895.1"),
-                      ("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
-                      ("Gs", "SURDASTER_genome", "GCA_004785775.1"),
-                      ("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
-                      ("Rd", "DILECTUS_genome", "GCA_019844195.1"),
-                      ("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
-                      ("Rr", "RATTUS_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
-                      ("Rn", "NORVEGICUS_genome", "GCA_000001895.4"))}  # Previously used : GCA_015227675.2
+    mouse_dict = {"Mm": (("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
+                      ("Ms", "MusSpretus_genome", "GCA_001624865.1"),
+                      ("Mc", "MusCaroli_genome", "GCA_900094665.2"),
+                      ("Mu", "MusMinutoides_genome", "GCA_902729485.2"),
+                      ("Mp", "MusPahari_genome", "GCA_900095145.2"),
+                      ("Ay", "ApodemusSylvaticus_genome", "GCA_001305905.1"),
+                      ("Ap", "ApodemusSpeciosus_genome", "GCA_002335545.1"),
+                      ("Ha", "HylomyscusAlleni_genome", "GCA_019843855.1"),
+                      ("Pd", "PraomysDelectorum_genome", "GCA_019843815.1"),
+                      ("Mn", "MastomysNatalensis_genome", "GCA_019843795.1"),
+                      ("Mo", "MastomysCoucha_genome", "GCA_008632895.1"),
+                      ("Gd", "GrammomysDolichurus_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
+                      ("Gs", "GrammomysSurdaster_genome", "GCA_004785775.1"),
+                      ("An", "ArvicanthisNiloticus_genome", "GCA_011762505.1"),
+                      ("Rd", "RhabdomysDilectus_genome", "GCA_019844195.1"),
+                      ("Rs", "RhynchomysSoricoides_genome", "GCA_019843965.1"),
+                      ("Rr", "RattusRattus_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
+                      ("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # Previously used : GCA_015227675.2
 
-    rat_dict = {"Rn": (("Rr", "RATTUS_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
-                         ("Rs", "SORICOIDES_genome", "GCA_019843965.1"),
-                         ("Rd", "DILECTUS_genome", "GCA_019844195.1"),
-                         ("An", "ARVICANTHIS_genome", "GCA_011762505.1"),
-                         ("Gs", "SURDASTER_genome", "GCA_004785775.1"),
-                         ("Gd", "DOLICHURUS_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
-                         ("Mo", "COUCHA_genome", "GCA_008632895.1"),
-                         ("Mn", "NATALENSIS_genome", "GCA_019843795.1"),
-                         ("Pd", "DELECTORUM_genome", "GCA_019843815.1"),
-                         ("Ha", "ALLENI_genome", "GCA_019843855.1"),  # got rid of this genome -> too fragmented
-                         ("Ap", "SPECIOSUS_genome", "GCA_002335545.1"),
-                         ("Ay", "SYLVATICUS_genome", "GCA_001305905.1"),
-                         ("Mp", "PAHARI_genome", "GCA_900095145.2"),
-                         ("Mu", "MINUTOIDES_genome", "GCA_902729485.2"),
-                         ("Mc", "CAROLI_genome", "GCA_900094665.2"),
-                         ("Ms", "SPRETUS_genome", "GCA_001624865.1"),
-                         ("Mi", "SPICILEGUS_genome", "GCA_003336285.1"),
-                         ("Mm", "MUSCULUS_genome", "GCA_000001635.9"))}
+    rat_dict = {"Rn": (("Rr", "RattusRattus_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
+                         ("Rs", "RhynchomysSoricoides_genome", "GCA_019843965.1"),
+                         ("Rd", "RhabdomysDilectus_genome", "GCA_019844195.1"),
+                         ("An", "ArvicanthisNiloticus_genome", "GCA_011762505.1"),
+                         ("Gs", "GrammomysSurdaster_genome", "GCA_004785775.1"),
+                         ("Gd", "GrammomysDolichurus_genome", "GCA_019843835.1"),
+                         ("Mo", "MastomysCoucha_genome", "GCA_008632895.1"),
+                         ("Mn", "MastomysNatalensis_genome", "GCA_019843795.1"),
+                         ("Pd", "PraomysDelectorum_genome", "GCA_019843815.1"),
+                         ("Ha", "HylomyscusAlleni_genome", "GCA_019843855.1"),
+                         ("Ap", "ApodemusSpeciosus_genome", "GCA_002335545.1"),
+                         ("Ay", "ApodemusSylvaticus_genome", "GCA_001305905.1"),
+                         ("Mp", "MusPahari_genome", "GCA_900095145.2"),
+                         ("Mu", "MusMinutoides_genome", "GCA_902729485.2"),
+                         ("Mc", "MusCaroli_genome", "GCA_900094665.2"),
+                         ("Ms", "MusSpretus_genome", "GCA_001624865.1"),
+                         ("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
+                         ("Mm", "MusMusculus_genome", "GCA_000001635.9"))}
 
-    human_dict = {"Hs": (("Pt", "TROGLODYTES_genome", "GCA_002880755.3"),
-                      ("Gg", "GORILLA_genome", "GCA_008122165.1"),
-                      ("Pb", "ABELII_genome", "GCA_002880775.3"),
-                      ("Ne", "LEUCOGENYS_genome", "GCA_006542625.1"),
-                      ("Mu", "MULATTA_genome", "GCA_008058575.1"),
-                      ("Pu", "ANUBIS_genome", "GCA_008728515.1"),
-                      ("Cs", "SABAEUS_genome", "GCA_015252025.1"),
-                      ("Pi", "TEPHROSCELES_genome", "GCA_002776525.3"),  # added Colobus monkey
-                      ("Pp", "PITHECIA_genome", "GCA_004026645.1"),  # added White-faced saki
-                      ("An", "NANCYMAAE_genome", "GCA_000952055.2"),  # added Ma's night monkey
-                      ("Cj", "JACCHUS_genome", "GCA_011100535.2"),
-                      ("Sb", "BOLIVIENSIS_genome", "GCA_016699345.1"),  # added Squirrel monkey
-                      ("Ag", "GEOFFROYI_genome", "GCA_004024785.1"))}  # added Spider monkey
+    human_dict = {"Hs": (("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
+                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),
+                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),
+                      ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),
+                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),
+                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),
+                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),
+                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # added Colobus monkey
+                      ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # added White-faced saki
+                      ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # added Ma's night monkey
+                      ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),
+                      ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # added Squirrel monkey
+                      ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"))}  # added Spider monkey
                       # ("Mm", "MURINUS_genome", "GCA_000165445.3"),  # added Mouse lemur
                       # ("Og", "GARNETTI_genome", "GCA_000181295.3"))}   # added Galago lemur
 
@@ -2158,7 +2158,7 @@ def get_names(wdir, ref_species, ref_genome=False):
                        ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
                        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
                        ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
-                       ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),   #  western spotted skunk
+                       ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),  # western spotted skunk
                        ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
                        ("Pl", "ProcyonLotor_genome",  "GCA_015708975.1"),  # raccoon
                        ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
@@ -2175,7 +2175,7 @@ def get_names(wdir, ref_species, ref_genome=False):
                        ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
                        ("Pl", "ProcyonLotor_genome",  "GCA_015708975.1"),  # raccoon
                        ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
-                       ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),   #  western spotted skunk
+                       ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),   # western spotted skunk
                        ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
                        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
                        ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
@@ -2183,30 +2183,28 @@ def get_names(wdir, ref_species, ref_genome=False):
                        ("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # cat
 
     # Phasianidae (diverged about 40 myo)
-    phasianidae_dict = {"Gg": (("Bt", "BambusicolaThoracicus_genome", "GCA_002909625.1"),  #  Chinese bamboo-partridge
-                               ("Ag", "AlectorisRufa_genome", "GCA_019345075.1"),  #  red-legged partridge
-                               ("Pm", "PavoMuticus_genome", "GCA_016647715.1"),  #   green peafowl
+    phasianidae_dict = {"Gg": (("Bt", "BambusicolaThoracicus_genome", "GCA_002909625.1"),  # Chinese bamboo-partridge
+                               ("Ag", "AlectorisRufa_genome", "GCA_019345075.1"),  # red-legged partridge
+                               ("Pm", "PavoMuticus_genome", "GCA_016647715.1"),  # green peafowl
                                ("Mg", "MeleagrisGallopavo_genome", "GCA_000146605.4"),  # turkey
-                               ("Cu", "CentrocercusUrophasianus_genome", "GCA_019232065.1"),  #  greater sage-grouse
-                               #("Ce", "CentrocercusMinimus_genome", "GCA_005890655.1"),  #  gunnison sage-grouse
-                               #                                                        -> often missing bases
-                               ("Lt", "LyrurusTetrix_genome", "GCA_000586395.1"),  #  black grouse
-                               ("Ll", "LagopusLeucura_genome", "GCA_019238085.1"),  #  white-tailed ptarmigan
-                               ("Tc", "TympanuchusCupido_genome", "GCA_001870855.1"),  #   greater prairie chicken
-                               ("Cp", "ChrysolophusPictus_genome", "GCA_003413605.1"),  #  golden pheasant
-                               ("Ph", "PhasianusColchicus_genome", "GCA_004143745.1"), #  ring-necked pheasant
+                               ("Cu", "CentrocercusUrophasianus_genome", "GCA_019232065.1"),  # greater sage-grouse
+                               ("Lt", "LyrurusTetrix_genome", "GCA_000586395.1"),  # black grouse
+                               ("Ll", "LagopusLeucura_genome", "GCA_019238085.1"),  # white-tailed ptarmigan
+                               ("Tc", "TympanuchusCupido_genome", "GCA_001870855.1"),  # greater prairie chicken
+                               ("Cp", "ChrysolophusPictus_genome", "GCA_003413605.1"),  # golden pheasant
+                               ("Ph", "PhasianusColchicus_genome", "GCA_004143745.1"), # ring-necked pheasant
                                ("Cr", "CrossoptilonMantchuricum_genome", "GCA_019593555.1"),  # brown eared-pheasant
-                               ("Sm", "SyrmaticusMikado_genome", "GCA_003435085.1"),  #  mikado pheasant
-                               ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  #  Japanese quail
+                               ("Sm", "SyrmaticusMikado_genome", "GCA_003435085.1"),  # mikado pheasant
+                               ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  # Japanese quail
 
 
     # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)
-    mouse_ref_dict = {"Mm": (("Mm", "MUSCULUS_genome", "GCA_000001635.9"))} # GeneBank GRCm39
-    rat_ref_dict = {"Rn": (("Rn", "NORVEGICUS_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0 -> NOT SAME AS GENOMES
-    human_ref_dict = {"Hs": (("Hs", "SAPIENS_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39
-    cat_ref_dict = {"Fc": (("Fc", "CATUS_genome", "GCF_000181335.1"))}  # pyensembl is using Felis_catu_6.2
-    dog_ref_dict = {"Cf": (("Cf", "FAMILIARIS_genome", "GCF_000002285.3"))}  # CanFam3.1
-    chicken_ref_dict = {"Gg": (("Gg", "GALLUS_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0
+    mouse_ref_dict = {"Mm": (("Mm", "MusMusculus_genome", "GCA_000001635.9"))} # GeneBank GRCm39
+    rat_ref_dict = {"Rn": (("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0 -> NOT SAME AS GENOMES
+    human_ref_dict = {"Hs": (("Hs", "HomoSapiens_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39
+    cat_ref_dict = {"Fc": (("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # pyensembl is using Felis_catu_6.2
+    dog_ref_dict = {"Cf": (("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # CanFam3.1
+    chicken_ref_dict = {"Gg": (("Gg", "GallusGallus_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0
 
     #if ref_species == "Mm" and ref_genome is False:
     #    genomes_dict = mouse_dict

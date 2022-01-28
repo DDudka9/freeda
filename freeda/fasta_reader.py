@@ -172,17 +172,6 @@ def get_ref_exons(wdir, gene, ref_species, at_input=False):
         # record the last exon
         ref_exons[nr] = (header, seq, len(seq))
 
-        # double check if all exons together are in frame (they should be)
-        #exon_total_length = 0
-        #for number, v in ref_exons.items():
-        #    exon_total_length += v[2]
-
-        #if exon_total_length % 3 != 0:
-        #    message = "\n...WARNING... : CDS of %s in ref species is NOT in frame." \
-        #              % gene
-        #    print(message)
-        #    logging.info(message)
-
         expected_exons = tuple(e for e, features in ref_exons.items())
 
         # dont print and log it if function used by input extractor module

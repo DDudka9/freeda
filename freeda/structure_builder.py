@@ -40,7 +40,6 @@ def get_interpro(uniprot_id):
     interpro_url = "https://www.ebi.ac.uk/interpro/api/protein/uniprot/" + uniprot_id + "/entry/interpro/"
     print("Request URL: " + interpro_url)
     response = requests.get(interpro_url)
-    #print(response.json())
     return response
 
 
@@ -137,7 +136,6 @@ def check_structure(wdir, ref_species, gene):
             try:
                 os.remove(structure_model_path + "/" + file)
             except FileNotFoundError:
-                #print("FileNotFoundError was triggered for: %s" % file)
                 pass
 
     # regenerate list of files -> should contain one file exactly
@@ -180,8 +178,6 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selecti
     # obtain a pymol script based on the model
     if not get_pymol_script(wdir, ref_species, dictionary, gene,
                             protein_structure_path, genes_under_positive_selection, domains, all_genes_dict):
-        # copy the structure model into the result file for user to estimate where the sites might be
-        #copy_void_structure(wdir, ref_species, gene, result_path) -> doesnt work
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
@@ -228,11 +224,6 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
         # PyMOL command to color all residues
         f.write("color cyan\n")
 
-        # reindex all residues in the structure based on sequence used as a model structure
-        #f.write("alter (all), resi=str(int(resi)+" + str(offset) + ")\n")
-        #f.write("sort\n")
-        #f.write("rebuild\n")
-
         # color domains
         colors = ["orange", "marine", "limon", "wheat", "lightblue", "lightpink", "deepolive", "red"]
 
@@ -269,9 +260,7 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
                 f.write("color " + "grey90" + ", resi " + label1[1] + "-" + label1[2] + "\n")
                 middle = round((int(label1[2]) - int(label1[1])) / 2 + int(label1[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label1[0] + '")\n')
-                #residues = [str(residue) for residue in range(int(label1[1]), int(label1[2]) + 1, 1)]
-                #for residue in residues:
-                #    f.write("show sticks, resi " + residue + "\n")
+
 
             if all(label2) \
                 and (int(label2[1]) <= int(label2[2])) \
@@ -279,9 +268,6 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
                 f.write("color " + "yellow" + ", resi " + label2[1] + "-" + label2[2] + "\n")
                 middle = round((int(label2[2]) - int(label2[1])) / 2 + int(label2[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label2[0] + '")\n')
-                #residues = [str(residue) for residue in range(int(label2[1]), int(label2[2]) + 1, 1)]
-                #for residue in residues:
-                #    f.write("show sticks, resi " + residue + "\n")
 
             if all(label3) \
                 and (int(label3[1]) <= int(label3[2])) \
@@ -289,9 +275,6 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
                 f.write("color " + "sand" + ", resi " + label3[1] + "-" + label3[2] + "\n")
                 middle = round((int(label3[2]) - int(label3[1])) / 2 + int(label3[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label3[0] + '")\n')
-                #residues = [str(residue) for residue in range(int(label3[1]), int(label3[2])+1, 1)]
-                #for residue in residues:
-                #    f.write("show sticks, resi " + residue + "\n")
 
         # PyMOL command to color adaptive residues
         for site, features in matched_adaptive_sites_ref.items():
@@ -309,14 +292,6 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
                     f.write("color magenta, " + residue + "\n")
                     f.write("show sticks, " + residue + "\n")
                     f.write('label (resi ' + str(site) + ' and name CA), "%s" % ("' + residue + '")\n')
-
-            #if 0.90 > float(features[2]) >= 0.70:
-            #    residue = features[0] + str(site)
-            #    if paint_sites:
-            #        f.write("select " + residue + ", resi " + str(site) + "\n")
-            #        f.write("color lightblue, " + residue + "\n")
-            #        f.write("show sticks, " + residue + "\n")
-            #        f.write('label (resi '+ str(site) +' and name CA), "%s" % ("'+ residue +'")\n')
 
         # special case, first residue adaptive
         if float(matched_adaptive_sites_ref["1"][2]) >= 0.70:
@@ -348,80 +323,10 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
 
         # PyMOL command to save as figure (NO LICENSE PRINTS A NO LICENSE ON IMAGE)
         f.write("png " + protein_structure_path + gene + "_" + ref_species + ".png, width=12cm, height=8cm, "
-                                                                                "dpi=300, ray=1\n")
+                                                                             "dpi=300, ray=1\n")
 
         # PyMOL command to save the session
         f.write("save " + protein_structure_path + gene + "_" + ref_species + ".pse")
 
     return True
 
-
-
-"""
-
-def copy_void_structure(wdir, ref_species, gene, result_path): -> DOES NOT COPY METADATA -> STRUCTURE NOT COPIED
-    #Copies an unannotated structure prediction model into the result folder
-
-    structures_path = wdir + "Structures"
-    protein_structure_path = structures_path + "/" + gene + "_" + ref_species + "/"
-    new_filename = gene + "_" + ref_species + "_incompatible.pdb"
-
-    files = glob.iglob(os.path.join(protein_structure_path, "*.pdb"))
-    for path in files:
-        if os.path.isfile(path):
-            # copy file trying to preserve (but does not guarantees) the metadata
-            shutil.copy(path, result_path)
-            filename = path.split("/")[-1]
-            os.rename(result_path + filename, result_path + new_filename)
-
-# THIS IS NOT NEEDED ANYMORE:
-def compare_model_with_input(wdir, ref_species, gene, model_seq):
-    
-    # silence warnings from Biopython about missing header in model (has to follow import)
-    #import warnings
-    #from Bio import BiopythonWarning
-    #warnings.simplefilter('ignore', BiopythonWarning)
-    
-    # get input protein sequence used for blast
-    blast_input_path = wdir + "Blast_input/"
-    input_seq_filename = gene + "_" + ref_species + "_protein.fasta"
-    with open(blast_input_path + input_seq_filename) as f:
-        input_seq = f.readlines()[1]
-
-    # get protein sequence of the model
-    #structure_model_path = wdir + "Structures/" + gene + "_" + ref_species
-    #model_filename = [model for model in os.listdir(structure_model_path) if model.endswith(".pdb")][0]
-    #model_path = structure_model_path + "/" + model_filename
-    
-    #with open(model_path, 'r') as pdb_file:
-    #    for record in SeqIO.parse(pdb_file, 'pdb-atom'):
-    #        model_seq = record.seq
-
-    # compare sequences and do not allow model overlay if sequences differ
-    if input_seq != model_seq:
-        print("\n...WARNING... Protein sequence generated DOES NOT match the model for: %s\n" \
-                                              "-> cannot run PyMOL\n" % gene)
-        print("Input sequence:\n%s\n" % input_seq)
-        print("Model sequence:\n%s\n" % model_seq)
-        return
-    
-    else:
-        print("\nProtein sequence generated matches the model for gene: %s" % gene)
-        return
-
-
-# THIS IS PROBABLY NOT NEEDED:
-def check_all_structures(wdir, ref_species):
-    Checks presence of structure prediction models for all genes
-   
-    all_genes = [gene.rstrip("\n") for gene in open(wdir + "genes.txt", "r").readlines()]
-    missing_structures = [check_structure(wdir, ref_species, gene) for gene in all_genes]
-    missing_structures_final = [structure for structure in missing_structures if structure is not None]
-    
-    if missing_structures_final:
-        print("...WARNING... (FREEDA) I did not find clear structure prediction models for: %s" % missing_structures_final)
-        print("...WARNING... (FREEDA) I cannot overlay adaptive sites for these genes\n")
-
-    return missing_structures_final
-
-"""

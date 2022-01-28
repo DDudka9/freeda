@@ -122,16 +122,15 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                             # check for very divergent introns (will be counted as intron)
                             # does not allow the first exon to have divergent introns (possibly not-syntenic exon)
 
-                            # ALLOWED EXON 1 TO BE DIVERGENT ON 08_21_2021 -> Terf2 looses exon 1 in Ay because of this -> keep testing
+                            # ALLOWED EXON 1 TO BE DIVERGENT ON 08_21_2021
+                            # -> Terf2 looses exon 1 in Ay because of this -> keep testing
                             # exon_number != 1
-                            # note from 08_22_2021 -> this does not allow first exons to be divergent cose of the previous statement
+                            # note from 08_22_2021
+                            # -> this does not allow first exons to be divergent cose of the previous statement
 
                     # KeyError triggered when match at the edge of alignment)
                     except KeyError:
                         intron_at_5_prime = False
-
-                #elif homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
-                #    divergent_introns = True
 
             # this exon seems to be missing from the contig
             else:
@@ -158,14 +157,9 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 if insertion == 0:
                     insertion = 1
                     continue
-                    #m = "insertion: %s %s" % (insertion, locus_seq[position])
-                    #print(m)
-                    #logging.info(m)
+
                 if insertion > 0:
                     insertion = insertion + 1
-                    #m = "insertion: %s %s" % (insertion, locus_seq[position])
-                    #print(m)
-                    #logging.info(m)
 
             # count deletions as well
             elif locus_seq[position] == "-":
@@ -176,10 +170,8 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 else:
                     insertion = insertion - 1
 
-
             # go to next position
             continue
-
 
         # EXON ENDS IN REF SPECIES -> define 3_prime
 
@@ -197,14 +189,16 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             if exon_number == last_exon:
 
                 # check synteny
-                # WARNING: average 800bp 3'UTRs in mammals make synteny check at 3_prime not very efficient (most contigs too short)
+                # WARNING: average 800bp 3'UTRs in mammals make synteny check at 3_prime not very efficient
+                # (most contigs too short)
                 three_prime_synteny, three_prime_synteny_message = check_synteny_3_prime(position, locus_seq, gene_seq)
                 if three_prime_synteny is False:
 
                     # do not allow intron in last exon if not syntenic (often RETRO have 5UTR)
                     intron_at_3_prime = False
 
-            # check for very divergent introns (will be counted as intron) -> does not allow divergent introns in last exon
+            # check for very divergent introns (will be counted as intron)
+            # -> does not allow divergent introns in last exon
             elif intron_at_3_prime is False \
                 and exon_number != list(ref_exons.keys())[-1] \
                 and homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
@@ -251,7 +245,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 continue
 
-
             # call it possible retrotransposition
             if five_prime_retrotransposition is True or three_prime_retrotransposition is True:
 
@@ -273,9 +266,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                         # check insertions
                         big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
-                        #message = "insertion: %s" % str(insertion)
-                        #print(message)
-                        #logging.info(message)
 
                         message = "Contig %s exon %s genomic might be RETRO (5-prime) but has intron (3-prime)" \
                             % (contig_name, exon_number)
@@ -296,9 +286,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                         # check insertions
                         big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
-                        #message = "insertion: %s" % str(insertion)
-                        #print(message)
-                        #logging.info(message)
 
                         message = "Contig %s exon %s genomic has intron (5-prime) but might be RETRO (3-prime)" \
                             % (contig_name, exon_number)
@@ -323,7 +310,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 continue
 
-
             # call it non-intron
             if (divergent_introns is False or (divergent_introns is True and single_exon is True)) \
                                     and intron_at_5_prime is False and intron_at_3_prime is False:
@@ -346,7 +332,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 non_ACGT = False
 
                 continue
-
 
             # call it invalid if non_ACGT present
             if non_ACGT is True:
@@ -372,16 +357,12 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 continue
 
-
             # call it divergent introns (only if its not a lone exon in contig -> risk of erronous intron)
             if divergent_introns is True and intron_at_5_prime is False and intron_at_3_prime is False \
                                                 and single_exon is False:
                 intron = True
 
                 big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
-                #message = "insertion: %s" % str(insertion)
-                #print(message)
-                #logging.info(message)
 
                 message = "Contig %s exon %s genomic locus has divergent introns (allowed)" \
                         % (contig_name, exon_number)
@@ -405,7 +386,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 intron, exon_missing, last_bp, big_insertion, insertion_with_N = reset_exon_parameters()
 
                 continue
-
 
             # call it intron
             if intron_at_5_prime is True or intron_at_3_prime is True:
@@ -444,9 +424,10 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 # CATCH NO CALL DECISIONS
                 else:
-                    message = "No call in intron: \nintron = %s, \n5_prime intron = %s, \n3_prime intron = %s, \ndivergent exons = %s" \
-                    "\n5_prime_retrotransposition = %s, \n3_prime_retrotransposition = %s" \
-                    % (intron, intron_at_5_prime, intron_at_3_prime, divergent_introns, five_prime_retrotransposition, three_prime_retrotransposition)
+                    message = "No call in intron: \nintron = %s, \n5_prime intron = %s, \n3_prime intron = %s, " \
+                              "\ndivergent exons = %s \n5_prime_retrotransposition = %s, \n3_prime_retrotransposition" \
+                              " = %s" % (intron, intron_at_5_prime, intron_at_3_prime, divergent_introns,
+                                         five_prime_retrotransposition, three_prime_retrotransposition)
                     print(message)
                     logging.info(message)
 
@@ -613,15 +594,9 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
         else:
             return intron
 
-    #if extension == 20 or extension == 50:
-        #message = "\n$$$$ extension: %s\n" % extension
-        #print(message)
-        #logging.info(message)
-
     stretch_length = 0
     matches = 0
     indels = 0
-
 
     for i in range(position, end, offset):
 
@@ -700,7 +675,6 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
             intron = True
             return intron
 
-
     # loop ended and intron wasnt called -> default False
     return intron
 
@@ -755,30 +729,18 @@ def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
 
                 # estimate homology
                 rolling_hd = matches / stretch_length
-                #message = "*** N - homology : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                #print(message)
-                #logging.info(message)
 
                 # call homology if passed min_stretch_length
                 if rolling_hd >= homology_threshold:
                     homology = True
-                    #message = "****** N - HOMOLOGY : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                    #print(message)
-                    #logging.info(message)
                     return homology
 
                 # call lack of homology if passed min_stretch_length and no_homology_threshold is reached
                 elif rolling_hd <= no_homology_threshold:
-                    #message = "****** N - NO homology : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                    #print(message)
-                    #logging.info(message)
                     return homology
 
                 # call lack of homology if reached max_stretch_length but not the homology threshold
                 elif stretch_length == max_stretch_length and rolling_hd < homology_threshold:
-                    #message = "****** N - NO homology : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                    #print(message)
-                    #logging.info(message)
                     return homology
 
                 # not ready to call homology
@@ -812,10 +774,6 @@ def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
 
             if stretch_length < min_stretch_length and indels < allowed_indels:
 
-                #message = "* C - stretch : %s bp and matches : %s" % (stretch_length, matches)
-                #print(message)
-                #logging.info(message)
-
                 if locus_seq[i] == cds_seq[i]:
                     matches += 1
                     stretch_length += 1
@@ -840,30 +798,18 @@ def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
 
                 # estimate homology
                 rolling_hd = matches / stretch_length
-                #message = "*** C - homology : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                #print(message)
-                #logging.info(message)
 
                 # call homology if passed min_stretch_length
                 if rolling_hd >= homology_threshold:
-                    #message = "****** C - HOMOLOGY : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                    #print(message)
-                    #logging.info(message)
                     homology = True
                     return homology
 
                 # call lack of homology if passed min_stretch_length and no_homology_threshold is reached
                 elif rolling_hd <= no_homology_threshold:
-                    #message = "****** C - NO homology : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                    #print(message)
-                    #logging.info(message)
                     return homology
 
                 # call lack of homology if reached max_stretch_length but not the homology threshold
                 elif stretch_length == max_stretch_length and rolling_hd < homology_threshold:
-                    #message = "****** C- NO homology : %s and stretch: %s bp" % (rolling_hd, stretch_length)
-                    #print(message)
-                    #logging.info(message)
                     return homology
 
                 # not ready to call homology
@@ -988,7 +934,6 @@ def check_synteny_3_prime(starting_position, locus_seq, gene_seq):
         elif locus_seq[i] != gene_seq[i]:
             stretch_length += 1
 
-
     # avoid divisions over 0
     if stretch_length == 0:
 
@@ -999,17 +944,20 @@ def check_synteny_3_prime(starting_position, locus_seq, gene_seq):
     # cannot call synteny if too many indels
     if stretch_length < 100:
 
-        three_prime_synteny_message = "\n.............Contig too short to check 3-prime synteny: only %s bp aligned\n" % str(stretch_length)
+        three_prime_synteny_message = "\n.............Contig too short to check 3-prime synteny: only %s bp aligned\n" \
+                                      % str(stretch_length)
         return synteny, three_prime_synteny_message
 
     # check synteny
     if matches/stretch_length >= homology_threshold:
         synteny = True
-        three_prime_synteny_message = "\n..............3-prime syntenic: %s hamming distance\n" % str(matches/stretch_length)
+        three_prime_synteny_message = "\n..............3-prime syntenic: %s hamming distance\n" \
+                                      % str(matches/stretch_length)
 
     else:
         synteny = False
-        three_prime_synteny_message = "\n..............3-prime NOT syntenic: %s hamming distance\n" % str(matches/stretch_length)
+        three_prime_synteny_message = "\n..............3-prime NOT syntenic: %s hamming distance\n" \
+                                      % str(matches/stretch_length)
 
     return synteny, three_prime_synteny_message
 

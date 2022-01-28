@@ -188,7 +188,6 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contig
     
     # dictionary to collect sequences before finally stiching exons together
     pre_cloned_cds = {}
-    #exons_with_frameshifts = []
     # clone exon sequences from contigs (contigs with most intron exons are prioritized)
     for exon, contigs in preselected_exons_overhangs.items():
         # disregard missing exons
@@ -309,7 +308,7 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
         logging.info(message)
 
     # find hamming distance for them
-    hd = hamming_distance_frameshift(ref_exon, compared_exon)  #  compared_exon, exon_nr, ref_exons
+    hd = hamming_distance_frameshift(ref_exon, compared_exon)  # compared_exon, exon_nr, ref_exons
     message = "   Hamming distance for contig " + winner + " exon nr: %s is %s" \
         % (str(exon_nr), str(hd))
     print(message)
@@ -318,14 +317,6 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
     # move both files to MSA_path
     shutil.move(in_filename, MSA_path + "Duplicated_exons/")
     shutil.move(out_filename, MSA_path + "Duplicated_exons/")
-
-    # if there is a frameshift and its not the last exon, reject this contig
-    #if frameshift is True and exon_nr != list(ref_exons)[-1]:
-    #    hd_normalized = float("inf")
-    #    return hd_normalized
-    #else:
-    #    # normalize hd to ref species exon (prior MSA; without indels)
-    #    hd_normalized = hd/len(ref_exons[exon_nr][1])
 
     #    return hd_normalized
     hd_normalized = hd / len(ref_exons[exon_nr][1])
@@ -408,20 +399,6 @@ def hamming_distance_frameshift(p, q):  # exon_nr, ref_species_exons
             indels_p = indels_p + 1
         if q[i] == "-":
             indels_q = indels_q + 1
-    
-    # check if the dashes are in the end of the exon (likely end of contig)
-    #end_of_contig = True
-    #for nt in q.values():
-    #    if nt == "-":
-    #        end_of_contig = True
-    #    else:
-    #        end_of_contig = False
-    
-    # trigger highest possible hd if frameshift detected        
-    #if end_of_contig is False:
-    #    if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(ref_species_exons.keys())[-1]:
-            
-    #        return float("inf")
 
     return len(mismatches)
 
@@ -710,90 +687,4 @@ def collect_sequences(path):
     seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
 
     return seqs
-
-
-"""
-
-OLD with frameshift check
-
-def hamming_distance_frameshift(p, q, exon_nr, ref_species_exons):
-    Checks hamming distance between likely duplicated exons. Frameshifts are penalized,
-
-    indels_p = 0
-    indels_q = 0
-    mismatches = []
-    for i in range (len(p)):
-        if p[i] != q[i]:
-            mismatches.insert(0,i)
-        if p[i] == "-":
-            indels_p = indels_p + 1
-        if q[i] == "-":
-            indels_q = indels_q + 1
-    
-    # check if the dashes are in the end of the exon (likely end of contig)
-    #end_of_contig = True
-    #for nt in q.values():
-    #    if nt == "-":
-    #        end_of_contig = True
-    #    else:
-    #        end_of_contig = False
-    
-    # trigger highest possible hd if frameshift detected        
-    #if end_of_contig is False:
-    #    if (indels_p % 3 != 0 or indels_q % 3 != 0) and exon_nr != list(ref_species_exons.keys())[-1]:
-            
-    #        return float("inf")
-
-    return len(mismatches)
-
-
-
-
-                        # check frameshift (DISABLED) -> allows frameshits
-                        frameshift = False
-                        #frameshift = check_frameshift(ref_species_exon, locus_exon)
-                        
-                        # check if its not the last exon
-                        if exon != list(ref_exons.keys())[-1] and frameshift is False:
-                            # converting the nucleotides into a string
-                            locus_exon_string = "".join(locus_exon.values())
-                            # mark that this exon was already cloned
-                            cds_composition[exon] = contig[0]
-                            pre_cloned_cds[exon] = contig[0], locus_exon_string 
-                            break 
-                        
-                        # if frameshift detected and not last exon
-                        if frameshift is True and exon != list(ref_exons.keys())[-1]:
-                            # log the frameshift
-                            message = "   ...WARNING... : FRAMESHIFT detected in contig " \
-                                    + contig[0] + " in exon nr: %s" % str(exon)
-                            print(message)
-                            logging.info(message)
-                            # mark that this exon was already counted but not cloned
-                            cds_composition[exon] = "FRAMESHIFT"
-                            exons_with_frameshifts.append(exon)
-                            pre_cloned_cds[exon] = contig[0], ""
-                            break
-
-                        # if last exon
-                        if exon == list(ref_exons.keys())[-1]:
-                            # check if there is a STOP codon
-                            #check_stop_codon(aligned_seqs[0][1], aligned_seqs[1][1], exon)
-                            # converting the nucleotides into a string
-                            locus_exon_string = "".join(locus_exon.values())
-                            # mark that this exon was already cloned
-                            cds_composition[exon] = contig[0]
-                            pre_cloned_cds[exon] = contig[0], locus_exon_string
-                            if frameshift is True:
-                                exons_with_frameshifts.append(exon)
-                                # log the frameshift
-                                message = "   ...WARNING... : FRAMESHIFT detected in contig " \
-                                    + contig[0] + " in the LAST exon nr: %s (allowed)" % str(exon)
-                                print(message)
-                                logging.info(message)
-                                
-                            break
-
-
-"""
 

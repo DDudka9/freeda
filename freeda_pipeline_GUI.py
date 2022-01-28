@@ -11,7 +11,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
-#       0) Test the command line agg workaround
+#       0) Possible issue with length of gene -> how TRIM5a human gene is soo long? Trim-214 in ensembl is
+#                   only 20k while I get over 200k linear seq -> check input from pyensembl
+#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long
+#       0) Test the command line agg workaround -> seem to be working well
 #       0) Use PosiGene paper for comparison with other programs
 #       0) Users should also be able to visualize alignment -> can I ask them to download Ugene?
 #       0) Consider PAML FAQ forum

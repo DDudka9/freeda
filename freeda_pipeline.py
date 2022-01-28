@@ -59,11 +59,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     if ref_species is None:
         ref_species = "Mm"
 
-    # reference species sequences: gene seq, cds, exons, gene (ex. Mus musculus)
-    #if ref_species != "Mm" and ref_species != "Hs":
-    #    print("\nSupported reference species are mouse : %s and human : %s" % ('"Mm"', '"Hs"'))
-    #    return
-
     # initial percent identity threshold for blast matches analysis
     if t is None:
         t = 30
@@ -103,17 +98,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     # get all genes to be analysed (these are gene names)
     all_genes = [gene.rstrip("\n") for gene in open(wdir + "genes.txt", "r").readlines() if gene != "\n"]
 
-
     # get settings
     aligner = "mafft"
 
-
     # get all species and genome names
     all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)]
-
-    #all_species = [names[0] for names in all_names]
-    #all_genome_names = [names[1] for names in all_names]
-
 
     # check if the user had previously obtained data for given list of genes
     if user_input0 == "n":
@@ -204,10 +193,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                       "-> cannot overlay FREEDA results onto a 3D structure\n" % gene)
                 print("...WARNING... : gene will still be analyzed using PAML but without 3D structure overlay\n")
 
-            #if microexon_present:
-            #    print("...WARNING... : Sequence for: %s found in Ensembl contains microexons : %s\n"
-            #          % (gene, microexons))
-            #    print("...WARNING... : Microexons are difficult to align and are removed\n")
 
     # ----------------------------------------#
     ######## RUN BLAST ########
@@ -217,10 +202,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
     if user_input1 == "y":
         print("Checking genome blast databases...")
         tblastn.run_blast(wdir, ref_species, all_genes)
-        #if blast_output_path is None:
-        #    print("\n...FATAL ERROR... : Blast database build failed for at least one genome"
-        #          "\n                               -> exiting the pipeline now...")
-        #return
 
     # ----------------------------------------#
     ######## RUN EXON FINDING ########
@@ -259,10 +240,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
                 failed_paml, genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
                                                                                   result_path, all_genes, aligner)
 
-                #if not all([nr_of_species_total_dict]):
-                #    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
-                #    return
-
                 # visualize PAML result
                 paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
                                                      nr_of_species_total_dict, ref_species, PAML_logfile_name,
@@ -291,10 +268,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
         nr_of_species_total_dict, PAML_logfile_name, day, \
         failed_paml, genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
                                                                           result_path, all_genes, aligner)
-
-        #if not all([nr_of_species_total_dict]):
-        #    print("\n...FATAL_ERROR... : Failed PAML analysis -> exiting the pipeline now ...")
-        #    return
 
         # visualize PAML result
         paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
@@ -340,37 +313,10 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 30)", type=int, default=60)
 
     args = parser.parse_args()
     freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)
 
-
-
-"""
-
- 
-                # get structure model using AlphaFold url request
-                prediction_url = input_extractor.get_prediction(wdir, ref_species, gene)
-                if prediction_url == None:
-                    print("AlphaFold prediction not available for: %s\n" % gene)
-                    model_equal_input = False
-                    pass
-                elif prediction_url == True:
-                    print("Structure prediction model for: %s already exists\n" % gene)
-                    # check if model sequence equals the blasted sequence
-                    model_equal_input = structure_builder.compare_model_with_input(wdir, ref_species, gene)
-                    pass
-                else:
-                    print("\n(FREEDA) Please input structure prediction for gene: %s\n(copy the following url into your browser " \
-                      "-> click PDB file -> save in ../Data/Structures/%s)\n\n " \
-                         "%s\n\n ...WARNING... Verify gene identity (if incorrect find model in AlphaFold browser)" 
-                                                     % (gene, gene + "_" + ref_species, prediction_url))
-                    input("\n(FREEDA) When done press ENTER\n")
-                    # check if model sequence equals the blasted sequence
-                    model_equal_input = structure_builder.compare_model_with_input(wdir, ref_species, gene)
-
-
-"""
