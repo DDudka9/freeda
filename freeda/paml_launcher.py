@@ -641,7 +641,7 @@ def run_RAxML(gene, gene_folder_path, out_Gblocks):
 
     tree_name = gene + "_Tree"
 
-    RAxML_cline = ["raxmlHPC", "-f", "a", "-s", out_Gblocks, "-n", tree_name,
+    RAxML_cline = [pyinstaller_compatibility.resource_path("raxmlHPC"), "-f", "a", "-s", out_Gblocks, "-n", tree_name,
                    "-m", "GTRGAMMA", "-p", "12345", "-x", "12345", "-#", "100"]
 
     result = subprocess.call(RAxML_cline)
