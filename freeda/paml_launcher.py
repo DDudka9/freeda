@@ -818,7 +818,9 @@ def run_seqret(gene, out_Gblocks):
     """Takes a fasta squence aligment and converts it into phylip format"""
 
     phylip_path = out_Gblocks.replace(".fasta", ".phy")
-    seqret_cline = ["seqret", "-sequence", out_Gblocks,
+    # PYINSTALLER: Add the pyinstaller directory to the system path so that the binary line 'which seqret' can work.
+    os.environ["PATH"] += os.pathsep + pyinstaller_compatibility.resource_path("")
+    seqret_cline = [pyinstaller_compatibility.resource_path("seqret"), "-sequence", out_Gblocks,
                     "-osformat2", "phylipnon", "-outseq", phylip_path]
     result = subprocess.call(seqret_cline)
     if result == 0:

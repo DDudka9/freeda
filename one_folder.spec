@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-add_binaries = [('include/tblastn','.'),('include/mafft','.')]
-add_data = [('freeda_img4.png','.'), ('include/bedtools', 'bedtools'), ('include/ncbi-blast+','.')]
+add_binaries = []
+add_data = [('freeda_img4.png','.'), ('include/bedtools', 'bedtools'), ('include/lib','.'), ('include/bin', '.'), ('include/share', 'share')]
 add_imports = ['PIL._tkinter_finder']
 
 block_cipher = None
