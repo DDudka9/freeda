@@ -578,7 +578,7 @@ def run_PAML(wdir, gene, PAML_path):
     
     # run PAML
     cml = codeml.Codeml(alignment="input.phy", tree="gene.tree", out_file="output_PAML", working_dir=PAML_path)
-    cml.run("control_file.ctl")
+    cml.run(ctl_file="control_file.ctl", command=pyinstaller_compatibility.resource_path("codeml"))
     results = codeml.read("output_PAML")
     ns_sites = results.get("NSsites")
     
