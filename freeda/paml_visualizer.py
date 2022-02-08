@@ -27,7 +27,8 @@ import math
 
 
 def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
-                         ref_species, PAML_logfile_name, day, genes_under_positive_selection, failed_paml, gui=False):
+                         ref_species, PAML_logfile_name, day, genes_under_positive_selection, failed_paml,
+                         codon_frequencies, gui=False):
     """Analyzes PAML results for each gene unless no PAML result available"""
 
     all_matched_adaptive_sites_ref = {}
@@ -46,7 +47,7 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
                 nr_of_species_total = nr_of_species_total_dict[gene]
                 matched_adaptive_sites_ref = plot_PAML(wdir, result_path, gene,
                                                    nr_of_species_total, ref_species,
-                                                   genes_under_positive_selection, gui)
+                                                   genes_under_positive_selection, gui, codon_frequencies)
                 all_matched_adaptive_sites_ref[gene] = matched_adaptive_sites_ref
 
     # get protein alignment that matches 3D structure
@@ -360,7 +361,8 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
     shutil.move(wdir + excel_filename, result_path)
 
 
-def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_positive_selection, gui):
+def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_positive_selection,
+              gui, codon_frequencies):
     """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
     
     # get ref and final aa sequence for a gene
@@ -369,20 +371,24 @@ def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_u
     ref_species_dict, final_ref_species_dict, final_length = organise_ref_and_final_seqs(ref_sequence_record, final_sequence_record)
     # map the aa residues between the ref and final sequences
     mapped_ref_and_final_residues_dict = map_ref_and_final_residues(ref_sequence_record, final_sequence_record)
-    # find dN/dS omega ratio per site based on "rst" file (final only for now)
-    omega_dict = get_omegas(gene, result_path, final_length)
-    # read PAML output file to find which residues are rapidly evolving in the final seq
-    adaptive_sites_dict = get_adaptive_sites(result_path, gene)
-    # find these residues in the ref sequence
-    matched_adaptive_sites_ref = match_adaptive_sites_to_ref(final_ref_species_dict,
-            mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict)
-    # mark the sites that were not analyzed by PAML
-    final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
-    # record and write breakdown of adaptive sites overlay to ref cds
-    record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection)
-    # plot omegas and probabilities
-    make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
-                nr_of_species_total, genes_under_positive_selection, gui)
+
+    for codon_frequency in codon_frequencies.split(","):
+        codon_frequency = codon_frequency.replace(" ", "")  # get rid of the spaces if present
+
+        # find dN/dS omega ratio per site based on "rst" file (final only for now)
+        omega_dict = get_omegas(gene, result_path, final_length, codon_frequency)
+        # read PAML output file to find which residues are rapidly evolving in the final seq
+        adaptive_sites_dict = get_adaptive_sites(result_path, gene, codon_frequency)
+        # find these residues in the ref sequence
+        matched_adaptive_sites_ref = match_adaptive_sites_to_ref(final_ref_species_dict,
+                mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict)
+        # mark the sites that were not analyzed by PAML
+        final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
+        # record and write breakdown of adaptive sites overlay to ref cds
+        record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection)
+        # plot omegas and probabilities
+        make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
+                    nr_of_species_total, genes_under_positive_selection, codon_frequency, gui)
 
     return matched_adaptive_sites_ref
 
@@ -694,10 +700,10 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
     return matched_adaptive_sites_ref
 
 
-def get_omegas(gene, result_path, final_length):
+def get_omegas(gene, result_path, final_length, codon_frequency):
     """Gets Dn/Ds ratio (omega) for each site in aa seq of reference species"""
     
-    PAML_output_file_path = result_path + gene + "/PAML_" + gene
+    PAML_output_file_path = result_path + gene + "/PAML_" + gene + "_" + codon_frequency
     
     PAML_result_dict = {}
     for i in range(1, final_length+1):
@@ -757,10 +763,10 @@ def get_omegas(gene, result_path, final_length):
     return omega_dict
 
 
-def get_adaptive_sites(result_path, gene):
+def get_adaptive_sites(result_path, gene, codon_frequency):
     """Reads the PAML output files and finds which sites are likely under positive selection (BEB)"""
     
-    PAML_output_file_path = result_path + "/" + gene + "/PAML_" + gene
+    PAML_output_file_path = result_path + "/" + gene + "/PAML_" + gene + "_" + codon_frequency
     with open(PAML_output_file_path + "/output_PAML", "r") as f:
         
         adaptive_sites_dict = {}
@@ -802,7 +808,7 @@ def get_adaptive_sites(result_path, gene):
 
 
 def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_species_total,
-                genes_under_positive_selection, gui):
+                genes_under_positive_selection, codon_frequency, gui):
     """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites
     under positive selection"""
 
@@ -846,7 +852,6 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
             else:
                 probabilities[i] = 0
 
-
     if gui:
         # set the backend to a non-interactive one -> does not create and destroys GUI windows
         use('agg')
@@ -860,10 +865,11 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
     elif ref_species == "Fc" or ref_species == "Cf":
         clade = "Carnivora"
     elif ref_species == "Gg":
-        clade = "Phasanidae"
+        clade = "Phasianidae"
 
     # plot recurrently changing sites (put it 11 bin of M8 model with postmean omega > 1.0)
-    plt.subplot(311, title="PAML analysis - %s (%s - %s species)" % (gene, clade, nr_of_species_total))
+    plt.subplot(311, title="PAML analysis (%s) - %s (%s - %s species)" % (codon_frequency, gene,
+                                                                          clade, nr_of_species_total))
     plt.ylabel("Posterior mean\n omega")
     plt.axis([1.0, sites[-1], 0, roof + 1.1])
     plt.ylim(1.0, roof + 1.1)
@@ -893,7 +899,7 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
     plt.bar(sites, probabilities, color=clrs3)
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     
-    figure_name = gene + "_PAML_analysis"
+    figure_name = gene + "_PAML_analysis_" + codon_frequency
     plt.savefig(figure_name + ".tif", dpi=300, bbox_inches="tight")
     
     shutil.move(wdir + figure_name + ".tif", result_path + figure_name + ".tif")

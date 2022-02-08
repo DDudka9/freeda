@@ -50,7 +50,7 @@ from freeda import genomes_preprocessing
 import os
 
 
-def freeda_pipeline(wdir=None, ref_species=None, t=None, f=None):
+def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None):
     """Main function running all freeda pipeline from command line"""
 
     if wdir is None:
@@ -62,6 +62,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, f=None):
     # initial percent identity threshold for blast matches analysis
     if t is None:
         t = 30
+
+    if codon_frequencies is None:
+        codon_frequencies = "F3X4"
 
     user_input0 = None
     user_input1 = None
@@ -238,12 +241,12 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, f=None):
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, \
                 failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
-                                                            result_path, all_genes, aligner, codon_frequency=f)
+                                                            result_path, all_genes, aligner, codon_frequencies)
 
                 # visualize PAML result
                 paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
                                                      nr_of_species_total_dict, ref_species, PAML_logfile_name,
-                                                     day, genes_under_pos_sel, failed_paml)
+                                                     day, genes_under_pos_sel, failed_paml, codon_frequencies)
                 # run PyMOL
                 for gene in all_genes:
 
@@ -267,12 +270,12 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, f=None):
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, \
         failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
-                                                            result_path, all_genes, aligner, codon_frequency=f)
+                                                            result_path, all_genes, aligner, codon_frequencies)
 
         # visualize PAML result
         paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
                                              nr_of_species_total_dict, ref_species, PAML_logfile_name,
-                                             day, genes_under_pos_sel, failed_paml)
+                                             day, genes_under_pos_sel, failed_paml, codon_frequencies)
         # run PyMOL
         for gene in all_genes:
 
@@ -316,9 +319,10 @@ if __name__ == '__main__':
                         help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
-    parser.add_argument("-f", "--codon_frequency",
-                        help="specify codon frequency model (F3x4 is default)", type=str, default="F3x4")
+    parser.add_argument("-f", "--codon_frequencies",
+                        help="specify codon frequency models (F3x4 is default)", type=str, default="F3x4")
 
     args = parser.parse_args()
-    freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold, f=args.codon_frequency)
+    freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,
+                    codon_frequencies=args.codon_frequencies)
 

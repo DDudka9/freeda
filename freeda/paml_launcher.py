@@ -39,8 +39,8 @@ import copy
 import pyensembl
 
 
-def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=None, logging_window=None,
-                      codon_frequency=None):
+def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_frequencies,
+                      gui=None, logging_window=None):
     """Main function controlling building final alignments, gene trees and PAML anaylsis"""
 
     failed_paml = []
@@ -74,7 +74,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
         all_species_dict[species] = ""
     
     nr_of_species_total_dict = {}
-    prots_under_pos_sel = []
+    genes_under_pos_sel = []
 
     for gene in all_genes:
         
@@ -165,22 +165,18 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
             
             shutil.move(cds_file_path, gene_folder_path)
             shutil.move(final_cds_file, gene_folder_path)
-        
-            # generate a PAML folder for a given gene
-            PAML_path = gene_folder_path + "/PAML_" + gene
-            os.makedirs(PAML_path)
-        
+
             # make and copy control_file from working directory into gene_folder_path
-            if not os.path.isfile(wdir + "control_file_F3x4.ctl") \
+            if not os.path.isfile(wdir + "control_file_F3X4.ctl") \
                     and not os.path.isfile(wdir + "control_file_F61.ctl"):
                 control_file.make_control_file(wdir)
 
             # define which codon frequency is used - allow only F3x4 (default) or F61
-            if str(codon_frequency).upper() != "F61":
-                codon_frequency = "F3x4"
-
-            control_file_name = "control_file_" + codon_frequency + ".ctrl"
-            shutil.copy(control_file_name, PAML_path + "/" + control_file_name)
+            if str(codon_frequencies).upper() != "F61" \
+                and str(codon_frequencies).upper() != "F3X4" \
+                    and str(codon_frequencies).upper() != "F3X4,F61" \
+                        and str(codon_frequencies).upper() != "F61,F3X4":
+                codon_frequencies = "F3X4"
         
             # align the final cds sequences
             out_msa = align_final_cds(gene, final_cds_file, result_path, aligner)
@@ -239,8 +235,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
 
             # run seqret (file is already in gene folder)
             phylip_path = run_seqret(gene, out_Gblocks)
-            shutil.copy(phylip_path, PAML_path + "/input.phy")
-            
+
             # run RAxML (and move all the RAxML files to gene folder)
             try:
                 best_tree_path = run_RAxML(gene, gene_folder_path, out_Gblocks)
@@ -253,25 +248,37 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
                 logging.info(message)
                 continue
 
-            shutil.copy(best_tree_path, PAML_path + "/gene.tree")
+            for codon_frequency in codon_frequencies.split(","):
+                codon_frequency = codon_frequency.replace(" ", "")  # get rid of the spaces if present
 
-            # rename and copy the final gene alignment into results
-            shutil.copy(translated_path, result_path + gene + "_protein_alignment.fasta")
+                # generate a PAML folder for a given gene
+                PAML_path = gene_folder_path + "/PAML_" + gene + "_" + codon_frequency
+                os.makedirs(PAML_path)
+
+                control_file_name = "control_file_" + codon_frequency + ".ctl"
+
+                # copy all required files into PAML path
+                shutil.copy(control_file_name, PAML_path + "/" + control_file_name)
+                shutil.copy(phylip_path, PAML_path + "/input.phy")
+                shutil.copy(best_tree_path, PAML_path + "/gene.tree")
+
+                # rename and copy the final gene alignment into results
+                shutil.copy(translated_path, result_path + gene + "_protein_alignment.fasta")
         
-            # run PAML
-            message = "\n.........Running PAML for gene: %s.........\n" % gene
-            print(message)
-            logging.info(message)
+                # run PAML
+                message = "\n.........Running PAML (%s) for gene: %s.........\n" % (codon_frequency, gene)
+                print(message)
+                logging.info(message)
 
-            M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path, control_file_name)
+                M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path, control_file_name)
 
-            if M8_M7 < 0.05:
-                prots_under_pos_sel.append(gene)
+                if M8_M7 < 0.05:
+                    genes_under_pos_sel.append(gene)
 
-            message = "\n -> PAML p-values for gene %s : M2a v M1a - %s and M8 v M7 - %s" \
-                % (gene, str(M2a_M1a), str(M8_M7))
-            print(message)
-            logging.info(message)
+                message = "\n -> PAML p-values for gene %s : M2a v M1a - %s and M8 v M7 - %s\n" \
+                    % (gene, str(M2a_M1a), str(M8_M7))
+                print(message)
+                logging.info(message)
 
     shutil.move(wdir + PAML_logfile_name, result_path)
 
@@ -283,7 +290,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
     print(message)
     logging.info(message)
     
-    return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, prots_under_pos_sel
+    return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, genes_under_pos_sel
 
 
 def check_compatibility(ref_species, gene, translated_path):

@@ -204,7 +204,7 @@ def block_user_entries():
     carnivores.configure(state="disabled")
     birds.configure(state="disabled")
 
-    codon_freq_F3x4.configure(state="disabled")
+    codon_freq_F3X4.configure(state="disabled")
     codon_freq_F61.configure(state="disabled")
 
     name1.configure(state="disabled")
@@ -282,7 +282,7 @@ def ublock_user_entries():
     carnivores.configure(state="normal")
     birds.configure(state="normal")
 
-    codon_freq_F3x4.configure(state="normal")
+    codon_freq_F3X4.configure(state="normal")
     codon_freq_F61.configure(state="normal")
 
     name1.configure(state="normal")
@@ -495,7 +495,7 @@ def freeda_pipeline():
         # get user input
         wdir = wdirectory.get() + "/"
         ref_species = clade.get()
-        codon_frequency = codon_freq.get()
+        codon_frequencies = codon_freq.get()
         t = 60
         all_genes_dict = {gene_name1.get(): [dup1_var.get(),
                                         [site11_label.get(), site11_start.get(), site11_end.get()],
@@ -637,14 +637,14 @@ def freeda_pipeline():
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
                 genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species, result_path,
-                                                                      all_genes, aligner, gui, logging_window,
-                                                                      codon_frequency)
+                                                                      all_genes, aligner, codon_frequencies,
+                                                                      gui, logging_window)
 
         # visualize PAML result
         final_PAML_log_dict = paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
                                                                    nr_of_species_total_dict, ref_species,
                                                                    PAML_logfile_name, day, genes_under_pos_sel,
-                                                                   failed_paml, gui)
+                                                                   failed_paml, codon_frequencies, gui)
         # in case PAML failed and dict wasnt created
         if final_PAML_log_dict:
             get_results(final_PAML_log_dict)
@@ -1179,7 +1179,7 @@ clade = StringVar()
 #ttk.Label(settings_frame, text="Clade").grid(column=0, row=0, pady=5, sticky=(W))
 rodents = ttk.Radiobutton(settings_frame, text="Mouse (Murinae)", variable=clade, value="Mm")
 rodents.grid(column=0, row=1, columnspan=3, sticky=(W))
-primates = ttk.Radiobutton(settings_frame, text="Human (Siimifor.)", variable=clade, value="Hs")
+primates = ttk.Radiobutton(settings_frame, text="Human (Primates)", variable=clade, value="Hs")
 primates.grid(column=0, row=2, columnspan=4, sticky=(W))
 carnivores = ttk.Radiobutton(settings_frame, text="Dog (Carnivora)", variable=clade, value="Cf")
 carnivores.grid(column=0, row=3, columnspan=3, sticky=(W))
@@ -1187,13 +1187,13 @@ birds = ttk.Radiobutton(settings_frame, text="Chicken (Phasian.)", variable=clad
 birds.grid(column=0, row=4, columnspan=3, sticky=(W))
 
 # CODON FREQUENCY
-ttk.Label(codon_freq_frame, text="Codon frequency").grid(column=0, row=0, sticky=(W))
+ttk.Label(codon_freq_frame, text="Codon frequencies").grid(column=0, row=0, sticky=(W))
 codon_freq = StringVar()
-# set F3x4 codon frequency as default
-codon_freq.set("F3x4")
-codon_freq_F3x4 = ttk.Radiobutton(codon_freq_frame, text="F3x4 (first run)", variable=codon_freq, value="F3x4")
-codon_freq_F3x4.grid(column=0, row=1, sticky=(W))
-codon_freq_F61 = ttk.Radiobutton(codon_freq_frame, text="F61 (second run)", variable=codon_freq, value="F61")
+# set F3X4 codon frequency as default
+codon_freq.set("F3X4")
+codon_freq_F3X4 = ttk.Radiobutton(codon_freq_frame, text="F3X4 (default)", variable=codon_freq, value="F3X4")
+codon_freq_F3X4.grid(column=0, row=1, sticky=(W))
+codon_freq_F61 = ttk.Radiobutton(codon_freq_frame, text="F3X4 and F61", variable=codon_freq, value="F3X4,F61")
 codon_freq_F61.grid(column=0, row=2, sticky=(W))
 
 # RESIDUES
