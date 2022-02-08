@@ -2137,17 +2137,22 @@ def get_names(wdir, ref_species, ref_genome=False):
                          ("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
                          ("Mm", "MusMusculus_genome", "GCA_000001635.9"))}
 
-    human_dict = {"Hs": (("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
+    human_dict = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
                       ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),
                       ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),
-                      ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),
+                      ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
+                      ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
+                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # Mona monkey
                       ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),
                       ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),
                       ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),
+                      ("Tf", "TrachypithecusFrancoisi_genome", "GCA_009764325.1"),  # Francois's langur
                       ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # added Colobus monkey
                       ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # added White-faced saki
                       ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # added Ma's night monkey
-                      ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),
+                      ("Pd", "PlecturocebusDonacophilus_genome", "GCA_004027715.1"),  # Bolivian titi
+                      ("Ap", "AlouattaPalliata_genome", "GCA_004027835.1"),  # mantled howler monkey
+                      ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),  # common marmoset
                       ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # added Squirrel monkey
                       ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"))}  # added Spider monkey
                       # ("Mm", "MURINUS_genome", "GCA_000165445.3"),  # added Mouse lemur

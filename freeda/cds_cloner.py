@@ -87,7 +87,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contig
             continue
         
         else:
-            # record all the analysed contigs
+            # record all the analyzed contigs
             for contig_name, nr_exons in contigs_dict.items():
                 contigs_hd_analyzed[contig_name] = 0
             message = "\nRunning hamming distance between contigs: " + str(winners)
@@ -100,7 +100,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contig
                 if contigs_dict[winner] == max_value:
                     winners_hd_normalized[winner] = 0
                 else:
-                    contigs_hd_analyzed[winner] = "not analysed"
+                    contigs_hd_analyzed[winner] = "not analyzed"
 
             for winner in winners_hd_normalized:
                 total_hd_normalized = 0
@@ -423,12 +423,13 @@ def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, g
     # move the file for MSA
     shutil.move(wdir + filename, in_filepath)
     # run MSA and get the final filename of the aligned sequences
-    out_filename = run_single_exon_msa(wdir, ref_species, in_filepath, str(exon_number), filename, aligner)
+    out_filename = run_single_exon_msa(wdir, ref_species, in_filepath, str(exon_number), filename,
+                                       aligner, ref_exons)
 
     return in_filepath, out_filename
 
 
-def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath):
+def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons):
     """Checks if single exons were properly mapped after exon finding."""
 
     # get dictionary from single exon alignment
@@ -481,7 +482,7 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
 
     score = matches/mapping_positions
 
-    # eliminate misaligned exons by converting all bases to dashes (save original alignment as "uncorrected"
+    # eliminate misaligned exons by converting all bases to dashes (save original alignment as "_uncorrected")
     if 0.60 <= score <= 0.75:  # Cenpu Ay _LIPJ01001187.1__rev_Cenpu_exon_5 0.6363636363636364 -> legit
 
         # check if both flanks of the poorly aligned cloned exon are homologous to reference introns
@@ -644,7 +645,7 @@ def check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned
     return double_intron
 
 
-def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename, aligner):
+def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename, aligner, ref_exons):
     """Runs MSA comparing reference species single exons and syntenic locus with presumptive exons"""
 
     out_filename = "aligned_" + "exon_" + str(exon_number) + ".fasta"
@@ -659,7 +660,7 @@ def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename
         with open(out_filename, "w") as f:
             f.write(stdout)
         # check for exon mapping errors -> eliminate such cloned exons
-        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
+        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons)
         # move the file to MSA_path
         shutil.move(out_filename, in_filepath)
 
@@ -672,7 +673,7 @@ def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename
         fasta_reader.reorder_alignment(in_filepath + in_filename, wdir + out_filename)  # outputs to working dir
 
         # check for exon mapping errors -> eliminate such cloned exons
-        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
+        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons)
         shutil.move(out_filename, in_filepath)
 
     return out_filename
@@ -688,3 +689,164 @@ def collect_sequences(path):
 
     return seqs
 
+"""
+
+    for position, bp in enumerate(ref_exon_aligned):
+
+        if bp != "-" and bp == gene_aligned[position]:
+            
+            
+        # allows for deletions and it is blind to insertions
+        if bp != "-" \
+                and cloned_exon_aligned[position] != ref_exon_aligned[position] \
+                and cloned_exon_aligned[position] != "-":
+            mapping_positions += 1
+
+        # allows for deletions and it is blind to insertions
+        elif bp != "-" and cloned_exon_aligned[position] == ref_exon_aligned[position]:
+            matches += 1
+            mapping_positions += 1
+
+
+# penalizes indels
+def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons):
+    Checks if single exons were properly mapped after exon finding
+
+    # get dictionary from single exon alignment
+    all_seq_dict = fasta_reader.alignment_file_to_dict(wdir, ref_species, out_filename)
+
+    # write ref exon and cloned exon into str variables (with dashes)
+    for i, header in enumerate(all_seq_dict):
+        if i == 0:
+            ref_exon_aligned = all_seq_dict[header]
+        elif i == 1:
+            cloned_exon_header = header
+            cloned_exon_aligned = all_seq_dict[cloned_exon_header]
+        else:
+            gene_header = header
+            gene_aligned = all_seq_dict[gene_header]
+
+    # check for unreasonable insertions
+    if len(cloned_exon_aligned.replace("-", "")) / len(gene_aligned.replace("-", "")) > 2:
+        message = "\n...WARNING... : Exon : %s : Contains a huge insertions " \
+                  "-> eliminated" % cloned_exon_header
+        print(message)
+        logging.info(message)
+        uncorrected_filename = "_uncorrected_" + out_filename
+        shutil.copy(wdir + out_filename, wdir + uncorrected_filename)
+        shutil.move(wdir + uncorrected_filename, in_filepath)
+        cloned_exon = "-" * len(cloned_exon_aligned)
+        all_seq_dict[cloned_exon_header] = cloned_exon
+
+        # write dict back to file
+        with open(out_filename, "w") as f:
+            for header, seq in all_seq_dict.items():
+                f.write(header + "\n")
+                f.write(seq + "\n")
+            return
+
+    # score mismatches
+    matches = 0
+    mapping_positions = 0
+    exon_start = False
+    exon_length = ref_exons[int(exon_number)][2]
+
+    for position, bp in enumerate(ref_exon_aligned):
+
+        if exon_length == 0:
+            break
+
+        # count bases in ref exon
+        if bp != "-" and bp == gene_aligned[position]:
+            exon_start = True
+            exon_length -= 1
+
+            # match
+            if cloned_exon_aligned[position] == ref_exon_aligned[position]:
+                matches += 1
+                mapping_positions += 1
+
+            # mismatch are penalized
+            elif cloned_exon_aligned[position] != "-":
+                mapping_positions += 1
+
+            # deletions are moderately penalized
+            elif cloned_exon_aligned[position] == "-":
+                matches += 0.25
+                mapping_positions += 1
+
+        # insertion (exon start prevents counting insertions in intronic overhangs) - moderately penalized
+        if exon_start and bp == "-" and cloned_exon_aligned[position] != "-":
+            matches += 0.25
+            mapping_positions += 1
+
+        # misalignment -> reset matches
+        if bp != "-" and bp != gene_aligned[position]:
+            matches = 0
+
+    score = matches/mapping_positions
+
+    # eliminate misaligned exons by converting all bases to dashes (save original alignment as "uncorrected"
+    if 0.60 <= score <= 0.75:  # Cenpu Ay _LIPJ01001187.1__rev_Cenpu_exon_5 0.6363636363636364 -> legit
+
+        # check if both flanks of the poorly aligned cloned exon are homologous to reference introns
+        double_intron = check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned)
+
+        if double_intron is False:
+
+            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > 0.75, questionable " \
+                      "= 0.60-0.75, poor < 0.60) and lack of two flanking introns " \
+                      "-> eliminated" % (cloned_exon_header, score)
+            print(message)
+            logging.info(message)
+            uncorrected_filename = "_uncorrected_" + out_filename
+            shutil.copy(wdir + out_filename, wdir + uncorrected_filename)
+            shutil.move(wdir + uncorrected_filename, in_filepath)
+            cloned_exon = "-" * len(cloned_exon_aligned)
+            all_seq_dict[cloned_exon_header] = cloned_exon
+
+            # write dict back to file
+            with open(out_filename, "w") as f:
+                for header, seq in all_seq_dict.items():
+                    f.write(header + "\n")
+                    f.write(seq + "\n")
+            return
+
+        # low score but introns detected at both ends
+        else:
+            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > 0.75, questionable " \
+                      "= 0.60-0.75, poor < 0.60) but flanked by two syntenic introns " \
+                      "-> acceptable" % (cloned_exon_header, score)
+            print(message)
+            logging.info(message)
+            return
+
+    if score < 0.60:
+
+        message = "\n...WARNING... : Exon : %s : Poor alignment score : %s " \
+                  "(good > 0.75, questionable = 0.60-0.75, poor < 0.60)" \
+                  " -> eliminated" % (cloned_exon_header, score)
+        print(message)
+        logging.info(message)
+        uncorrected_filename = "_uncorrected_" + out_filename
+        shutil.copy(wdir + out_filename, wdir + uncorrected_filename)
+        shutil.move(wdir + uncorrected_filename, in_filepath)
+        cloned_exon = "-" * len(cloned_exon_aligned)
+        all_seq_dict[cloned_exon_header] = cloned_exon
+
+        # write dict back to file
+        with open(out_filename, "w") as f:
+            for header, seq in all_seq_dict.items():
+                f.write(header + "\n")
+                f.write(seq + "\n")
+        return
+
+    if score > 0.75:
+        message = "\nExon : %s Good alignment score : %s (good > 0.75, questionable = 0.60-0.75, poor < 0.60) " \
+                  "-> accepted" % (cloned_exon_header, score)
+        print(message)
+        logging.info(message)
+        return
+
+
+"""

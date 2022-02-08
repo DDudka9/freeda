@@ -26,9 +26,9 @@ import pandas as pd
 import math
 
 
-def analyse_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
+def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
                          ref_species, PAML_logfile_name, day, genes_under_positive_selection, failed_paml, gui=False):
-    """Analyses PAML results for each gene unless no PAML result available"""
+    """Analyzes PAML results for each gene unless no PAML result available"""
 
     all_matched_adaptive_sites_ref = {}
     

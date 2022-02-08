@@ -11,12 +11,25 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Pick transcript with lowest number if matching structure (e.g. TRIM5-202 instead of TRIM5-214)
+#       0) Allow user to get rid of species
+#       0) Allow user to run freeda with two different models (F3x4 and F61)
+#       0) Run both models? F3x4 and F61?
+#       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0
+#                   -> the 1.0 intron is actually completely missing -> no mismatches are treated as full alignment
+#                           -> penalize that
+#       0) You need to introduce info about the ref exon length and pass it to single exon checkpoint to avoid
+#               the code recognising intronic dashes as indels -> one of the dicts "ref_exons" should have it
+#                   -> I added the exon length variable to single exon mapping checkpoint, penalized gaps
+#                           by giving 0.25 point instead of 1 -> test on CD55
+#                   -> I decided to go back to not penalizing indels because that leads to rejection of exons e.g.
+#                           Cenp-a ends up with only 7 species becuase of the exon 1 indels (which are true)
+#       0) CD55 in primates An species has clear misalignment in exon 4 and 5 -> passes single exon check though (0.69 and 0.74)
+#                   -> I started punishing indels -> test on Izumo1, Izumo 3 and Haus8
 #       0) Possible issue with length of gene -> how TRIM5a human gene is soo long? Trim-214 in ensembl is
 #                   only 20k while I get over 200k linear seq -> check input from pyensembl
 #                               -> seems that its pyensembl doing; gives bed coordinates for gene that long
-#       0) Test the command line agg workaround -> seem to be working well
-#       0) Use PosiGene paper for comparison with other programs
-#       0) Users should also be able to visualize alignment -> can I ask them to download Ugene?
+#       0) Test the command line agg workaround -> seem to be working well (FIXED)
 #       0) Consider PAML FAQ forum
 #       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
 #                                       : "A beginners guide to estimating the non-synonymous to
@@ -191,6 +204,9 @@ def block_user_entries():
     carnivores.configure(state="disabled")
     birds.configure(state="disabled")
 
+    codon_freq_F3x4.configure(state="disabled")
+    codon_freq_F61.configure(state="disabled")
+
     name1.configure(state="disabled")
     name2.configure(state="disabled")
     name3.configure(state="disabled")
@@ -265,6 +281,9 @@ def ublock_user_entries():
     primates.configure(state="normal")
     carnivores.configure(state="normal")
     birds.configure(state="normal")
+
+    codon_freq_F3x4.configure(state="normal")
+    codon_freq_F61.configure(state="normal")
 
     name1.configure(state="normal")
     name2.configure(state="normal")
@@ -470,12 +489,13 @@ def freeda_pipeline():
         # use of the pipeline from GUI
         gui = True
 
-        # deactivate the analyse button
+        # deactivate the analyze button
         analyze_button["state"] = "disable"
 
         # get user input
         wdir = wdirectory.get() + "/"
         ref_species = clade.get()
+        codon_frequency = codon_freq.get()
         t = 60
         all_genes_dict = {gene_name1.get(): [dup1_var.get(),
                                         [site11_label.get(), site11_start.get(), site11_end.get()],
@@ -596,9 +616,9 @@ def freeda_pipeline():
         # ----------------------------------------#
 
         if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_genes):
-            result_path = exon_extractor.analyse_blast_results(wdir, wdir + "Blast_output/",
-                                                               ref_species, int(t), all_genes, all_genomes, aligner, gui,
-                                                               logging_window, all_genes_dict)
+            result_path = exon_extractor.analyze_blast_results(wdir, wdir + "Blast_output/",
+                                                               ref_species, int(t), all_genes, all_genomes, aligner,
+                                                               gui, logging_window, all_genes_dict)
             # set a StringVar for GUI
             result_path_var.set(result_path)
 
@@ -616,13 +636,15 @@ def freeda_pipeline():
 
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
-                genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species, result_path,
-                                                                      all_genes, aligner, gui, logging_window)
+                genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species, result_path,
+                                                                      all_genes, aligner, gui, logging_window,
+                                                                      codon_frequency)
 
         # visualize PAML result
-        final_PAML_log_dict = paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
-                                                                   nr_of_species_total_dict, ref_species, PAML_logfile_name,
-                                                                   day, genes_under_pos_sel, failed_paml, gui)
+        final_PAML_log_dict = paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
+                                                                   nr_of_species_total_dict, ref_species,
+                                                                   PAML_logfile_name, day, genes_under_pos_sel,
+                                                                   failed_paml, gui)
         # in case PAML failed and dict wasnt created
         if final_PAML_log_dict:
             get_results(final_PAML_log_dict)
@@ -1021,9 +1043,13 @@ logo_frame.grid(column=0, row=0, columnspan=1, sticky=(N, W, E, S), padx=5, pady
 
 # create settings frame
 settings_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-settings_frame.grid(column=1, row=0, columnspan=3, sticky=(N, W, E, S), padx=5, pady=5)
+settings_frame.grid(column=1, row=0, columnspan=2, sticky=(N, W, E, S), padx=5, pady=5)
 settings_frame.columnconfigure(0, weight=1, uniform="group1")
 settings_frame.columnconfigure((1, 2, 3), weight=1, uniform="group1")
+
+# create codon_freq frame
+codon_freq_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
+codon_freq_frame.grid(column=3, row=0, sticky=(N, W, E, S), padx=5, pady=5)
 
 # create a gene 1 frame
 gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
@@ -1151,25 +1177,24 @@ raise_logger()
 # CLADE
 clade = StringVar()
 #ttk.Label(settings_frame, text="Clade").grid(column=0, row=0, pady=5, sticky=(W))
-rodents = ttk.Radiobutton(settings_frame, text="Rodents (mouse <-> rat)", variable=clade, value="Mm")
+rodents = ttk.Radiobutton(settings_frame, text="Mouse (Murinae)", variable=clade, value="Mm")
 rodents.grid(column=0, row=1, columnspan=3, sticky=(W))
-primates = ttk.Radiobutton(settings_frame, text="Primates (human <-> spider monkey)", variable=clade, value="Hs")
+primates = ttk.Radiobutton(settings_frame, text="Human (Siimifor.)", variable=clade, value="Hs")
 primates.grid(column=0, row=2, columnspan=4, sticky=(W))
-carnivores = ttk.Radiobutton(settings_frame, text="Carnivores (dog <-> cat)", variable=clade, value="Cf")
+carnivores = ttk.Radiobutton(settings_frame, text="Dog (Carnivora)", variable=clade, value="Cf")
 carnivores.grid(column=0, row=3, columnspan=3, sticky=(W))
-birds = ttk.Radiobutton(settings_frame, text="Birds (chicken <-> quail)", variable=clade, value="Gg")
+birds = ttk.Radiobutton(settings_frame, text="Chicken (Phasian.)", variable=clade, value="Gg")
 birds.grid(column=0, row=4, columnspan=3, sticky=(W))
 
-# BLAST THRESHOLD
-#threshold = IntVar()
-#ttk.Label(settings_frame, text="Search").grid(column=0, row=5, pady=5, sticky=(W))
-#shallow_radiobutton = ttk.Radiobutton(settings_frame, text="Shallow", variable=threshold, value=70)
-#shallow_radiobutton.grid(column=1, row=5, sticky=(W))
-#medium_radiobutton = ttk.Radiobutton(settings_frame, text="Medium", variable=threshold, value=50)
-#medium_radiobutton.grid(column=2, row=5, sticky=(W))
-#deep_radiobutton = ttk.Radiobutton(settings_frame, text="Deep", variable=threshold, value=30)
-#deep_radiobutton.grid(column=3, row=5, sticky=(W))
-
+# CODON FREQUENCY
+ttk.Label(codon_freq_frame, text="Codon frequency").grid(column=0, row=0, sticky=(W))
+codon_freq = StringVar()
+# set F3x4 codon frequency as default
+codon_freq.set("F3x4")
+codon_freq_F3x4 = ttk.Radiobutton(codon_freq_frame, text="F3x4 (first run)", variable=codon_freq, value="F3x4")
+codon_freq_F3x4.grid(column=0, row=1, sticky=(W))
+codon_freq_F61 = ttk.Radiobutton(codon_freq_frame, text="F61 (second run)", variable=codon_freq, value="F61")
+codon_freq_F61.grid(column=0, row=2, sticky=(W))
 
 # RESIDUES
 ttk.Label(input_frame, text="Indicate functional residues -----> ").grid(column=0, row=9, columnspan=2,
@@ -1576,6 +1601,7 @@ g5_adapt_more_var = StringVar()
 g5_adapt_more_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_adapt_more_var, justify='center')
 g5_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g5_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
+
 
 try:
     root.mainloop()

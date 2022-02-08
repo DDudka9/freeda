@@ -23,7 +23,7 @@ import os
 import re
 
 
-def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_genes, all_genomes, aligner, gui=None,
+def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, all_genomes, aligner, gui=None,
                           logging_window=None, all_genes_dict=None):
     """ Finds and clones exons based on blast results"""
 
@@ -79,9 +79,9 @@ def analyse_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
                 # run MSA and write them into files
                 msa_aligner.run_msa(MSA_path, aligner)
                 # return potential exons for a current gene in current genome
-                msa_analyzer.analyse_MSA(wdir, ref_species, MSA_path, gene,
+                msa_analyzer.analyze_MSA(wdir, ref_species, MSA_path, gene,
                                          genome_name, ref_exons, expected_exons, aligner, all_genes_dict)
-                # mark that this blast result has been analysed
+                # mark that this blast result has been analyzed
                 message = "\nFinished running gene: '%s' from genome: '%s'\n" \
                     % (gene, genome_name)
                 logging.info(message)

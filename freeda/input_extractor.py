@@ -776,6 +776,7 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
             if len(model_seq) == cds_length_aa:
                 selected_transcript_id = t
                 matching_length = True
+                break  # ADDED 02/06/2022 to promote transcripts with higher ensembl entry numbers (e.g. -202 over -214)
 
     # if there is no transcript of preference, pick the one with longest cds (not recommended)
     if matching_length is False:
@@ -797,9 +798,9 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
         return transcript, selected_transcript_id, gene_id, contig, strand, \
                UTR_5, UTR_3, cds_sequence_expected, matching_length
 
-    # unpack features of the longest transcript
+    # unpack features of the selected transcript
     gene_id, contig, strand, transcript_name, start, end, cds_sequence_expected, length = all_transcripts_dict[selected_transcript_id]
-    # rebuild Transcript object based on the longest transcript
+    # rebuild Transcript object based on the selected transcript
     transcript = pyensembl.Transcript(selected_transcript_id, transcript_name,
             contig, start, end, strand, biotype, gene_id, ensembl, support_level=None)
 

@@ -91,7 +91,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             three_prime_retrotransposition = False
             divergent_introns = False
 
-            # check if there is an exon in the analysed contig
+            # check if there is an exon in the analyzed contig
             if locus_seq[position] in "ACTG":
 
                 # check if this exon has intron at 5-prime
@@ -147,7 +147,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             if locus_seq[position] in list_of_non_ACGT:
                 non_ACGT = True
 
-            # count insertions in the analysed locus_seq
+            # count insertions in the analyzed locus_seq
             if cds_seq[position] == "-" and gene_seq[position] == "-" and locus_seq[position] != "-":
 
                 # Ns in insertions lead to misalignment
@@ -219,7 +219,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 except KeyError:
                     intron_at_3_prime = False
 
-        # CALL EXON IN CONTIG LOCUS ANALYSED
+        # CALL EXON IN CONTIG LOCUS ANALYZED
 
         if last_bp is True:
 
@@ -477,7 +477,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
     if RETRO_score < 0.4:
 
 
-    # CALL SYNTENY OF CONTIG LOCUS ANALYSED
+    # CALL SYNTENY OF CONTIG LOCUS ANALYZED
 
         # call synteny of the contig
         if five_prime_synteny is True and three_prime_synteny is True:

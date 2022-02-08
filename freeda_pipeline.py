@@ -50,7 +50,7 @@ from freeda import genomes_preprocessing
 import os
 
 
-def freeda_pipeline(wdir=None, ref_species=None, t=None):
+def freeda_pipeline(wdir=None, ref_species=None, t=None, f=None):
     """Main function running all freeda pipeline from command line"""
 
     if wdir is None:
@@ -95,7 +95,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
     # generate basic folders for input if not present
     folder_generator.generate_basic_folders(wdir)
-    # get all genes to be analysed (these are gene names)
+    # get all genes to be analyzed (these are gene names)
     all_genes = [gene.rstrip("\n") for gene in open(wdir + "genes.txt", "r").readlines() if gene != "\n"]
 
     # get settings
@@ -209,7 +209,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
     if user_input2 == "y":
         if exon_extractor.check_blast_output(blast_output_path, t, all_genes):
-            result_path = exon_extractor.analyse_blast_results(wdir, blast_output_path,
+            result_path = exon_extractor.analyze_blast_results(wdir, blast_output_path,
                                                     ref_species, int(t), all_genes, all_genomes, aligner)
         else:
             print("\n     ...FATAL ERROR... : Genome of at least one species contains "
@@ -237,11 +237,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, \
-                failed_paml, genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
-                                                                                  result_path, all_genes, aligner)
+                failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
+                                                            result_path, all_genes, aligner, codon_frequency=f)
 
                 # visualize PAML result
-                paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
+                paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
                                                      nr_of_species_total_dict, ref_species, PAML_logfile_name,
                                                      day, genes_under_pos_sel, failed_paml)
                 # run PyMOL
@@ -266,11 +266,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None):
 
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, \
-        failed_paml, genes_under_pos_sel = paml_launcher.analyse_final_cds(wdir, ref_species,
-                                                                          result_path, all_genes, aligner)
+        failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
+                                                            result_path, all_genes, aligner, codon_frequency=f)
 
         # visualize PAML result
-        paml_visualizer.analyse_PAML_results(wdir, result_path, all_genes,
+        paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
                                              nr_of_species_total_dict, ref_species, PAML_logfile_name,
                                              day, genes_under_pos_sel, failed_paml)
         # run PyMOL
@@ -315,8 +315,10 @@ if __name__ == '__main__':
     parser.add_argument("-rs", "--ref_species",
                         help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 30)", type=int, default=60)
+                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
+    parser.add_argument("-f", "--codon_frequency",
+                        help="specify codon frequency model (F3x4 is default)", type=str, default="F3x4")
 
     args = parser.parse_args()
-    freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)
+    freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold, f=args.codon_frequency)
 

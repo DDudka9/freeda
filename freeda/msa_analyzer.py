@@ -24,9 +24,9 @@ import glob
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def analyse_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expected_exons, aligner,
+def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expected_exons, aligner,
                 all_genes_dict=None):
-    """Analyses MSA per contig -> finds exons, clones them into cds"""
+    """Analyzes MSA per contig -> finds exons, clones them into cds"""
 
     # make a dictionary with exon number as key and sequences, names as values -> include microexons as empty lists
     microexons = input_extractor.check_microexons(wdir, gene, ref_species)

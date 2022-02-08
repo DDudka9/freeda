@@ -39,7 +39,8 @@ import copy
 import pyensembl
 
 
-def analyse_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=None, logging_window=None):
+def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=None, logging_window=None,
+                      codon_frequency=None):
     """Main function controlling building final alignments, gene trees and PAML anaylsis"""
 
     failed_paml = []
@@ -71,28 +72,23 @@ def analyse_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
     all_species_dict = {ref_species: ""}
     for species in all_species:
         all_species_dict[species] = ""
-
-    #with open("species.txt", "r") as f:
-    #    all_species[ref_species] = ""
-    #    for species in f.readlines():
-    #        all_species[species.rstrip("\n")] = ""
     
     nr_of_species_total_dict = {}
     prots_under_pos_sel = []
 
     for gene in all_genes:
         
-        # check if this gene was already analysed
+        # check if this gene was already analyzed
         if os.path.isdir(result_path + gene + "/" + "PAML_" + gene):
-           message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % gene
-           print(message)
-           logging.info(message)
+            message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % gene
+            print(message)
+            logging.info(message)
            
-           # get how many species were analysed
-           path_to_final_species = result_path + gene + "/" + gene + "_final.fasta"
-           with open(path_to_final_species, "r") as f:
-               nr_of_species = f.read().count(">")
-               nr_of_species_total_dict[gene] = nr_of_species
+            # get how many species were analyzed
+            path_to_final_species = result_path + gene + "/" + gene + "_final.fasta"
+            with open(path_to_final_species, "r") as f:
+                nr_of_species = f.read().count(">")
+                nr_of_species_total_dict[gene] = nr_of_species
            
         # otherwise proceed with the analysis
         else:
@@ -175,11 +171,16 @@ def analyse_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
             os.makedirs(PAML_path)
         
             # make and copy control_file from working directory into gene_folder_path
-            #control_file = "control_file.ctl"
-            if not os.path.isfile(wdir + "control_file.ctl"):
+            if not os.path.isfile(wdir + "control_file_F3x4.ctl") \
+                    and not os.path.isfile(wdir + "control_file_F61.ctl"):
                 control_file.make_control_file(wdir)
 
-            shutil.copy("control_file.ctl", PAML_path + "/control_file.ctl")
+            # define which codon frequency is used - allow only F3x4 (default) or F61
+            if str(codon_frequency).upper() != "F61":
+                codon_frequency = "F3x4"
+
+            control_file_name = "control_file_" + codon_frequency + ".ctrl"
+            shutil.copy(control_file_name, PAML_path + "/" + control_file_name)
         
             # align the final cds sequences
             out_msa = align_final_cds(gene, final_cds_file, result_path, aligner)
@@ -262,7 +263,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_genes, aligner, gui=No
             print(message)
             logging.info(message)
 
-            M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path)
+            M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path, control_file_name)
 
             if M8_M7 < 0.05:
                 prots_under_pos_sel.append(gene)
@@ -566,7 +567,7 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
 # MODIFY THE INSERTION FUNCTION TO ELIMINATE ALSO 3% != 0 insertions > 1 (mostly artificial insertions)
 
 
-def run_PAML(wdir, gene, PAML_path):
+def run_PAML(wdir, gene, PAML_path, control_file_name):
     """Runs PAML by calling the control file"""
 
     from Bio.Phylo.PAML import codeml
@@ -577,7 +578,7 @@ def run_PAML(wdir, gene, PAML_path):
     
     # run PAML
     cml = codeml.Codeml(alignment="input.phy", tree="gene.tree", out_file="output_PAML", working_dir=PAML_path)
-    cml.run("control_file.ctl")
+    cml.run(control_file_name)
     results = codeml.read("output_PAML")
     ns_sites = results.get("NSsites")
     
