@@ -79,7 +79,8 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
     for gene in all_genes:
         
         # check if this gene was already analyzed
-        if os.path.isdir(result_path + gene + "/" + "PAML_" + gene):
+        if os.path.isdir(result_path + gene + "/" + "PAML_" + gene + "_" + "F3X4") \
+                or os.path.isdir(result_path + gene + "/" + "PAML_" + gene + "_" + "F61"):
             message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % gene
             print(message)
             logging.info(message)
@@ -159,8 +160,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                     else:
                         f.write(">" + species + "\n")
                         f.write(final_species[species] + "\n")
-        
-        
+
             gene_folder_path = result_path + gene
             
             shutil.move(cds_file_path, gene_folder_path)
@@ -172,10 +172,10 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 control_file.make_control_file(wdir)
 
             # define which codon frequency is used - allow only F3x4 (default) or F61
-            if str(codon_frequencies).upper() != "F61" \
-                and str(codon_frequencies).upper() != "F3X4" \
-                    and str(codon_frequencies).upper() != "F3X4,F61" \
-                        and str(codon_frequencies).upper() != "F61,F3X4":
+            if str(codon_frequencies).upper().replace(" ", "") != "F61" \
+                and str(codon_frequencies).upper().replace(" ", "") != "F3X4" \
+                and str(codon_frequencies).upper().replace(" ", "") != "F3X4,F61" \
+                and str(codon_frequencies).upper().replace(" ", "") != "F61,F3X4":
                 codon_frequencies = "F3X4"
         
             # align the final cds sequences
@@ -249,7 +249,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 continue
 
             for codon_frequency in codon_frequencies.split(","):
-                codon_frequency = codon_frequency.replace(" ", "")  # get rid of the spaces if present
+                codon_frequency = codon_frequency.upper().replace(" ", "")  # get rid of the spaces if present
 
                 # generate a PAML folder for a given gene
                 PAML_path = gene_folder_path + "/PAML_" + gene + "_" + codon_frequency
@@ -270,13 +270,13 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 print(message)
                 logging.info(message)
 
-                M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path, control_file_name)
+                M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency)
 
                 if M8_M7 < 0.05:
                     genes_under_pos_sel.append(gene)
 
-                message = "\n -> PAML p-values for gene %s : M2a v M1a - %s and M8 v M7 - %s\n" \
-                    % (gene, str(M2a_M1a), str(M8_M7))
+                message = "\n -> PAML p-values (%s) for gene %s : M2a v M1a - %s and M8 v M7 - %s\n" \
+                    % (codon_frequency, gene, str(M2a_M1a), str(M8_M7))
                 print(message)
                 logging.info(message)
 
@@ -574,7 +574,7 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
 # MODIFY THE INSERTION FUNCTION TO ELIMINATE ALSO 3% != 0 insertions > 1 (mostly artificial insertions)
 
 
-def run_PAML(wdir, gene, PAML_path, control_file_name):
+def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     """Runs PAML by calling the control file"""
 
     from Bio.Phylo.PAML import codeml
@@ -633,7 +633,8 @@ def run_PAML(wdir, gene, PAML_path, control_file_name):
         print(message)
         logging.info(message)
     
-    message = "\n PAML LRTs for gene %s are : M2a v M1a - %s and M8 v M7 - %s" % (gene, str(LRT1), str(LRT2))
+    message = "\n PAML LRTs (%s) for gene %s are : M2a v M1a - %s and M8 v M7 - %s" % (codon_frequency,
+                                                                                     gene, str(LRT1), str(LRT2))
     print(message)
     logging.info(message)
     

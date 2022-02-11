@@ -14,7 +14,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #       0) Pick transcript with lowest number if matching structure (e.g. TRIM5-202 instead of TRIM5-214)
 #       0) Allow user to get rid of species
 #       0) Allow user to run freeda with two different models (F3x4 and F61)
-#       0) Run both models? F3x4 and F61?
+#       0) Run both models? F3x4 and F61? -> excel sheet gets sites for both models the same!
 #       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0
 #                   -> the 1.0 intron is actually completely missing -> no mismatches are treated as full alignment
 #                           -> penalize that

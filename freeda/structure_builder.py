@@ -193,6 +193,24 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selecti
     return True
 
 
+def get_consensus_dict(dictionary, gene):
+    """Builds a consensus dictionary by comparing sites under positive selection in both codon frequency models used
+    - converts sites < 0.90 into 0.00"""
+
+    consensus_dict = {}
+    # check if consensus is to be built (more than one codon frequency used)
+    if len(dictionary.keys()) > 1:
+        consensus_dict[gene] = {}
+        for position in range(1, len(dictionary[next(iter(dictionary))][gene]) + 1):
+            position_F3X4 = dictionary["F3X4"][gene][str(position)]
+            position_F61 = dictionary["F61"][gene][str(position)]
+            if float(position_F3X4[2]) < 0.90 or float(position_F61[2]) < 0.90:
+                position_F3X4[2] = "0.00"
+            consensus_dict[gene][str(position)] = position_F3X4
+
+    return consensus_dict
+
+
 def get_pymol_script(wdir, ref_species, dictionary, gene,
                      protein_structure_path, genes_under_positive_selection, domains, all_genes_dict=None):
     """Gets a PyMOL script that will be passed into PyMOL automatically"""
@@ -203,7 +221,13 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
     if gene in genes_under_positive_selection:
         paint_sites = True
 
-    matched_adaptive_sites_ref = dictionary[gene]
+    # check if consensus is needed (more than one codon frequency used)
+    consensus_dict = get_consensus_dict(dictionary, gene)
+    if consensus_dict:
+        matched_adaptive_sites_ref = consensus_dict[gene]
+    else:
+        matched_adaptive_sites_ref = dictionary[gene]
+
     structure_prediction_path = wdir + "Structures/" + gene + "_" + ref_species
 
     if len(os.listdir(structure_prediction_path)) == 0:
@@ -294,22 +318,22 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
                     f.write('label (resi ' + str(site) + ' and name CA), "%s" % ("' + residue + '")\n')
 
         # special case, first residue adaptive
-        if float(matched_adaptive_sites_ref["1"][2]) >= 0.70:
+        if float(matched_adaptive_sites_ref["1"][2]) >= 0.90:
             site = [site for site, features in matched_adaptive_sites_ref.items() if site == "1"][0]
             residue = matched_adaptive_sites_ref[site][0] + str(site)
             f.write('label (first (polymer and name CA)), "(%s; ' + residue + ')"%("N-term")\n')
 
-        if float(matched_adaptive_sites_ref["1"][2]) < 0.70:
+        if float(matched_adaptive_sites_ref["1"][2]) < 0.90:
             f.write('label (first (polymer and name CA)), "(%s)"%("N-term")\n')
 
         # special case, last residue adaptive
-        if float(matched_adaptive_sites_ref[str(len(matched_adaptive_sites_ref))][2]) >= 0.70:
+        if float(matched_adaptive_sites_ref[str(len(matched_adaptive_sites_ref))][2]) >= 0.90:
             site = [site for site, features in matched_adaptive_sites_ref.items() if
                     site == str(len(matched_adaptive_sites_ref))][0]
             residue = matched_adaptive_sites_ref[site][0] + str(site)
             f.write('label (last (polymer and name CA)), "(%s; ' + residue + ')"%("C-term")\n')
 
-        if float(matched_adaptive_sites_ref[str(len(matched_adaptive_sites_ref))][2]) < 0.70:
+        if float(matched_adaptive_sites_ref[str(len(matched_adaptive_sites_ref))][2]) < 0.90:
             f.write('label (last (polymer and name CA)), "(%s)"%("C-term")\n')
 
         # PyMOL command to set label size

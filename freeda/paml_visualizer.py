@@ -32,23 +32,20 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
     """Analyzes PAML results for each gene unless no PAML result available"""
 
     all_matched_adaptive_sites_ref = {}
-    
-    for gene in all_genes:
 
-        if gene not in failed_paml:
-        
-            gene_folder = result_path + gene + "/"
-            if os.path.exists(gene_folder + gene + "_PAML_analysis.tif"):
-                message = "\n***************\n\n PAML analysis graph for : %s already exists" % gene
-                print(message)
-                logging.info(message)
-        
-            else:
+    for codon_frequency in codon_frequencies.split(","):
+        codon_frequency = codon_frequency.upper().replace(" ", "")  # get rid of the spaces if present
+        all_matched_adaptive_sites_ref[codon_frequency] = {}
+
+        for gene in all_genes:
+
+            if gene not in failed_paml:
+
                 nr_of_species_total = nr_of_species_total_dict[gene]
                 matched_adaptive_sites_ref = plot_PAML(wdir, result_path, gene,
-                                                   nr_of_species_total, ref_species,
-                                                   genes_under_positive_selection, gui, codon_frequencies)
-                all_matched_adaptive_sites_ref[gene] = matched_adaptive_sites_ref
+                                               nr_of_species_total, ref_species,
+                                               genes_under_positive_selection, gui, codon_frequency)
+                all_matched_adaptive_sites_ref[codon_frequency][gene] = matched_adaptive_sites_ref
 
     # get protein alignment that matches 3D structure
     for gene in all_genes:
@@ -60,10 +57,16 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
             #return
             continue
 
-    # prepare a dict with PAML stats
-    final_PAML_log_dict = read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml)
-    # generate a PAML result excel sheet
-    output_excel_sheet(wdir, final_PAML_log_dict, result_path, day)
+    final_PAML_log_dict = {}
+    for codon_frequency in codon_frequencies.split(","):
+        codon_frequency = codon_frequency.upper().replace(" ", "")  # get rid of the spaces if present
+
+        # prepare a dict with PAML stats
+        final_PAML_log_dict[codon_frequency] = read_output_PAML(result_path, PAML_logfile_name,
+                                                                all_matched_adaptive_sites_ref, failed_paml,
+                                                                codon_frequency)
+        # generate a PAML result excel sheet
+        output_excel_sheet(wdir, final_PAML_log_dict[codon_frequency], result_path, day, codon_frequency)
     
     # save the matched adaptive sites into a file
     with open("all_matched_adaptive_sites_ref.txt", "w") as file:
@@ -71,14 +74,15 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
     
     shutil.move(wdir + "all_matched_adaptive_sites_ref.txt", result_path + "all_matched_adaptive_sites_ref.txt")
 
-    return final_PAML_log_dict
+    # output only the first (default is F3X4 or user selected) codon frequency run
+    return final_PAML_log_dict[next(iter(final_PAML_log_dict))]
 
 
 def get_alignment_matching_structure(result_path, ref_species, gene, dictionary):
     """Generates gene alignment matching 3D structure"""
 
-    # get gene alignment corresponding to unedited reference gene
-    aa_features_dict = dictionary[gene]
+    # get gene alignment corresponding to unedited reference gene -> get the data from the first codon frequency
+    aa_features_dict = dictionary[next(iter(dictionary))][gene]  # next(iter(dictionary)) gets first key
     filename = gene + "_protein_alignment.fasta"
     all_seq_dict = fasta_reader.alignment_file_to_dict(result_path, ref_species, filename)
 
@@ -125,7 +129,7 @@ def get_alignment_matching_structure(result_path, ref_species, gene, dictionary)
             f.write(seq + "\n")
 
 
-def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml):
+def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml, codon_frequency):
     """Reads the output PAML and finds LRTs and computes p-values for M2a-M1a and M8-M7 models"""
 
     # prepare the dict storing the PAML result
@@ -182,7 +186,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 PAML_log_dict["CDS Coverage"].append(coverage)
             
             # record LRTs
-            if start_recording is True and line.startswith(" PAML LRTs"):
+            if start_recording is True and line.startswith(" PAML LRTs (%s)" % codon_frequency):
                 
                 LRT1 = line.split(":")[1].split("and")[0].split("-")
                 if LRT1[1].endswith("e") is True:
@@ -213,7 +217,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 PAML_log_dict["M8 vs M7 (LRT)"].append(M8_vs_M7_LRT)
             
             # record p_values
-            if start_recording is True and line.startswith(" -> PAML p-values"):
+            if start_recording is True and line.startswith(" -> PAML p-values (%s)" % codon_frequency):
                 
                 p_value1 = line.split(":")[1].split("and")[0].split("-")
                 # catch "e-" notation because it gets split
@@ -249,7 +253,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
                 # remove adaptive sites from genes that are not rapidly evolving
                 if float(M8_vs_M7_pvalue) <= 0.05:
                         
-                    matched_dict = all_matched_adaptive_sites_ref[gene]
+                    matched_dict = all_matched_adaptive_sites_ref[codon_frequency][gene]
                     mild_sites = {}
                     strong_sites = {}
         
@@ -279,7 +283,7 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
     return final_PAML_log_dict
 
 
-def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
+def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day, codon_frequency):
     """Makes an excel sheet with most important PAML results"""
 
     # make an empty excel sheet using openpyxl library
@@ -356,39 +360,36 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day):
             cell.alignment = Alignment(horizontal="center", vertical="center")
     
     # save the excel document
-    excel_filename = "PAML_result" + day + ".xlsx"
+    excel_filename = "PAML_result" + day + "_" + codon_frequency + ".xlsx"
     wb.save(excel_filename)
     shutil.move(wdir + excel_filename, result_path)
 
 
 def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_positive_selection,
-              gui, codon_frequencies):
+              gui, codon_frequency):
     """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
     
     # get ref and final aa sequence for a gene
     ref_sequence_record, final_sequence_record = get_ref_and_final_seqs(wdir, gene, result_path, ref_species)
     # organise them into easy to search dictionaries
-    ref_species_dict, final_ref_species_dict, final_length = organise_ref_and_final_seqs(ref_sequence_record, final_sequence_record)
+    ref_species_dict, final_ref_species_dict, final_length = organise_ref_and_final_seqs(ref_sequence_record,
+                                                                                         final_sequence_record)
     # map the aa residues between the ref and final sequences
     mapped_ref_and_final_residues_dict = map_ref_and_final_residues(ref_sequence_record, final_sequence_record)
-
-    for codon_frequency in codon_frequencies.split(","):
-        codon_frequency = codon_frequency.replace(" ", "")  # get rid of the spaces if present
-
-        # find dN/dS omega ratio per site based on "rst" file (final only for now)
-        omega_dict = get_omegas(gene, result_path, final_length, codon_frequency)
-        # read PAML output file to find which residues are rapidly evolving in the final seq
-        adaptive_sites_dict = get_adaptive_sites(result_path, gene, codon_frequency)
-        # find these residues in the ref sequence
-        matched_adaptive_sites_ref = match_adaptive_sites_to_ref(final_ref_species_dict,
-                mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict)
-        # mark the sites that were not analyzed by PAML
-        final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
-        # record and write breakdown of adaptive sites overlay to ref cds
-        record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection)
-        # plot omegas and probabilities
-        make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
-                    nr_of_species_total, genes_under_positive_selection, codon_frequency, gui)
+    # find dN/dS omega ratio per site based on "rst" file (final only for now)
+    omega_dict = get_omegas(gene, result_path, final_length, codon_frequency)
+    # read PAML output file to find which residues are rapidly evolving in the final seq
+    adaptive_sites_dict = get_adaptive_sites(result_path, gene, codon_frequency)
+    # find these residues in the ref sequence
+    matched_adaptive_sites_ref = match_adaptive_sites_to_ref(final_ref_species_dict,
+            mapped_ref_and_final_residues_dict, adaptive_sites_dict, omega_dict)
+    # mark the sites that were not analyzed by PAML
+    final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
+    # record and write breakdown of adaptive sites overlay to ref cds
+    record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection)
+    # plot omegas and probabilities
+    make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
+                nr_of_species_total, genes_under_positive_selection, codon_frequency, gui)
 
     return matched_adaptive_sites_ref
 
