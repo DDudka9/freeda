@@ -52,7 +52,8 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
         logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(message)s")
 
     # make a list of paths with blast tables
-    all_blasts = [blast for blast in glob.glob(blast_output_path + "*.txt")]
+    all_blasts = sorted(glob.glob(blast_output_path + "*.txt"), key=os.path.getmtime, reverse=False)
+    #all_blasts = [blast for blast in glob.glob(blast_output_path + "*.txt")]
 
     # remove previous fasta files for these genes (unfinished runs)
     for gene in all_genes:
@@ -62,7 +63,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
     # get path for a single blast table while removing it from the list
     for gene in all_genes:
         for path in all_blasts:
-            if gene in path:
+            if gene == path.split("/")[-1].split("_")[0]:  # to avoid gene names hidden in path namespace
                 match_path = path
                 # generate gene and genome names
                 gene, genome_name = get_names(match_path)

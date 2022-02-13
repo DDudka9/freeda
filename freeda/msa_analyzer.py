@@ -231,7 +231,7 @@ def find_species_abbreviation(wdir, ref_species, gene, genome_name, cloned_cds, 
     """Finds species abbreviation."""
 
     # get all genome names and genomes dict with species abbreviations as keys
-    all_genomes = genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)
+    all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
 
     # refactoring in progress...
     header = [name[0] for name in all_genomes if name[1] == genome_name][0]

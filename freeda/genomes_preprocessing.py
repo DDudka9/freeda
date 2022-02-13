@@ -2096,8 +2096,30 @@ def get_ref_genome_contigs_dict(ref_species):
     return ref_genome_contigs_dict
 
 
-def get_names(wdir, ref_species, ref_genome=False):
+def get_available_species(ref_species):
+    """Outputs a list of available species in a clade"""
+
+    if ref_species == "Mm":
+        species = ["Mi", "Ms", "Mc", "Mu", "Mp", "Ay", "Ap", "Ha", "Pd", "Mn", "Mo",
+                   "Gd", "Gs", "An", "Rd", "Rs", "Rr", "Rn"]
+    elif ref_species == "Hs":
+        species = ["Pt", "Gg", "Pb", "Ne", "Hm", "Cm", "Mu", "Pu", "Cs", "Tf", "Pi",
+                   "Pp", "An", "Pd", "Ap", "Cj", "Sb", "Ag"]
+    elif ref_species == "Cf":
+        species = ["Um", "Ml",  "Or", "Zc", "Af", "Pl", "Ll", "Sg", "Ph", "Cg", "Hh",
+                   "Ss", "Fc"]
+    elif ref_species == "Gg":
+        species = ["Bt", "Ag", "Pm", "Mg", "Cu", "Lt", "Ll", "Tc", "Cp", "Ph", "Cr",
+                   "Sm", "Cj"]
+
+    return species
+
+
+def get_names(wdir, ref_species, final_excluded_genomes=None, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
+
+    if final_excluded_genomes is None:
+        final_excluded_genomes = []
 
     mouse_dict = {"Mm": (("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
                       ("Ms", "MusSpretus_genome", "GCA_001624865.1"),
@@ -2211,33 +2233,6 @@ def get_names(wdir, ref_species, ref_genome=False):
     dog_ref_dict = {"Cf": (("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # CanFam3.1
     chicken_ref_dict = {"Gg": (("Gg", "GallusGallus_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0
 
-    #if ref_species == "Mm" and ref_genome is False:
-    #    genomes_dict = mouse_dict
-    #elif ref_species == "Mm" and ref_genome is True:
-    #    genomes_dict = mouse_ref_dict
-    #elif ref_species == "Rn" and ref_genome is False:
-    #    genomes_dict = rat_dict
-    #elif ref_species == "Rn" and ref_genome is True:
-    #    genomes_dict = rat_ref_dict
-    #elif ref_species == "Hs" and ref_genome is False:
-    #    genomes_dict = human_dict
-    #elif ref_species == "Hs" and ref_genome is True:
-    #    genomes_dict = human_ref_dict
-    #elif ref_species == "Fc" and ref_genome is False:
-    #    genomes_dict = carnivora_cat_dict
-    #elif ref_species == "Fc" and ref_genome is True:
-    #    genomes_dict = cat_ref_dict
-    #elif ref_species == "Cf" and ref_genome is False:
-    #    genomes_dict = carnivora_dog_dict
-    #elif ref_species == "Cf" and ref_genome is True:
-    #    genomes_dict = dog_ref_dict
-    #elif ref_species == "Gg" and ref_genome is False:
-    #    genomes_dict = phasianidae_dict
-    #elif ref_species == "Gg" and ref_genome is True:
-    #    genomes_dict = chicken_ref_dict
-    #else:
-    #    print("Something went wrong")
-
     # function used by main to get genomes for analysis
     if ref_genome is False:
 
@@ -2299,7 +2294,8 @@ def get_names(wdir, ref_species, ref_genome=False):
     all_genomes = []
     for ref, species in genomes_dict.items():
         for genome in species:  # e.g. genome = ("Mi", "SPICILEGUS_genome", "GCA_003336285.1")
-            all_genomes.append(genome)
+            if genome[0] not in final_excluded_genomes:
+                all_genomes.append(genome)
 
     return all_genomes
 

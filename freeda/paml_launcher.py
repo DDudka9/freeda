@@ -191,9 +191,12 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 no_dashes_out_msa = corrected_filename
             else:
                 no_dashes_out_msa = out_msa
-        
+
             # remove STOP codons
             final_cds_file_no_STOP = STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner)
+
+            # move raw alignment to result folder
+            shutil.move(gene_folder_path + "/" + out_msa, result_path)
 
             # check for rare frameshifts in cloned cds
             to_delete = cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, final_cds_file_no_STOP)
@@ -538,7 +541,7 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
         
         # if yes, make a new file for a corrected alignment
         correction = True
-        corrected_filename = "corrected_" + out_msa
+        corrected_filename = out_msa.replace("raw", "corrected")
         file_path = gene_folder_path + "/" + corrected_filename
         with open(file_path, "w") as f:
         
@@ -1001,7 +1004,7 @@ def align_final_cds(gene, final_cds_file, result_path, aligner):
 
     gene_folder_path = result_path + gene + "/"
     in_filepath = gene_folder_path + gene + "_final.fasta"
-    out_msa = "aligned_" + aligner.upper() + "_" + final_cds_file
+    out_msa = gene + "_raw_nucleotide_alignment.fasta"
 
     # define which aligner is used
     if aligner == "mafft":

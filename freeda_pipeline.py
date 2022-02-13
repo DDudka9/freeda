@@ -50,9 +50,10 @@ from freeda import genomes_preprocessing
 import os
 
 
-def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None):
+def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None, excluded_species=None):
     """Main function running all freeda pipeline from command line"""
 
+    global final_excluded_species
     if wdir is None:
         wdir = os.getcwd() + "/"
 
@@ -65,6 +66,17 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None)
 
     if codon_frequencies is None:
         codon_frequencies = "F3X4"
+
+    if excluded_species is None:
+        final_excluded_species = []
+
+    if excluded_species is not None:
+        excluded_species = str(excluded_species).split(" ")
+        final_excluded_species = []
+        species = genomes_preprocessing.get_available_species(ref_species)
+        for ex_species in excluded_species:
+            if ex_species in species:
+                final_excluded_species.append(ex_species)
 
     user_input0 = None
     user_input1 = None
@@ -105,7 +117,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None)
     aligner = "mafft"
 
     # get all species and genome names
-    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)]
+    all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species)]
 
     # check if the user had previously obtained data for given list of genes
     if user_input0 == "n":
@@ -204,7 +216,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None)
     blast_output_path = wdir + "Blast_output/"
     if user_input1 == "y":
         print("Checking genome blast databases...")
-        tblastn.run_blast(wdir, ref_species, all_genes)
+        tblastn.run_blast(wdir, ref_species, all_genes, final_excluded_species)
 
     # ----------------------------------------#
     ######## RUN EXON FINDING ########
@@ -321,8 +333,10 @@ if __name__ == '__main__':
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
                         help="specify codon frequency models (F3x4 is default)", type=str, default="F3x4, F61")
+    parser.add_argument("-es", "--excluded_species",
+                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="Ha")
 
     args = parser.parse_args()
     freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,
-                    codon_frequencies=args.codon_frequencies)
+                    codon_frequencies=args.codon_frequencies, excluded_species=args.excluded_species)
 

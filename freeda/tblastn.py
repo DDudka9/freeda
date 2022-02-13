@@ -27,7 +27,7 @@ import time
 import logging
 
 
-def run_blast(wdir, ref_species, all_genes):
+def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
     """Runs tblastn based on NCBI makedatabase routine."""
 
     database_path = wdir + "Genomes/"
@@ -36,7 +36,7 @@ def run_blast(wdir, ref_species, all_genes):
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means " \
            "bitscore length means pident means mismatch means gapopen means qlen means slen means"
 
-    all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
+    all_genomes = genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species)
     genomes = [names[1] for names in all_genomes]
 
     # clear Blast_output folder

@@ -386,7 +386,7 @@ def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_u
     # mark the sites that were not analyzed by PAML
     final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
     # record and write breakdown of adaptive sites overlay to ref cds
-    record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection)
+    record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection, codon_frequency)
     # plot omegas and probabilities
     make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
                 nr_of_species_total, genes_under_positive_selection, codon_frequency, gui)
@@ -406,7 +406,7 @@ def mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues
     return matched_adaptive_sites_ref
 
 
-def record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection):
+def record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection, codon_frequency):
     """Makes a uniprot format representation of each residue in aa seq of reference species
     (number, selection, presence)"""
 
@@ -524,8 +524,9 @@ def record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selecti
     if len(positions) == len(features) == len(residues):
     
         message = ("\n\n.........................................." 
-                   "\n\nReference sequence for %s with adaptive sites:"
-                   "\n\n . means pr >= 0.70 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") % gene
+                   "\n\nReference sequence for %s (%s) with adaptive sites:"
+                   "\n\n . means pr >= 0.70 \n : means pr >= 0.90 \n - means missing from PAML analysis\n\n") \
+                  % (gene, codon_frequency)
         print(message)
         logging.info(message)
         

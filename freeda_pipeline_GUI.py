@@ -11,10 +11,12 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
-#       0) Pick transcript with lowest number if matching structure (e.g. TRIM5-202 instead of TRIM5-214)
-#       0) Allow user to get rid of species
-#       0) Allow user to run freeda with two different models (F3x4 and F61)
-#       0) Run both models? F3x4 and F61? -> excel sheet gets sites for both models the same!
+#       0) Bring the initial nucelotide alignment into the protein folder -> DONE
+#       0) Exon finding is not ordered in linux -> order files -> DONE?
+#       0) PAML log file has no indication of codon model for uniprot like sites -> DONE
+#       0) Pick transcript with lowest number if matching structure (e.g. TRIM5-202 instead of TRIM5-214) -> DONE
+#       0) Allow user to get rid of species -> DONE
+#       0) Allow user to run freeda with two different models (F3x4 and F61) -> DONE
 #       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0
 #                   -> the 1.0 intron is actually completely missing -> no mismatches are treated as full alignment
 #                           -> penalize that
@@ -269,6 +271,8 @@ def block_user_entries():
     site53_end.configure(state="disabled")
     site53_label.configure(state="disabled")
 
+    exclude_species_entry.configure(state="disabled")
+
     wdir_button.configure(state="disabled")
     wdir_entry.configure(state="disabled")
 
@@ -346,6 +350,8 @@ def ublock_user_entries():
     site53_start.configure(state="normal")
     site53_end.configure(state="normal")
     site53_label.configure(state="normal")
+
+    exclude_species_entry.configure(state="normal")
 
     wdir_button.configure(state="normal")
     wdir_entry.configure(state="normal")
@@ -520,6 +526,14 @@ def freeda_pipeline():
         # get a list of genes
         all_genes = [gene for gene in all_genes_dict if gene != ""]
 
+        excluded_species = exclude_species_var.get()
+        excluded_species = excluded_species.split(" ")
+        final_excluded_species = []
+        species = genomes_preprocessing.get_available_species(ref_species)
+        for ex_species in excluded_species:
+            if ex_species in species:
+                final_excluded_species.append(ex_species)
+
         global logging_window
 
         # LOGGER
@@ -550,7 +564,7 @@ def freeda_pipeline():
         aligner = "mafft"
 
         # get all species and genome names
-        all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, ref_genome=False)]
+        all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species)]
 
         # ----------------------------------------#
         ######## GET ALL INPUT DATA  ########
@@ -609,7 +623,7 @@ def freeda_pipeline():
         # ----------------------------------------#
 
         print("Checking genome blast databases...")
-        tblastn.run_blast(wdir, ref_species, all_genes)
+        tblastn.run_blast(wdir, ref_species, all_genes, final_excluded_species)
 
         # ----------------------------------------#
         ######## RUN EXON FINDING ########
@@ -709,7 +723,7 @@ def check_gene_name(gene_name, op):
 def check_functional_residues(residue, op):
     """Checks if user provided a valid residue number"""
     error_message2.set("")
-    # accept only entry starting with one capital letter followed by small or big letters or numbers
+    # accept only entry starting with non-0 number followed by max 3 numbers
     valid = re.match(r"^[1-9]{1}([0-9]{0,3}$)", residue) is not None  # max 4 digits, first one not a zero
     # keystroke validation
     if op == "key":
@@ -725,8 +739,20 @@ def check_functional_residues(residue, op):
 
 def check_label(label, op):
     """Checks if user provided a valid label name"""
-    # accept only entry starting with one capital letter followed by small or big letters or numbers
+    # accept only entry composed of letters and numbers
     valid = re.match(r"^[A-Za-z0-9]+$", label) is not None
+    # keystroke validation
+    if op == "key":
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None  # ^(?![\s\S]) -> completely empty
+        return ok_so_far
+
+    return valid
+
+
+def check_excluded_species(label, op):
+    """Checks if user provided a valid species name"""
+    # accept only entry composed of letters and numbers
+    valid = re.match(r"^[A-Z]{1}[a-z]{1}$", label) is not None
     # keystroke validation
     if op == "key":
         ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None  # ^(?![\s\S]) -> completely empty
@@ -1039,21 +1065,21 @@ input_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create logo frame
 logo_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-logo_frame.grid(column=0, row=0, columnspan=1, sticky=(N, W, E, S), padx=5, pady=5)
+logo_frame.grid(column=0, row=0, columnspan=1, sticky=(N, W, E, S), padx=5, pady=1)
 
 # create settings frame
 settings_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-settings_frame.grid(column=1, row=0, columnspan=2, sticky=(N, W, E, S), padx=5, pady=5)
+settings_frame.grid(column=1, row=0, columnspan=2, sticky=(N, W, E, S), padx=5, pady=1)
 settings_frame.columnconfigure(0, weight=1, uniform="group1")
 settings_frame.columnconfigure((1, 2, 3), weight=1, uniform="group1")
 
 # create codon_freq frame
 codon_freq_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
-codon_freq_frame.grid(column=3, row=0, sticky=(N, W, E, S), padx=5, pady=5)
+codon_freq_frame.grid(column=3, row=0, sticky=(N, W, E, S), padx=5, pady=1)
 
 # create a gene 1 frame
 gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
-gene1_frame.grid(column=0, row=11, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+gene1_frame.grid(column=0, row=11, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene1_frame.columnconfigure(0, weight=3, minsize=50, uniform="group1")
 gene1_frame.columnconfigure((1, 2), weight=1, minsize=50, uniform="group1")
@@ -1061,7 +1087,7 @@ gene1_frame.columnconfigure(3, weight=2, minsize=50, uniform="group1")
 
 # create a gene 2 frame
 gene2_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
-gene2_frame.grid(column=0, row=14, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+gene2_frame.grid(column=0, row=14, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene2_frame.columnconfigure(0, weight=3, uniform="group1")
 gene2_frame.columnconfigure((1, 2), weight=1, uniform="group1")
@@ -1069,7 +1095,7 @@ gene2_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene 3 frame
 gene3_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
-gene3_frame.grid(column=0, row=17, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+gene3_frame.grid(column=0, row=17, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene3_frame.columnconfigure(0, weight=3, uniform="group1")
 gene3_frame.columnconfigure((1, 2), weight=1, uniform="group1")
@@ -1077,7 +1103,7 @@ gene3_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene 4 frame
 gene4_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
-gene4_frame.grid(column=0, row=18, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+gene4_frame.grid(column=0, row=18, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene4_frame.columnconfigure(0, weight=3, uniform="group1")
 gene4_frame.columnconfigure((1, 2), weight=1, uniform="group1")
@@ -1085,7 +1111,7 @@ gene4_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene 5 frame
 gene5_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
-gene5_frame.grid(column=0, row=19, columnspan=4, sticky=(N, W, E, S), padx=5, pady=2)
+gene5_frame.grid(column=0, row=19, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene5_frame.columnconfigure(0, weight=3, uniform="group1")
 gene5_frame.columnconfigure((1, 2), weight=1, uniform="group1")
@@ -1093,11 +1119,19 @@ gene5_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene working directory frame
 wdir_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
-wdir_frame.grid(column=0, row=20, columnspan=5, sticky=(N, W, E, S), padx=5, pady=2)
+wdir_frame.grid(column=0, row=20, columnspan=5, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 wdir_frame.columnconfigure(0, weight=3, uniform="group1")
 wdir_frame.columnconfigure(1, weight=5, uniform="group1")
 wdir_frame.columnconfigure((2, 3), weight=2, uniform="group1")
+
+# create exclude frame
+exclude_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+exclude_frame.grid(column=0, row=21, columnspan=5, sticky=(N, W, E, S), padx=5, pady=1)
+# let all columns resize
+exclude_frame.columnconfigure(0, weight=3, uniform="group1")
+exclude_frame.columnconfigure(1, weight=5, uniform="group1")
+exclude_frame.columnconfigure((2, 3), weight=2, uniform="group1")
 
 # create output frame
 output_frame = ttk.Frame(mainframe, relief="sunken", padding="5 5 5 5")
@@ -1153,17 +1187,18 @@ g5_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="gr
 check_gene_name_wrapper = (settings_frame.register(check_gene_name), "%P", "%V")
 check_functional_residues = (settings_frame.register(check_functional_residues), "%P", "%V")
 check_label = (settings_frame.register(check_label), "%P", "%V")
+check_excluded_species = (settings_frame.register(check_excluded_species), "%P", "%V")
 
 # ERRORS
 error_message1 = StringVar()
-message1 = "Invalid gene name (follow pattern: Cenpo \nfor rodents and : CENPO for others)"
+message1 = "Invalid gene name (follow pattern: Cenpo for mouse and : CENPO for others)"
 error_message2 = StringVar()
 message2 = "Invalid residue number (follow pattern: 100)"
 # error labels
 error_label1 = ttk.Label(input_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message1)
-error_label1.grid(column=0, row=22, columnspan=4, padx=5, pady=2, sticky="w")
+error_label1.grid(column=0, row=22, columnspan=4, padx=5, pady=1, sticky=(W))
 error_label2 = ttk.Label(input_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message2)
-error_label2.grid(column=0, row=23, columnspan=4, padx=5, pady=2, sticky="w")
+error_label2.grid(column=0, row=23, columnspan=4, padx=5, pady=1, sticky=(W))
 
 # LOGO
 canvas = Canvas(logo_frame, width=200, height=50)
@@ -1283,12 +1318,12 @@ site23_label.grid(column=3, row=16, padx=5, pady=1, sticky=(W))
 
 # USER INPUT GENE 3
 gene_name3 = StringVar()
-ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, pady=2, sticky=(W))
+ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, pady=1, sticky=(W))
 name3 = ttk.Entry(gene3_frame, textvariable=gene_name3, validate="all", validatecommand=check_gene_name_wrapper)
-name3.grid(column=0, row=18, padx=5, pady=5, sticky=(W))
+name3.grid(column=0, row=18, padx=5, pady=1, sticky=(W))
 dup3_var = BooleanVar()
 dup3_button = ttk.Checkbutton(gene3_frame, text="Duplication expected", variable=dup3_var, onvalue=1, offvalue=0)
-dup3_button.grid(column=0, row=19, padx=6, pady=2, sticky=(W))
+dup3_button.grid(column=0, row=19, padx=6, pady=1, sticky=(W))
 
 s31_start = StringVar()
 s31_end = StringVar()
@@ -1398,24 +1433,31 @@ site53_end.grid(column=2, row=25, padx=5, pady=1, sticky=(W))
 site53_label = ttk.Entry(gene5_frame, textvariable=s53_label, validate="all", validatecommand=check_label)
 site53_label.grid(column=3, row=25, padx=5, pady=1, sticky=(W))
 
+# EXCLUDE SPECIES
+exclude_species_var = StringVar()
+exclude_species_entry = ttk.Entry(exclude_frame, textvariable=exclude_species_var, validate="all",
+                                  validatecommand=check_excluded_species)
+exclude_species_entry.grid(column=1, row=21, padx=5, pady=1, sticky=(W, E))
+ttk.Label(exclude_frame, text="   Exclude species: ").grid(column=0, row=21, padx=5, sticky=(W))
+ttk.Label(exclude_frame, text="(optional; e.g. Ha Gs)").grid(column=2, row=21, columnspan=2, sticky=(W))
 
 # BUTTONS
 result_path_var = StringVar()
 
 # Working directory button
 wdir_button = ttk.Button(wdir_frame, text="Set directory", command=get_wdir)
-wdir_button.grid(column=0, row=0, sticky=(N, W, E, S), padx=1, pady=2)
+wdir_button.grid(column=0, row=0, sticky=(N, W, E, S), padx=1, pady=1)
 wdirectory = StringVar()
 wdir_entry = ttk.Entry(wdir_frame, textvariable=wdirectory)
-wdir_entry.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=2)  # columnspan=4
+wdir_entry.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=1)  # columnspan=4
 
 # ANALYZE button
 analyze_button = ttk.Button(wdir_frame, text="Analyze", state="normal", command=thread_freeda)  # default="active"
-analyze_button.grid(column=2, row=0, pady=2, sticky=(W))  # columnspan=2
+analyze_button.grid(column=2, row=0, pady=1, sticky=(W))  # columnspan=2
 
 # ABORT button
 abort_button = ttk.Button(wdir_frame, text="ABORT", state="normal", command=abort_freeda)  # default="active"
-abort_button.grid(column=3, row=0,  pady=2, sticky=(W))
+abort_button.grid(column=3, row=0,  pady=1, sticky=(W))
 
 # LABELS
 ttk.Label(results_labels_upper, text="nr of adapt. residues").grid(column=7, row=2, columnspan=2, sticky=(E), padx=15)
