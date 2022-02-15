@@ -226,7 +226,8 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
     if consensus_dict:
         matched_adaptive_sites_ref = consensus_dict[gene]
     else:
-        matched_adaptive_sites_ref = dictionary[gene]
+        matched_adaptive_sites_ref = dictionary[next(iter(dictionary))][gene]  # pick the first key
+                                                                                # (only one codon model)
 
     structure_prediction_path = wdir + "Structures/" + gene + "_" + ref_species
 

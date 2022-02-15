@@ -341,21 +341,21 @@ def check_compatibility(ref_species, gene, translated_path):
 
     if not distant_seq and not seq:
         message = "\n...WARNING... : Gene %s is not annotated in %s genome and cloning %s seq also FAILED" \
-                  "-> cannot cross-check identity with ensembl" % (gene, species, species)
+                  " -> cannot cross-check identity with ensembl" % (gene, species, species)
         print(message)
         logging.info(message)
         return
 
     if not distant_seq:
         message = "\n...WARNING... : Gene %s is not annotated in %s genome " \
-                  "-> cannot cross-check identity with ensembl" % (gene, species)
+                  " -> cannot cross-check identity with ensembl" % (gene, species)
         print(message)
         logging.info(message)
         return
 
     if not seq:
         message = "\n...WARNING... : Cloning seq for gene %s from %s FAILED " \
-                  "-> cannot cross-check identity with ensembl" % (gene, species)
+                  " -> cannot cross-check identity with ensembl" % (gene, species)
         print(message)
         logging.info(message)
         return

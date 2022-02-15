@@ -53,7 +53,6 @@ import os
 def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None, excluded_species=None):
     """Main function running all freeda pipeline from command line"""
 
-    global final_excluded_species
     if wdir is None:
         wdir = os.getcwd() + "/"
 
@@ -68,15 +67,16 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         codon_frequencies = "F3X4"
 
     if excluded_species is None:
-        final_excluded_species = []
+        final_excluded_species = {}
 
     if excluded_species is not None:
         excluded_species = str(excluded_species).split(" ")
-        final_excluded_species = []
-        species = genomes_preprocessing.get_available_species(ref_species)
+        final_excluded_species = {}
+        available_species = genomes_preprocessing.get_available_species(ref_species)
         for ex_species in excluded_species:
-            if ex_species in species:
-                final_excluded_species.append(ex_species)
+            # check if users input matches available species
+            if ex_species in available_species:
+                final_excluded_species[ex_species] = available_species[ex_species]  # add genome as value to species key
 
     user_input0 = None
     user_input1 = None
@@ -224,8 +224,9 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if user_input2 == "y":
         if exon_extractor.check_blast_output(blast_output_path, t, all_genes):
-            result_path = exon_extractor.analyze_blast_results(wdir, blast_output_path,
-                                                    ref_species, int(t), all_genes, all_genomes, aligner)
+            result_path = exon_extractor.analyze_blast_results(wdir, blast_output_path, ref_species, int(t),
+                                                               all_genes, all_genomes, aligner,
+                                                               final_excluded_species)
         else:
             print("\n     ...FATAL ERROR... : Genome of at least one species contains "
                   "no matches above the identity threshold used : %s -> use a lower one " 
@@ -332,9 +333,9 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
-                        help="specify codon frequency models (F3x4 is default)", type=str, default="F3x4, F61")
+                        help="specify codon frequency models (F3x4 is default)", type=str, default="F61")
     parser.add_argument("-es", "--excluded_species",
-                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="Ha")
+                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="Ha, ""    Gs")
 
     args = parser.parse_args()
     freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,

@@ -23,8 +23,8 @@ import os
 import re
 
 
-def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, all_genomes, aligner, gui=None,
-                          logging_window=None, all_genes_dict=None):
+def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, all_genomes, aligner,
+                          final_excluded_species=None, gui=None, logging_window=None, all_genes_dict=None):
     """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
@@ -33,6 +33,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
     result_path = wdir + "Results" + day + "/"
     log_filename = "FREEDA" + day + ".log"
 
+    # does not generate folders for excluded species
     folder_generator.generate_contig_folders(result_path, all_genes, all_genomes)
 
     # initiate log file to record FREEDA analysis by reseting the handlers
@@ -53,6 +54,13 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
 
     # make a list of paths with blast tables
     all_blasts = sorted(glob.glob(blast_output_path + "*.txt"), key=os.path.getmtime, reverse=False)
+
+    # remove blast output files for excluded species
+    for blast in all_blasts:
+        for species, genome in final_excluded_species.items():
+            if genome in blast:  # find genome name e.e. "MusSpicilegus" in absolute path of blast file
+                all_blasts.remove(blast)
+
     #all_blasts = [blast for blast in glob.glob(blast_output_path + "*.txt")]
 
     # remove previous fasta files for these genes (unfinished runs)

@@ -11,6 +11,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Command line version crashes is blast_output contains excluded species
+#                           -> add key:value pairs Gs : GrammomysDolichurus
 #       0) Bring the initial nucelotide alignment into the protein folder -> DONE
 #       0) Exon finding is not ordered in linux -> order files -> DONE?
 #       0) PAML log file has no indication of codon model for uniprot like sites -> DONE
@@ -528,11 +530,12 @@ def freeda_pipeline():
 
         excluded_species = exclude_species_var.get()
         excluded_species = excluded_species.split(" ")
-        final_excluded_species = []
-        species = genomes_preprocessing.get_available_species(ref_species)
+        final_excluded_species = {}
+        available_species = genomes_preprocessing.get_available_species(ref_species)
         for ex_species in excluded_species:
-            if ex_species in species:
-                final_excluded_species.append(ex_species)
+            # check if users input matches available species
+            if ex_species in available_species:
+                final_excluded_species[ex_species] = available_species[ex_species]  # add genome as value to species key
 
         global logging_window
 
@@ -632,7 +635,8 @@ def freeda_pipeline():
         if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_genes):
             result_path = exon_extractor.analyze_blast_results(wdir, wdir + "Blast_output/",
                                                                ref_species, int(t), all_genes, all_genomes, aligner,
-                                                               gui, logging_window, all_genes_dict)
+                                                               final_excluded_species, gui, logging_window,
+                                                               all_genes_dict)
             # set a StringVar for GUI
             result_path_var.set(result_path)
 

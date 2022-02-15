@@ -2100,26 +2100,83 @@ def get_available_species(ref_species):
     """Outputs a list of available species in a clade"""
 
     if ref_species == "Mm":
-        species = ["Mi", "Ms", "Mc", "Mu", "Mp", "Ay", "Ap", "Ha", "Pd", "Mn", "Mo",
-                   "Gd", "Gs", "An", "Rd", "Rs", "Rr", "Rn"]
+        species = {"Mi": "MusSpicilegus",
+                   "Ms": "MusSpretus",
+                   "Mc": "MusCaroli",
+                   "Mu": "MusMinutoides",
+                   "Mp": "MusPahari",
+                   "Ay": "ApodemusSylvaticus",
+                   "Ap": "ApodemusSpeciosus",
+                   "Ha": "HylomyscusAlleni",
+                   "Pd": "PraomysDelectorum",
+                   "Mn": "MastomysNatalensis",
+                   "Mo": "MastomysCoucha",
+                   "Gd": "GrammomysDolichurus",
+                   "Gs": "GrammomysSurdaster",
+                   "An": "ArvicanthisNiloticus",
+                   "Rd": "RhabdomysDilectus",
+                   "Rs": "RhynchomysSoricoides",
+                   "Rr": "RattusRattus",
+                   "Rn": "RattusNorvegicus"}
+
     elif ref_species == "Hs":
-        species = ["Pt", "Gg", "Pb", "Ne", "Hm", "Cm", "Mu", "Pu", "Cs", "Tf", "Pi",
-                   "Pp", "An", "Pd", "Ap", "Cj", "Sb", "Ag"]
+        species = {"Pt": "PanTroglodytes",
+                      "Gg": "GorillaGorilla",
+                      "Pb": "PongoAbelli",
+                      "Ne": "NomascusLeucogenys",
+                      "Hm": "HylobatesMoloch",
+                      "Cm": "CercopithecusMona",
+                      "Mu": "MacacaMulatta",
+                      "Pu": "PapioAnubis",
+                      "Cs": "ChlorocebusSabaeus",
+                      "Tf": "TrachypithecusFrancoisi",
+                      "Pi": "PiliocolobusTephrosceles",
+                      "Pp": "PitheciaPithecia",
+                      "An": "AotusNancymaae",
+                      "Pd": "PlecturocebusDonacophilus",
+                      "Ap": "AlouattaPalliata",
+                      "Cj": "CallithrixJacchus",
+                      "Sb": "SaimiriBoliviensis",
+                      "Ag": "AtelesGeoffroyi"}
+
     elif ref_species == "Cf":
-        species = ["Um", "Ml",  "Or", "Zc", "Af", "Pl", "Ll", "Sg", "Ph", "Cg", "Hh",
-                   "Ss", "Fc"]
+        species = {"Um": "UrsusMaritimus",
+                       "Ml":  "MiroungaLeonina",
+                       "Or": "OdobenusRosmarus",
+                       "Zc": "ZalophusCalifornianus",
+                       "Af": "AilurusFulgens",
+                       "Pl": "ProcyonLotor",
+                       "Ll": "LutraLutra",
+                       "Sg": "SpilogaleGracilis",
+                       "Ph": "ParadoxurusHermaphroditus",
+                       "Cg": "CryptoproctaFerox",
+                       "Hh": "HyaenaHyaena",
+                       "Ss": "SuricataSuricatta",
+                       "Fc": "FelisCatus"}
+
     elif ref_species == "Gg":
-        species = ["Bt", "Ag", "Pm", "Mg", "Cu", "Lt", "Ll", "Tc", "Cp", "Ph", "Cr",
-                   "Sm", "Cj"]
+        species = {"Bt": "BambusicolaThoracicus",
+                       "Ag": "AlectorisRufa",
+                       "Pm": "PavoMuticus",
+                       "Mg": "MeleagrisGallopavo",
+                       "Cu": "CentrocercusUrophasianus",
+                       "Lt": "LyrurusTetrix",
+                       "Ll": "LagopusLeucura",
+                       "Tc": "TympanuchusCupido",
+                       "Cp": "ChrysolophusPictus",
+                       "Ph": "PhasianusColchicus",
+                       "Cr": "CrossoptilonMantchuricum",
+                       "Sm": "SyrmaticusMikado",
+                       "Cj": "CoturnixJaponica"}
 
     return species
 
 
-def get_names(wdir, ref_species, final_excluded_genomes=None, ref_genome=False):
+def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
 
-    if final_excluded_genomes is None:
-        final_excluded_genomes = []
+    if final_excluded_species is None:
+        final_excluded_species = {}
 
     mouse_dict = {"Mm": (("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
                       ("Ms", "MusSpretus_genome", "GCA_001624865.1"),
@@ -2293,8 +2350,9 @@ def get_names(wdir, ref_species, final_excluded_genomes=None, ref_genome=False):
     # collect genomes
     all_genomes = []
     for ref, species in genomes_dict.items():
-        for genome in species:  # e.g. genome = ("Mi", "SPICILEGUS_genome", "GCA_003336285.1")
-            if genome[0] not in final_excluded_genomes:
+        for genome in species:  # e.g. genome = ("Mi", "MusSpicilegus_genome", "GCA_003336285.1")
+            # final_excluded_species is a dict e.g. {"Mi" : "MusSpicilegus"}
+            if genome[0] not in final_excluded_species:
                 all_genomes.append(genome)
 
     return all_genomes
@@ -2336,179 +2394,3 @@ def map_assembly_contigs(wdir):
 
     return mapped_contigs_dict
 
-
-
-"""
-
-    # Felidae (diverged 15 myo - too narrow)
-    cat_dict = {"Fc": (("Fh", "Felischaus_genome", "GCA_019924945.1"),  # (jungle cat)
-                      ("Pt", "Pantheratigris_genome", "GCA_018350195.2"),  # (tiger)
-                      ("Pl", "Pantheraleo_genome", "GCA_018350215.1"),   # (lion)
-                      ("Pp", "Pantherapardus_genome", "GCA_001857705.1"),  #  (leopard)
-                      ("Pv", "Prionailurusviverrinus_genome", "GCA_018119265.1"),  #  (fishing cat)
-                      ("Lq", "Leopardisgeoffroyi_genome", "GCA_018350155.1"),  # Leopardus geoffroyi
-                      ("Lc", "Lynxcanadensis_genome", "GCA_007474595.2"),  #  (lynx)
-                      ("Aj", "Acinonyxjubatus_genome", "GCA_003709585.1"),  #  (cheetah)
-                      ("Pc", "Pumaconcolor_genome", "GCA_003327715.1"),  # (puma)
-                      ("Py", "Pumayagouaroundi_genome", "GCA_014898765.1"),  #  (jaguarundi)
-                      ("Po", "Pantheraonca_genome", "GCA_004023805.1"),  #  (jaguar)
-                      ("Cc", "Caracalcaracal_genome", "GCA_016801355.1"))}  #  (caracal)
-
-
-
-def map_assembly_contigs(wdir):
-
-    # first need to index ref genome (.fai file)
-
-    import pyensembl
-
-    release = 104
-    species = "felis catus"
-
-    ensembl = pyensembl.EnsemblRelease(release, species)
-
-    # get contigs available in ensembl release
-    contigs = ensembl.contigs()
-
-    # get all available contigs in the NCBI assembly
-    with open(wdir + "CATUS_genome_contigs.txt", "r") as f:
-        rows = (line.split('\t') for line in f)
-        # need index 3 from each list
-        all_contigs = {row[0]: row[1:] for row in rows}
-
-    # get contigs from indexed reference assembly
-    with open(wdir + "Reference_genomes/MUSCULUS_genome.fasta.fai", "r") as f:
-        rows = (line.split('\t') for line in f)
-        # need keys
-        indexed_contigs = {row[0]: row[1:] for row in rows}
-
-    mapped_contigs_dict = {}
-    for contig in contigs:
-        for indexed_contig in indexed_contigs:
-            for available_contig, features in all_contigs.items():
-                if available_contig == contig and indexed_contig == features[3]:
-                    mapped_contigs_dict[contig] = indexed_contig
-                elif contig == features[3]:
-                    mapped_contigs_dict[contig] = features[3]
-
-    return mapped_contigs_dict
-
-
-
-# deprecated (GRCm38.6)
-    
-    musculus_dict_RefSeq = {'1': 'NC_000067.6',
-                '10': 'NC_000076.6',
-                '11': 'NC_000077.6',
-                '12': 'NC_000078.6',
-                '13': 'NC_000079.6',
-                '14': 'NC_000080.6',
-                '15': 'NC_000081.6',
-                '16': 'NC_000082.6',
-                '17': 'NC_000083.6',
-                '18': 'NC_000084.6',
-                '19': 'NC_000085.6',
-                '2': 'NC_000068.7',
-                '3': 'NC_000069.6',
-                '4': 'NC_000070.6',
-                '5': 'NC_000071.6',
-                '6': 'NC_000072.6',
-                '7': 'NC_000073.6',
-                '8': 'NC_000074.6',
-                '9': 'NC_000075.6',
-                'GL456210.1': 'NT_166280.1',
-                'GL456211.1': 'NT_166281.1',
-                'GL456212.1': 'NT_166282.1',
-                'GL456216.1': 'NT_166291.1',
-                'GL456219.1': 'NT_166307.1',
-                'GL456221.1': 'NT_162750.1',
-                'GL456233.1': 'NT_165789.2',
-                'GL456239.1': 'NT_166338.1',
-                'GL456350.1': 'NT_166434.1',
-                'GL456354.1': 'NT_166438.1',
-                'GL456372.1': 'NT_166456.1',
-                'GL456381.1': 'NT_166465.1',
-                'GL456385.1': 'NT_166469.1',
-                'JH584292.1': 'NT_187052.1',
-                'JH584293.1': 'NT_187053.1',
-                'JH584294.1': 'NT_187054.1',
-                'JH584295.1': 'NT_187055.1',
-                'JH584296.1': 'NT_187056.1',
-                'JH584297.1': 'NT_187057.1',
-                'JH584298.1': 'NT_187058.1',
-                'JH584299.1': 'NT_187059.1',
-                'JH584303.1': 'NT_187063.1',
-                'JH584304.1': 'NT_187064.1',
-                'MT': 'NC_005089.1',
-                'X': 'NC_000086.7',
-                'Y': 'NC_000087.7'}
-
-
-
-    musculus_dict_GenBank = {'1': 'CM000994.2',
-                     '10': 'CM001003.2',
-                     '11': 'CM001004.2',
-                     '12': 'CM001005.2',
-                     '13': 'CM001006.2',
-                     '14': 'CM001007.2',
-                     '15': 'CM001008.2',
-                     '16': 'CM001009.2',
-                     '17': 'CM001010.2',
-                     '18': 'CM001011.2',
-                     '19': 'CM001012.2',
-                     '2': 'CM000995.2',
-                     '3': 'CM000996.2',
-                     '4': 'CM000997.2',
-                     '5': 'CM000998.2',
-                     '6': 'CM000999.2',
-                     '7': 'CM001000.2',
-                     '8': 'CM001001.2',
-                     '9': 'CM001002.2',
-                     'GL456210.1': 'GL456210.1',
-                     'GL456211.1': 'GL456211.1',
-                     'GL456212.1': 'GL456212.1',
-                     'GL456216.1': 'GL456216.1',
-                     'GL456219.1': 'GL456219.1',
-                     'GL456221.1': 'GL456221.1',
-                     'GL456233.1': 'GL456233.1',
-                     'GL456239.1': 'GL456239.1',
-                     'GL456350.1': 'GL456350.1',
-                     'GL456354.1': 'GL456354.1',
-                     'GL456372.1': 'GL456372.1',
-                     'GL456381.1': 'GL456381.1',
-                     'GL456385.1': 'GL456385.1',
-                     'JH584292.1': 'JH584292.1',
-                     'JH584293.1': 'JH584293.1',
-                     'JH584294.1': 'JH584294.1',
-                     'JH584295.1': 'JH584295.1',
-                     'JH584296.1': 'JH584296.1',
-                     'JH584297.1': 'JH584297.1',
-                     'JH584298.1': 'JH584298.1',
-                     'JH584299.1': 'JH584299.1',
-                     'JH584303.1': 'JH584303.1',
-                     'JH584304.1': 'JH584304.1',
-                     'MT': 'AY172335.1',
-                     'X': 'CM001013.2',
-                     'Y': 'CM001014.2'}
-
-
-Notes from meeting with NCBI Datasets developpers on 09/24/2021
-
-
-    unzip - p
-    dataset.zip ‘chr *.fna
-    ' > all_chr_files.fna
-
-    Correction(hopefully): unzip - p
-    ncbi_dataset.zip
-    '*/chr*.fna' > all_chr_files.fna
-
-    https: // anaconda.org / conda - forge / ncbi - datasets - cli
-
-    datasets
-    summary
-    gene
-    symbol
-    sumo1 | jq. | less
-
-"""
