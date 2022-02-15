@@ -9,7 +9,7 @@ def make_control_file(wdir):
     """ Makes a control file for PAML from the control_file_dict"""
 
     # make control file for F3x4 model (default)
-    with open(wdir + "control_file_F3x4.ctl", "w") as f:
+    with open(wdir + "control_file_F3X4.ctl", "w") as f:
         for index, line in control_file_dict_F3x4.items():
             f.write(line)
 
