@@ -11,7 +11,6 @@ pymol==2.4.2
 paml==4.9
 pyensembl==1.9.4
 raxml==8.2.12
-EMBOSS==6.6.0
 gblocks==0.91b
 bioservices==1.7.12
 ncbi-datasets-cli==12.13.2

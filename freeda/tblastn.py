@@ -82,20 +82,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     # define expected files
     zip_file = genome + ".zip"
     expected_genome_file = genome + ".fasta"
-    # database extensions for tblastn
-    expected_database_extensions = {#".nsq",    # cheetah genome has a bi different extensions
-                                    #".nhr",
-                                    #".nin",
-                                    #".00.phr",
-                                    #".00.pin",
-                                    #".00.psq",
-                                    #".01.phr",
-                                    #".01.pin",
-                                    #".01.psq",
-                                    #".02.phr",
-                                    #".02.pin",
-                                    #".02.psq",
-                                    ".pal"}
     
     # get info on all files available
     all_files = []
@@ -127,7 +113,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                              " -> building database...\n" % (genome, expected_genome_file)
         logging.info(message)
         # make database
-        make_blast_database(database_path, genome)   # INTRODUCED ERROR
+        make_blast_database(database_path, genome)
         # make sure to assign back this variable to TRUE
         genome_file_database = True
         return genome_file_database

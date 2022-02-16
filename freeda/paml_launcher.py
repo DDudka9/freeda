@@ -237,7 +237,10 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
             logging.info(message)
 
             # run seqret (file is already in gene folder)
-            phylip_path = run_seqret(gene, out_Gblocks)
+            #phylip_path = run_seqret(gene, out_Gblocks)
+
+            # convert fasta alignment to phylip format
+            convert_to_phylip(out_Gblocks)
 
             # run RAxML (and move all the RAxML files to gene folder)
             try:
@@ -262,7 +265,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
 
                 # copy all required files into PAML path
                 shutil.copy(control_file_name, PAML_path + "/" + control_file_name)
-                shutil.copy(phylip_path, PAML_path + "/input.phy")
+                shutil.copy(out_Gblocks, PAML_path + "/input.phy")
                 shutil.copy(best_tree_path, PAML_path + "/gene.tree")
 
                 # rename and copy the final gene alignment into results
@@ -824,11 +827,18 @@ def translate_Gblocks(wdir, gene_folder_path, raw_out_Gblocks_filename, gene, re
     # return the path to the translated alignment
     return raw_translated_path, filepath_to_translate
 
+def convert_to_phylip(out_Gblocks):
+    """Converts fasta files to phylip format"""
 
-def run_seqret(gene, out_Gblocks):
+    phylip_path = out_Gblocks.replace(".fasta", ".phy")
+    AlignIO.convert(out_Gblocks, "fasta", phylip_path, "phylip")
+
+
+def run_seqret(gene, out_Gblocks):  # deprecated
     """Takes a fasta squence aligment and converts it into phylip format"""
 
     phylip_path = out_Gblocks.replace(".fasta", ".phy")
+
     seqret_cline = ["seqret", "-sequence", out_Gblocks,
                     "-osformat2", "phylipnon", "-outseq", phylip_path]
     result = subprocess.call(seqret_cline)
