@@ -21,6 +21,7 @@ from freeda import fasta_reader
 from freeda import genomes_preprocessing
 from freeda import control_file
 from freeda import TextHandler
+from freeda import pyinstaller_compatibility
 from Bio.Align.Applications import MafftCommandline
 from Bio import pairwise2
 from Bio import AlignIO
@@ -591,7 +592,7 @@ def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     
     # run PAML
     cml = codeml.Codeml(alignment="input.phy", tree="gene.tree", out_file="output_PAML", working_dir=PAML_path)
-    cml.run(control_file_name)
+    cml.run(ctl_file="control_file.ctl", command=pyinstaller_compatibility.resource_path("codeml"))
     results = codeml.read("output_PAML")
     ns_sites = results.get("NSsites")
     
@@ -655,7 +656,7 @@ def run_RAxML(gene, gene_folder_path, out_Gblocks):
 
     tree_name = gene + "_Tree"
 
-    RAxML_cline = ["raxmlHPC", "-f", "a", "-s", out_Gblocks, "-n", tree_name,
+    RAxML_cline = [pyinstaller_compatibility.resource_path("raxmlHPC"), "-f", "a", "-s", out_Gblocks, "-n", tree_name,
                    "-m", "GTRGAMMA", "-p", "12345", "-x", "12345", "-#", "100"]
 
     result = subprocess.call(RAxML_cline)
@@ -838,9 +839,11 @@ def run_seqret(gene, out_Gblocks):  # deprecated
     """Takes a fasta squence aligment and converts it into phylip format"""
 
     phylip_path = out_Gblocks.replace(".fasta", ".phy")
-
-    seqret_cline = ["seqret", "-sequence", out_Gblocks,
-                    "-osformat2", "phylipnon", "-outseq", phylip_path]
+    # PYINSTALLER: Add the pyinstaller directory to the system path so that the binary line 'which seqret' can work.
+    # If not deprecated, uncomment following line to add file location to operating system path:
+    # os.environ["PATH"] += os.pathsep + pyinstaller_compatibility.resource_path("")
+    seqret_cline = [pyinstaller_compatibility.resource_path("seqret"),
+                    "-sequence", out_Gblocks, "-osformat2", "phylipnon", "-outseq", phylip_path]
     result = subprocess.call(seqret_cline)
     if result == 0:
         message = "\n Phylip format was created for gene : %s " % gene
@@ -988,7 +991,7 @@ def run_Gblocks(final_cds_file_no_STOP, gene, result_path, aligner):
     in_filepath = result_path + gene + "/" + final_cds_file_no_STOP
     raw_out_Gblocks_filename = "aligned_" + aligner.upper() + "_Gblocks_" + gene + "_final_no_STOP.fasta"
     # run Gblocks with options: codon ("-t=c") and dont save html file ("-p=n")
-    Gblocks_cline = ["Gblocks", in_filepath, "-t=c", "-p=n"]
+    Gblocks_cline = [pyinstaller_compatibility.resource_path("Gblocks"), in_filepath, "-t=c", "-p=n"]
     result = subprocess.run(Gblocks_cline, capture_output=True)
     # get stdout -> decode to string from bit -> split by lines and get the 5th and 6th
     message = (result.stdout.decode('utf-8').split("\n"))[5:7]
@@ -1019,8 +1022,9 @@ def align_final_cds(gene, final_cds_file, result_path, aligner):
     # define which aligner is used
     if aligner == "mafft":
 
-        cline = MafftCommandline(input=in_filepath, thread=-1)  # thread -1 is suppose to automatically
-                                                                # calculate physical cores
+        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path('mafft'),
+                                 input=in_filepath,
+                                 thread=-1)  # thread -1 is suppose to automatically calculate physical cores
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename

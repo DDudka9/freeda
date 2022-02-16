@@ -12,7 +12,7 @@ Clones and stiches the exons into a final cds for given genome.
 
 from Bio.Align.Applications import MafftCommandline
 from Bio import AlignIO
-from freeda import fasta_reader
+from freeda import fasta_reader, pyinstaller_compatibility
 import glob
 import logging
 import operator
@@ -277,8 +277,9 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
     # define which aligner is used
     if aligner == "mafft":
 
-        cline = MafftCommandline(input=in_filename, thread=-1)  # thread -1 is suppose to automatically
-                                                                # calculate physical cores
+        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path('mafft'),
+                                 input=in_filename,
+                                 thread=-1)  # thread -1 is suppose to automatically calculate physical cores
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename
@@ -653,7 +654,7 @@ def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename
     # define which aligner is used
     if aligner == "mafft":
 
-        cline = MafftCommandline(input=in_filepath + in_filename)
+        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path('mafft'), input=in_filepath + in_filename)
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename

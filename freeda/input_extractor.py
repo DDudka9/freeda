@@ -7,7 +7,7 @@ Created on Fri Jul  9 22:47:43 2021
 """
 
 from freeda import tblastn
-from freeda import genomes_preprocessing
+from freeda import genomes_preprocessing, pyinstaller_compatibility
 from freeda import fasta_reader
 from bioservices import UniProt
 from Bio import SeqIO
@@ -17,6 +17,10 @@ import os
 import subprocess
 import shutil
 import logging
+
+# PYINSTALLER: Set bedtools path to a bedtools folder in the FREEDA directory.
+bedtools_path = pyinstaller_compatibility.resource_path('bedtools/bin')
+pybedtools.helpers.set_bedtools_path(bedtools_path)
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
