@@ -21,6 +21,7 @@ def is_bundled():
 # Using https://stackoverflow.com/a/44352931
 def resource_path(relative_path):
     """Get absolute path to given relative resource. Works for dev and for PyInstaller."""
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    # If variable _MEIPASS exists, it stores the location in which the program is running. Otherwise, return input.
+    base_path = getattr(sys, "_MEIPASS", "")
     return os.path.join(base_path, relative_path)
 

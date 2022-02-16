@@ -51,7 +51,7 @@ def run_msa(MSA_path, aligner):
             # define which aligner is used
             if aligner == "mafft":
 
-                cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path('mafft'),
+                cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                          input=in_filename,
                                          thread=-1)  # thread -1 is suppose to automatically calculate physical cores
                 stdout, stderr = cline()

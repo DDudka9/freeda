@@ -19,8 +19,10 @@ import shutil
 import logging
 
 # PYINSTALLER: Set bedtools path to a bedtools folder in the FREEDA directory.
-bedtools_path = pyinstaller_compatibility.resource_path('bedtools/bin')
-pybedtools.helpers.set_bedtools_path(bedtools_path)
+if pyinstaller_compatibility.is_bundled():
+    pybedtools.helpers.set_bedtools_path(pyinstaller_compatibility.resource_path("bedtools/bin"))
+else:
+    pybedtools.helpers.set_bedtools_path("")
 
 rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
          "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",

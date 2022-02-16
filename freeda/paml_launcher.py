@@ -656,8 +656,8 @@ def run_RAxML(gene, gene_folder_path, out_Gblocks):
 
     tree_name = gene + "_Tree"
 
-    RAxML_cline = [pyinstaller_compatibility.resource_path("raxmlHPC"), "-f", "a", "-s", out_Gblocks, "-n", tree_name,
-                   "-m", "GTRGAMMA", "-p", "12345", "-x", "12345", "-#", "100"]
+    RAxML_cline = [pyinstaller_compatibility.resource_path("raxmlHPC"), "-f", "a", "-s", out_Gblocks, "-n",
+                   tree_name, "-m", "GTRGAMMA", "-p", "12345", "-x", "12345", "-#", "100"]
 
     result = subprocess.call(RAxML_cline)
     all_tree_files = glob.glob("RAxML*")
@@ -1022,7 +1022,7 @@ def align_final_cds(gene, final_cds_file, result_path, aligner):
     # define which aligner is used
     if aligner == "mafft":
 
-        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path('mafft'),
+        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                  input=in_filepath,
                                  thread=-1)  # thread -1 is suppose to automatically calculate physical cores
         # record standard output and standard error
