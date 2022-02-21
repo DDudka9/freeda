@@ -15,15 +15,13 @@ import subprocess
 import os
 import requests
 import simplejson.errors
-
+import sys
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
 # Done but NOT TESTED YET
 
-
 # 2021-09-15
 # Brian Akins
-
 # METHOD: get_interpro(uniprot_id), interacts with the InterPro REST API.
 # INPUT:  A string containing the Uniprot ID of a target gene.
 # OUTPUT: A requests Response object. To interact with this object, use:
@@ -155,6 +153,20 @@ def check_structure(wdir, ref_species, gene):
 
     else:
         return False
+
+
+# 2022-02-21
+# Brian Akins
+# METHOD: install_pymol()
+# INPUT:
+# OUTPUT: None.
+def install_pymol():
+    if not shutil.which("pymol"):
+        print("PyMol not found in the path. Installing.")
+        if sys.platform.startswith("linux"):
+            pymol_inst = "command"
+    else:
+        print("PyMol found in the path.")
 
 
 def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selection, all_genes_dict=None):
