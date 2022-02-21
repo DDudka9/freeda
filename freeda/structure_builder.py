@@ -21,7 +21,6 @@ import simplejson.errors
 # Done but NOT TESTED YET
 
 
-
 # 2021-09-15
 # Brian Akins
 
@@ -31,9 +30,6 @@ import simplejson.errors
 #         .status_code, .headers['content-type'], .encoding, .text, or .json()
 # More info on the API URL architecture can be found at
 # https://docs.google.com/document/d/1JkZAkGI6KjZdqwJFXYlTFPna82p68vom_CojYYaTAR0/edit
-
-
-
 def get_interpro(uniprot_id):
     """Gets url from Interpro API -> json file"""
     print("\n Retrieving InterPro data for UniProt ID " + uniprot_id + "...\n")
@@ -181,7 +177,7 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selecti
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
-    pymol_command = "pymol -cq structure_overlay.pml"
+    pymol_command = ["pymol", "-cq", "structure_overlay.pml"]
     stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE).communicate()
     # move and overwrite if "structure_overlay.pml" exists in Structure folder for the gene
