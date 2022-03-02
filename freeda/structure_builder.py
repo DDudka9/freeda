@@ -161,7 +161,7 @@ def check_structure(wdir, ref_species, gene):
         return False
 
 
-def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selection, all_genes_dict=None):
+def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_genes_dict=None):
     """Runs PyMOL with overlaid adaptive sites"""
 
     structures_path = wdir + "Structures"
@@ -177,7 +177,7 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selecti
 
     # obtain a pymol script based on the model
     if not get_pymol_script(wdir, ref_species, dictionary, gene,
-                            protein_structure_path, genes_under_positive_selection, domains, all_genes_dict):
+                            protein_structure_path, genes_under_pos_sel, domains, all_genes_dict):
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
@@ -188,7 +188,8 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selecti
     shutil.move(os.path.join(wdir, "structure_overlay.pml"),
                 os.path.join(protein_structure_path, "structure_overlay.pml"))
     # move the model with overlaid residues into Results folder
-    shutil.move(protein_structure_path + final_model_name, result_path + final_model_name)
+    shutil.move(protein_structure_path + final_model_name,
+                result_path.replace("Raw_data/", "Results/Structures/") + final_model_name)
 
     return True
 
@@ -212,13 +213,13 @@ def get_consensus_dict(dictionary, gene):
 
 
 def get_pymol_script(wdir, ref_species, dictionary, gene,
-                     protein_structure_path, genes_under_positive_selection, domains, all_genes_dict=None):
+                     protein_structure_path, genes_under_pos_sel, domains, all_genes_dict=None):
     """Gets a PyMOL script that will be passed into PyMOL automatically"""
 
     paint_sites = False
 
     # paint sites of genes likely under positive selection
-    if gene in genes_under_positive_selection:
+    if gene in genes_under_pos_sel["F3X4"] or gene in genes_under_pos_sel["F61"]:
         paint_sites = True
 
     # check if consensus is needed (more than one codon frequency used)

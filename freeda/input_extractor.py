@@ -767,6 +767,7 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
             all_transcripts_dict[t].append(length)
 
     # compare length of translated coding sequence with model amino acid sequence length
+    likely_transcripts = {}  # collect likely transcripts
     for t, features in all_transcripts_dict.items():
 
         # some transcrtipts do not have an expected cds sequence (non-coding transcripts)
@@ -774,9 +775,16 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
 
             cds_length_aa = (features[-1]-3)/3
             if len(model_seq) == cds_length_aa:
-                selected_transcript_id = t
+                likely_transcripts[t] = features
                 matching_length = True
-                break  # ADDED 02/06/2022 to promote transcripts with higher ensembl entry numbers (e.g. -202 over -214)
+
+    # select the most likely transcript by taking the lowest ensembl number (usually the canonical transcript)
+    number = float("inf")
+    for t, features in likely_transcripts.items():
+        ensembl_number = int(features[3].split("-")[1])
+        if ensembl_number < number:
+            number = ensembl_number
+            selected_transcript_id = t
 
     # if there is no transcript of preference, pick the one with longest cds (not recommended)
     if matching_length is False:
@@ -786,7 +794,6 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
 
             # some transcrtipts do not have an expected cds sequence (non-coding transcripts)
             if features[-1] is not None:
-
                 if features[-1] > length:
                     selected_transcript_id = t
                     length = features[-1]
@@ -799,7 +806,8 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
                UTR_5, UTR_3, cds_sequence_expected, matching_length
 
     # unpack features of the selected transcript
-    gene_id, contig, strand, transcript_name, start, end, cds_sequence_expected, length = all_transcripts_dict[selected_transcript_id]
+    gene_id, contig, strand, transcript_name, start, end, \
+    cds_sequence_expected, length = all_transcripts_dict[selected_transcript_id]
     # rebuild Transcript object based on the selected transcript
     transcript = pyensembl.Transcript(selected_transcript_id, transcript_name,
             contig, start, end, strand, biotype, gene_id, ensembl, support_level=None)

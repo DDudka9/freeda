@@ -27,7 +27,7 @@ import math
 
 
 def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
-                         ref_species, PAML_logfile_name, day, genes_under_positive_selection, failed_paml,
+                         ref_species, PAML_logfile_name, day, genes_under_pos_sel, failed_paml,
                          codon_frequencies, gui=False):
     """Analyzes PAML results for each gene unless no PAML result available"""
 
@@ -44,7 +44,7 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
                 nr_of_species_total = nr_of_species_total_dict[gene]
                 matched_adaptive_sites_ref = plot_PAML(wdir, result_path, gene,
                                                nr_of_species_total, ref_species,
-                                               genes_under_positive_selection, gui, codon_frequency)
+                                               genes_under_pos_sel, gui, codon_frequency)
                 all_matched_adaptive_sites_ref[codon_frequency][gene] = matched_adaptive_sites_ref
 
     # get protein alignment that matches 3D structure
@@ -127,6 +127,10 @@ def get_alignment_matching_structure(result_path, ref_species, gene, dictionary)
             # reconstruct sequence
             seq = "".join([aa for position, aa in new_seq_dict[species].items()])
             f.write(seq + "\n")
+
+    # move the protein alignment
+    shutil.move(result_path + gene + "_protein_alignment.fasta",
+                result_path.replace("Raw_data/", "Results/Protein_alignments/") + gene + "_protein_alignment.fasta")
 
 
 def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml, codon_frequency):
@@ -362,10 +366,10 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day, codon_freque
     # save the excel document
     excel_filename = "PAML_result" + day + "_" + codon_frequency + ".xlsx"
     wb.save(excel_filename)
-    shutil.move(wdir + excel_filename, result_path)
+    shutil.move(wdir + excel_filename, result_path.replace("Raw_data/", "Results/") + "Results_sheet")
 
 
-def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_positive_selection,
+def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_pos_sel,
               gui, codon_frequency):
     """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
     
@@ -386,10 +390,10 @@ def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_u
     # mark the sites that were not analyzed by PAML
     final_dict_to_plot = mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues_dict)
     # record and write breakdown of adaptive sites overlay to ref cds
-    record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection, codon_frequency)
+    record_adaptive_sites(final_dict_to_plot, gene, genes_under_pos_sel, codon_frequency)
     # plot omegas and probabilities
     make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene,
-                nr_of_species_total, genes_under_positive_selection, codon_frequency, gui)
+                nr_of_species_total, genes_under_pos_sel, codon_frequency, gui)
 
     return matched_adaptive_sites_ref
 
@@ -406,12 +410,12 @@ def mark_skipped_sites(matched_adaptive_sites_ref, mapped_ref_and_final_residues
     return matched_adaptive_sites_ref
 
 
-def record_adaptive_sites(final_dict_to_plot, gene, genes_under_positive_selection, codon_frequency):
+def record_adaptive_sites(final_dict_to_plot, gene, genes_under_pos_sel, codon_frequency):
     """Makes a uniprot format representation of each residue in aa seq of reference species
     (number, selection, presence)"""
 
     annotate_selection = False
-    if gene in genes_under_positive_selection:
+    if gene in genes_under_pos_sel[codon_frequency]:
         annotate_selection = True
 
     # row_residues and row_features are well set
@@ -810,7 +814,7 @@ def get_adaptive_sites(result_path, gene, codon_frequency):
 
 
 def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_species_total,
-                genes_under_positive_selection, codon_frequency, gui):
+                genes_under_pos_sel, codon_frequency, gui):
     """Draws a graph of PAML analysis : omegas, all posterior probabilities and highly likely sites
     under positive selection"""
 
@@ -845,7 +849,7 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
         present.append(features[3])
 
     # reset probabilities for genes unlikely under positive selection
-    if gene not in genes_under_positive_selection:
+    if gene not in genes_under_pos_sel[codon_frequency]:
         for i in range(len(probabilities)):
             # mark missing residues
             if present[i] == 0:
@@ -901,10 +905,11 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
     plt.bar(sites, probabilities, color=clrs3)
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     
-    figure_name = gene + "_PAML_analysis_" + codon_frequency
+    figure_name = gene + "_PAML_graph_" + codon_frequency
     plt.savefig(figure_name + ".tif", dpi=300, bbox_inches="tight")
     
-    shutil.move(wdir + figure_name + ".tif", result_path + figure_name + ".tif")
+    shutil.move(wdir + figure_name + ".tif", result_path.replace("Raw_data/", "Results/")
+                + "Graphs/" + figure_name + ".tif")
 
 
     

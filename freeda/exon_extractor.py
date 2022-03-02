@@ -30,7 +30,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
     start_time = time.time()
 
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
-    result_path = wdir + "Results" + day + "/"
+    result_path = wdir + "Results" + day + "/Raw_data/"
     log_filename = "FREEDA" + day + ".log"
 
     # does not generate folders for excluded species
@@ -61,8 +61,6 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
             if genome in blast:  # find genome name e.e. "MusSpicilegus" in absolute path of blast file
                 all_blasts.remove(blast)
 
-    #all_blasts = [blast for blast in glob.glob(blast_output_path + "*.txt")]
-
     # remove previous fasta files for these genes (unfinished runs)
     for gene in all_genes:
         if os.path.isfile(wdir + gene + ".fasta"):
@@ -72,6 +70,10 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
     for gene in all_genes:
         for path in all_blasts:
             if gene == path.split("/")[-1].split("_")[0]:  # to avoid gene names hidden in path namespace
+
+                # copy to the Result folder
+                shutil.copy(path, result_path.replace("Raw_data/", "Results/") + "Blast_output/" + path.split("/")[-1])
+
                 match_path = path
                 # generate gene and genome names
                 gene, genome_name = get_names(match_path)

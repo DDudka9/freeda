@@ -299,7 +299,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
             # check if model seq and input seq match and check if exactly one model exists
             elif structure_builder.check_structure(wdir, ref_species, gene):
                 successful = structure_builder.run_pymol(wdir, ref_species, result_path,
-                                                         gene, genes_under_pos_sel)
+                                                         gene, genes_under_pos_sel, codon_frequencies)
                 if not successful:
                     print("\nThe structure for : %s was not built successfully." % gene)
                     continue
@@ -329,7 +329,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",

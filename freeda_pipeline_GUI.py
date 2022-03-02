@@ -11,8 +11,11 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Whn only F61 scores (NUMA1) PAML log has annotated uniprot like sites in F3X4 too -> need to fix it
+#               -> PAML graph also shows sites in NUMA1 F3X4 model -> DONE (I think ->test on NUMA1)
+#       0) When F61 scores only then structure has these residues -> its ok, command line can run only F61
 #       0) Command line version crashes is blast_output contains excluded species
-#                           -> add key:value pairs Gs : GrammomysDolichurus
+#                           -> add key:value pairs Gs : GrammomysDolichurus -> DONE
 #       0) Bring the initial nucelotide alignment into the protein folder -> DONE
 #       0) Exon finding is not ordered in linux -> order files -> DONE?
 #       0) PAML log file has no indication of codon model for uniprot like sites -> DONE
@@ -702,7 +705,7 @@ def freeda_pipeline():
     # report exceptions
     except Exception:
         logging.exception("\n\n...FATAL ERROR... : Something went wrong (see below). "
-                          "Contact damiandudka0@gmail.com\n\n")
+                          "Send screen shot to : Damian Dudka -> damiandudka0@gmail.com\n\n")
 
 
 def check_gene_name(gene_name, op):
@@ -1148,7 +1151,7 @@ logging_frame = ttk.Frame(output_frame, relief="ridge", padding="5 5 5 5")
 logging_frame.grid(column=0, row=0, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
 
 # create results frame
-results_labelframe = ttk.LabelFrame(output_frame, text="Results window")
+results_labelframe = ttk.LabelFrame(output_frame, text="Results window (output only for F3X4)")
 results_labelframe.grid(column=0, row=1, columnspan=8, padx=5, pady=2, sticky=(N, W))
 results_labelframe.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 

@@ -45,7 +45,7 @@ def generate_contig_folders(result_path, all_genes, all_genomes):
     # make gene folders
     for gene in all_genes:
         os.makedirs(result_path + str(gene))
-        
+
     # name genome folder for each gene folder
     all_gene_folders = os.listdir(result_path)
     for gene_folder in all_gene_folders:
@@ -63,5 +63,15 @@ def generate_contig_folders(result_path, all_genes, all_genomes):
             os.makedirs(result_path + str(gene_folder) + "/" + genome + "/" + "Fasta/above_threshold/MSA/Duplicated_exons")
             # make Single_exon_MSA folder
             os.makedirs(result_path + str(gene_folder) + "/" + genome + "/" + "Fasta/above_threshold/MSA/Single_exons_MSA")
-                
+
+    # make folders for output files
+    result_path = result_path.replace("Raw_data/", "Results/")
+    os.makedirs(result_path + "Nucleotide_alignments")
+    os.makedirs(result_path + "Protein_alignments")
+    os.makedirs(result_path + "Graphs")
+    os.makedirs(result_path + "Results_sheet")
+    os.makedirs(result_path + "Gene_trees")
+    os.makedirs(result_path + "Structures")
+    os.makedirs(result_path + "Blast_output")
+
     print("\nFolders have been generated.\n")
