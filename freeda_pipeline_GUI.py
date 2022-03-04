@@ -13,18 +13,12 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 # TODO
 #       0) Whn only F61 scores (NUMA1) PAML log has annotated uniprot like sites in F3X4 too -> need to fix it
 #               -> PAML graph also shows sites in NUMA1 F3X4 model -> DONE (I think ->test on NUMA1)
-#       0) When F61 scores only then structure has these residues -> its ok, command line can run only F61
-#       0) Command line version crashes is blast_output contains excluded species
-#                           -> add key:value pairs Gs : GrammomysDolichurus -> DONE
-#       0) Bring the initial nucelotide alignment into the protein folder -> DONE
-#       0) Exon finding is not ordered in linux -> order files -> DONE?
-#       0) PAML log file has no indication of codon model for uniprot like sites -> DONE
-#       0) Pick transcript with lowest number if matching structure (e.g. TRIM5-202 instead of TRIM5-214) -> DONE
-#       0) Allow user to get rid of species -> DONE
-#       0) Allow user to run freeda with two different models (F3x4 and F61) -> DONE
+#                   -> it works but structure overlays only F61 sites that also score in F3X4
+#                                                                       (even if this model is rejected)
+#       0) Test current folder scheme using command line
+#       0) When F61 scores only, then structure has these residues -> its ok, command line can run only F61
 #       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0
 #                   -> the 1.0 intron is actually completely missing -> no mismatches are treated as full alignment
-#                           -> penalize that
 #       0) You need to introduce info about the ref exon length and pass it to single exon checkpoint to avoid
 #               the code recognising intronic dashes as indels -> one of the dicts "ref_exons" should have it
 #                   -> I added the exon length variable to single exon mapping checkpoint, penalized gaps
@@ -32,12 +26,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                   -> I decided to go back to not penalizing indels because that leads to rejection of exons e.g.
 #                           Cenp-a ends up with only 7 species becuase of the exon 1 indels (which are true)
 #       0) CD55 in primates An species has clear misalignment in exon 4 and 5 -> passes single exon check though (0.69 and 0.74)
-#                   -> I started punishing indels -> test on Izumo1, Izumo 3 and Haus8
+#                   -> I started punishing indels -> test on Izumo1, Izumo 3 and Haus8 -> decided against it finally?
 #       0) Possible issue with length of gene -> how TRIM5a human gene is soo long? Trim-214 in ensembl is
 #                   only 20k while I get over 200k linear seq -> check input from pyensembl
-#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long
-#       0) Test the command line agg workaround -> seem to be working well (FIXED)
-#       0) Consider PAML FAQ forum
+#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long -< no clue why
 #       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
 #                                       : "A beginners guide to estimating the non-synonymous to
 #                                                 synonymous rate ratio of all protein-coding genes in a genome"

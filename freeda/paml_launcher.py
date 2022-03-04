@@ -270,13 +270,11 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 shutil.copy(best_tree_path, PAML_path + "/gene.tree")
 
                 # rename path
-                best_tree_path = best_tree_path.split("7")[-1].re
+                #best_tree_path = best_tree_path.split("/")[-1]
                 shutil.copy(best_tree_path, result_path.replace("Raw_data/", "Results/Gene_trees/") + gene + ".tree")
 
-                # rename and copy the final gene alignment into results
-                shutil.copy(translated_path,
-                            result_path.replace("Raw_data/", "Results/Protein_alignments/")
-                            + gene + "_protein_alignment.fasta")
+                # rename and copy the protein alignment into results (not final at this point yet)
+                shutil.copy(translated_path, result_path + gene + "_protein_alignment.fasta")
         
                 # run PAML
                 message = "\n.........Running PAML (%s) for gene: %s.........\n" % (codon_frequency, gene)

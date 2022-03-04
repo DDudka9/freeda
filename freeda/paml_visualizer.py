@@ -86,8 +86,8 @@ def get_alignment_matching_structure(result_path, ref_species, gene, dictionary)
     filename = gene + "_protein_alignment.fasta"
     all_seq_dict = fasta_reader.alignment_file_to_dict(result_path, ref_species, filename)
 
-    # remove alignment file (not needed)
-    os.remove(result_path + filename)
+    # remove alignment file (since its not needed anymore here)
+    #os.remove(result_path + filename)
 
     # make temporary dictionary donor of aa
     temp_seq_dict = {}
@@ -128,7 +128,7 @@ def get_alignment_matching_structure(result_path, ref_species, gene, dictionary)
             seq = "".join([aa for position, aa in new_seq_dict[species].items()])
             f.write(seq + "\n")
 
-    # move the protein alignment
+    # move and overright the final protein alignment in Results
     shutil.move(result_path + gene + "_protein_alignment.fasta",
                 result_path.replace("Raw_data/", "Results/Protein_alignments/") + gene + "_protein_alignment.fasta")
 

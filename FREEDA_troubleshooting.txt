@@ -966,3 +966,15 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 #                       -> I deactivated frameshifts functions in cds cloner module (FOR BOTH NORMAL AND HD RUNS)
 #                               -> test using Oip5, Cdk5rap2, Sgo2b, Haus2, Clasp1, Aspm
 #                                   -> seems that frameshift check not necessary to pick up correct sequences
+
+03/03/2022
+
+ Command line version crashes is blast_output contains excluded species
+#                           -> add key:value pairs Gs : GrammomysDolichurus -> DONE
+#       0) Bring the initial nucelotide alignment into the protein folder -> DONE
+#       0) Exon finding is not ordered in linux -> order files -> DONE
+#       0) PAML log file has no indication of codon model for uniprot like sites -> DONE
+#       0) Pick transcript with lowest number if matching structure (e.g. TRIM5-202 instead of TRIM5-214) -> DONE
+#       0) Allow user to get rid of species -> DONE
+#       0) Allow user to run freeda with two different models (F3x4 and F61) -> DONE
+0) Test the command line agg workaround -> seem to be working well (FIXED)

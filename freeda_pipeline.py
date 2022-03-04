@@ -242,14 +242,14 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         nr_of_tries = 1
         while nr_of_tries <= 3:
             user_input4 = input("----->  Indicate folder with results (no slashes or quotes): ")
-            result_path = wdir + user_input4 + "/"
+            result_path = wdir + user_input4 + "/Raw_data/"
 
             if os.path.isdir(result_path) is False:
                 print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
                 nr_of_tries += 1
             else:
                 nr_of_tries = float("inf")
-                result_path = wdir + user_input4 + "/"
+                result_path = wdir + user_input4 + "/Raw_data/"
 
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, \
@@ -299,7 +299,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
             # check if model seq and input seq match and check if exactly one model exists
             elif structure_builder.check_structure(wdir, ref_species, gene):
                 successful = structure_builder.run_pymol(wdir, ref_species, result_path,
-                                                         gene, genes_under_pos_sel, codon_frequencies)
+                                                         gene, genes_under_pos_sel)
                 if not successful:
                     print("\nThe structure for : %s was not built successfully." % gene)
                     continue
@@ -329,7 +329,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Hs")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
