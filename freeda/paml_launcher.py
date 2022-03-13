@@ -582,9 +582,6 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
     return correction, corrected_filename
 
 
-# MODIFY THE INSERTION FUNCTION TO ELIMINATE ALSO 3% != 0 insertions > 1 (mostly artificial insertions)
-
-
 def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     """Runs PAML by calling the control file"""
 

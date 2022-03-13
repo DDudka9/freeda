@@ -11,10 +11,12 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) There might be an issue with RETRO calling -> Only 5-prime RETRO called in Mad1l1 Mi (the one that didnt fail)
 #       0) Whn only F61 scores (NUMA1) PAML log has annotated uniprot like sites in F3X4 too -> need to fix it
 #               -> PAML graph also shows sites in NUMA1 F3X4 model -> DONE (I think ->test on NUMA1)
 #                   -> it works but structure overlays only F61 sites that also score in F3X4
 #                                                                       (even if this model is rejected)
+#               -> it turns out that actually freeda picks the first codon model if consensus dict is not neded (fix it)
 #       0) Test current folder scheme using command line
 #       0) When F61 scores only, then structure has these residues -> its ok, command line can run only F61
 #       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0

@@ -170,13 +170,13 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_gen
 
     # get dict of adaptives sites matched to input sequence
     with open(result_path + "all_matched_adaptive_sites_ref.txt", "r") as f:
-        dictionary = literal_eval(f.read())
+        all_matched_adaptive_sites_ref = literal_eval(f.read())
 
     # get domain names and coordinates from Interpro API
     domains = get_domains(wdir, ref_species, gene)
 
     # obtain a pymol script based on the model
-    if not get_pymol_script(wdir, ref_species, dictionary, gene,
+    if not get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
                             protein_structure_path, genes_under_pos_sel, domains, all_genes_dict):
         return False
 
@@ -194,25 +194,67 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_gen
     return True
 
 
-def get_consensus_dict(dictionary, gene):
+def get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel):
     """Builds a consensus dictionary by comparing sites under positive selection in both codon frequency models used
     - converts sites < 0.90 into 0.00"""
 
     consensus_dict = {}
     # check if consensus is to be built (more than one codon frequency used)
-    if len(dictionary.keys()) > 1:
+    if len(all_matched_adaptive_sites_ref.keys()) > 1 and gene in genes_under_pos_sel["F3X4"] \
+                                                        and gene in genes_under_pos_sel["F61"]:
         consensus_dict[gene] = {}
-        for position in range(1, len(dictionary[next(iter(dictionary))][gene]) + 1):
-            position_F3X4 = dictionary["F3X4"][gene][str(position)]
-            position_F61 = dictionary["F61"][gene][str(position)]
+        # compare probabilities at each position between models
+        for position in range(1,
+                              len(all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][gene]) + 1):
+            position_F3X4 = all_matched_adaptive_sites_ref["F3X4"][gene][str(position)]
+            position_F61 = all_matched_adaptive_sites_ref["F61"][gene][str(position)]
+            # suppress scoring of residues with high probability in only one codon frequency model
             if float(position_F3X4[2]) < 0.90 or float(position_F61[2]) < 0.90:
                 position_F3X4[2] = "0.00"
             consensus_dict[gene][str(position)] = position_F3X4
 
+    # gene scores only in F3X4 model
+    elif len(all_matched_adaptive_sites_ref.keys()) > 1 \
+        and gene in genes_under_pos_sel["F3X4"] and gene not in genes_under_pos_sel["F61"]:
+
+        consensus_dict[gene] = {}
+        # make consensus depend only on F3X4 model
+        for position in range(1,
+                              len(all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][
+                                      gene]) + 1):
+            position_F3X4 = all_matched_adaptive_sites_ref["F3X4"][gene][str(position)]
+            consensus_dict[gene][str(position)] = position_F3X4
+
+    # gene scores only in F61 model
+    elif len(all_matched_adaptive_sites_ref.keys()) > 1 \
+        and gene not in genes_under_pos_sel["F3X4"] and gene in genes_under_pos_sel["F61"]:
+
+        consensus_dict[gene] = {}
+        # make consensus depend only on F61 model
+        for position in range(1,
+                              len(all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][
+                                      gene]) + 1):
+            position_F61 = all_matched_adaptive_sites_ref["F61"][gene][str(position)]
+            consensus_dict[gene][str(position)] = position_F61
+
+    elif len(all_matched_adaptive_sites_ref.keys()) == 1:
+
+        consensus_dict[gene] = {}
+        # only one model
+        for position in range(1,
+                              len(all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][
+                                      gene]) + 1):
+            # get the first (and only) key
+            positions = all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][gene][str(position)]
+            consensus_dict[gene][str(position)] = positions
+
+    else:
+        print("Something went wrong with the consensus dict")
+
     return consensus_dict
 
 
-def get_pymol_script(wdir, ref_species, dictionary, gene,
+def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
                      protein_structure_path, genes_under_pos_sel, domains, all_genes_dict=None):
     """Gets a PyMOL script that will be passed into PyMOL automatically"""
 
@@ -222,12 +264,15 @@ def get_pymol_script(wdir, ref_species, dictionary, gene,
     if gene in genes_under_pos_sel["F3X4"] or gene in genes_under_pos_sel["F61"]:
         paint_sites = True
 
-    # check if consensus is needed (more than one codon frequency used)
-    consensus_dict = get_consensus_dict(dictionary, gene)
-    if consensus_dict:
-        matched_adaptive_sites_ref = consensus_dict[gene]
-    else:
-        matched_adaptive_sites_ref = dictionary[next(iter(dictionary))][gene]  # pick the first key
+    # get consensus (more than one codon frequency used)
+    consensus_dict = get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel)
+    matched_adaptive_sites_ref = consensus_dict[gene]
+
+    #if consensus_dict:
+    #    matched_adaptive_sites_ref = consensus_dict[gene]
+    #else:
+    #    matched_adaptive_sites_ref = all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][gene]
+                                                                                # pick the first key
                                                                                 # (only one codon model)
 
     structure_prediction_path = wdir + "Structures/" + gene + "_" + ref_species

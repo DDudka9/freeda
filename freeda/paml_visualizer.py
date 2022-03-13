@@ -74,7 +74,7 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
     
     shutil.move(wdir + "all_matched_adaptive_sites_ref.txt", result_path + "all_matched_adaptive_sites_ref.txt")
 
-    # output only the first (default is F3X4 or user selected) codon frequency run
+    # output only the first (default is F3X4 or user selected) codon frequency run -> only matters for GUI version
     return final_PAML_log_dict[next(iter(final_PAML_log_dict))]
 
 
