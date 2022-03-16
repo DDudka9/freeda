@@ -209,13 +209,13 @@ def download_genome(genome, accession_nr, database_path):
     start_time = time.time()
     filepath_1 = database_path + genome + ".zip"
     # need to exclude genomic cds because its also ".fna" which confuses the concatenation
-    cmd1 = ["datasets", "download", "genome", "accession", accession_nr, "--exclude-genomic-cds", "--filename",
-            filepath_1]
+    cmd1 = [pyinstaller_compatibility.resource_path("datasets"),
+            "download", "genome", "accession", accession_nr, "--exclude-genomic-cds", "--filename", filepath_1]
     subprocess.call(cmd1, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))  # mute output and cautions
 
     # unzip all chromosomes into single file
     filepath_2 = database_path + genome + ".fasta"
-    cmd2 = ["unzip", "-pq", filepath_1, "cat", "*/*.fna", filepath_2]
+    cmd2 = [pyinstaller_compatibility.resource_path("unzip"), "-pq", filepath_1, "cat", "*/*.fna", filepath_2]
     with open(filepath_2, "w") as outfile:
         subprocess.call(cmd2, stdout=outfile, stderr=open(os.devnull, 'wb'))  # redirect to file and mute cautions
 
@@ -230,8 +230,10 @@ def make_blast_database(database_path, genome):
     """ Makes a blast database based on genome fasta file."""
 
     genome_file = genome + ".fasta"
-    make_database_nucl = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "nucl"]
-    make_database_prot = ["makeblastdb", "-in", database_path + genome_file, "-dbtype", "prot"]
+    make_database_nucl = [pyinstaller_compatibility.resource_path("makeblastdb"),
+                          "-in", database_path + genome_file, "-dbtype", "nucl"]
+    make_database_prot = [pyinstaller_compatibility.resource_path("makeblastdb"),
+                          "-in", database_path + genome_file, "-dbtype", "prot"]
 
     message = "\n                  Building blast database for genome : %s ..." % genome
     logging.info(message)
