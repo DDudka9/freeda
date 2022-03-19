@@ -238,7 +238,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                                                                final_excluded_species)
         else:
             print("\n     ...FATAL ERROR... : Genome of at least one species contains "
-                  "no matches above the identity threshold used : %s -> use a lower one " 
+                  "no matches above the identity threshold used : %s \n"
+                  "-> use a lower one or exclude species from analysis" 
                     "-> exiting the pipeline now..." % t)
             return
 

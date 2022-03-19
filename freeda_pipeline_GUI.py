@@ -11,6 +11,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) cite Wang and Han 2021 J Virol for Primates, Carnivora that span similar phylogeny
+#       "Pervasive Positive Selection on Virus Receptors Driven by Host-Virus Conflicts in Mammals"
 #       0) There might be an issue with RETRO calling -> Only 5-prime RETRO called in Mad1l1 Mi (the one that didnt fail)
 #       0) Whn only F61 scores (NUMA1) PAML log has annotated uniprot like sites in F3X4 too -> need to fix it
 #               -> PAML graph also shows sites in NUMA1 F3X4 model -> DONE (I think ->test on NUMA1)
@@ -639,7 +641,8 @@ def freeda_pipeline():
 
         else:
             message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
-                  "no matches above the identity threshold used : %s -> use a lower one " \
+                  "no matches above the identity threshold used : %s \n" \
+                      "-> use a lower one or exclude from analysis" \
                   "-> exiting the pipeline now..." % t
             logging.info(message)
             ublock_user_entries()
