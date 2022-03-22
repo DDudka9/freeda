@@ -58,6 +58,10 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if ref_species is None:
         ref_species = "Mm"
+    elif ref_species not in ["Mm", "Hs", "Cf", "Gg"]:
+        print("\n...FATAL_ERROR... : Invalid reference species (try: Mm for mouse, Hs for human) "
+              "-> exiting the pipeline now...")
+        return
 
     # initial percent identity threshold for blast matches analysis
     if t is None:
@@ -65,6 +69,11 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if codon_frequencies is None:
         codon_frequencies = "F3X4"
+    elif codon_frequencies.upper() != "F3X4" and codon_frequencies.upper() != "F61" \
+                                            and codon_frequencies.upper() != "F3X4, F61":
+        print("\n...FATAL_ERROR... : Invalid codon frequencies (try: F3X4 or F61 or F3X4, F61) "
+              "-> exiting the pipeline now...")
+        return
 
     if excluded_species is None:
         final_excluded_species = {}
@@ -229,7 +238,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                                                                final_excluded_species)
         else:
             print("\n     ...FATAL ERROR... : Genome of at least one species contains "
-                  "no matches above the identity threshold used : %s -> use a lower one " 
+                  "no matches above the identity threshold used : %s \n"
+                  "-> use a lower one or exclude species from analysis" 
                     "-> exiting the pipeline now..." % t)
             return
 
@@ -242,14 +252,14 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         nr_of_tries = 1
         while nr_of_tries <= 3:
             user_input4 = input("----->  Indicate folder with results (no slashes or quotes): ")
-            result_path = wdir + user_input4 + "/"
+            result_path = wdir + user_input4 + "/Raw_data/"
 
             if os.path.isdir(result_path) is False:
                 print("\n(FREEDA) I could not find your results folder (%s/3)" % nr_of_tries)
                 nr_of_tries += 1
             else:
                 nr_of_tries = float("inf")
-                result_path = wdir + user_input4 + "/"
+                result_path = wdir + user_input4 + "/Raw_data/"
 
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, \
@@ -333,9 +343,9 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
-                        help="specify codon frequency models (F3x4 is default)", type=str, default="F3x4")
+                        help="specify codon frequency models (F3x4 is default)", type=str, default="F61")
     parser.add_argument("-es", "--excluded_species",
-                        help="specify species to exclude (e.g. Ha Gs)", type=str, default=None)
+                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="""""Ns""")
 
     args = parser.parse_args()
     freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,

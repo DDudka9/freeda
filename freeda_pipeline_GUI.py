@@ -11,17 +11,18 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
-#       0) Command line version crashes is blast_output contains excluded species
-#                           -> add key:value pairs Gs : GrammomysDolichurus
-#       0) Bring the initial nucelotide alignment into the protein folder -> DONE
-#       0) Exon finding is not ordered in linux -> order files -> DONE?
-#       0) PAML log file has no indication of codon model for uniprot like sites -> DONE
-#       0) Pick transcript with lowest number if matching structure (e.g. TRIM5-202 instead of TRIM5-214) -> DONE
-#       0) Allow user to get rid of species -> DONE
-#       0) Allow user to run freeda with two different models (F3x4 and F61) -> DONE
+#       0) cite Wang and Han 2021 J Virol for Primates, Carnivora that span similar phylogeny
+#       "Pervasive Positive Selection on Virus Receptors Driven by Host-Virus Conflicts in Mammals"
+#       0) There might be an issue with RETRO calling -> Only 5-prime RETRO called in Mad1l1 Mi (the one that didnt fail)
+#       0) Whn only F61 scores (NUMA1) PAML log has annotated uniprot like sites in F3X4 too -> need to fix it
+#               -> PAML graph also shows sites in NUMA1 F3X4 model -> DONE (I think ->test on NUMA1)
+#                   -> it works but structure overlays only F61 sites that also score in F3X4
+#                                                                       (even if this model is rejected)
+#               -> it turns out that actually freeda picks the first codon model if consensus dict is not neded (fix it)
+#       0) Test current folder scheme using command line
+#       0) When F61 scores only, then structure has these residues -> its ok, command line can run only F61
 #       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0
 #                   -> the 1.0 intron is actually completely missing -> no mismatches are treated as full alignment
-#                           -> penalize that
 #       0) You need to introduce info about the ref exon length and pass it to single exon checkpoint to avoid
 #               the code recognising intronic dashes as indels -> one of the dicts "ref_exons" should have it
 #                   -> I added the exon length variable to single exon mapping checkpoint, penalized gaps
@@ -29,12 +30,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                   -> I decided to go back to not penalizing indels because that leads to rejection of exons e.g.
 #                           Cenp-a ends up with only 7 species becuase of the exon 1 indels (which are true)
 #       0) CD55 in primates An species has clear misalignment in exon 4 and 5 -> passes single exon check though (0.69 and 0.74)
-#                   -> I started punishing indels -> test on Izumo1, Izumo 3 and Haus8
+#                   -> I started punishing indels -> test on Izumo1, Izumo 3 and Haus8 -> decided against it finally?
 #       0) Possible issue with length of gene -> how TRIM5a human gene is soo long? Trim-214 in ensembl is
 #                   only 20k while I get over 200k linear seq -> check input from pyensembl
-#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long
-#       0) Test the command line agg workaround -> seem to be working well (FIXED)
-#       0) Consider PAML FAQ forum
+#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long -< no clue why
 #       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
 #                                       : "A beginners guide to estimating the non-synonymous to
 #                                                 synonymous rate ratio of all protein-coding genes in a genome"
@@ -643,7 +642,8 @@ def freeda_pipeline():
 
         else:
             message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
-                  "no matches above the identity threshold used : %s -> use a lower one " \
+                  "no matches above the identity threshold used : %s \n" \
+                      "-> use a lower one or exclude from analysis" \
                   "-> exiting the pipeline now..." % t
             logging.info(message)
             ublock_user_entries()
@@ -703,7 +703,7 @@ def freeda_pipeline():
     # report exceptions
     except Exception:
         logging.exception("\n\n...FATAL ERROR... : Something went wrong (see below). "
-                          "Contact damiandudka0@gmail.com\n\n")
+                          "Send screen shot to : Damian Dudka -> damiandudka0@gmail.com\n\n")
 
 
 def check_gene_name(gene_name, op):
@@ -1149,7 +1149,7 @@ logging_frame = ttk.Frame(output_frame, relief="ridge", padding="5 5 5 5")
 logging_frame.grid(column=0, row=0, columnspan=9, sticky=(N, W, E, S), padx=5, pady=5)
 
 # create results frame
-results_labelframe = ttk.LabelFrame(output_frame, text="Results window")
+results_labelframe = ttk.LabelFrame(output_frame, text="Results window (output only for F3X4)")
 results_labelframe.grid(column=0, row=1, columnspan=8, padx=5, pady=2, sticky=(N, W))
 results_labelframe.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 

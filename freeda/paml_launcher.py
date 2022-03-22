@@ -75,7 +75,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
         all_species_dict[species] = ""
     
     nr_of_species_total_dict = {}
-    genes_under_pos_sel = []
+    genes_under_pos_sel = {"F3X4": [], "F61": []}
 
     for gene in all_genes:
         
@@ -180,7 +180,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 codon_frequencies = "F3X4"
         
             # align the final cds sequences
-            out_msa = align_final_cds(gene, final_cds_file, result_path, aligner)
+            out_msa = align_final_cds(gene, result_path, aligner)
 
             # check and eliminate insertions that cause dashes in ref species
             correction, corrected_filename = eliminate_all_insertions(gene_folder_path, out_msa)
@@ -197,7 +197,8 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
             final_cds_file_no_STOP = STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner)
 
             # move raw alignment to result folder
-            shutil.move(gene_folder_path + "/" + out_msa, result_path)
+            shutil.move(gene_folder_path + "/" + out_msa,
+                        result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments")
 
             # check for rare frameshifts in cloned cds
             to_delete = cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, final_cds_file_no_STOP)
@@ -269,7 +270,11 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 shutil.copy(out_Gblocks, PAML_path + "/input.phy")
                 shutil.copy(best_tree_path, PAML_path + "/gene.tree")
 
-                # rename and copy the final gene alignment into results
+                # rename path
+                #best_tree_path = best_tree_path.split("/")[-1]
+                shutil.copy(best_tree_path, result_path.replace("Raw_data/", "Results/Gene_trees/") + gene + ".tree")
+
+                # rename and copy the protein alignment into results (not final at this point yet)
                 shutil.copy(translated_path, result_path + gene + "_protein_alignment.fasta")
         
                 # run PAML
@@ -280,7 +285,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency)
 
                 if M8_M7 < 0.05:
-                    genes_under_pos_sel.append(gene)
+                    genes_under_pos_sel[codon_frequency].append(gene)
 
                 message = "\n -> PAML p-values (%s) for gene %s : M2a v M1a - %s and M8 v M7 - %s\n" \
                     % (codon_frequency, gene, str(M2a_M1a), str(M8_M7))
@@ -578,9 +583,6 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
     return correction, corrected_filename
 
 
-# MODIFY THE INSERTION FUNCTION TO ELIMINATE ALSO 3% != 0 insertions > 1 (mostly artificial insertions)
-
-
 def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     """Runs PAML by calling the control file"""
 
@@ -792,6 +794,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
 
 
 def translate_Gblocks(wdir, gene_folder_path, raw_out_Gblocks_filename, gene, ref_species):
+    """Translates Gblocks trimmed alignments"""
     
     filepath_to_translate = gene_folder_path + "/" + raw_out_Gblocks_filename
     # read the fasta alignment file 
@@ -827,6 +830,7 @@ def translate_Gblocks(wdir, gene_folder_path, raw_out_Gblocks_filename, gene, re
 
     # return the path to the translated alignment
     return raw_translated_path, filepath_to_translate
+
 
 def convert_to_phylip(out_Gblocks):
     """Converts fasta files to phylip format"""
@@ -920,7 +924,7 @@ def post_Gblocks_STOP_remover(gene_folder_path, raw_out_Gblocks_filename, gene):
     
     all_cds = {}
     all_cds_no_STOP = {}
-    artificial_STOP_codon_positions = set() # doesnt allow repetitions
+    artificial_STOP_codon_positions = set()  # doesnt allow repetitions
     species_with_STOP = []
     
     # read species and cds into a dict to ease search
@@ -1012,7 +1016,7 @@ def run_Gblocks(final_cds_file_no_STOP, gene, result_path, aligner):
     return raw_out_Gblocks_filename
 
               
-def align_final_cds(gene, final_cds_file, result_path, aligner):
+def align_final_cds(gene, result_path, aligner):
     """Aligns cloned coding sequences that pass coverage threshold (default 90 percent)"""
 
     gene_folder_path = result_path + gene + "/"

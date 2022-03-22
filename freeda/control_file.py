@@ -10,7 +10,7 @@ def make_control_file(wdir):
 
     # make control file for F3x4 model (default)
     with open(wdir + "control_file_F3X4.ctl", "w") as f:
-        for index, line in control_file_dict_F3x4.items():
+        for index, line in control_file_dict_F3X4.items():
             f.write(line)
 
     # make control file for F61 model (default)
@@ -19,7 +19,7 @@ def make_control_file(wdir):
             f.write(line)
 
 
-control_file_dict_F3x4 = \
+control_file_dict_F3X4 = \
 {0: '      seqfile = input.phy     * sequence data filename\n',
  1: '     treefile = gene.tree   * tree structure file name\n',
  2: '      outfile = output_PAML    * main result file name\n',

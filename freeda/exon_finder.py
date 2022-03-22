@@ -190,22 +190,17 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 # check synteny
                 # WARNING: average 800bp 3'UTRs in mammals make synteny check at 3_prime not very efficient
-                # (most contigs too short)
+                # (many contigs too short)
                 three_prime_synteny, three_prime_synteny_message = check_synteny_3_prime(position, locus_seq, gene_seq)
                 if three_prime_synteny is False:
 
                     # do not allow intron in last exon if not syntenic (often RETRO have 5UTR)
                     intron_at_3_prime = False
 
-            # check for very divergent introns (will be counted as intron)
-            # -> does not allow divergent introns in last exon
-            elif intron_at_3_prime is False \
-                and exon_number != list(ref_exons.keys())[-1] \
-                and homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
-                divergent_introns = True
-
-            # swapped retro check and divergent exons statements (10/02/2021)
-            # check possible retrotransposition since no intron attached
+            # swapped retro check and divergent exons statements (10/02/2021) -> that means that 3' retro never called!
+            # changed it back on 03/12/2022
+            # check possible retrotransposition since no intron attached -> retro is never checked in the last exon
+            # but last exon retro seem to always cary a chunk of 3'UTR so last exon would unlikely ever be retro
             else:
                 try:
                     if locus_seq[position] == "-" \
@@ -218,6 +213,17 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 # KeyError triggered when match at the edge of alignment)
                 except KeyError:
                     intron_at_3_prime = False
+
+                # check for very divergent introns (will be counted as intron)
+                # does not check for divergent introns in last exon
+                # it will not run if exception is raised
+                else:
+                    if intron_at_3_prime is False \
+                        and three_prime_retrotransposition is False \
+                        and homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
+                        divergent_introns = True
+
+
 
         # CALL EXON IN CONTIG LOCUS ANALYZED
 
@@ -452,7 +458,8 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
             # CATCH NO CALL DECISIONS
             else:
-                message = "No call at all: \nintron = %s, \n5_prime intron = %s, \n3_prime intron = %s, \ndivergent introns = %s" \
+                message = "No call at all: \nintron = %s, \n5_prime intron = %s, \n3_prime intron = %s, " \
+                          "\ndivergent introns = %s" \
                     "\nsingle exon = %s, \n5_prime_retrotransposition = %s, \n3_prime_retrotransposition = %s" \
                     % (intron, intron_at_5_prime, intron_at_3_prime, divergent_introns, single_exon,
                        five_prime_retrotransposition, three_prime_retrotransposition)
@@ -468,7 +475,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
     elif nr_of_RETRO_exons == 0:
         RETRO_score = float(0)
     elif nr_of_RETRO_exons != 0 and nr_of_intron_exons == 0:
-        RETRO_score = float(1)
+        RETRO_score = float(100)
 
     message = "       RETRO_score (>= 0.4 suggests retrotransposition event) = %s" % (str(RETRO_score))
     print(message)
