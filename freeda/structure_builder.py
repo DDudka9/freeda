@@ -155,20 +155,6 @@ def check_structure(wdir, ref_species, gene):
         return False
 
 
-# 2022-02-21
-# Brian Akins
-# METHOD: install_pymol()
-# INPUT:
-# OUTPUT: None.
-def install_pymol():
-    if not shutil.which("pymol"):
-        print("PyMol not found in the path. Installing.")
-        if sys.platform.startswith("linux"):
-            pymol_inst = "command"
-    else:
-        print("PyMol found in the path.")
-
-
 def run_pymol(wdir, ref_species, result_path, gene, genes_under_positive_selection, all_genes_dict=None):
     """Runs PyMOL with overlaid adaptive sites"""
 
