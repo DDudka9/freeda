@@ -93,6 +93,7 @@ from tkinter import filedialog
 from PIL import ImageTk, Image
 import tkinter.scrolledtext as ScrolledText
 import os
+import shutil
 import re
 import logging
 import threading
@@ -492,6 +493,13 @@ def freeda_pipeline():
 
     # main function is enclosed in a try/except to avoid frozen GUI
     try:
+
+        # check if pymol is installed
+        if not shutil.which("pymol"):
+            logging.info("\n...FATAL_ERROR... : Pymol not installed "
+                     "\n macOS -> follow README file or go to https://pymol.org/2/ to download and install Pymol"
+                     "\n ubuntu -> follow README file or go to Software Manager and download and install Pymol")
+            return
 
         # use of the pipeline from GUI
         gui = True

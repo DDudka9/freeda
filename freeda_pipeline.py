@@ -48,6 +48,7 @@ from freeda import paml_visualizer
 from freeda import structure_builder
 from freeda import genomes_preprocessing
 import os
+import shutil
 
 
 def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None, excluded_species=None):
@@ -61,6 +62,13 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
     elif ref_species not in ["Mm", "Hs", "Cf", "Gg"]:
         print("\n...FATAL_ERROR... : Invalid reference species (try: Mm for mouse, Hs for human) "
               "-> exiting the pipeline now...")
+        return
+
+    # check if pymol is installed
+    if not shutil.which("pymol"):
+        print("\n...FATAL_ERROR... : Pymol not installed "
+                     "\n macOS -> follow README file or go to https://pymol.org/2/ to download and install Pymol"
+                     "\n ubuntu -> follow README file or go to Software Manager and download and install Pymol")
         return
 
     # initial percent identity threshold for blast matches analysis
