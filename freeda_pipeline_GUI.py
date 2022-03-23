@@ -1216,7 +1216,7 @@ error_label2.grid(column=0, row=23, columnspan=4, padx=5, pady=1, sticky=(W))
 # LOGO
 canvas = Canvas(logo_frame, width=200, height=50)
 canvas.pack(expand=True)
-freeda_img = ImageTk.PhotoImage(Image.open(pyinstaller_compatibility.resource_path("freeda_img4.png")))
+freeda_img = ImageTk.PhotoImage(Image.open(pyinstaller_compatibility.resource_path("freeda_logo.png")))
 canvas.create_image(100, 30, anchor=CENTER, image=freeda_img)
 
 # LOGGER

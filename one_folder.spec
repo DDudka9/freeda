@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 add_binaries = []
-add_data = [('freeda_img4.png','.'), ('include/bedtools', 'bedtools'), ('include/lib','.'), ('include/bin', '.')]
+add_data = [('include/freeda_logo.png','.'), ('include/bedtools', 'bedtools'), ('include/lib','.'), ('include/bin', '.')]
 add_imports = ['PIL._tkinter_finder']
 
 block_cipher = None
