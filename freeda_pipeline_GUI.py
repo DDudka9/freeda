@@ -98,6 +98,7 @@ import shutil
 import re
 import logging
 import threading
+from sys import platform
 
 
 def thread_freeda():
@@ -494,14 +495,6 @@ def freeda_pipeline():
 
     # main function is enclosed in a try/except to avoid frozen GUI
     try:
-
-        # check if pymol is installed
-        if not shutil.which("pymol"):
-            logging.info("\n...FATAL_ERROR... : Pymol not installed "
-                     "\n macOS -> follow README file or go to https://pymol.org/2/ to download and install Pymol"
-                     "\n ubuntu -> follow README file or go to Software Manager and download and install Pymol")
-            return
-
         # use of the pipeline from GUI
         gui = True
 
@@ -576,6 +569,18 @@ def freeda_pipeline():
 
         # get all species and genome names
         all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species)]
+
+        # ----------------------------------------#
+        ######## INSTALL PYMOL IF NEEDED ########
+        # ----------------------------------------#
+
+        if not shutil.which("pymol"):
+            if platform == "linux" or platform == "linux2":
+                logging.info("\nPyMOL not found in the PATH. Installing PyMOL to the Data folder now.")
+                structure_builder.install_pymol_linux(wdir)
+            else:
+                print("PyMOL")
+            return
 
         # ----------------------------------------#
         ######## GET ALL INPUT DATA  ########

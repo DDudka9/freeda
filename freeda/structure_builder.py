@@ -15,10 +15,12 @@ import subprocess
 import os
 import requests
 import simplejson.errors
-import sys
+from pathlib import Path
+
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
 # Done but NOT TESTED YET
+
 
 # 2021-09-15
 # Brian Akins
@@ -155,6 +157,68 @@ def check_structure(wdir, ref_species, gene):
         return False
 
 
+def download_pymol_linux(wdir, pymol_tar_name):
+    linux_url = "http://pymol.org/installers/PyMOL-2.5.2_293-Linux-x86_64-py37.tar.bz2"
+    # Remove quiet condition -q?
+    download_cmd = ["wget", "-q", "--directory-prefix", wdir,
+                    "--output-document", pymol_tar_name, linux_url]
+    wget_exit_code = subprocess.call(download_cmd)
+    return wget_exit_code
+
+
+def unpack_pymol_linux(wdir, pymol_tar_name):
+    unpack_cmd = ["tar", "-xf", pymol_tar_name, "-C", wdir]
+    unpack_exit_code = subprocess.call(unpack_cmd)
+    os.remove(pymol_tar_name)
+    return unpack_exit_code
+
+
+def create_desktop_file_linux(wdir, pymol_desktop_path):
+    pymol_executable_path = os.path.join(wdir, "pymol", "pymol")
+    pymol_icon_path = os.path.join(wdir, "pymol", "share", "pymol", "data", "pymol", "icons", "icon2_128x128.png")
+    pymol_desktop_contents = f"[Desktop Entry]\nEncoding=UTF-8\nType=Application\nTerminal=false\n" \
+                             f"Exec={pymol_executable_path}\nName=PyMOL\nIcon={pymol_icon_path}"
+    if not os.path.exists(os.path.dirname(pymol_desktop_path)):
+        try:
+            os.makedirs(os.path.dirname(pymol_desktop_path))
+        except OSError as exc:
+            raise
+    with open(pymol_desktop_path, "w") as f:
+        f.write(pymol_desktop_contents)
+    subprocess.call(["chmod", "+x", pymol_desktop_path])
+    subprocess.call(["update-desktop-database", os.path.dirname(pymol_desktop_path)])
+
+
+def link_pse_files_linux():
+    subprocess.call(["xdg-mime", "default", "freeda-pymol.desktop", "application/biosequence.fasta"])
+
+
+def install_pymol_linux(wdir):
+    if not os.path.exists(os.path.join(wdir, "pymol", "pymol")):
+        pymol_tar_name = os.path.join(wdir, "pymol.tar.bz2")
+        wget_exit_code = download_pymol_linux(wdir, pymol_tar_name)
+        print(f"PyMOL download completed with exit code {wget_exit_code}. Unpacking archive.")
+
+        unpack_pymol_linux(wdir, pymol_tar_name)
+        print("PyMOL unpacked into the Data folder. Generating .desktop file.")
+    else:
+        print("PyMOL binary already found in Data folder.")
+
+    xdg_data_home = os.environ.get("XDG_DATA_HOME")
+    if not xdg_data_home:
+        xdg_data_home = Path.home() / ".local" / "share"
+    pymol_desktop_path = os.path.join(xdg_data_home, "applications", "freeda-pymol.desktop")
+    print(f"Creating PyMOL .desktop file at {pymol_desktop_path}")
+    create_desktop_file_linux(wdir, pymol_desktop_path)
+    print("PyMOL .desktop file generated. Linking .pse files.")
+
+    if subprocess.call(["xdg-mime", "query", "default", "application/biosequence.fasta"]) == 0:
+        link_pse_files_linux()
+    else:
+        print(".pse files already have a default application association.")
+    print("PyMOL setup complete.")
+
+
 def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_genes_dict=None):
     """Runs PyMOL with overlaid adaptive sites"""
 
@@ -175,7 +239,12 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_gen
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
-    pymol_command = ["pymol", "-cq", "structure_overlay.pml"]
+    if os.path.exists(os.path.join(wdir, "pymol", "pymol")):
+        pymol_command = [os.path.join(wdir, "pymol", "pymol"), "-cq", "structure_overlay.pml"]
+    elif shutil.which("pymol"):
+        pymol_command = ["pymol", "-cq", "structure_overlay.pml"]
+    else:
+        print("...FATAL ERROR... PyMOL not found in the PATH or the Data folder.")
     stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE).communicate()
     # move and overwrite if "structure_overlay.pml" exists in Structure folder for the gene
@@ -195,11 +264,12 @@ def get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel
     consensus_dict = {}
     # check if consensus is to be built (more than one codon frequency used)
     if len(all_matched_adaptive_sites_ref.keys()) > 1 and gene in genes_under_pos_sel["F3X4"] \
-                                                        and gene in genes_under_pos_sel["F61"]:
+            and gene in genes_under_pos_sel["F61"]:
         consensus_dict[gene] = {}
         # compare probabilities at each position between models
         for position in range(1,
-                              len(all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][gene]) + 1):
+                              len(all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][
+                                      gene]) + 1):
             position_F3X4 = all_matched_adaptive_sites_ref["F3X4"][gene][str(position)]
             position_F61 = all_matched_adaptive_sites_ref["F61"][gene][str(position)]
             # suppress scoring of residues with high probability in only one codon frequency model
@@ -209,7 +279,7 @@ def get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel
 
     # gene scores only in F3X4 model
     elif len(all_matched_adaptive_sites_ref.keys()) > 1 \
-        and gene in genes_under_pos_sel["F3X4"] and gene not in genes_under_pos_sel["F61"]:
+            and gene in genes_under_pos_sel["F3X4"] and gene not in genes_under_pos_sel["F61"]:
 
         consensus_dict[gene] = {}
         # make consensus depend only on F3X4 model
@@ -221,7 +291,7 @@ def get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel
 
     # gene scores only in F61 model
     elif len(all_matched_adaptive_sites_ref.keys()) > 1 \
-        and gene not in genes_under_pos_sel["F3X4"] and gene in genes_under_pos_sel["F61"]:
+            and gene not in genes_under_pos_sel["F3X4"] and gene in genes_under_pos_sel["F61"]:
 
         consensus_dict[gene] = {}
         # make consensus depend only on F61 model
@@ -262,12 +332,12 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
     consensus_dict = get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel)
     matched_adaptive_sites_ref = consensus_dict[gene]
 
-    #if consensus_dict:
+    # if consensus_dict:
     #    matched_adaptive_sites_ref = consensus_dict[gene]
-    #else:
+    # else:
     #    matched_adaptive_sites_ref = all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][gene]
-                                                                                # pick the first key
-                                                                                # (only one codon model)
+    # pick the first key
+    # (only one codon model)
 
     structure_prediction_path = wdir + "Structures/" + gene + "_" + ref_species
 
@@ -320,23 +390,22 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
             # do not allow start larger than end; do not allow end larger than total length
 
             if all(label1) \
-                and (int(label1[1]) <= int(label1[2])) \
-                and (int(label1[2]) <= int(list(matched_adaptive_sites_ref)[-1])):
+                    and (int(label1[1]) <= int(label1[2])) \
+                    and (int(label1[2]) <= int(list(matched_adaptive_sites_ref)[-1])):
                 f.write("color " + "grey90" + ", resi " + label1[1] + "-" + label1[2] + "\n")
                 middle = round((int(label1[2]) - int(label1[1])) / 2 + int(label1[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label1[0] + '")\n')
 
-
             if all(label2) \
-                and (int(label2[1]) <= int(label2[2])) \
-                and (int(label2[2]) <= int(list(matched_adaptive_sites_ref)[-1])):
+                    and (int(label2[1]) <= int(label2[2])) \
+                    and (int(label2[2]) <= int(list(matched_adaptive_sites_ref)[-1])):
                 f.write("color " + "yellow" + ", resi " + label2[1] + "-" + label2[2] + "\n")
                 middle = round((int(label2[2]) - int(label2[1])) / 2 + int(label2[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label2[0] + '")\n')
 
             if all(label3) \
-                and (int(label3[1]) <= int(label3[2])) \
-                and (int(label3[2]) <= int(list(matched_adaptive_sites_ref)[-1])):
+                    and (int(label3[1]) <= int(label3[2])) \
+                    and (int(label3[2]) <= int(list(matched_adaptive_sites_ref)[-1])):
                 f.write("color " + "sand" + ", resi " + label3[1] + "-" + label3[2] + "\n")
                 middle = round((int(label3[2]) - int(label3[1])) / 2 + int(label3[1]))
                 f.write('label (resi ' + str(middle) + ' and name CA), "%s" % ("' + label3[0] + '")\n')
@@ -394,4 +463,3 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
         f.write("save " + protein_structure_path + gene + "_" + ref_species + ".pse")
 
     return True
-
