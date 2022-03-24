@@ -190,7 +190,7 @@ def create_desktop_file_linux(wdir, pymol_desktop_path):
 
 
 def link_pse_files_linux():
-    subprocess.call(["xdg-mime", "default", "freeda-pymol.desktop", "application/biosequence.fasta"])
+    subprocess.call(["xdg-mime", "default", "freeda-pymol.desktop", "application/x-extension-pse"])
 
 
 def install_pymol_linux(wdir):
@@ -212,7 +212,7 @@ def install_pymol_linux(wdir):
     create_desktop_file_linux(wdir, pymol_desktop_path)
     print("PyMOL .desktop file generated. Linking .pse files.")
 
-    if subprocess.call(["xdg-mime", "query", "default", "application/biosequence.fasta"]) == 0:
+    if subprocess.call(["xdg-mime", "query", "default", "application/x-extension-pse"]) == 0:
         link_pse_files_linux()
     else:
         print(".pse files already have a default application association.")
@@ -240,20 +240,18 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_gen
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
     if os.path.exists(os.path.join(wdir, "pymol", "pymol")):
-        pymol_command = [os.path.join(wdir, "pymol", "pymol"), "-cq", "structure_overlay.pml"]
+        pymol_command = [os.path.join(wdir, "pymol", "pymol"), "-cq", os.path.join(wdir, "structure_overlay.pml")]
     elif shutil.which("pymol"):
-        pymol_command = ["pymol", "-cq", "structure_overlay.pml"]
+        pymol_command = ["pymol", "-cq", os.path.join(wdir, "structure_overlay.pml")]
     else:
         print("...FATAL ERROR... PyMOL not found in the PATH or the Data folder.")
-    stderr, stdout = subprocess.Popen(pymol_command, shell=True, stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE).communicate()
+    subprocess.call(pymol_command)
     # move and overwrite if "structure_overlay.pml" exists in Structure folder for the gene
     shutil.move(os.path.join(wdir, "structure_overlay.pml"),
                 os.path.join(protein_structure_path, "structure_overlay.pml"))
     # move the model with overlaid residues into Results folder
     shutil.move(protein_structure_path + final_model_name,
                 result_path.replace("Raw_data/", "Results/Structures/") + final_model_name)
-
     return True
 
 

@@ -579,8 +579,7 @@ def freeda_pipeline():
                 logging.info("\nPyMOL not found in the PATH. Installing PyMOL to the Data folder now.")
                 structure_builder.install_pymol_linux(wdir)
             else:
-                print("PyMOL")
-            return
+                print("\nPyMOL not installed. Install PyMOL online at: INSERT URL")
 
         # ----------------------------------------#
         ######## GET ALL INPUT DATA  ########
