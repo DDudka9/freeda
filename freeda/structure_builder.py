@@ -16,6 +16,7 @@ import os
 import requests
 import simplejson.errors
 from pathlib import Path
+import logging
 
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
@@ -197,26 +198,33 @@ def install_pymol_linux(wdir):
     if not os.path.exists(os.path.join(wdir, "pymol", "pymol")):
         pymol_tar_name = os.path.join(wdir, "pymol.tar.bz2")
         wget_exit_code = download_pymol_linux(wdir, pymol_tar_name)
-        print(f"PyMOL download completed with exit code {wget_exit_code}. Unpacking archive.")
+        message = "PyMOL download completed with exit code %s." % wget_exit_code
+        logging.info(message)
 
         unpack_pymol_linux(wdir, pymol_tar_name)
-        print("PyMOL unpacked into the Data folder. Generating .desktop file.")
+        message = "PyMOL unpacked into the Data folder. Generating .desktop file."
+        logging.info(message)
     else:
-        print("PyMOL binary already found in Data folder.")
+        message = "PyMOL binary already found in Data folder."
+        logging.info(message)
 
     xdg_data_home = os.environ.get("XDG_DATA_HOME")
     if not xdg_data_home:
         xdg_data_home = Path.home() / ".local" / "share"
     pymol_desktop_path = os.path.join(xdg_data_home, "applications", "freeda-pymol.desktop")
-    print(f"Creating PyMOL .desktop file at {pymol_desktop_path}")
+    message = "Creating PyMOL .desktop file at %s" % pymol_desktop_path
+    logging.info(message)
     create_desktop_file_linux(wdir, pymol_desktop_path)
-    print("PyMOL .desktop file generated. Linking .pse files.")
+    message = "PyMOL .desktop file generated. Linking .pse files."
+    logging.info(message)
 
     if subprocess.call(["xdg-mime", "query", "default", "application/x-extension-pse"]) == 0:
         link_pse_files_linux()
     else:
-        print(".pse files already have a default application association.")
-    print("PyMOL setup complete.")
+        message = ".pse files already have a default application association."
+        logging.info(message)
+    message = "PyMOL setup complete."
+    logging.info(message)
 
 
 def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_genes_dict=None):

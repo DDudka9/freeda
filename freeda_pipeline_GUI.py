@@ -576,10 +576,13 @@ def freeda_pipeline():
 
         if not shutil.which("pymol"):
             if platform == "linux" or platform == "linux2":
-                logging.info("\nPyMOL not found in the PATH. Installing PyMOL to the Data folder now.")
+                logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
                 structure_builder.install_pymol_linux(wdir)
             else:
-                print("\nPyMOL not installed. Install PyMOL online at: INSERT URL")
+                message = "\n...FATAL ERROR... : PyMOL not installed. Install PyMOL online from: https://pymol.org/\n"
+                logging.info(message)
+                ublock_user_entries()
+                return
 
         # ----------------------------------------#
         ######## GET ALL INPUT DATA  ########

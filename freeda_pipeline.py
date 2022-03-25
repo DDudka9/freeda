@@ -49,6 +49,8 @@ from freeda import structure_builder
 from freeda import genomes_preprocessing
 import os
 import shutil
+from sys import platform
+import logging
 
 
 def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None, excluded_species=None):
@@ -178,10 +180,12 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if not shutil.which("pymol"):
         if platform == "linux" or platform == "linux2":
-            logging.info("\nPyMOL not found in the PATH. Installing PyMOL to the Data folder now.")
+            logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
             structure_builder.install_pymol_linux(wdir)
         else:
-            print("\nPyMOL not installed. Install PyMOL online at: INSERT URL")
+            message = "\n...FATAL ERROR... : PyMOL not installed. Install PyMOL online from: https://pymol.org/\n"
+            logging.info(message)
+            return
 
     # ----------------------------------------#
     ######## GET ALL INPUT DATA  ########
