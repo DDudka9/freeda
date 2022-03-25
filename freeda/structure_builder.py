@@ -247,12 +247,17 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_gen
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
-    if os.path.exists(os.path.join(wdir, "pymol", "pymol")):
-        pymol_command = [os.path.join(wdir, "pymol", "pymol"), "-cq", os.path.join(wdir, "structure_overlay.pml")]
+    mac_pymol_path = os.path.join("Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")
+    linux_pymol_path = os.path.join(wdir, "pymol", "pymol")
+    if os.path.exists(linux_pymol_path):
+        pymol_command = [linux_pymol_path, "-cq", os.path.join(wdir, "structure_overlay.pml")]
+    elif os.path.exists(mac_pymol_path):
+        pymol_command = [mac_pymol_path, "-cq", os.path.join(wdir, "structure_overlay.pml")]
     elif shutil.which("pymol"):
-        pymol_command = ["pymol", "-cq", os.path.join(wdir, "structure_overlay.pml")]
+        pymol_command = ["pymol", "-cq", os.path.join(wdir, os.path.join(wdir, "structure_overlay.pml"))]
     else:
-        print("...FATAL ERROR... PyMOL not found in the PATH or the Data folder.")
+        message = "...FATAL ERROR... PyMOL not found in the PATH, the Applications folder, or the working directory."
+        logging.info(message)
     subprocess.call(pymol_command)
     # move and overwrite if "structure_overlay.pml" exists in Structure folder for the gene
     shutil.move(os.path.join(wdir, "structure_overlay.pml"),
