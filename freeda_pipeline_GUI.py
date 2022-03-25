@@ -11,6 +11,11 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) If species eliminated due to cds check in paml launcher -> best to not report the number of species on graph?
+#       0) Single matches are stiched together the opposite way (1st exon is last etc) for "for" contigs -> FIXED?
+#                                                           -> test on Cenpl
+#       0) Currently uniprot_id reported is just the last of possible_uniprot_ids list -> FIXED
+#       0) Best way to deal with single uncalled bases is to mask them as "-"
 #       0) cite Wang and Han 2021 J Virol for Primates, Carnivora that span similar phylogeny
 #       "Pervasive Positive Selection on Virus Receptors Driven by Host-Virus Conflicts in Mammals"
 #       0) There might be an issue with RETRO calling -> Only 5-prime RETRO called in Mad1l1 Mi (the one that didnt fail)

@@ -395,7 +395,8 @@ def select_contigs_to_MSA(contig, fasta_path):
     
     # get paths to fasta files for a given contig
     pattern = "*_" + str(contig) + ".fasta"
-    sorted_paths = sorted(glob.glob(fasta_path + "/" + pattern), key=os.path.getsize, reverse=False) # ADDED sorting (07/06/2021)
+    sorted_paths = sorted(glob.glob(fasta_path + "/" + pattern), key=os.path.getsize, reverse=False)
+                                                                                # ADDED sorting (07/06/2021)
 
     for path in sorted_paths:
 

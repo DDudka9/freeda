@@ -190,6 +190,7 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
     message = "\nLooking for structure in AlphaFold database for: %s ...\n" % gene
     logging.info(message)
 
+    retrieved_uniprot_id = "No Uniprot ID retrieved"
     model_seq = ""
     gene_filepath = wdir + gene + "_" + ref_species + ".pdb"
 
@@ -202,6 +203,7 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
             os.remove(wdir + "gene.pdb")
         # rename the temp file
         else:
+            retrieved_uniprot_id = uniprot_id
             os.rename(wdir + "gene.pdb", gene_filepath)
 
     if not os.path.isfile(wdir + gene + "_" + ref_species + ".pdb"):
@@ -221,11 +223,11 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
                 model_seq = record.seq
 
         message = "Based on uniprot id: %s structure prediction for gene: %s has been found (%s aa)" \
-                  % (uniprot_id, gene, len(model_seq))
+                  % (retrieved_uniprot_id, gene, len(model_seq))
         logging.info(message)
         shutil.move(gene_filepath, structure_path + "/" + gene + "_" + ref_species + ".pdb")
 
-        return model_seq, uniprot_id
+        return model_seq, retrieved_uniprot_id
 
 
 def validate_gene_names(all_genes, all_genes_ensembl):
