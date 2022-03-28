@@ -1,7 +1,7 @@
 #! /bin/bash 
 er=0;
 myself=`dirname "$0"`/`basename "$0"`; export myself
-version="v7.487 (2021/Jul/25)"; export version
+version="v7.490 (2021/Oct/30)"; export version
 LANG=C; export LANG
 os=`uname`
 progname=`basename "$0"`
@@ -36,7 +36,7 @@ fi
 if [ "$MAFFT_BINARIES" ]; then
 	prefix="$MAFFT_BINARIES"
 else
-	prefix=/home/freeda/miniconda3/envs/freedaenv/libexec/mafft
+	prefix=/home/freeda/miniconda3/envs/included/libexec/mafft
 fi
 export prefix # iranai
 
@@ -951,8 +951,12 @@ if [ $# -gt 0 ]; then
 #			seektarget="-str"
 		elif [ "$1" = "--dash" ]; then
 			newdash=1
-			distance="global" # can be override
-			iterate=3         # can be override
+			if [ "$distance" != "local" -a "$distance" != "localgenaf" ]; then # 2021/Oct
+				distance="global"
+			fi
+			if [ "$iterate" -eq 0 ]; then # 2021/Oct
+				iterate=3
+			fi
 		elif [ "$1" = "--dashserver" ]; then
 			shift
 			dashserver="$1"
@@ -2358,7 +2362,8 @@ $ownlist"
 			if [ $anysymbol -eq 1 ]; then
 				mv orig infile # replaceu wo mukouka
 			fi
-			sed 's/-//g' infile > dashin # gap nozoku
+#			sed 's/-//g' infile > dashin # gap nozoku
+			awk '{if(/^>/)print; else {gsub( /-/,"" ); print;}}' infile > dashin
 
 			if [ ! -x "$prefix/dash_client" -o ! -x "$prefix/dash_client" ]; then
 				echo ""       1>&2

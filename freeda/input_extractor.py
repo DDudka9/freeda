@@ -202,7 +202,7 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
 
     for uniprot_id in possible_uniprot_ids:
         # gets a temp file
-        stderr = subprocess.call(["wget", "-O", wdir + "gene.pdb",
+        stderr = subprocess.call([pyinstaller_compatibility.resource_path("wget"), "-O", wdir + "gene.pdb",
                                   "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + "-F1-model_v1.pdb"])
         # stderr ERROR 404: Not Found is outputs 8
         if stderr == 8:

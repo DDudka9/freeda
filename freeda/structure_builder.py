@@ -17,7 +17,7 @@ import requests
 import simplejson.errors
 from pathlib import Path
 import logging
-
+from freeda import pyinstaller_compatibility
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
 # Done but NOT TESTED YET
@@ -186,12 +186,14 @@ def create_desktop_file_linux(wdir, pymol_desktop_path):
             raise
     with open(pymol_desktop_path, "w") as f:
         f.write(pymol_desktop_contents)
-    subprocess.call(["chmod", "+x", pymol_desktop_path])
-    subprocess.call(["update-desktop-database", os.path.dirname(pymol_desktop_path)])
+    subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x", pymol_desktop_path])
+    subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
+                     os.path.dirname(pymol_desktop_path)])
 
 
 def link_pse_files_linux():
-    subprocess.call(["xdg-mime", "default", "freeda-pymol.desktop", "application/x-extension-pse"])
+    subprocess.call([pyinstaller_compatibility.resource_path("xdg-mime"),
+                     "default", "freeda-pymol.desktop", "application/x-extension-pse"])
 
 
 def install_pymol_linux(wdir):
@@ -218,7 +220,8 @@ def install_pymol_linux(wdir):
     message = "PyMOL .desktop file generated. Linking .pse files."
     logging.info(message)
 
-    if subprocess.call(["xdg-mime", "query", "default", "application/x-extension-pse"]) == 0:
+    if subprocess.call([pyinstaller_compatibility.resource_path("xdg-mime"),
+                        "query", "default", "application/x-extension-pse"]) == 0:
         link_pse_files_linux()
     else:
         message = ".pse files already have a default application association."
@@ -247,7 +250,7 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_gen
         return False
 
     # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
-    mac_pymol_path = os.path.join("Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")
+    mac_pymol_path = os.path.join("/", "Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")
     linux_pymol_path = os.path.join(wdir, "pymol", "pymol")
     if os.path.exists(linux_pymol_path):
         pymol_command = [linux_pymol_path, "-cq", os.path.join(wdir, "structure_overlay.pml")]

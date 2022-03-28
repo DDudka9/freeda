@@ -574,7 +574,8 @@ def freeda_pipeline():
         ######## INSTALL PYMOL IF NEEDED ########
         # ----------------------------------------#
 
-        if not shutil.which("pymol"):
+        if not shutil.which("pymol") and \
+           not os.path.exists(os.path.join("/", "Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")):
             if platform == "linux" or platform == "linux2":
                 logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
                 structure_builder.install_pymol_linux(wdir)
