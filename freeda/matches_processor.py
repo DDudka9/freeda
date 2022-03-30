@@ -26,17 +26,15 @@ def process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path, 
     sseqids = set(matches["sseqid"].tolist())
     # for a give contig:
     for contig in sseqids:
-        global rev
-        rev = False
         # get exons as dataframe
         base_name = contig.split("__")[0]
         exons, bed_name, fasta_name = get_exons(base_name, matches, contig)
         # check for exons detected on reversed strand to pseudohap
-        validated_exons, nr_of_exons_reversed, start, end = check_strand(exons)
+        validated_exons, nr_of_exons_reversed, start, end, rev = check_strand(exons)
         # log how many reversed exons were detected
         log_strand(validated_exons, nr_of_exons_reversed, contig)
         # sort exons
-        sorted_exons = sort_exons(validated_exons)
+        sorted_exons = sort_exons(validated_exons, rev)
         # expand exons
         expanded_exons = expand_exons(sorted_exons)
         # make a bed file with expanded exons or not expanded exons if cannot expand
@@ -44,14 +42,14 @@ def process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path, 
                                                         bed_name, result_path, gene, genome_name)
         # convert the bed file into fasta file
         make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_name)
-        fasta_path = process_fasta_file(fasta_name, contig, result_path, gene, genome_name)
-        get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index)
+        fasta_path = process_fasta_file(fasta_name, contig, result_path, gene, genome_name, rev)
+        get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index, rev)
         MSA_path = generate_files_to_MSA(contig, cds_seq, gene_seq, fasta_path)
 
     message = "\nAnalysing all contigs ..."
     print(message)
     logging.info(message)
-        
+
     return MSA_path
 
 
@@ -77,7 +75,7 @@ def get_exons(base_name, matches, contig):
     exons.to_csv(bed_name, sep=("\t"), index=False)
     # check if match is on reverse strand; swap "sstart" and "send" if true:
     # THIS DOESNT SEEM TO DO MUCH - DO I NEED THESE TWO LINES? :
-    default = ["sseqid","sstart","send","qseqid"]
+    default = ["sseqid", "sstart", "send", "qseqid"]
     exons = exons.reindex(columns=default)
 
     return exons, bed_name, fasta_name
@@ -86,6 +84,7 @@ def get_exons(base_name, matches, contig):
 def check_strand(exons):
     """Checks strands of the presumable exons and reindexes the dataframe accordingly"""
 
+    rev = False
     nr_of_exons_reversed = 0
     # select only "sstart" and "send" columns from exons dataframe
     columns = ["sstart", "send"]
@@ -98,22 +97,22 @@ def check_strand(exons):
     for index, row in exons.iterrows():
         # check for opposite strand match
         if row["sstart"] > row["send"]:
-            global rev
+            # global rev
             rev = True
             nr_of_exons_reversed += 1
             # reindex columns in this row
-            reverse = ["sseqid","send","sstart","qseqid"]
+            reverse = ["sseqid", "send", "sstart", "qseqid"]
             row2 = row.reindex(reverse)
             # rename columns in this row
-            row2 = row2.rename({"send":"sstart","sstart":"send"})
+            row2 = row2.rename({"send": "sstart", "sstart": "send"})
             # add that row to exons dataframe
             exons = exons.append(row2)
             # ckeck for duplicated indexes
             if exons.index.has_duplicates:
                 # keep the first duplicated index (the reversed one)
                 exons = exons[exons.index.duplicated(keep="first")]
-                
-    return exons, nr_of_exons_reversed, start, end
+
+    return exons, nr_of_exons_reversed, start, end, rev
 
 
 def log_strand(exons, rows_reversed, contig):
@@ -125,14 +124,13 @@ def log_strand(exons, rows_reversed, contig):
         # log and print warning
         print(message)
         logging.info(message)
-        
-        
-def sort_exons(exons):
+
+
+def sort_exons(exons, rev):
     """Sorts presumable exons by start position"""
 
     # check for opposite strand match
-    global rev
-    if rev is True:
+    if rev:
         # sort matches descending
         sorted_exons = exons.sort_values(by=["sstart"], ascending=True)
     else:
@@ -154,7 +152,7 @@ def expand_exons(exons):
     expanded_exons = expanded_exons.drop(columns="sstart")
     # rename "extended_sstart" Series to "sstart"
     expanded_exons = expanded_exons.rename(columns={"extended_sstart": "sstart"})
-    # generate Series for "send" adding 3bp (avoid blast cutting a codon)        
+    # generate Series for "send" adding 3bp (avoid blast cutting a codon)
     extended_send = expanded_exons["send"].add(3)
     # add this Series to Dataframe
     expanded_exons.insert(2, column="extended_send", value=extended_send)
@@ -179,71 +177,86 @@ def make_bed_file(exons, expanded_exons, bed_name, result_path, gene, genome_nam
     shutil.move(bed_name, bed_path)
 
     return bed_object, expanded_bed_object
-    
+
 
 def make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_name):
     """Makes a fasta file for each contig (containing presumable exons) from a given genome based on bed file"""
 
     genome_dir = wdir + "Genomes/"
-    
+
     # get fasta file from genome
     try:
         fasta_file = expanded_bed_object.sequence(fi=genome_dir + genome_name + ".fasta")
         fasta_file = fasta_file.save_seqs(fasta_name)
-        
+
     # assuming that exception comes from match at end/beginning of contig
     except:
         fasta_file = bed_object.sequence(fi=genome_dir + genome_name + ".fasta")
         fasta_file = fasta_file.save_seqs(fasta_name)
 
 
-def process_fasta_file(fasta_name, contig, result_path, gene, genome_name):
+def process_fasta_file(fasta_name, contig, result_path, gene, genome_name, rev):
     """Stiches presumable exons together (reverse complements if needed) and writes back into a fasta file"""
 
     # reverse complement if "sstart" > "send" (marked as rev == True)
-    global rev
     fasta_path = result_path + gene + "/" + genome_name + "/Fasta/above_threshold"
 
-    if rev is True:
+    if rev:
         # reverse complements and stiches presumable exons together
-        reverse_complement(fasta_name, gene, genome_name, contig)
+        rev_comp_filename = reverse_complement(fasta_name, gene, genome_name, contig, rev)
         # move the reverse complemented fasta file to Fasta folder
-        global rev_comp_filename
         shutil.move(rev_comp_filename, fasta_path)
         os.remove(fasta_name)
 
-    else:    
+    else:
         # stich exons without reverse complementing
-        exons_stich(fasta_name, gene, genome_name)
+        exons_stich(fasta_name, gene, genome_name, rev=False)
         # move fasta file to Fasta folder
         shutil.move(fasta_name, fasta_path)
 
     return fasta_path
 
 
-def exons_stich(fasta_name, gene, genome_name):
+def exons_stich(fasta_name, gene, genome_name, rev=False):
     """Stiches presumable exons together and writes into a file"""
 
-    header, seq = read_seq(fasta_name)
+    header, seq = read_seq(fasta_name, rev)
     write_seq(header, seq, gene, genome_name, fasta_name)
-    
 
-def read_seq(fasta_name):
+
+def read_seq(fasta_name, rev=False):
     """Reads a fasta file with presumbale exon sequence"""
 
-    with open(fasta_name) as i:
-        seq = ""
-        header = ">"
-        for line in i.readlines():
-            if line.startswith(">"):
-                head = line.lstrip(">").rstrip("\n")
-                header = header + "_" + head
-            else:
-                seq = seq + line.rstrip("\n").upper()
+    if not rev:
 
-    return header, seq
-   
-    
+        with open(fasta_name) as i:
+            seq = ""
+            head = ""
+            for line in i.readlines():
+                if line.startswith(">"):
+                    head = line.lstrip(">").rstrip("\n") + head
+                else:
+                    seq = line.rstrip("\n").upper() + seq
+
+        header = ">_" + head
+
+        return header, seq
+
+    else:
+
+        with open(fasta_name) as i:
+            seq = ""
+            header = ">"
+            for line in i.readlines():
+                if line.startswith(">"):
+                    head = line.lstrip(">").rstrip("\n")
+                    header = header + "_" + head
+                else:
+                    seq = seq + line.rstrip("\n").upper()
+
+        return header, seq
+
+
 def write_seq_rev_comp(header, complement, gene, genome_name, contig):
     """Writes sequence of the reverse compemented contig into a fasta file"""
 
@@ -258,14 +271,13 @@ def write_seq_rev_comp(header, complement, gene, genome_name, contig):
     o = open("Rev_comp_" + contig + ".fasta", "w")
     # generate a global filename for this sequence; start from default empty string
     # by converting file name to string that "shutil.move()" function can use
-
-    global rev_comp_filename
-    rev_comp_filename = ""
     rev_comp_filename = str(o.name)
     h = ">_Rev_comp_" + gene + "_" + genome_name + header.lstrip(">")
     o.write(h.rstrip("\n"))
     o.write("\n" + complement)
     o.close()
+
+    return rev_comp_filename
 
 
 def write_seq(header, seq, gene, genome_name, fasta_name):
@@ -286,27 +298,28 @@ def write_seq(header, seq, gene, genome_name, fasta_name):
     o.close()
 
 
-def reverse_complement(fasta_name, gene, genome_name, contig):
+def reverse_complement(fasta_name, gene, genome_name, contig, rev):
     """Makes a reverse complement"""
-    
+
     rules = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N",
              "Y": "R", "R": "Y", "W": "W", "S": "S", "K": "M", "M": "K",
              "D": "H", "H": "D", "V": "B", "B": "V", "X": "X"}
 
-    header, seq = read_seq(fasta_name)
+    header, seq = read_seq(fasta_name, rev)
     complement = ""
     for base in seq:
         complement = rules[base] + complement
-        
-    write_seq_rev_comp(header, complement, gene, genome_name, contig)
+
+    rev_comp_filename = write_seq_rev_comp(header, complement, gene, genome_name, contig)
+
+    return rev_comp_filename
 
 
-def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index):
+def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index, rev):
     """Generates a fasta file for given contig locus"""
 
-    global rev
     # naming of the file and header will depend on if contig was rev_comp or not
-    if rev is False:
+    if not rev:
         file_name = "Contig_locus_" + contig + ".fasta"
         header = ">_" + file_name.rstrip(".fasta") + "_" + gene + "_" + genome_name
     else:
@@ -318,11 +331,12 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     seq = genome_index[str(base_name)].seq
     prefix, suffix = get_prefix_suffix(ref_species, start, len(seq))
     # try trim contig and add 100bp overhangs for later introny check
-    seq = seq[start-prefix : end+suffix]
+    seq = seq[start - prefix: end + suffix]
     # if full contig lacks enough bp on either end, the Seq object
     # will have length 0 and needs to be created again from genome.index
     # if seq1 len=0 then seq2 surely too, no need to check
-    if rev is True:
+
+    if rev:
         # if contig is too short, proceed without trimming and overhangs
         # reverse_complement the Seq object
         seq = seq.reverse_complement()
@@ -365,7 +379,7 @@ def generate_files_to_MSA(contig, cds, gene, fasta_path):
     """Generates the file to align, outputs the path to that file"""
 
     MSA_path = fasta_path + "/MSA/"
-    
+
     # select sequences to assemble an MSA file
     sequences, comp = select_contigs_to_MSA(contig, fasta_path)
     # name the MSA file depending on if it carries "comp" contig or not
@@ -382,7 +396,7 @@ def generate_files_to_MSA(contig, cds, gene, fasta_path):
     o.close()
     shutil.move(name, MSA_path)
 
-    return MSA_path  
+    return MSA_path
 
 
 def select_contigs_to_MSA(contig, fasta_path):
@@ -392,10 +406,11 @@ def select_contigs_to_MSA(contig, fasta_path):
     rev_comp_seqs = []
     # marker if match was on the opposite strand
     comp = False
-    
+
     # get paths to fasta files for a given contig
     pattern = "*_" + str(contig) + ".fasta"
-    sorted_paths = sorted(glob.glob(fasta_path + "/" + pattern), key=os.path.getsize, reverse=False) # ADDED sorting (07/06/2021)
+    sorted_paths = sorted(glob.glob(fasta_path + "/" + pattern), key=os.path.getsize,
+                          reverse=False)  # ADDED sorting (07/06/2021)
 
     for path in sorted_paths:
 
@@ -422,4 +437,3 @@ def select_contigs_to_MSA(contig, fasta_path):
     # if contig wasnt reversed, return it
     else:
         return selected_seqs, comp
-    

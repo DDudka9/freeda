@@ -11,6 +11,13 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Get rid of ensembl check -> not informative?
+#       0) If species eliminated due to cds check in paml launcher -> best to not report the number of species on graph?
+#       0) Single matches are stiched together the opposite way (1st exon is last etc) for "for" contigs
+#                                       regardless on which strand ref gene is coded
+#                                                           -> test on Cenpl -> FIXED (global variables were the issue)
+#       0) Currently uniprot_id reported is just the last of possible_uniprot_ids list -> FIXED
+#       0) Best way to deal with single uncalled bases is to mask them as "-" -> test on Pahari Anapc15
 #       0) cite Wang and Han 2021 J Virol for Primates, Carnivora that span similar phylogeny
 #       "Pervasive Positive Selection on Virus Receptors Driven by Host-Virus Conflicts in Mammals"
 #       0) There might be an issue with RETRO calling -> Only 5-prime RETRO called in Mad1l1 Mi (the one that didnt fail)
@@ -58,12 +65,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                           -> tried to add it as a try/except statement -> doesnt work
 #       0) Figures:
 #               1) Accuracy - Show both ways (rat and mouse)
-#                           - Show mafft vs muscle
 #                           - Show dealing with duplications (Pot1a and Pot1b?)
 #                           - Show dealing with tandem sequences (Hoxd9, Hoxd10)
 #                                   -> warning that it cannot distinguish tandem duplications
 #                                               that are too recent, especially in lower quality genomes (Mug1, Mug2)
-#                           - Show dealing with large introns (Cenpp)
 #                           - Show dealing with microexons (Cenpx)
 #                           - Show dealing with premature STOP (Haus...)
 #                           - Show dealing with uncalled bases (Mug1 Caroli contig FMAL02029158.1__rev)
