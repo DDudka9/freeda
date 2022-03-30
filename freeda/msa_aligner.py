@@ -9,12 +9,8 @@ Runs MAFFT using a BioPython wrapper.
 
 """
 
-from freeda import fasta_reader
+from freeda import fasta_reader, pyinstaller_compatibility
 from Bio.Align.Applications import MafftCommandline
-from Bio.Align.Applications import MSAProbsCommandline
-from Bio.Align.Applications import ProbconsCommandline
-from Bio.Align.Applications import PrankCommandline
-from Bio.Align.Applications import ClustalwCommandline
 from Bio.Application import ApplicationError
 import os
 import re
@@ -23,6 +19,7 @@ import glob
 import time
 import logging
 import subprocess
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def run_msa(MSA_path, aligner):
@@ -32,9 +29,6 @@ def run_msa(MSA_path, aligner):
     # get path to all separate MSA files 
     for in_filename in glob.glob(MSA_path + "to_align*.fasta"):
 
-        #if aligner == "clustalw":
-        #    cline = ClustalwCommandline("clustalw2", infile=in_filename)
-
         # check if its a rev_comp file
         if re.search(r"to_align_rev_comp", in_filename):
             # for each MSA path find contig name; make it a string with group method
@@ -43,8 +37,6 @@ def run_msa(MSA_path, aligner):
         elif re.search(r"to_align_", in_filename):
             # for each MSA path find contig name; make it a string with group method
             out_filename = "aligned_" + re.search(r"(?<=to_align_).*$", in_filename).group()
-
-        #mafft_cline = MafftCommandline(input=in_filename)
 
         # run msa and record standard output and standard error
         start_time = time.time()
@@ -59,8 +51,9 @@ def run_msa(MSA_path, aligner):
             # define which aligner is used
             if aligner == "mafft":
 
-                cline = MafftCommandline(input=in_filename, thread=-1)  # thread -1 is suppose to automatically
-                                                                        # calculate physical cores
+                cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
+                                         input=in_filename,
+                                         thread=-1)  # thread -1 is suppose to automatically calculate physical cores
                 stdout, stderr = cline()
                 stop_time = time.time()
                 message = "Done : in %s minutes" % ((stop_time - start_time) / 60)

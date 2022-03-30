@@ -19,6 +19,9 @@ Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 
 from freeda import fasta_reader
 from freeda import genomes_preprocessing
+from freeda import control_file
+from freeda import TextHandler
+from freeda import pyinstaller_compatibility
 from Bio.Align.Applications import MafftCommandline
 from Bio import pairwise2
 from Bio import AlignIO
@@ -37,46 +40,57 @@ import copy
 import pyensembl
 
 
-def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
+def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_frequencies,
+                      gui=None, logging_window=None):
+    """Main function controlling building final alignments, gene trees and PAML anaylsis"""
 
     failed_paml = []
     start_time = time.time()
     day = datetime.datetime.now().strftime("-%m-%d-%Y-%H-%M")
-        
+    PAML_logfile_name = "PAML" + day + ".log"
+
     # initiate log file to record PAML analysis by reseting the handlers
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
-    PAML_logfile_name = "PAML" + day + ".log"
-    logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
-    
+
+    if gui:
+        # make a new handler
+        text_handler = TextHandler.TextHandler(logging_window)
+        # configure the logger
+        logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
+        logger = logging.getLogger()
+        logger.addHandler(text_handler)
+
+    else:
+        # configure the logger
+        logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
+
+    logging.info("\n\n======================== PAML ANALYSIS ========================")
+
     # make an empty template for all possible species
-    all_species = [names[0] for names in genomes_preprocessing.get_names(ref_species)]
+    all_species = [names[0] for names in genomes_preprocessing.get_names(wdir, ref_species)]
 
     all_species_dict = {ref_species: ""}
     for species in all_species:
         all_species_dict[species] = ""
-
-    #with open("species.txt", "r") as f:
-    #    all_species[ref_species] = ""
-    #    for species in f.readlines():
-    #        all_species[species.rstrip("\n")] = ""
     
     nr_of_species_total_dict = {}
-    prots_under_pos_sel = []
+    genes_under_pos_sel = {"F3X4": [], "F61": []}
 
-    for protein in all_proteins:
+    for gene in all_genes:
         
-        # check if this protein was already analysed
-        if os.path.isdir(result_path + protein + "/" + "PAML_" + protein):
-           message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % protein
-           print(message)
-           logging.info(message)
+        # check if this gene was already analyzed
+        if os.path.isdir(result_path + gene + "/" + "PAML_" + gene + "_" + "F3X4") \
+                or os.path.isdir(result_path + gene + "/" + "PAML_" + gene + "_" + "F61"):
+            message = "\n################\n\n PAML analysis has been already performed for : %s (skipping)" % gene
+            print(message)
+            logging.info(message)
            
-           # get how many species were analysed
-           path_to_final_species = result_path + protein + "/" + protein + "_final.fasta"
-           with open(path_to_final_species, "r") as f:
-               nr_of_species = f.read().count(">")
-               nr_of_species_total_dict[protein] = nr_of_species
+            # get how many species were analyzed
+            path_to_final_species = result_path + gene + "/" + gene + "_final.fasta"
+            with open(path_to_final_species, "r") as f:
+                nr_of_species = f.read().count(">")
+                nr_of_species_total_dict[gene] = nr_of_species
            
         # otherwise proceed with the analysis
         else:
@@ -85,7 +99,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
             final_species_headers = []
         
             # read each cds fasta file and put them into the empty final_species dict
-            cds_file_path = result_path + protein + ".fasta"
+            cds_file_path = result_path + gene + ".fasta"
         
             if os.path.isfile(cds_file_path) is False:
                 message = "\nThis file has not been found : %s." % cds_file_path
@@ -103,7 +117,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
                 
                     # first line is always the ref species header
                     if line_nr == 1:
-                        ref_head = line.split(protein + "_")[1].rstrip("\n")
+                        ref_head = line.split(gene + "_")[1].rstrip("\n")
                         continue
                 
                     # second line is always the ref species sequence
@@ -116,7 +130,7 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
                 
                     # next lines are headers and sequences of cloned cds
                     if line.startswith(">"):
-                        head = line.split(protein + "_")[1].rstrip("\n")
+                        head = line.split(gene + "_")[1].rstrip("\n")
                         continue
                 
                     else:
@@ -131,14 +145,14 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
             # log species
             final_species_headers.insert(0, ref_species)
             nr_of_species = len(final_species_headers)
-            nr_of_species_total_dict[protein] = nr_of_species
+            nr_of_species_total_dict[gene] = nr_of_species
 
-            message = "\n\n --------- * %s * --------- \n\n" % protein
+            message = "\n\n --------- * %s * --------- \n\n" % gene
             print(message)
             logging.info(message)
         
             # write all sequences into a file by reading through the dictionary
-            final_cds_file = protein + "_final.fasta"
+            final_cds_file = gene + "_final.fasta"
             with open(final_cds_file, "w") as f:
                 for species in final_species:
                     
@@ -147,114 +161,136 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
                     else:
                         f.write(">" + species + "\n")
                         f.write(final_species[species] + "\n")
-        
-        
-            protein_folder_path = result_path + protein
+
+            gene_folder_path = result_path + gene
             
-            shutil.move(cds_file_path, protein_folder_path)
-            shutil.move(final_cds_file, protein_folder_path)
-        
-            # generate a PAML folder for a given protein
-            PAML_path = protein_folder_path + "/PAML_" + protein
-            os.makedirs(PAML_path)
-        
-            # copy control_file from working directory into protein_folder_path
-            control_file = "control_file.ctl"
-            shutil.copy("control_file.ctl", PAML_path + "/" + control_file)
+            shutil.move(cds_file_path, gene_folder_path)
+            shutil.move(final_cds_file, gene_folder_path)
+
+            # make and copy control_file from working directory into gene_folder_path
+            if not os.path.isfile(wdir + "control_file_F3X4.ctl") \
+                    and not os.path.isfile(wdir + "control_file_F61.ctl"):
+                control_file.make_control_file(wdir)
+
+            # define which codon frequency is used - allow only F3x4 (default) or F61
+            if str(codon_frequencies).upper().replace(" ", "") != "F61" \
+                and str(codon_frequencies).upper().replace(" ", "") != "F3X4" \
+                and str(codon_frequencies).upper().replace(" ", "") != "F3X4,F61" \
+                and str(codon_frequencies).upper().replace(" ", "") != "F61,F3X4":
+                codon_frequencies = "F3X4"
         
             # align the final cds sequences
-            out_msa = align_final_cds(protein, final_cds_file, result_path, aligner)
+            out_msa = align_final_cds(gene, result_path, aligner)
 
             # check and eliminate insertions that cause dashes in ref species
-            correction, corrected_filename = eliminate_all_insertions(protein_folder_path, out_msa)
+            correction, corrected_filename = eliminate_all_insertions(gene_folder_path, out_msa)
             if correction is True:
-                side_note = " \n---- Insertions detected in " + protein + " alignment -> " \
+                side_note = " \n---- Insertions detected in " + gene + " alignment -> " \
                     "these bp positions were removed in all species forcing conserved alignment\n"
                 print(side_note)
                 logging.info(side_note)
                 no_dashes_out_msa = corrected_filename
             else:
                 no_dashes_out_msa = out_msa
-        
+
             # remove STOP codons
-            final_cds_file_no_STOP = STOP_remover(protein_folder_path, no_dashes_out_msa, protein, aligner)
-            #shutil.move(final_cds_file_no_STOP, protein_folder_path)
+            final_cds_file_no_STOP = STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner)
+
+            # move raw alignment to result folder
+            shutil.move(gene_folder_path + "/" + out_msa,
+                        result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments")
 
             # check for rare frameshifts in cloned cds
-            to_delete = cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, final_cds_file_no_STOP)
-            shutil.move(final_cds_file_no_STOP, protein_folder_path)
+            to_delete = cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, final_cds_file_no_STOP)
+            shutil.move(final_cds_file_no_STOP, gene_folder_path)
 
             # run gBLOCK
-            raw_out_Gblocks_filename = run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner)
-            # Gblocks will fail if not enough species in alignment -> go to next protein
+            raw_out_Gblocks_filename = run_Gblocks(final_cds_file_no_STOP, gene, result_path, aligner)
+            # Gblocks will fail if not enough species in alignment -> go to next gene
             if raw_out_Gblocks_filename is None:
-                #nr_of_species_total_dict = False
-                #PAML_logfile_name = False
-                #day = False
-                failed_paml.append(protein)
-                #prots_under_pos_sel = False
-                #return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, prots_under_pos_sel
+                failed_paml.append(gene)
                 continue
 
-            shutil.move(wdir + raw_out_Gblocks_filename, protein_folder_path)
+            shutil.move(wdir + raw_out_Gblocks_filename, gene_folder_path)
 
             # double check for artificial STOP codons introduced by Gblocks -> force conserved alignment
             # it overwrites the previous out_Gblocks file (same name)
-            post_Gblocks_STOP_remover(protein_folder_path, raw_out_Gblocks_filename, protein)
+            post_Gblocks_STOP_remover(gene_folder_path, raw_out_Gblocks_filename, gene)
 
-            # translate all sequences (inside of the protein folder)
-            raw_translated_path, filepath_to_translate = translate_Gblocks(wdir, protein_folder_path,
-                                                                        raw_out_Gblocks_filename, protein, ref_species)
+            # translate all sequences (inside of the gene folder)
+            raw_translated_path, filepath_to_translate = translate_Gblocks(wdir, gene_folder_path,
+                                                                           raw_out_Gblocks_filename, gene, ref_species)
 
-            # check for frameshifts in protein seq and eliminate species from protein and cds
-            translated_path, out_Gblocks, to_delete = eliminate_frameshits_cds(wdir, ref_species, protein,
-                                                    raw_translated_path, filepath_to_translate, aligner, to_delete)
+            # check for frameshifts in gene seq and eliminate species from gene and cds
+            translated_path, out_Gblocks, to_delete = eliminate_frameshits_cds(wdir, ref_species, gene,
+                                                                               raw_translated_path,
+                                                                               filepath_to_translate, aligner,
+                                                                               to_delete)
 
-            # check compatibility of most distant cloned seq with its known protein sequence (e.g. rat for mouse)
-            check_compatibility(ref_species, protein, translated_path)
+            # check compatibility of most distant cloned seq with its known gene sequence (e.g. rat for mouse)
+            check_compatibility(ref_species, gene, translated_path)
 
             # correct number of species in the final analysis
             nr_of_species = nr_of_species - len(to_delete)
             final_species_headers = [species for species in final_species_headers if species not in to_delete]
             message = "\n Final species cloned and aligned (+ ref) for %s : %s %s \n" \
-                      % (protein, str(nr_of_species), str(final_species_headers))
+                      % (gene, str(nr_of_species), str(final_species_headers))
             print(message)
             logging.info(message)
 
-            # run seqret (file is already in protein folder)
-            phylip_path = run_seqret(protein, out_Gblocks)
-            shutil.copy(phylip_path, PAML_path + "/input.phy")
-            
-            # run RAxML (and move all the RAxML files to protein folder)
+            # run seqret (file is already in gene folder)
+            #phylip_path = run_seqret(gene, out_Gblocks)
+
+            # convert fasta alignment to phylip format
+            convert_to_phylip(out_Gblocks)
+
+            # run RAxML (and move all the RAxML files to gene folder)
             try:
-                best_tree_path = run_RAxML(protein, protein_folder_path, translated_path, out_Gblocks)
+                best_tree_path = run_RAxML(gene, gene_folder_path, out_Gblocks)
 
             except FileNotFoundError:
-                failed_paml.append(protein)
+                failed_paml.append(gene)
                 message = "...PROBLEM... : The best gene tree was NOT found for %s " \
-                          "-> likely too few cds pass coverage threshold (90 percent default)" % protein
+                          "-> likely too few cds pass coverage threshold (90 percent default)" % gene
                 print(message)
                 logging.info(message)
                 continue
 
-            shutil.copy(best_tree_path, PAML_path + "/gene.tree")
+            for codon_frequency in codon_frequencies.split(","):
+                codon_frequency = codon_frequency.upper().replace(" ", "")  # get rid of the spaces if present
 
-            # rename and copy the final protein alignment into results
-            shutil.copy(translated_path, result_path + protein + "_protein_alignment.fasta")
+                # generate a PAML folder for a given gene
+                PAML_path = gene_folder_path + "/PAML_" + gene + "_" + codon_frequency
+                os.makedirs(PAML_path)
+
+                control_file_name = "control_file_" + codon_frequency + ".ctl"
+
+                # copy all required files into PAML path
+                shutil.copy(control_file_name, PAML_path + "/" + control_file_name)
+                shutil.copy(out_Gblocks, PAML_path + "/input.phy")
+                shutil.copy(best_tree_path, PAML_path + "/gene.tree")
+
+                # rename path
+                #best_tree_path = best_tree_path.split("/")[-1]
+                shutil.copy(best_tree_path, result_path.replace("Raw_data/", "Results/Gene_trees/") + gene + ".tree")
+
+                # rename and copy the protein alignment into results (not final at this point yet)
+                shutil.copy(translated_path, result_path + gene + "_protein_alignment.fasta")
         
-            # run PAML
-            message = "\n.........Running PAML for protein: %s.........\n" % protein
-            print(message)
-            
-            M2a_M1a, M8_M7 = run_PAML(wdir, protein, PAML_path, control_file)
+                # run PAML
+                message = "\n.........Running PAML (%s) for gene: %s.........\n" % (codon_frequency, gene)
+                print(message)
+                logging.info(message)
 
-            if M8_M7 is not None and M8_M7 < 0.05:
-                prots_under_pos_sel.append(protein)
+                M2a_M1a, M8_M7 = run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency)
 
-            message = "\n -> PAML p-values for protein %s : M2a v M1a - %s and M8 v M7 - %s" \
-                % (protein, str(M2a_M1a), str(M8_M7))
-            print(message)
-            logging.info(message)
+                if M8_M7 < 0.05:
+                    genes_under_pos_sel[codon_frequency].append(gene)
+
+                message = "\n -> PAML p-values (%s) for gene %s : M2a v M1a - %s and M8 v M7 - %s\n" \
+                    % (codon_frequency, gene, str(M2a_M1a), str(M8_M7))
+                print(message)
+                logging.info(message)
 
     shutil.move(wdir + PAML_logfile_name, result_path)
 
@@ -266,31 +302,31 @@ def analyse_final_cds(wdir, ref_species, result_path, all_proteins, aligner):
     print(message)
     logging.info(message)
     
-    return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, prots_under_pos_sel
+    return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, genes_under_pos_sel
 
 
-def check_compatibility(ref_species, protein, translated_path):
+def check_compatibility(ref_species, gene, translated_path):
     """Checks cloned protein sequence from opposite species against ensembl entry (e.g. rat for mouse)"""
 
     if ref_species == "Mm":
         species = "Rn"
         # get known protein sequence from the most distant species
-        distant_seq = get_most_distant_prot_seq(species, protein)
+        distant_seq = get_most_distant_prot_seq(species, gene)
 
     elif ref_species == "Rn":
         species = "Mm"
         # get known protein sequence from the most distant species
-        distant_seq = get_most_distant_prot_seq(species, protein)
+        distant_seq = get_most_distant_prot_seq(species, gene)
 
     elif ref_species == "Fc":
         species = "Cf"
         # get known protein sequence from the most distant species
-        distant_seq = get_most_distant_prot_seq(species, protein)
+        distant_seq = get_most_distant_prot_seq(species, gene)
 
     elif ref_species == "Cf":
         species = "Fc"
         # get known protein sequence from the most distant species
-        distant_seq = get_most_distant_prot_seq(species, protein)
+        distant_seq = get_most_distant_prot_seq(species, gene)
 
     # NOT SUPPORTING PRIMATES AND BIRDS
     else:
@@ -313,22 +349,22 @@ def check_compatibility(ref_species, protein, translated_path):
     aln = pairwise2.align.globalxs(distant_seq, seq, open=-0.5, extend=-0.1)
 
     if not distant_seq and not seq:
-        message = "\n...WARNING... : Protein %s is not annotated in %s genome and cloning %s seq also FAILED" \
-                  "-> cannot cross-check identity with ensembl" % (protein, species, species)
+        message = "\n...WARNING... : Gene %s is not annotated in %s genome and cloning %s seq also FAILED" \
+                  " -> cannot cross-check identity with ensembl" % (gene, species, species)
         print(message)
         logging.info(message)
         return
 
     if not distant_seq:
-        message = "\n...WARNING... : Protein %s is not annotated in %s genome " \
-                  "-> cannot cross-check identity with ensembl" % (protein, species)
+        message = "\n...WARNING... : Gene %s is not annotated in %s genome " \
+                  " -> cannot cross-check identity with ensembl" % (gene, species)
         print(message)
         logging.info(message)
         return
 
     if not seq:
-        message = "\n...WARNING... : Cloning seq for protein %s from %s FAILED " \
-                  "-> cannot cross-check identity with ensembl" % (protein, species)
+        message = "\n...WARNING... : Cloning seq for gene %s from %s FAILED " \
+                  " -> cannot cross-check identity with ensembl" % (gene, species)
         print(message)
         logging.info(message)
         return
@@ -351,20 +387,19 @@ def check_compatibility(ref_species, protein, translated_path):
     score = mismatches/len(distant_seq_dict)
 
     if score < 0.01:
-        message = "\n...NOTE... : cloned seq for protein %s from %s species is %s percent identical to expected " \
-                  "(indels are ommitted)" % (protein, species, 100 - (score * 100))
+        message = "\n...NOTE... : Cloned seq for gene %s from %s species is %s percent identical to that found " \
+                  "in ensembl (indels are ommitted)" % (gene, species, 100 - (score * 100))
         print(message)
         logging.info(message)
 
     if score > 0.01:
-        message = "\n...WARNING... : cloned seq for protein %s from %s is only %s percent identical to expected" \
-                  "(indels are ommitted)" % (protein, species, 100 - (score * 100))
+        message = "\n...WARNING... : Cloned seq for gene %s from %s is only %s percent identical to that found " \
+                  "in ensembl (indels are ommitted)" % (gene, species, 100 - (score * 100))
         print(message)
         logging.info(message)
 
 
-
-def get_most_distant_prot_seq(species, protein):
+def get_most_distant_prot_seq(species, gene):
     """Finds protein sequence of the longest transcript from most distant species (e.g. rat for mouse)."""
 
     distant_seq = ""
@@ -384,14 +419,16 @@ def get_most_distant_prot_seq(species, protein):
 
     logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
     ensembl = pyensembl.EnsemblRelease(release, species)
+    ensembl.download()  # this is suppose to bypass installing the release from outside python
+    ensembl.index()  # this is suppose to bypass installing the release from outside python
 
-    # check if the protein is annotated
+    # check if the gene is annotated
     all_genes = ensembl.gene_names()
-    if protein not in all_genes:
+    if gene not in all_genes:
         return distant_seq
 
     # get all transcript ids
-    all_transcripts_ids = ensembl.transcript_ids_of_gene_name(protein)
+    all_transcripts_ids = ensembl.transcript_ids_of_gene_name(gene)
 
     all_transcripts_dict = {}
     length = 0
@@ -401,7 +438,7 @@ def get_most_distant_prot_seq(species, protein):
         all_transcripts_dict[t] = []
 
         # find gene id
-        gene_id = ensembl.gene_ids_of_gene_name(protein)
+        gene_id = ensembl.gene_ids_of_gene_name(gene)
         all_transcripts_dict[t].append(gene_id)
 
         # find contig
@@ -445,8 +482,7 @@ def get_most_distant_prot_seq(species, protein):
     return distant_seq
 
 
-
-def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, raw_out_Gblocks, aligner, to_delete):
+def eliminate_frameshits_cds(wdir, ref_species, gene, raw_translated_path, raw_out_Gblocks, aligner, to_delete):
     """Finds frameshifts in cds post Gblocks at protein level and eliminates them from nucl and protein alignments."""
 
     raw_translated_filepath = raw_translated_path.replace(wdir, "")
@@ -466,8 +502,8 @@ def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, ra
             # eliminate sequence > 10 consecutive aa are mismatched (threshold at 10 legit mismatches in Izumo1 Rn)
             if mismatches > 10:
                 to_delete.append(species)
-                message = "\n...WARNING... : CDS for species : %s in %s protein contains a frameshift " \
-                          "-> eliminated from alignment" % (species.rstrip("\n"), protein)
+                message = "\n...WARNING... : CDS for species : %s in %s protein contains a possible frameshift " \
+                          "-> eliminated from alignment" % (species.rstrip("\n"), gene)
                 print(message)
                 logging.info(message)
                 break
@@ -499,11 +535,12 @@ def eliminate_frameshits_cds(wdir, ref_species, protein, raw_translated_path, ra
     return translated_path, out_Gblocks, to_delete
 
 
-def eliminate_all_insertions(protein_folder_path, out_msa):
+def eliminate_all_insertions(gene_folder_path, out_msa):
+    """Eliminates insertions in the reference sequence formed during alignment (Gblocks cannot handle them)"""
 
     correction = False
     
-    alignment = AlignIO.read(protein_folder_path + "/" + out_msa, "fasta")
+    alignment = AlignIO.read(gene_folder_path + "/" + out_msa, "fasta")
     seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
     
     # check if ref species contains dashes
@@ -513,8 +550,8 @@ def eliminate_all_insertions(protein_folder_path, out_msa):
         
         # if yes, make a new file for a corrected alignment
         correction = True
-        corrected_filename = "corrected_" + out_msa
-        file_path = protein_folder_path + "/" + corrected_filename
+        corrected_filename = out_msa.replace("raw", "corrected")
+        file_path = gene_folder_path + "/" + corrected_filename
         with open(file_path, "w") as f:
         
             # loop through each sequence in the alignment
@@ -546,21 +583,18 @@ def eliminate_all_insertions(protein_folder_path, out_msa):
     return correction, corrected_filename
 
 
-# MODIFY THE INSERTION FUNCTION TO ELIMINATE ALSO 3% != 0 insertions > 1 (mostly artificial insertions)
-
-
-
-def run_PAML(wdir, protein, PAML_path, control_file):
+def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
+    """Runs PAML by calling the control file"""
 
     from Bio.Phylo.PAML import codeml
     from Bio.Phylo.PAML.chi2 import cdf_chi2
     
-    # change working directory to given PAML protein folder
+    # change working directory to given PAML gene folder
     os.chdir(PAML_path)
     
     # run PAML
     cml = codeml.Codeml(alignment="input.phy", tree="gene.tree", out_file="output_PAML", working_dir=PAML_path)
-    cml.run(control_file)
+    cml.run(ctl_file=control_file_name, command=pyinstaller_compatibility.resource_path("codeml"))
     results = codeml.read("output_PAML")
     ns_sites = results.get("NSsites")
     
@@ -590,26 +624,26 @@ def run_PAML(wdir, protein, PAML_path, control_file):
         LRT2 = False
     
     # run chi2 statistics to get p values
-    if LRT1 != False:
+    if LRT1 is not False:
         M2a_M1a = cdf_chi2(df_M2a_M1a, LRT1)
     else:
-        LRT1 = None
-        M2a_M1a = None
+        LRT1 = "(0)"
+        M2a_M1a = 1
         message = "\n M1a model is more likely than M2a model."
         print(message)
         logging.info(message)
     
-    if LRT2 != False:
+    if LRT2 is not False:
         M8_M7 = cdf_chi2(df_M8_M7, LRT2)
     else:
-        LRT2 = None
-        M8_M7 = None
+        LRT2 = "(0)"
+        M8_M7 = 1
         message = "\n M7 model is more likely than M8 model."
         print(message)
         logging.info(message)
     
-    message = "\n PAML LRTs for protein %s are : M2a v M1a - %s and M8 v M7 - %s" \
-            % (protein, str(LRT1), str(LRT2))
+    message = "\n PAML LRTs (%s) for gene %s are : M2a v M1a - %s and M8 v M7 - %s" % (codon_frequency,
+                                                                                     gene, str(LRT1), str(LRT2))
     print(message)
     logging.info(message)
     
@@ -619,34 +653,32 @@ def run_PAML(wdir, protein, PAML_path, control_file):
     return M2a_M1a, M8_M7
     
 
-def run_RAxML(protein, protein_folder_path, translated_path, out_Gblocks):
+def run_RAxML(gene, gene_folder_path, out_Gblocks):
+    """Makes a gene tree using RAxML"""
 
-    tree_name = protein + "_Tree"
-    #RAxML_cline = ["raxmlHPC", "-f", "a", "-s", translated_path, "-n", tree_name,
-    #               "-m", "PROTGAMMAAUTO", "-p", "1985", "-x", "2020", "-#", "100"]
+    tree_name = gene + "_Tree"
 
-    RAxML_cline = ["raxmlHPC", "-f", "a", "-s", out_Gblocks, "-n", tree_name,
-                   "-m", "GTRGAMMA", "-p", "12345", "-x", "12345", "-#", "100"]
+    RAxML_cline = [pyinstaller_compatibility.resource_path("raxmlHPC"), "-f", "a", "-s", out_Gblocks, "-n",
+                   tree_name, "-m", "GTRGAMMA", "-p", "12345", "-x", "12345", "-#", "100"]
 
     result = subprocess.call(RAxML_cline)
     all_tree_files = glob.glob("RAxML*")
-    # move all the RAxML files to protein folder
+    # move all the RAxML files to gene folder
     for file in all_tree_files:
         file_path = os.path.abspath(file)
-        shutil.move(file_path, protein_folder_path)
+        shutil.move(file_path, gene_folder_path)
     
     if result == 0:
-        message = "\n Best gene tree was found for protein : %s " % protein
+        message = "\n Best gene tree was found for gene : %s " % gene
         print(message)
-        #logging.info(message)
 
     # triggers "FileNotFound" exception that is handled
     else:
-        message = "\n...PROBLEM... : Best gene tree was NOT found for : %s \n" % protein
+        message = "\n...PROBLEM... : Best gene tree was NOT found for : %s \n" % gene
         print(message)
         logging.info(message)
     
-    best_tree_path = protein_folder_path + "/RAxML_bestTree." + protein + "_Tree"
+    best_tree_path = gene_folder_path + "/RAxML_bestTree." + gene + "_Tree"
     
     # remove dashes from the tree to match species names in phylip file
     with open(best_tree_path, "r") as f:
@@ -659,10 +691,11 @@ def run_RAxML(protein, protein_folder_path, translated_path, out_Gblocks):
     return best_tree_path
 
 
-def get_ref_cds(wdir, protein_name, ref_species):
+def get_ref_cds(wdir, gene, ref_species):
+    """Takes cds for reference species from the input"""
 
     # open according cds fasta file
-    with open(wdir + "Coding_sequences/" + protein_name + "_" + ref_species + "_cds.fasta", "r") as f:
+    with open(wdir + "Coding_sequences/" + gene + "_" + ref_species + "_cds.fasta", "r") as f:
         sequence = ""
         cds = f.readlines()
         for line in cds[1:]:
@@ -670,7 +703,8 @@ def get_ref_cds(wdir, protein_name, ref_species):
     return sequence
 
 
-def translated_frameshift_checkpoint(wdir, seqs, protein, ref_species):
+def translated_frameshift_checkpoint(wdir, seqs, gene, ref_species):
+    """Cheskpoint if there is a frameshift in the translated sequence of reference species"""
     
     # take the cds of ref species post-Gblocks (always the first one)
     ref_post_Gblocks = seqs[0][1]
@@ -682,7 +716,7 @@ def translated_frameshift_checkpoint(wdir, seqs, protein, ref_species):
     record_post_Gblocks = SeqRecord(ref_post_Gblocks_seq_object)
 
     # take the cds coming from ensembl
-    ref_cds = get_ref_cds(wdir, protein, ref_species)
+    ref_cds = get_ref_cds(wdir, gene, ref_species)
     # make a Seq object
     ref_cds_seq = Seq(ref_cds)
     # translate the Seq object
@@ -714,7 +748,7 @@ def translated_frameshift_checkpoint(wdir, seqs, protein, ref_species):
     return translated_frameshift, frameshift_positions
 
 
-def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, filename):
+def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
     """Compares presumptive cloned cds with reference cds and eliminates rare extreme frameshits."""
 
     all_seq_dict = fasta_reader.alignment_file_to_dict(wdir, ref_species, filename)
@@ -735,15 +769,15 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, filename):
                 matches += 1
 
         score = matches/len(ref_cds.replace("-", ""))
-        message = "Alignment score for species : %s = %s" % (species.rstrip("\n"), score)
+        message = "Alignment score for species : %s = %s" % (species.replace(">", "").rstrip("\n"), score)
         print(message)
         logging.info(message)
 
         # flag cds with rare extreme frameshifts
         if score < 0.70:
             to_delete.append(species)
-            message = "...WARNING... : CDS for species : %s in %s protein is either too divergent " \
-                      "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), protein)
+            message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
+                      "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), gene)
             print(message)
             logging.info(message)
 
@@ -759,9 +793,10 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, protein, filename):
     return to_delete
 
 
-def translate_Gblocks(wdir, protein_folder_path, raw_out_Gblocks_filename, protein, ref_species):
+def translate_Gblocks(wdir, gene_folder_path, raw_out_Gblocks_filename, gene, ref_species):
+    """Translates Gblocks trimmed alignments"""
     
-    filepath_to_translate = protein_folder_path + "/" + raw_out_Gblocks_filename
+    filepath_to_translate = gene_folder_path + "/" + raw_out_Gblocks_filename
     # read the fasta alignment file 
     alignment = AlignIO.read(filepath_to_translate, "fasta")
     # make a list of all headers and sequences as strings
@@ -771,7 +806,7 @@ def translate_Gblocks(wdir, protein_folder_path, raw_out_Gblocks_filename, prote
     
     # check frameshifts in the ref species aa seq post-Gblocks
     # doesnt work if pairwise2 doesnt return alignement (Clasp1)
-    translated_frameshift, frameshift_positions = translated_frameshift_checkpoint(wdir, seqs, protein, ref_species)
+    translated_frameshift, frameshift_positions = translated_frameshift_checkpoint(wdir, seqs, gene, ref_species)
     if translated_frameshift is True:
         side_note = "...WARNING... : Frameshift in ref cds post-Gblocks detected: \n%s" % frameshift_positions
         print(side_note)
@@ -797,32 +832,41 @@ def translate_Gblocks(wdir, protein_folder_path, raw_out_Gblocks_filename, prote
     return raw_translated_path, filepath_to_translate
 
 
-def run_seqret(protein, out_Gblocks):
+def convert_to_phylip(out_Gblocks):
+    """Converts fasta files to phylip format"""
+
+    phylip_path = out_Gblocks.replace(".fasta", ".phy")
+    AlignIO.convert(out_Gblocks, "fasta", phylip_path, "phylip")
+
+
+def run_seqret(gene, out_Gblocks):  # deprecated
     """Takes a fasta squence aligment and converts it into phylip format"""
 
-    #in_filepath = protein_folder_path + "/" + out_Gblocks
     phylip_path = out_Gblocks.replace(".fasta", ".phy")
-    seqret_cline = ["seqret", "-sequence", out_Gblocks,
-                    "-osformat2", "phylipnon", "-outseq", phylip_path]
+    # PYINSTALLER: Add the pyinstaller directory to the system path so that the binary line 'which seqret' can work.
+    # If not deprecated, uncomment following line to add file location to operating system path:
+    # os.environ["PATH"] += os.pathsep + pyinstaller_compatibility.resource_path("")
+    seqret_cline = [pyinstaller_compatibility.resource_path("seqret"),
+                    "-sequence", out_Gblocks, "-osformat2", "phylipnon", "-outseq", phylip_path]
     result = subprocess.call(seqret_cline)
     if result == 0:
-        message = "\n Phylip format was created for protein : %s " % protein
+        message = "\n Phylip format was created for gene : %s " % gene
         print(message)
         #logging.info(message)
         return phylip_path
     else:
-        message = "\n PROBLEM with making phylip for protein : %s " % protein
+        message = "\n PROBLEM with making phylip for gene : %s " % gene
         print(message)
         logging.info(message)
       
 
-def STOP_remover(protein_folder_path, no_dashes_out_msa, protein_name, aligner):
+def STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner):
     """Removes columns (all species) following the earliest detected STOP codon"""
     
     to_trim = {}
     max_trim_position = 30
     c_term_bp_to_trim = 0
-    path_to_trim = protein_folder_path + "/" + no_dashes_out_msa
+    path_to_trim = gene_folder_path + "/" + no_dashes_out_msa
     with open(path_to_trim, "r") as f:
         file = f.readlines()
         
@@ -862,7 +906,7 @@ def STOP_remover(protein_folder_path, no_dashes_out_msa, protein_name, aligner):
         else:
             final_cds_no_STOP[species] = cds
 
-    final_cds_file_no_STOP = "aligned_" + aligner.upper() + "_" + protein_name + "_final_no_STOP.fasta"
+    final_cds_file_no_STOP = "aligned_" + aligner.upper() + "_" + gene + "_final_no_STOP.fasta"
     with open(final_cds_file_no_STOP, "w") as f:
     
         for species, cds in final_cds_no_STOP.items():
@@ -872,15 +916,15 @@ def STOP_remover(protein_folder_path, no_dashes_out_msa, protein_name, aligner):
     return final_cds_file_no_STOP
 
 
-def post_Gblocks_STOP_remover(protein_folder_path, raw_out_Gblocks_filename, protein):
+def post_Gblocks_STOP_remover(gene_folder_path, raw_out_Gblocks_filename, gene):
     """Removes a single column from all species in case a STOP is detected post-Gblocks (rare).
     Forces conserved alignment and prevents frameshifts"""
     
-    post_Gblocks_path = protein_folder_path + "/" + raw_out_Gblocks_filename
+    post_Gblocks_path = gene_folder_path + "/" + raw_out_Gblocks_filename
     
     all_cds = {}
     all_cds_no_STOP = {}
-    artificial_STOP_codon_positions = set() # doesnt allow repetitions
+    artificial_STOP_codon_positions = set()  # doesnt allow repetitions
     species_with_STOP = []
     
     # read species and cds into a dict to ease search
@@ -936,22 +980,22 @@ def post_Gblocks_STOP_remover(protein_folder_path, raw_out_Gblocks_filename, pro
         STOP_positions = sorted([(position * 3) + 1 for position in artificial_STOP_codon_positions])
         
         message = "\n !!! WARNING !!! - CDS for: %s contains early STOP codons " \
-        "starting at nucleotide position in Gblocks_final_no_STOP alignment: %s in species: %s \n           " \
-        "----> they were removed in each species forcing conserved alignment" \
-                % (protein, STOP_positions, species_with_STOP) 
+                  "starting at nucleotide position in Gblocks_final_no_STOP alignment: %s in species: %s \n         " \
+                  "----> they were removed in each species forcing conserved alignment" \
+                  % (gene, STOP_positions, species_with_STOP)
         print(message)
         logging.info(message)
     
     return post_Gblocks_path
 
 
-def run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner):
+def run_Gblocks(final_cds_file_no_STOP, gene, result_path, aligner):
     """Runs Gblocks software which removes indels in frame from the final alignment"""
 
-    in_filepath = result_path + protein + "/" + final_cds_file_no_STOP
-    raw_out_Gblocks_filename = "aligned_" + aligner.upper() + "_Gblocks_" + protein + "_final_no_STOP.fasta"
+    in_filepath = result_path + gene + "/" + final_cds_file_no_STOP
+    raw_out_Gblocks_filename = "aligned_" + aligner.upper() + "_Gblocks_" + gene + "_final_no_STOP.fasta"
     # run Gblocks with options: codon ("-t=c") and dont save html file ("-p=n")
-    Gblocks_cline = ["Gblocks", in_filepath, "-t=c", "-p=n"]
+    Gblocks_cline = [pyinstaller_compatibility.resource_path("Gblocks"), in_filepath, "-t=c", "-p=n"]
     result = subprocess.run(Gblocks_cline, capture_output=True)
     # get stdout -> decode to string from bit -> split by lines and get the 5th and 6th
     message = (result.stdout.decode('utf-8').split("\n"))[5:7]
@@ -963,7 +1007,7 @@ def run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner):
         os.rename(in_filepath + "-gb", raw_out_Gblocks_filename)
     except FileNotFoundError:
         message = "\n...WARNING... : Failed PAML analysis for : %s -> probably not enough " \
-                  "species in the alignment (e.g. poor alignment of repetitive regions)" % protein
+                  "species in the alignment (e.g. poor alignment of repetitive regions)" % gene
         print(message)
         logging.info(message)
         return
@@ -972,90 +1016,36 @@ def run_Gblocks(final_cds_file_no_STOP, protein, result_path, aligner):
     return raw_out_Gblocks_filename
 
               
-def align_final_cds(protein, final_cds_file, result_path, aligner):
+def align_final_cds(gene, result_path, aligner):
     """Aligns cloned coding sequences that pass coverage threshold (default 90 percent)"""
 
-    protein_folder_path = result_path + protein + "/"
-    in_filepath = protein_folder_path + protein + "_final.fasta"
-    out_msa = "aligned_" + aligner.upper() + "_" + final_cds_file
+    gene_folder_path = result_path + gene + "/"
+    in_filepath = gene_folder_path + gene + "_final.fasta"
+    out_msa = gene + "_raw_nucleotide_alignment.fasta"
 
     # define which aligner is used
     if aligner == "mafft":
 
-        cline = MafftCommandline(input=in_filepath, thread=-1)  # thread -1 is suppose to automatically
-                                                                # calculate physical cores
+        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
+                                 input=in_filepath,
+                                 thread=-1)  # thread -1 is suppose to automatically calculate physical cores
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename
         with open(out_msa, "w") as f:
             f.write(stdout)
-        shutil.move(out_msa, protein_folder_path)
+        shutil.move(out_msa, gene_folder_path)
 
         # returns the filename after MSA
         return out_msa
 
     if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
 
-        cmd = ['muscle', "-in", in_filepath, "-quiet", "-maxiters", "2", "-out", protein_folder_path + out_msa]
+        cmd = ['muscle', "-in", in_filepath, "-quiet", "-maxiters", "2", "-out", gene_folder_path + out_msa]
         subprocess.call(cmd)
         # need to reorder seqs post msa
-        fasta_reader.reorder_alignment(in_filepath, protein_folder_path + out_msa)
+        fasta_reader.reorder_alignment(in_filepath, gene_folder_path + out_msa)
 
         # returns the filename after MSA
         return out_msa
-
-
-"""
-
-
-    all_seq_dict = {}
-    cds_seq = ""
-
-    # write mafft output into dict
-    with open(wdir + out_mafft, "r") as f:
-        file = f.readlines()
-
-        for line in file:
-
-            if line.startswith(">" + ref_species):
-                header = line.rstrip("\n")
-                continue
-
-            if not line.startswith(">"):
-                cds_seq += line.rstrip("\n")
-                continue
-
-            # adds ref species header the first time its executed
-            if line.startswith(">"):
-                all_seq_dict[header] = cds_seq
-                header = line.rstrip("\n")
-                cds_seq = ""
-                continue
-
-        # record the final species
-        all_seq_dict[header] = cds_seq
-
-
-def remove_non_ACGT_codons(result_path, out_Gblocks):
-    
-    non_ACGT = ["N","Y","R","W","S","K","M","D","H","V","B","X"]
-    cleaned_Gblocks = open(out_Gblocks[:-6] + "_cleaned.fasta") 
-    out_Gblocks = result_path + "aligned_MAFFT_Gblocks_Terf1_final.fasta"
-    with open(out_Gblocks, "r") as f:
-        line_nr = 0
-        file = f.readlines()
-        for line in file:
-            line_nr += 1
-            if line.startswith('>'):
-                pass
-                #cleaned_Gblocks.write(line)
-            elif any(n in line.upper() for n in non_ACGT):
-                print(line)
-                print(line_nr)
-            else:
-                pass
-                #cleaned_Gblocks.write(line)
-"""
-
-
 

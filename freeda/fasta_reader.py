@@ -10,6 +10,8 @@ Created on Wed Mar 24 19:01:01 2021
 from freeda import input_extractor
 import re
 import logging
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+
 
 def reorder_alignment(in_filename, out_filename):
 
@@ -110,13 +112,13 @@ def read_fasta_record(record):
     return header, seq
 
 
-def find_gene_and_cds(wdir, protein_name, ref_species):  # USEFUL IF MANUAL (non-one line) INPUT
+def find_gene_and_cds(wdir, gene, ref_species):  # USEFUL IF MANUAL (non-one line) INPUT
     """Reads exons, CDS and gene of reference species making sure CDS is a one-liner"""
 
-    ref_exons, expected_exons = get_ref_exons(wdir, protein_name, ref_species)
+    ref_exons, expected_exons = get_ref_exons(wdir, gene, ref_species)
 
     # open according cds fasta file
-    with open(wdir + "Coding_sequences/" + protein_name + "_" + ref_species + "_cds.fasta", "r") as f:
+    with open(wdir + "Coding_sequences/" + gene + "_" + ref_species + "_cds.fasta", "r") as f:
         make_linear = [line.rstrip("\n") for line in f.readlines()]
         for line in make_linear:
             if line.startswith(">"):
@@ -127,16 +129,16 @@ def find_gene_and_cds(wdir, protein_name, ref_species):  # USEFUL IF MANUAL (non
     cds = cds_linear
 
     # open according gene fasta file
-    with open(wdir + "Genes/" + protein_name + "_" + ref_species + "_gene.fasta", "r") as f:
+    with open(wdir + "Genes/" + gene + "_" + ref_species + "_gene.fasta", "r") as f:
         gene = f.read()
 
     return cds, gene, ref_exons, expected_exons
 
 
-def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
+def get_ref_exons(wdir, gene, ref_species, at_input=False):
     """Reads reference species exons from input exons file into a dict used to cloned each single exon from MSA"""
 
-    # get path to the exons for given protein
+    # get path to the exons for given gene
 
     ref_exons = {}
     seq_recorded = False
@@ -144,7 +146,7 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
     seq = ""
     # microexons = []
 
-    with open(wdir + "Exons/" + protein_name + "_" + ref_species + "_exons.fasta", "r") as f:
+    with open(wdir + "Exons/" + gene + "_" + ref_species + "_exons.fasta", "r") as f:
         file = f.read()
 
         for line in re.split("\n", file):
@@ -170,36 +172,23 @@ def get_ref_exons(wdir, protein_name, ref_species, at_input=False):
         # record the last exon
         ref_exons[nr] = (header, seq, len(seq))
 
-        # double check if all exons together are in frame (they should be)
-        #exon_total_length = 0
-        #for number, v in ref_exons.items():
-        #    exon_total_length += v[2]
-
-        #if exon_total_length % 3 != 0:
-        #    message = "\n...WARNING... : CDS of %s in ref species is NOT in frame." \
-        #              % protein_name
-        #    print(message)
-        #    logging.info(message)
-
         expected_exons = tuple(e for e, features in ref_exons.items())
 
         # dont print and log it if function used by input extractor module
         if at_input is False:
             message = "........................................................................\n\n" \
-                      "ANALYZING PROTEIN: %s \n\n" \
+                      "ANALYZING GENE: %s \n\n" \
                       "........................................................................\n\n" \
-                      "Expected exons : %s" % (protein_name, str(expected_exons))
-            print(message)
+                      "Expected exons : %s" % (gene, str(expected_exons))
             logging.info(message)
 
         # flag potential microexons
-        microexons = input_extractor.check_microexons(wdir, protein_name, ref_species)
+        microexons = input_extractor.check_microexons(wdir, gene, ref_species)
 
         # dont print and log it if function used by input extractor module
         if at_input is False:
             if microexons:
                 message = "\n...WARNING... : Exon nr %s is a microexon -> hard to align -> eliminated\n" % microexons
-                print(message)
                 logging.info(message)
 
     return ref_exons, expected_exons

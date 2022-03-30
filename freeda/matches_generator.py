@@ -12,8 +12,12 @@ of genomic loci of interest
 
 import pandas as pd
 import logging
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-def generate_matches(match_path, t, protein_name, genome_name, genome_index):
+
+def generate_matches(match_path, t, gene, genome_name):
+    """Generates matches based on the blast results"""
+
     columns = ["qseqid", "sseqid", "qstart", "qend", "sstart", "send",
                "evalue", "bitscore", "length", "pident", "mismatch", 
                "gapopen", "qlen", "slen"]
@@ -26,16 +30,16 @@ def generate_matches(match_path, t, protein_name, genome_name, genome_index):
                         "send": int,
                         "pident": float})
     # select matches above treshold (30% defult) and add template "strand" Series
-    selected_matches = threshold_matches(m_assigned_dataframe, t, protein_name, genome_name)
+    selected_matches = threshold_matches(m_assigned_dataframe, t, gene, genome_name)
     # sort matches by "sstart" column to be able to split indicated contigs
-    sorted_selected_matches = selected_matches.sort_values(by=["sseqid","sstart"])
+    sorted_selected_matches = selected_matches.sort_values(by=["sseqid", "sstart"])
     # reindex the rows to itertare over them easier
     matches = sorted_selected_matches.reset_index(drop=True)
     
     # record all contigs and starts/ends
     d = make_contigs_dict(matches)
     dataframes = split_contigs_to_dataframes(matches, d)
-    # split matches if further than most known mouse genes (>30kb)
+    # split matches if further than most known mouse genes
     concatenated_matches = split_large_contigs(dataframes).reset_index(drop=True)
     matches = concatenated_matches.astype({"sstart": int, "send": int})
     
@@ -54,13 +58,15 @@ def generate_matches(match_path, t, protein_name, genome_name, genome_index):
     matches = concatenated_matches.astype({"sstart": int, "send": int})
     
     # sort by contig name and start
-    sorted_matches = concatenated_matches.sort_values(by=["sseqid","sstart"])
+    sorted_matches = concatenated_matches.sort_values(by=["sseqid", "sstart"])
     matches = sorted_matches.astype({"sstart": int, "send": int}).reset_index(drop=True)
     
     return matches
 
 
-def threshold_matches(matches, t, protein_name, genome_name): # works well
+def threshold_matches(matches, t, gene, genome_name):
+    """Sets a dynamic threshold for matches depending on their number"""
+
     # add empty "strand" column
     strand = ["for" for index in range(len(matches))]
     matches["strand"] = strand
@@ -69,31 +75,32 @@ def threshold_matches(matches, t, protein_name, genome_name): # works well
     
     # get only columns of interest and check that there is less than 40 matches (to reduce MSA time)
     matches_above_threshold = matches[threshold]
-    if len(matches_above_threshold) < 40:
+    if len(matches_above_threshold) <= 100:  # changed to 100 01/09/2022
         pass
     
     # if not, increase identity threshold until getting < 40 matches
     else:
-        while len(matches_above_threshold) > 40:
+        while len(matches_above_threshold) > 100:  # changed to 100 01/09/2022
             t = t + 5
             threshold = matches["pident"] > t
             m = matches[threshold]
             matches_above_threshold = m
 
-    side_note = "-------------------------------------------------\n" \
-        "\n----- Protein: " + protein_name + " in genome: " + genome_name + \
-        " -> matches identity threshold used: "+ str(t) + "\n" \
+    message = "-------------------------------------------------\n" \
+        "\n----- Gene: " + gene + " in genome: " + genome_name + \
+        " -> matches identity threshold used: " + str(t) + "\n" \
         "\n-------------------------------------------------\n"
-    print(side_note)
-    logging.info(side_note)
+    print(message)
+    logging.info(message)
         
     # get rid of duplicated contig names
-    selected_matches = matches_above_threshold[["sseqid", "sstart", \
-                                                "send", "qseqid", "strand"]]
+    selected_matches = matches_above_threshold[["sseqid", "sstart", "send", "qseqid", "strand"]]
     return selected_matches
 
 
 def make_contigs_dict(matches):
+    """Makes a dictionary with all contigs with contig names, start, stop and strand as values"""
+
     d = {}
     for i, j in matches.iterrows():
         # get whole row and sstart value
@@ -108,6 +115,8 @@ def make_contigs_dict(matches):
 
 
 def split_contigs_to_dataframes(matches, d):
+    """Splits contigs into pandas dataframe for further processing"""
+
     # collect contig names from matches dictionary
     contig_names = set(contig_name[0] for idx, contig_name in d.items())
     # make a list of all contig names with matches as values
@@ -120,7 +129,8 @@ def split_contigs_to_dataframes(matches, d):
 
 
 def split_large_contigs(dataframes):
-    # make a list of new matches, split into new contig names if larger than most mouse introns (30kb)
+    """Splits large contigs (where matches are >200kb apart)"""
+    # Most mouse introns are smaller than 30kb
     # Long and Deutsch 1999 Nucleic Acids Research
     
     list_new_matches = []
@@ -135,11 +145,11 @@ def split_large_contigs(dataframes):
                 contig_name = row[0]
                 new_matches.iloc[index] = matches.iloc[index]
                 continue
-            if start - new_matches.iloc[index-1][1] < 30000:
+            if start - new_matches.iloc[index-1][1] < 200000:   # temporary from 30000
                 new_matches.iloc[index] = matches.iloc[index]
                 new_matches.at[index, "sseqid"] = contig_name
                 continue
-            if start - new_matches.iloc[index-1][1] > 30000:
+            if start - new_matches.iloc[index-1][1] > 200000:   # temporary from 30000
                 contig_name = row[0] + "__" + str(number)
                 number += 1
                 new_matches.iloc[index] = matches.iloc[index]
@@ -153,6 +163,8 @@ def split_large_contigs(dataframes):
 
 
 def assign_strand(dataframes2):
+    """Assigns a strand (forward or reverse) for a given contig"""
+
     # make a list of new matches, each match will have a "strand" defined \
     # forward if "0" or reverse if "1" (for a given contig)
     list_new_matches = [] 
@@ -173,6 +185,8 @@ def assign_strand(dataframes2):
 
 
 def split_strands(dataframes3):
+    """Splits strands to avoid merging contigs with matches on opposite strands"""
+
     # make a list of new matches, split into new contig dependent on strand
     list_new_matches = [] 
     for matches in dataframes3:
