@@ -1,0 +1,15 @@
+AUTHORS.rst
+CONTRIBUTING.rst
+HISTORY.rst
+LICENSE
+MANIFEST.in
+README.rst
+memoized_property.py
+setup.cfg
+setup.py
+memoized_property.egg-info/PKG-INFO
+memoized_property.egg-info/SOURCES.txt
+memoized_property.egg-info/dependency_links.txt
+memoized_property.egg-info/not-zip-safe
+memoized_property.egg-info/pbr.json
+memoized_property.egg-info/top_level.txt

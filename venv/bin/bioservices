@@ -1,0 +1,12 @@
+#!/Users/damian/PycharmProjects/Freeda_main2022_pyinstaller/venv/bin/python3
+# EASY-INSTALL-ENTRY-SCRIPT: 'bioservices==1.8.4','console_scripts','bioservices'
+__requires__ = 'bioservices==1.8.4'
+import re
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    sys.exit(
+        load_entry_point('bioservices==1.8.4', 'console_scripts', 'bioservices')()
+    )

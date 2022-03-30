@@ -1,0 +1,38 @@
+Metadata-Version: 2.1
+Name: serializable
+Version: 0.2.1
+Summary: Base class with serialization helpers for user-defined Python objects
+Home-page: https://github.com/iskandr/serializable
+Author: Alex Rubinsteyn
+Author-email: alex@openvax.org
+License: http://www.apache.org/licenses/LICENSE-2.0.html
+Description: [![Build Status](https://travis-ci.org/iskandr/serializable.svg?branch=master)](https://travis-ci.org/iskandr/serializable)
+        
+        # serializable
+        Base class with serialization methods for user-defined Python objects
+        
+        ## Usage
+        Classes which inherit from `Serializable` are enabled with default implementations of
+        `to_json`, `from_json`, `__reduce__` (for pickling), and other serialization
+        helpers. 
+        
+        A derived class must either:
+        
+        * have a member data matching the name of each argument to `__init__`
+        * provide a user-defined `to_dict()` method which returns a dictionary whose keys match the arguments to `__init__`
+        
+        If you change the keyword arguments to a class which derives from `Serializable` but would like to be able to deserialize older JSON representations then you can define a class-level dictionary called `_KEYWORD_ALIASES` which maps old keywords to new names (or `None` if a keyword was removed).
+        
+        ## Limitations
+        
+        * Serializable objects must inherit from `Serializable`, be tuples or namedtuples, be serializble primitive types such as dict, list, int, float, or str.
+        
+        * The serialized representation of objects relies on reserved keywords (such as `"__name__"`, and `"__class__"`), so dictionaries are expected to not contain any keys which begin with two underscores.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Description-Content-Type: text/markdown

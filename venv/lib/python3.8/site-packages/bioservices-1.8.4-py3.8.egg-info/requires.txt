@@ -1,0 +1,12 @@
+grequests
+requests
+requests_cache
+easydev>=0.9.36
+beautifulsoup4
+xmltodict
+lxml
+suds-community
+appdirs
+wrapt
+pandas
+colorlog
