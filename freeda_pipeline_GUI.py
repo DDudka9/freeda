@@ -585,7 +585,8 @@ def freeda_pipeline():
                 logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
                 structure_builder.install_pymol_linux(wdir)
             else:
-                message = "\n...FATAL ERROR... : PyMOL not installed. Install PyMOL online from: https://pymol.org/\n"
+                message = "\n...FATAL ERROR... : PyMOL not installed. Install PyMOL online from: https://pymol.org/" \
+                          "\n When installed place it into Applications folder\n"
                 logging.info(message)
                 ublock_user_entries()
                 return
