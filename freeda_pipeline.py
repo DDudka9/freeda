@@ -180,10 +180,16 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if not shutil.which("pymol"):
         if platform == "linux" or platform == "linux2":
-            logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
-            structure_builder.install_pymol_linux(wdir)
-        else:
-            message = "\n...FATAL ERROR... : PyMOL not installed. Install PyMOL online from: https://pymol.org/\n"
+            logging.info("\nPyMOL not found in the PATH.")
+            pymol_choice = input("\nInstall PyMOL into current working directory? (y/N)")
+            if pymol_choice == "y":
+                structure_builder.install_pymol_linux(wdir)
+            else:
+                logging.info("\nPyMOL is required to run FREEDA. It can be installed using a package manager. "
+                             "For example, try:\n    sudo apt-get install pymol")
+                return
+        elif platform == "darwin":
+            message = "\nPyMOL not found in the path. Install PyMOL using homebrew with:\n    brew install pymol"
             logging.info(message)
             return
 
