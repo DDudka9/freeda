@@ -11,6 +11,16 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Suggest to users that first debugging tip is to clear all folders except Genomes (takes longer to regenerate)
+#       0) PRANK alignment of Dlgap5 leads to no positive selection with 12 species (does score with 16 though)
+#                               -> try improve MAFFT alignment by -maxiters 1000
+#                                               (improved alignment marginally, not different in time)
+#                               -> globalpair or globalpair did not change much -> left globalpair
+#       0) Alternative explanations for positive selection:
+#               - polymorphism -> how to check?
+#               - intron/exon bounderies -> check by copying ref species sequence and CTRL+F against exons fasta file
+#               - ....
+#       0) User should check if a given site under positive selection is not at intron/exon boundery (might not be real)
 #       0) Get rid of ensembl check -> not informative?
 #       0) If species eliminated due to cds check in paml launcher -> best to not report the number of species on graph?
 #       0) Single matches are stiched together the opposite way (1st exon is last etc) for "for" contigs

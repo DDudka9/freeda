@@ -138,7 +138,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                         # seq = STOP_remover(line.rstrip("\n"))
                         seq = line.rstrip("\n")
                         seq_no_dashes = seq.replace("-", "")
-                        if len(seq_no_dashes) / len(ref_seq) >= 0.90:
+                        if len(seq_no_dashes) / len(ref_seq) >= 0.90: # changed from 0.90 to run Dlgap5 (04/07/2022)
                             final_species[head] = seq
                             final_species_headers.append(head)
                
@@ -773,7 +773,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
         print(message)
         logging.info(message)
 
-        # flag cds with rare extreme frameshifts
+        # flag cds with rare extreme frameshifts or just missing too many exons
         if score < 0.70:
             to_delete.append(species)
             message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
@@ -1028,7 +1028,9 @@ def align_final_cds(gene, result_path, aligner):
 
         cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                  input=in_filepath,
-                                 thread=-1)  # thread -1 is suppose to automatically calculate physical cores
+                                 thread=-1,  # thread -1 is suppose to automatically calculate physical cores
+                                 globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
+                                 maxiterate=1000)  # improves alignment -> FFT-NS-i; added 04/09/2022
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename

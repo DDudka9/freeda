@@ -53,7 +53,8 @@ def run_msa(MSA_path, aligner):
 
                 cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                          input=in_filename,
-                                         thread=-1)  # thread -1 is suppose to automatically calculate physical cores
+                                         thread=-1,  # thread -1 is suppose to automatically calculate physical cores
+                                         maxiters=1000)  # added 04/09/2022 to improve alignment
                 stdout, stderr = cline()
                 stop_time = time.time()
                 message = "Done : in %s minutes" % ((stop_time - start_time) / 60)

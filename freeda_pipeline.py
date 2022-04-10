@@ -372,9 +372,9 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
-                        help="specify codon frequency models (F3x4 is default)", type=str, default="F61")
+                        help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4")
     parser.add_argument("-es", "--excluded_species",
-                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="""""Ns""")
+                        help="specify species to exclude (e.g. Ha Gs)", type=str, default=None)
 
     args = parser.parse_args()
     freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,
