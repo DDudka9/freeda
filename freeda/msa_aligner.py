@@ -22,7 +22,7 @@ import subprocess
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def run_msa(MSA_path, aligner):
+def run_msa(MSA_path):
     """Runs a multiple sequence alignment of ref cds, ref gene, presumptive locus and raw blast matches.
     Uses MAFFT as default."""
 
@@ -42,32 +42,45 @@ def run_msa(MSA_path, aligner):
         start_time = time.time()
         handle = in_filename.split("/")[-1].replace("to_align_", "").replace("rev_comp_", "").replace(".fasta", "")
         message = "\n(%s) Aligning contig : %s with cds and gene from reference species... " \
-                  % (aligner.upper(), handle)
+                  % ("MAFFT", handle)
         print(message)
         logging.info(message)
 
         try:
 
-            # define which aligner is used
-            if aligner == "mafft":
-
-                cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
+            cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                          input=in_filename,
-                                         thread=-1,  # thread -1 is suppose to automatically calculate physical cores
-                                         maxiters=1000)  # added 04/09/2022 to improve alignment
-                stdout, stderr = cline()
-                stop_time = time.time()
-                message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
-                print(message)
-                logging.info(message)
+                                         thread=-1)  # thread -1 is suppose to automatically calculate physical cores
+            stdout, stderr = cline()
+            stop_time = time.time()
+            message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
+            print(message)
+            logging.info(message)
 
-                # make a post-MSA file using out_filename
-                with open(out_filename, "w") as f:
-                    f.write(stdout)
+            # make a post-MSA file using out_filename
+            with open(out_filename, "w") as f:
+                f.write(stdout)
 
-                # move the file to MSA_path
-                shutil.move(out_filename, MSA_path)
+            # move the file to MSA_path
+            shutil.move(out_filename, MSA_path)
 
+        except ApplicationError:
+            message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
+            print(message)
+            logging.info(message)
+
+            # rename the unaligned file as "failed"
+            os.rename(in_filename, in_filename.replace("to_align", "FAILED_to_align"))
+
+            stop_time = time.time()
+            message = "FAILED : in %s minutes" % ((stop_time - start_time) / 60)
+            print(message)
+            logging.info(message)
+
+            return
+
+
+"""
             if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
 
                 cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", MSA_path + out_filename]
@@ -89,18 +102,4 @@ def run_msa(MSA_path, aligner):
 
                 return
 
-        except ApplicationError:
-            message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
-            print(message)
-            logging.info(message)
-
-            # rename the unaligned file as "failed"
-            os.rename(in_filename, in_filename.replace("to_align", "FAILED_to_align"))
-
-            stop_time = time.time()
-            message = "FAILED : in %s minutes" % ((stop_time - start_time) / 60)
-            print(message)
-            logging.info(message)
-
-            return
-
+"""

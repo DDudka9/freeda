@@ -132,9 +132,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
     # get all genes to be analyzed (these are gene names)
     all_genes = [gene.rstrip("\n") for gene in open(wdir + "genes.txt", "r").readlines() if gene != "\n"]
 
-    # get settings
-    aligner = "mafft"
-
     # get all species and genome names
     all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species)]
 
@@ -263,7 +260,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
     if user_input2 == "y":
         if exon_extractor.check_blast_output(blast_output_path, t, all_genes):
             result_path = exon_extractor.analyze_blast_results(wdir, blast_output_path, ref_species, int(t),
-                                                               all_genes, all_genomes, aligner,
+                                                               all_genes, all_genomes,
                                                                final_excluded_species)
         else:
             print("\n     ...FATAL ERROR... : Genome of at least one species contains "
@@ -293,7 +290,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, \
                 failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
-                                                            result_path, all_genes, aligner, codon_frequencies)
+                                                            result_path, all_genes, codon_frequencies)
 
                 # visualize PAML result
                 paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
@@ -322,7 +319,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, \
         failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
-                                                            result_path, all_genes, aligner, codon_frequencies)
+                                                            result_path, all_genes, codon_frequencies)
 
         # visualize PAML result
         paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,

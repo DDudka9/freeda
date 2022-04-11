@@ -23,6 +23,7 @@ from freeda import control_file
 from freeda import TextHandler
 from freeda import pyinstaller_compatibility
 from Bio.Align.Applications import MafftCommandline
+from Bio.Align.Applications import PrankCommandline
 from Bio import pairwise2
 from Bio import AlignIO
 from Bio.Seq import Seq
@@ -40,8 +41,7 @@ import copy
 import pyensembl
 
 
-def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_frequencies,
-                      gui=None, logging_window=None):
+def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequencies, gui=None, logging_window=None):
     """Main function controlling building final alignments, gene trees and PAML anaylsis"""
 
     failed_paml = []
@@ -180,7 +180,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
                 codon_frequencies = "F3X4"
         
             # align the final cds sequences
-            out_msa = align_final_cds(gene, result_path, aligner)
+            out_msa, aligner = align_final_cds(wdir, gene, result_path)
 
             # check and eliminate insertions that cause dashes in ref species
             correction, corrected_filename = eliminate_all_insertions(gene_folder_path, out_msa)
@@ -224,8 +224,8 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, aligner, codon_
             # check for frameshifts in gene seq and eliminate species from gene and cds
             translated_path, out_Gblocks, to_delete = eliminate_frameshits_cds(wdir, ref_species, gene,
                                                                                raw_translated_path,
-                                                                               filepath_to_translate, aligner,
-                                                                               to_delete)
+                                                                               filepath_to_translate,
+                                                                               to_delete, aligner)
 
             # check compatibility of most distant cloned seq with its known gene sequence (e.g. rat for mouse)
             check_compatibility(ref_species, gene, translated_path)
@@ -482,7 +482,7 @@ def get_most_distant_prot_seq(species, gene):
     return distant_seq
 
 
-def eliminate_frameshits_cds(wdir, ref_species, gene, raw_translated_path, raw_out_Gblocks, aligner, to_delete):
+def eliminate_frameshits_cds(wdir, ref_species, gene, raw_translated_path, raw_out_Gblocks, to_delete, aligner):
     """Finds frameshifts in cds post Gblocks at protein level and eliminates them from nucl and protein alignments."""
 
     raw_translated_filepath = raw_translated_path.replace(wdir, "")
@@ -1016,12 +1016,14 @@ def run_Gblocks(final_cds_file_no_STOP, gene, result_path, aligner):
     return raw_out_Gblocks_filename
 
               
-def align_final_cds(gene, result_path, aligner):
+def align_final_cds(wdir, gene, result_path):
     """Aligns cloned coding sequences that pass coverage threshold (default 90 percent)"""
 
     gene_folder_path = result_path + gene + "/"
     in_filepath = gene_folder_path + gene + "_final.fasta"
     out_msa = gene + "_raw_nucleotide_alignment.fasta"
+
+    aligner = "prank"
 
     # define which aligner is used
     if aligner == "mafft":
@@ -1031,6 +1033,7 @@ def align_final_cds(gene, result_path, aligner):
                                  thread=-1,  # thread -1 is suppose to automatically calculate physical cores
                                  globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
                                  maxiterate=1000)  # improves alignment -> FFT-NS-i; added 04/09/2022
+
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename
@@ -1039,7 +1042,7 @@ def align_final_cds(gene, result_path, aligner):
         shutil.move(out_msa, gene_folder_path)
 
         # returns the filename after MSA
-        return out_msa
+        return out_msa, aligner
 
     if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
 
@@ -1049,5 +1052,19 @@ def align_final_cds(gene, result_path, aligner):
         fasta_reader.reorder_alignment(in_filepath, gene_folder_path + out_msa)
 
         # returns the filename after MSA
-        return out_msa
+        return out_msa, aligner
+
+    if aligner == "prank":
+
+        cline = PrankCommandline(d=in_filepath,
+                                       o=out_msa,  # prefix only!
+                                       f=8)  # FASTA output
+        # record standard output and standard error
+        stdout, stderr = cline()
+        shutil.move(wdir + out_msa + ".best.fas", gene_folder_path + out_msa)
+        fasta_reader.reorder_alignment(in_filepath, gene_folder_path + out_msa)
+
+        # returns the filename after MSA
+        return out_msa.replace(".best.fas", ""), aligner
+
 

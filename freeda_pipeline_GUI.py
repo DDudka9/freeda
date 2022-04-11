@@ -16,6 +16,10 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                               -> try improve MAFFT alignment by -maxiters 1000
 #                                               (improved alignment marginally, not different in time)
 #                               -> globalpair or globalpair did not change much -> left globalpair
+#                               -> I decided to use PRANK instead of Mafft in final cds alignment
+#                                   -> that did not change result for Haus1-Haus8 but Haus6 is now marginally posititve
+#                                                                           (0.044 instead of 0.012)
+#                               -> test PRANK on single exon alignments
 #       0) Alternative explanations for positive selection:
 #               - polymorphism -> how to check?
 #               - intron/exon bounderies -> check by copying ref species sequence and CTRL+F against exons fasta file
@@ -579,9 +583,6 @@ def freeda_pipeline():
         # generate basic folders for input if not present
         folder_generator.generate_basic_folders(wdir)
 
-        # get settings
-        aligner = "mafft"
-
         # get all species and genome names
         all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species)]
 
@@ -665,7 +666,7 @@ def freeda_pipeline():
 
         if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_genes):
             result_path = exon_extractor.analyze_blast_results(wdir, wdir + "Blast_output/",
-                                                               ref_species, int(t), all_genes, all_genomes, aligner,
+                                                               ref_species, int(t), all_genes, all_genomes,
                                                                final_excluded_species, gui, logging_window,
                                                                all_genes_dict)
             # set a StringVar for GUI
@@ -687,7 +688,7 @@ def freeda_pipeline():
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
                 genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species, result_path,
-                                                                      all_genes, aligner, codon_frequencies,
+                                                                      all_genes, codon_frequencies,
                                                                       gui, logging_window)
 
         # visualize PAML result
