@@ -124,7 +124,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     # download the genome as a tar file if both database and tar are missing
     if not ref_genome and genome_file_database is False and zip_file not in all_files:
 
-        message = "\nGenome : %s blast database does not exists" \
+        message = "\nGenome : %s blast database does not exist" \
               " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome
         logging.info(message)
 
@@ -185,7 +185,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             
         elif expected_genome_file not in all_files:
 
-            message = "\nReference genome : %s does not exists" \
+            message = "\nReference genome : %s does not exist" \
                               " -> downloading and decompressing it now...\n" % genome
             logging.info(message)
             all_genomes = genomes_preprocessing.get_names(wdir, ref_species, ref_genome=True)

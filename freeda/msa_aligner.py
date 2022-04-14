@@ -47,7 +47,7 @@ def run_msa(MSA_path):
         logging.info(message)
 
         try:
-
+            os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_lib")
             cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                          input=in_filename,
                                          thread=-1)  # thread -1 is suppose to automatically calculate physical cores
