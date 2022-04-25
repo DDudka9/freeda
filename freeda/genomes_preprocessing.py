@@ -2203,7 +2203,7 @@ def extend_abbreviations(ref_species):
              "Hm": "Hylobates moloch",
              "Cm": "Cercopithecus mona",
              "Mu": "Macaca mulatta",
-             "Pu": "Papio anubis_genome",
+             "Pu": "Papio anubis",
              "Cs": "Chlorocebus sabaeus",
              "Tf": "Trachypithecus francoisi",
              "Pi": "Piliocolobus tephrosceles",
