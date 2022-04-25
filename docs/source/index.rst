@@ -16,6 +16,7 @@ FREEDA is a Python package designed to identify rapidly evolving proteins from g
    overview
    installation
    usage
+   advanced
    troubleshooting
    development
 
