@@ -2258,7 +2258,7 @@ def extend_abbreviations(ref_species):
 
 
 def substitute_abbreviations(ref_species, path, tree=False):
-    """Substitutes abbreviations with names"""
+    """Substitutes species abbreviations with species names"""
 
     names = extend_abbreviations(ref_species)
 
