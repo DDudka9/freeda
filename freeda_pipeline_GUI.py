@@ -11,6 +11,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason
+#       0) Convert the abbreviations back to long names for final results
 #       0) Suggest to users that first debugging tip is to clear all folders except Genomes (takes longer to regenerate)
 #       0) PRANK alignment of Dlgap5 leads to no positive selection with 12 species (does score with 16 though)
 #                               -> try improve MAFFT alignment by -maxiters 1000

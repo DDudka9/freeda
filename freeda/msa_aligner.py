@@ -2,14 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Mar 24 18:09:48 2021
-
 @author: damian
-
 Runs MAFFT using a BioPython wrapper.
-
 """
 
-from freeda import fasta_reader, pyinstaller_compatibility
+from freeda import pyinstaller_compatibility
 from Bio.Align.Applications import MafftCommandline
 from Bio.Application import ApplicationError
 import os
@@ -18,7 +15,7 @@ import shutil
 import glob
 import time
 import logging
-import subprocess
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -26,7 +23,7 @@ def run_msa(MSA_path):
     """Runs a multiple sequence alignment of ref cds, ref gene, presumptive locus and raw blast matches.
     Uses MAFFT as default."""
 
-    # get path to all separate MSA files 
+    # get path to all separate MSA files
     for in_filename in glob.glob(MSA_path + "to_align*.fasta"):
 
         # check if its a rev_comp file
@@ -47,7 +44,7 @@ def run_msa(MSA_path):
         logging.info(message)
 
         try:
-
+            os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_lib")
             cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                          input=in_filename,
                                          thread=-1)  # thread -1 is suppose to automatically calculate physical cores
@@ -82,24 +79,19 @@ def run_msa(MSA_path):
 
 """
             if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
-
                 cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", MSA_path + out_filename]
                 subprocess.call(cmd)
-
                 # need to reorder seqs post msa
                 try:
                     fasta_reader.reorder_alignment(in_filename, MSA_path + out_filename)
-
                 except Exception:   # formerly FileNotFound but I think it doesnt work
                     message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
                     print(message)
                     logging.info(message)
-
                 stop_time = time.time()
                 message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
                 print(message)
                 logging.info(message)
-
                 return
 
 """

@@ -138,7 +138,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
                         # seq = STOP_remover(line.rstrip("\n"))
                         seq = line.rstrip("\n")
                         seq_no_dashes = seq.replace("-", "")
-                        if len(seq_no_dashes) / len(ref_seq) >= 0.90: # changed from 0.90 to run Dlgap5 (04/07/2022)
+                        if len(seq_no_dashes) / len(ref_seq) >= 0.90:  # changed from 0.90 to run Dlgap5 (04/07/2022)
                             final_species[head] = seq
                             final_species_headers.append(head)
                
@@ -169,7 +169,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
 
             # make and copy control_file from working directory into gene_folder_path
             if not os.path.isfile(wdir + "control_file_F3X4.ctl") \
-                    and not os.path.isfile(wdir + "control_file_F61.ctl"):
+                    or not os.path.isfile(wdir + "control_file_F61.ctl"):
                 control_file.make_control_file(wdir)
 
             # define which codon frequency is used - allow only F3x4 (default) or F61
@@ -178,7 +178,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
                 and str(codon_frequencies).upper().replace(" ", "") != "F3X4,F61" \
                 and str(codon_frequencies).upper().replace(" ", "") != "F61,F3X4":
                 codon_frequencies = "F3X4"
-        
+
             # align the final cds sequences
             out_msa, aligner = align_final_cds(wdir, gene, result_path)
 
@@ -197,8 +197,11 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             final_cds_file_no_STOP = STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner)
 
             # move raw alignment to result folder
-            shutil.move(gene_folder_path + "/" + out_msa,
-                        result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments")
+            path = result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments/" + out_msa
+            shutil.move(gene_folder_path + "/" + out_msa, path)
+
+            # match abbreviations with species names
+            genomes_preprocessing.substitute_abbreviations(ref_species, path)
 
             # check for rare frameshifts in cloned cds
             to_delete = cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, final_cds_file_no_STOP)
@@ -272,11 +275,15 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
 
                 # rename path
                 #best_tree_path = best_tree_path.split("/")[-1]
-                shutil.copy(best_tree_path, result_path.replace("Raw_data/", "Results/Gene_trees/") + gene + ".tree")
+                path = result_path.replace("Raw_data/", "Results/Gene_trees/") + gene + ".tree"
+                shutil.copy(best_tree_path, path)
+
+                # match abbreviations to species names
+                genomes_preprocessing.substitute_abbreviations(ref_species, path, tree=True)
 
                 # rename and copy the protein alignment into results (not final at this point yet)
                 shutil.copy(translated_path, result_path + gene + "_protein_alignment.fasta")
-        
+
                 # run PAML
                 message = "\n.........Running PAML (%s) for gene: %s.........\n" % (codon_frequency, gene)
                 print(message)
@@ -295,13 +302,13 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
     shutil.move(wdir + PAML_logfile_name, result_path)
 
     # for now final analysis complete message logs into the PAML log file -> change that later
-    
+
     # mark the end of the analysis
     message = ("\n --------------->  PAML analysis completed in %s minutes or %s hours"
                % ((time.time() - start_time)/60, (time.time() - start_time)/60/60))
     print(message)
     logging.info(message)
-    
+
     return nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, genes_under_pos_sel
 
 
@@ -539,47 +546,47 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
     """Eliminates insertions in the reference sequence formed during alignment (Gblocks cannot handle them)"""
 
     correction = False
-    
+
     alignment = AlignIO.read(gene_folder_path + "/" + out_msa, "fasta")
     seqs = [fasta_reader.read_fasta_record(record.format("fasta")) for record in alignment]
-    
+
     # check if ref species contains dashes
     if "-" in seqs[0][1]:
-        
+
         positions = [p.start() for p in re.finditer("-", seqs[0][1])]
-        
+
         # if yes, make a new file for a corrected alignment
         correction = True
         corrected_filename = out_msa.replace("raw", "corrected")
         file_path = gene_folder_path + "/" + corrected_filename
         with open(file_path, "w") as f:
-        
+
             # loop through each sequence in the alignment
             for spec, seq in seqs:
                 # generate a dict with positions as keys and bp as values (starts at 1)
                 d = {}
                 for i in range(len(seq)):
                     d[i+1] = seq[i]
-                
+
                 # eliminate these positions from given seq
                 for position in positions:
                     d[position+1] = ""
-                
+
                 # write the corrected seqeunce into a new, corrected file
                 new_seq = "".join([a for a in d.values()])
                 f.write(">" + spec[2:] + "\n")
                 f.write(new_seq + "\n")
-            
+
             # these positions are confusingly printing index+1 (change that -> make positions start with 1)
-            
+
         side_note = " \n...NOTE... : Insertions in positions in ref MSA deleted: %s" % str(positions)
         print(side_note)
         logging.info(side_note)
-                    
+
     # if there are no dashes in ref species sequence
     else:
         return correction, out_msa
-    
+
     return correction, corrected_filename
 
 
@@ -588,22 +595,22 @@ def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
 
     from Bio.Phylo.PAML import codeml
     from Bio.Phylo.PAML.chi2 import cdf_chi2
-    
+
     # change working directory to given PAML gene folder
     os.chdir(PAML_path)
-    
+
     # run PAML
     cml = codeml.Codeml(alignment="input.phy", tree="gene.tree", out_file="output_PAML", working_dir=PAML_path)
     cml.run(ctl_file=control_file_name, command=pyinstaller_compatibility.resource_path("codeml"))
     results = codeml.read("output_PAML")
     ns_sites = results.get("NSsites")
-    
+
     M1a = ns_sites.get(1)
     M1a_lnL = M1a.get("lnL")
-    
+
     M2a = ns_sites.get(2)
     M2a_lnL = M2a.get("lnL")
-    
+
     M7 = ns_sites.get(7)
     M7_lnL = M7.get("lnL")
     
@@ -1023,11 +1030,11 @@ def align_final_cds(wdir, gene, result_path):
     in_filepath = gene_folder_path + gene + "_final.fasta"
     out_msa = gene + "_raw_nucleotide_alignment.fasta"
 
-    aligner = "prank"
+    aligner = "mafft"
 
     # define which aligner is used
     if aligner == "mafft":
-
+        os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_lib")
         cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                  input=in_filepath,
                                  thread=-1,  # thread -1 is suppose to automatically calculate physical cores

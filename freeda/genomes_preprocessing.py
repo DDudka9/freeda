@@ -2172,6 +2172,143 @@ def get_available_species(ref_species):
     return species
 
 
+def extend_abbreviations(ref_species):
+    """Matches abbreviations to species names"""
+
+    mouse = {"Mm": "Mus musculus",
+             "Mi": "Mus spicilegus",
+             "Ms": "Mus spretus",
+             "Mc": "Mus caroli",
+             "Mu": "Mus minutoides",
+             "Mp": "Mus pahari",
+             "Ay": "Apodemus sylvaticus",
+             "Ap": "Apodemus speciosus",
+             "Ha": "Hylomyscus alleni",
+             "Pd": "Praomys delectorum",
+             "Mn": "Mastomys natalensis",
+             "Mo": "Mastomys coucha",
+             "Gd": "Grammomys dolichurus",
+             "Gs": "Grammomys surdaster",
+             "An": "Arvicanthis niloticus",
+             "Rd": "Rhabdomys dilectus",
+             "Rs": "Rhynchomys soricoides",
+             "Rr": "Rattus rattus",
+             "Rn": "Rattus norvegicus"}
+
+    human = {"Hs": "Homo sapiens",
+             "Pt": "Pan troglodytes",
+             "Gg": "Gorilla gorilla",
+             "Pb": "Pongo abelli",
+             "Ne": "Nomascus leucogenys",
+             "Hm": "Hylobates moloch",
+             "Cm": "Cercopithecus mona",
+             "Mu": "Macaca mulatta",
+             "Pu": "Papio anubis_genome",
+             "Cs": "Chlorocebus sabaeus",
+             "Tf": "Trachypithecus francoisi",
+             "Pi": "Piliocolobus tephrosceles",
+             "Pp": "Pithecia pithecia",
+             "An": "Aotus nancymaae",
+             "Pd": "Plecturocebus donacophilus",
+             "Ap": "Alouatta palliata",
+             "Cj": "Callithrix jacchus",
+             "Sb": "Saimiri boliviensis",
+             "Ag": "Ateles geoffroyi"}
+
+    dog = {"Cf": "Canis familiaris",
+           "Um": "Ursus maritimus",
+           "Ml": "Mirounga leonina",
+           "Or": "Odobenus rosmarus",
+           "Zc": "Zalophus californianus",
+           "Af": "Ailurus fulgens",
+           "Pl": "Procyon lotor",
+           "Ll": "Lutra lutra",
+           "Sg": "Spilogale gracilis",
+           "Ph": "Paradoxurus hermaphroditus",
+           "Cg": "Cryptoprocta ferox",
+           "Ss": "Suricata suricatta",
+           "Hh": "Hyaena hyaena",
+           "Fc": "Felis catus"}
+
+    chicken = {"Gg": "Gallus gallus",
+               "Bt": "Bambusicola thoracicus",
+               "Ag": "Alectoris rufa",
+               "Pm": "Pavo muticus",
+               "Mg": "Meleagris gallopavo",
+               "Cu": "Centrocercus urophasianus",
+               "Lt": "Lyrurus tetrix",
+               "Ll": "Lagopus leucura",
+               "Tc": "Tympanuchus cupido",
+               "Cp": "Chrysolophus pictus",
+               "Ph": "Phasianus colchicus",
+               "Cr": "Crossoptilon mantchuricum",
+               "Sm": "Syrmaticus mikado",
+               "Cj": "Coturnix japonica"}
+
+    if ref_species == "Mm" or ref_species == "Rn":
+        names = mouse
+    elif ref_species == "Hs":
+        names = human
+    elif ref_species == "Cf" or ref_species == "Fc":
+        names = dog
+    else:
+        names = chicken
+
+    return names
+
+
+def substitute_abbreviations(ref_species, path, tree=False):
+    """Substitutes abbreviations with names"""
+
+    names = extend_abbreviations(ref_species)
+
+    # filename is a tree
+    if tree:
+        with open(path, "r") as f:
+            tree = f.readlines()[0]
+            tree_branches = tree.split(":")
+
+        new_tree_branches = {}
+        for branch in tree_branches:
+            # make a dict with where branch keys and values are initially the same
+            new_tree_branches[branch] = branch
+
+        for ab, name in names.items():
+            for branch in tree_branches:
+
+                # this branch contains species abbreviation
+                if ab == branch[-2::]:
+                    # swap abbreviation with species name
+                    new_branch = branch.replace(ab, name + ":")
+                    # swap dict values into new branches
+                    new_tree_branches[branch] = new_branch
+
+        # reconstruct the tree with new branch names
+        with open(path, "w") as f:
+            new_tree = ""
+            for old_branch, new_branch in new_tree_branches.items():
+                new_tree = new_tree + new_branch
+            f.write(new_tree)
+
+    # filename is an alignment
+    else:
+        seq_dict = {}
+        with open(path, "r") as f:
+            file = f.readlines()
+            for line in file:
+                if line.startswith(">"):
+                    name = names[line.rstrip("\n").replace(">","")]
+                    seq_dict[name] = ""
+                else:
+                    seq_dict[name] = line.rstrip("\n")
+
+        # this will overwrite the original file
+        with open(path, "w") as f:
+            for name, seq in seq_dict.items():
+                f.write(">" + name + "\n")
+                f.write(seq + "\n")
+
+
 def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
 

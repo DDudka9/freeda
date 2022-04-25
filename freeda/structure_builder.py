@@ -9,6 +9,7 @@ Generates a PyMOL script and runs it internally. Saves the PyMOL session per gen
 
 """
 
+from freeda import pyinstaller_compatibility
 from ast import literal_eval
 import shutil
 import subprocess
@@ -17,7 +18,8 @@ import requests
 import simplejson.errors
 from pathlib import Path
 import logging
-from freeda import pyinstaller_compatibility
+from requests.exceptions import HTTPError
+
 
 # LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
 # Done but NOT TESTED YET
@@ -160,11 +162,15 @@ def check_structure(wdir, ref_species, gene):
 
 def download_pymol_linux(wdir, pymol_tar_name):
     linux_url = "http://pymol.org/installers/PyMOL-2.5.2_293-Linux-x86_64-py37.tar.bz2"
-    # Remove quiet condition -q?
-    download_cmd = ["wget", "-q", "--directory-prefix", wdir,
-                    "--output-document", pymol_tar_name, linux_url]
-    wget_exit_code = subprocess.call(download_cmd)
-    return wget_exit_code
+    try:
+        r = requests.get(linux_url)
+        r.raise_for_status()
+        with open(os.path.join(wdir, pymol_tar_name), "wb") as f:
+            f.write(r.content)
+    except HTTPError:
+        message = f"ERROR: PyMOL download failed, could not be found at {linux_url}"
+        logging.info(message)
+        raise
 
 
 def unpack_pymol_linux(wdir, pymol_tar_name):

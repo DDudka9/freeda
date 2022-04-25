@@ -2,21 +2,19 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jul  9 22:47:43 2021
-
 @author: damian
 """
 
-from freeda import tblastn
-from freeda import genomes_preprocessing, pyinstaller_compatibility
-from freeda import fasta_reader
+from freeda import tblastn, genomes_preprocessing, pyinstaller_compatibility, fasta_reader
 from bioservices import UniProt
 from Bio import SeqIO
 import pyensembl
 import pybedtools
 import os
-import subprocess
 import shutil
 import logging
+import requests
+from requests.exceptions import HTTPError
 
 # PYINSTALLER: Set bedtools path to a bedtools folder in the FREEDA directory.
 if pyinstaller_compatibility.is_bundled():
@@ -201,16 +199,15 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
     gene_filepath = wdir + gene + "_" + ref_species + ".pdb"
 
     for uniprot_id in possible_uniprot_ids:
-        # gets a temp file
-        stderr = subprocess.call([pyinstaller_compatibility.resource_path("wget"), "-O", wdir + "gene.pdb",
-                                  "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + "-F1-model_v1.pdb"])
-        # stderr ERROR 404: Not Found is outputs 8
-        if stderr == 8:
-            os.remove(wdir + "gene.pdb")
-        # rename the temp file
-        else:
+        url = "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + "-F1-model_v1.pdb"
+        try:
+            r = requests.get(url)
+            r.raise_for_status()  # Raises an HTTPError if the return code is 4xx or 5xx
+            with open(wdir + "gene.pdb", "wb") as f:
+                f.write(r.content)
             retrieved_uniprot_id = uniprot_id
-            os.rename(wdir + "gene.pdb", gene_filepath)
+        except HTTPError:
+            pass
 
     if not os.path.isfile(wdir + gene + "_" + ref_species + ".pdb"):
         message = "...WARNING... : Structure prediction for gene: %s HAS NOT BEEN FOUND " \
@@ -869,4 +866,3 @@ def check_microexons(wdir, gene, ref_species):
         microexons = []
 
     return microexons
-
