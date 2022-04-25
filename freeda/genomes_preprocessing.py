@@ -2173,7 +2173,7 @@ def get_available_species(ref_species):
 
 
 def extend_abbreviations(ref_species):
-    """Matches abbreviations to species names"""
+    """Matches species abbreviations to species names"""
 
     mouse = {"Mm": "Mus musculus",
              "Mi": "Mus spicilegus",
