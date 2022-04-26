@@ -276,7 +276,7 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
 
     # align
     if pyinstaller_compatibility.is_bundled():
-        os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_lib")
+        os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
     cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                              input=in_filename,
                              thread=-1)  # thread -1 is suppose to automatically calculate physical cores
@@ -647,7 +647,7 @@ def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename
 
     if aligner == "mafft":
         if pyinstaller_compatibility.is_bundled():
-            os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_lib")
+            os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
         cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                 input=in_filepath + in_filename,
                                 thread=-1)

@@ -45,7 +45,7 @@ def run_msa(MSA_path):
 
         try:
             if pyinstaller_compatibility.is_bundled():
-                os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_lib")
+                os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
             cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                          input=in_filename,
                                          thread=-1)  # thread -1 is suppose to automatically calculate physical cores
@@ -62,7 +62,9 @@ def run_msa(MSA_path):
             # move the file to MSA_path
             shutil.move(out_filename, MSA_path)
 
-        except ApplicationError:
+        except ApplicationError as e:
+            print(e)
+            logging.info(e)
             message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
             print(message)
             logging.info(message)
