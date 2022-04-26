@@ -203,13 +203,13 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
         try:
             r = requests.get(url)
             r.raise_for_status()  # Raises an HTTPError if the return code is 4xx or 5xx
-            with open(wdir + "gene.pdb", "wb") as f:
+            with open(gene_filepath, "wb") as f:
                 f.write(r.content)
             retrieved_uniprot_id = uniprot_id
         except HTTPError:
             pass
 
-    if not os.path.isfile(wdir + gene + "_" + ref_species + ".pdb"):
+    if not os.path.isfile(gene_filepath):
         message = "...WARNING... : Structure prediction for gene: %s HAS NOT BEEN FOUND " \
                   "-> Cannot overlay FREEDA results onto a 3D structure\n" % gene
         logging.info(message)
