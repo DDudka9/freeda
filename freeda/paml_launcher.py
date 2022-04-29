@@ -1034,8 +1034,6 @@ def align_final_cds(wdir, gene, result_path):
 
     # define which aligner is used
     if aligner == "mafft":
-        if pyinstaller_compatibility.is_bundled():
-            os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
         cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                  input=in_filepath,
                                  thread=-1,  # thread -1 is suppose to automatically calculate physical cores
