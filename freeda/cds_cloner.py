@@ -11,6 +11,7 @@ Clones and stiches the exons into a final cds for given genome.
 """
 
 from Bio.Align.Applications import MafftCommandline
+from Bio.Align.Applications import PrankCommandline
 from Bio import AlignIO
 from freeda import fasta_reader, pyinstaller_compatibility
 import glob
@@ -18,11 +19,11 @@ import logging
 import operator
 import re
 import shutil
-import subprocess
+import os
 
 
 def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contigs, gene_name,
-              genome_name, final_exon_number, ref_exons, MSA_path, aligner):
+              genome_name, final_exon_number, ref_exons, MSA_path):
     """Clones cds for given genome based on the found exons"""
     
     # get a dictionary with all the contigs and how many exons they have
@@ -108,7 +109,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contig
                 for exon_nr in exons:
                     total_hd_normalized += hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner,
                                                                            preselected_exons_overhangs, MSA_path,
-                                                                           gene_name, aligner)
+                                                                           gene_name)
                 winners_hd_normalized[winner] = total_hd_normalized
                 contigs_hd_analyzed[winner] = total_hd_normalized
 
@@ -199,8 +200,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contig
                     # if yes, and this exon wasnt yet cloned -> run MSA against ref species exon
                     if contig[0] == seq[0] and cds_composition[exon] == "":
                         in_filename, out_filename = generate_single_exon_MSA(wdir, ref_species, seq[1], contig[0], exon,
-                                                                             gene_name, ref_exons, MSA_path, seq[2],
-                                                                             aligner)
+                                                                             gene_name, ref_exons, MSA_path, seq[2])
                         # collect the aligned sequences
                         aligned_seqs = collect_sequences(in_filename + out_filename)
 
@@ -251,7 +251,7 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contig
 
 
 def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselected_exons_overhangs,
-                                    MSA_path, gene_name, aligner):
+                                    MSA_path, gene_name):
     """Compares ref exon to the presumptive exon in order to pick between >1 exon candidate -> picks more conserved."""
 
     # determine the name for the file to MSA
@@ -274,24 +274,15 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
     in_filename = glob.glob(wdir + "/" + filename)[0]
     out_filename = filename.rstrip(".fasta") + "_aligned.fasta"
 
-    # define which aligner is used
-    if aligner == "mafft":
-
-        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
-                                 input=in_filename,
-                                 thread=-1)  # thread -1 is suppose to automatically calculate physical cores
-        # record standard output and standard error
-        stdout, stderr = cline()
-        # make a post-MSA file using out_filename
-        with open(out_filename, "w") as f:
-            f.write(stdout)
-
-    if aligner == "muscle":
-
-        cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", out_filename]
-        subprocess.call(cmd)
-        # need to reorder seqs post msa
-        fasta_reader.reorder_alignment(in_filename, out_filename)
+    # align
+    cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
+                             input=in_filename,
+                             thread=-1)  # thread -1 is suppose to automatically calculate physical cores
+    # record standard output and standard error
+    stdout, stderr = cline()
+    # make a post-MSA file using out_filename
+    with open(out_filename, "w") as f:
+        f.write(stdout)
 
     path = wdir + "/" + out_filename
     # use biopython aligment reader module
@@ -405,7 +396,7 @@ def hamming_distance_frameshift(p, q):  # exon_nr, ref_species_exons
 
 
 def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, gene_name,
-                             ref_exons, MSA_path, genomic_locus, aligner):
+                             ref_exons, MSA_path, genomic_locus):
     """Writes into a file a reference single exon, part of the presumptive locus encoding it in a searched genome
     and a part of the reference genome encoding that exon"""
             
@@ -424,13 +415,12 @@ def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, g
     # move the file for MSA
     shutil.move(wdir + filename, in_filepath)
     # run MSA and get the final filename of the aligned sequences
-    out_filename = run_single_exon_msa(wdir, ref_species, in_filepath, str(exon_number), filename,
-                                       aligner, ref_exons)
+    out_filename = run_single_exon_msa(wdir, ref_species, in_filepath, str(exon_number), filename)
 
     return in_filepath, out_filename
 
 
-def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons):
+def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath):
     """Checks if single exons were properly mapped after exon finding."""
 
     # get dictionary from single exon alignment
@@ -646,39 +636,46 @@ def check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned
     return double_intron
 
 
-def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename, aligner, ref_exons):
+def run_single_exon_msa(wdir, ref_species, in_filepath, exon_number, in_filename):
     """Runs MSA comparing reference species single exons and syntenic locus with presumptive exons"""
 
     out_filename = "aligned_" + "exon_" + str(exon_number) + ".fasta"
 
-    # define which aligner is used
-    if aligner == "mafft":
+    aligner = "mafft"
 
+    if aligner == "mafft":
         cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
-                                 input=in_filepath + in_filename)
+                                input=in_filepath + in_filename,
+                                thread=-1)
         # record standard output and standard error
         stdout, stderr = cline()
         # make a post-MSA file using out_filename
         with open(out_filename, "w") as f:
             f.write(stdout)
         # check for exon mapping errors -> eliminate such cloned exons
-        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons)
+        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
         # move the file to MSA_path
         shutil.move(out_filename, in_filepath)
 
-    if aligner == "muscle":
+        return out_filename
 
-        # outputs into working directory
-        cmd = ['muscle', "-in", in_filepath + in_filename, "-quiet", "-maxiters", "2", "-out", out_filename]
-        subprocess.call(cmd)
-        # need to reorder seqs post msa
-        fasta_reader.reorder_alignment(in_filepath + in_filename, wdir + out_filename)  # outputs to working dir
+    if aligner == "prank":  # added on 04/10/2022 to test PRANK on single exon alignments
+
+        cline = PrankCommandline(d=in_filepath + in_filename,
+                                 o=out_filename,  # prefix only!
+                                 f=8)  # FASTA output
+        # record standard output and standard error
+        stdout, stderr = cline()
+
+        fasta_reader.reorder_alignment(in_filepath + in_filename, wdir + out_filename + ".best.fas")
 
         # check for exon mapping errors -> eliminate such cloned exons
-        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons)
-        shutil.move(out_filename, in_filepath)
+        single_exon_mapping_checkpoint(wdir, ref_species, out_filename + ".best.fas", in_filepath)
+        shutil.move(wdir + out_filename + ".best.fas", in_filepath + out_filename)
 
-    return out_filename
+        # returns the filename after MSA
+        return out_filename.replace(".best.fas", "")
+
 
 
 def collect_sequences(path):
@@ -692,6 +689,25 @@ def collect_sequences(path):
     return seqs
 
 """
+
+    if aligner == "muscle":
+
+        # outputs into working directory
+        cmd = ['muscle', "-in", in_filepath + in_filename, "-quiet", "-maxiters", "2", "-out", out_filename]
+        subprocess.call(cmd)
+        # need to reorder seqs post msa
+        fasta_reader.reorder_alignment(in_filepath + in_filename, wdir + out_filename)  # outputs to working dir
+
+        # check for exon mapping errors -> eliminate such cloned exons
+        single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath, exon_number, ref_exons)
+        shutil.move(out_filename, in_filepath)
+
+    if aligner == "muscle":
+
+        cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", out_filename]
+        subprocess.call(cmd)
+        # need to reorder seqs post msa
+        fasta_reader.reorder_alignment(in_filename, out_filename)
 
     for position, bp in enumerate(ref_exon_aligned):
 

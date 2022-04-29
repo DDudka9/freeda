@@ -14,9 +14,11 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def reorder_alignment(in_filename, out_filename):
+    """Reorders files post alignment based in the order before alignment"""
 
     ord_headers = []
 
+    # read sequence order before the alignment
     with open(in_filename, "r") as f:
         file = f.readlines()
         for line in file:
@@ -28,6 +30,7 @@ def reorder_alignment(in_filename, out_filename):
     seq = ""
     count = 0
 
+    # read the sequence order after alignment
     with open(out_filename, "r") as f:
         file = f.readlines()
         for line in file:
@@ -58,6 +61,7 @@ def reorder_alignment(in_filename, out_filename):
     for head in ord_headers:
         ord_aln_dict[head] = aln_dict[head]
 
+    # overwrite the msa file with one of correct order
     with open(out_filename, "w") as f:
         for head, seq in ord_aln_dict.items():
             f.write(head + "\n")

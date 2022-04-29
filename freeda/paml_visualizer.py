@@ -7,6 +7,7 @@ Created on Sun May  9 14:12:04 2021
 """
 
 from freeda import fasta_reader
+from freeda import genomes_preprocessing
 from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -67,11 +68,11 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
                                                                 codon_frequency)
         # generate a PAML result excel sheet
         output_excel_sheet(wdir, final_PAML_log_dict[codon_frequency], result_path, day, codon_frequency)
-    
+
     # save the matched adaptive sites into a file
     with open("all_matched_adaptive_sites_ref.txt", "w") as file:
         dump(all_matched_adaptive_sites_ref, file)
-    
+
     shutil.move(wdir + "all_matched_adaptive_sites_ref.txt", result_path + "all_matched_adaptive_sites_ref.txt")
 
     # output only the first (default is F3X4 or user selected) codon frequency run -> only matters for GUI version
@@ -129,8 +130,11 @@ def get_alignment_matching_structure(result_path, ref_species, gene, dictionary)
             f.write(seq + "\n")
 
     # move and overright the final protein alignment in Results
-    shutil.move(result_path + gene + "_protein_alignment.fasta",
-                result_path.replace("Raw_data/", "Results/Protein_alignments/") + gene + "_protein_alignment.fasta")
+    path = result_path.replace("Raw_data/", "Results/Protein_alignments/") + gene + "_protein_alignment.fasta"
+    shutil.move(result_path + gene + "_protein_alignment.fasta", path)
+
+    # match abbreviations with species names
+    genomes_preprocessing.substitute_abbreviations(ref_species, path)
 
 
 def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_ref, failed_paml, codon_frequency):

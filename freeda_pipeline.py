@@ -132,9 +132,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
     # get all genes to be analyzed (these are gene names)
     all_genes = [gene.rstrip("\n") for gene in open(wdir + "genes.txt", "r").readlines() if gene != "\n"]
 
-    # get settings
-    aligner = "mafft"
-
     # get all species and genome names
     all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species)]
 
@@ -180,10 +177,16 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if not shutil.which("pymol"):
         if platform == "linux" or platform == "linux2":
-            logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
-            structure_builder.install_pymol_linux(wdir)
-        else:
-            message = "\n...FATAL ERROR... : PyMOL not installed. Install PyMOL online from: https://pymol.org/\n"
+            logging.info("\nPyMOL not found in the PATH.")
+            pymol_choice = input("\nInstall PyMOL into current working directory? (y/N)")
+            if pymol_choice == "y":
+                structure_builder.install_pymol_linux(wdir)
+            else:
+                logging.info("\nPyMOL is required to run FREEDA. It can be installed using a package manager. "
+                             "For example, try:\n    sudo apt-get install pymol")
+                return
+        elif platform == "darwin":
+            message = "\nPyMOL not found in the path. Install PyMOL using homebrew with:\n    brew install pymol"
             logging.info(message)
             return
 
@@ -257,7 +260,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
     if user_input2 == "y":
         if exon_extractor.check_blast_output(blast_output_path, t, all_genes):
             result_path = exon_extractor.analyze_blast_results(wdir, blast_output_path, ref_species, int(t),
-                                                               all_genes, all_genomes, aligner,
+                                                               all_genes, all_genomes,
                                                                final_excluded_species)
         else:
             print("\n     ...FATAL ERROR... : Genome of at least one species contains "
@@ -287,7 +290,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                 # run PAML
                 nr_of_species_total_dict, PAML_logfile_name, day, \
                 failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
-                                                            result_path, all_genes, aligner, codon_frequencies)
+                                                            result_path, all_genes, codon_frequencies)
 
                 # visualize PAML result
                 paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
@@ -316,7 +319,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         # run PAML
         nr_of_species_total_dict, PAML_logfile_name, day, \
         failed_paml, genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species,
-                                                            result_path, all_genes, aligner, codon_frequencies)
+                                                            result_path, all_genes, codon_frequencies)
 
         # visualize PAML result
         paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
@@ -366,9 +369,9 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
-                        help="specify codon frequency models (F3x4 is default)", type=str, default="F61")
+                        help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4")
     parser.add_argument("-es", "--excluded_species",
-                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="""""Ns""")
+                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="")
 
     args = parser.parse_args()
     freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,

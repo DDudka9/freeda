@@ -24,8 +24,7 @@ import glob
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expected_exons, aligner,
-                all_genes_dict=None):
+def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expected_exons, all_genes_dict=None):
     """Analyzes MSA per contig -> finds exons, clones them into cds"""
 
     # make a dictionary with exon number as key and sequences, names as values -> include microexons as empty lists
@@ -67,7 +66,7 @@ def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expec
     
     # clone cds based on the most intronic contigs
     cloned_cds = cds_cloner.clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intronic_contigs,
-                                      gene, genome_name, final_exon_number, ref_exons, MSA_path, aligner)
+                                      gene, genome_name, final_exon_number, ref_exons, MSA_path)
 
     # check if final CDS is in frame (clone anyway)
     if (len(cloned_cds)-cloned_cds.count("-")) % 3 != 0:
