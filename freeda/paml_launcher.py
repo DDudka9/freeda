@@ -196,11 +196,9 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             # remove STOP codons
             final_cds_file_no_STOP = STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner)
 
-            # move raw alignment to result folder
+            # match abbreviations with species names; out_msa is a filename
             path = result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments/" + out_msa
-            shutil.move(gene_folder_path + "/" + out_msa, path)
-
-            # match abbreviations with species names
+            shutil.copy(wdir + final_cds_file_no_STOP, path)
             genomes_preprocessing.substitute_abbreviations(ref_species, path)
 
             # check for rare frameshifts in cloned cds

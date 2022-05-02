@@ -1198,28 +1198,28 @@ results_labels.grid(column=0, row=3, columnspan=8, sticky=(N, W, E, S), padx=5, 
 results_labels.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 1 result frame
-g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g1_results_frame.grid(column=0, row=4, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g1_results_frame.grid(column=0, row=4, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g1_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 2 result frame
-g2_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g2_results_frame.grid(column=0, row=5, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g2_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g2_results_frame.grid(column=0, row=5, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g2_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 3 result frame
-g3_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g3_results_frame.grid(column=0, row=6, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g3_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g3_results_frame.grid(column=0, row=6, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g3_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 4 result frame
-g4_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g4_results_frame.grid(column=0, row=7, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g4_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g4_results_frame.grid(column=0, row=7, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g4_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 5 result frame
-g5_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g5_results_frame.grid(column=0, row=8, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g5_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g5_results_frame.grid(column=0, row=8, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g5_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # CHECKS
