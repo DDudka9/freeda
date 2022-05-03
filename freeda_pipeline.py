@@ -171,6 +171,13 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         print("\n...FATAL ERROR... : You need to perform exon finding before molecular evolution analysis.")
         return
 
+    # -----------------------------#
+    # ASSIGN ENVIRONMENT VARIABLES #
+    # -----------------------------#
+    if pyinstaller_compatibility.is_bundled():
+        os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
+        os.environ["REQUESTS_CA_BUNDLE"] = pyinstaller_compatibility.resource_path("certifi/cacert.pem")
+
     # ----------------------------------------#
     ######## INSTALL PYMOL IF NEEDED ########
     # ----------------------------------------#
