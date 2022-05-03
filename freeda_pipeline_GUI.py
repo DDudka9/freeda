@@ -588,10 +588,16 @@ def freeda_pipeline():
         # get all species and genome names
         all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species)]
 
-        # ----------------------------------------#
-        ######## INSTALL PYMOL IF NEEDED ########
-        # ----------------------------------------#
+        # -----------------------------#
+        # ASSIGN ENVIRONMENT VARIABLES #
+        # -----------------------------#
+        if pyinstaller_compatibility.is_bundled():
+            os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
+            os.environ["REQUESTS_CA_BUNDLE"] = pyinstaller_compatibility.resource_path("certifi/cacert.pem")
 
+        # ------------------------#
+        # INSTALL PYMOL IF NEEDED #
+        # ------------------------#
         if not shutil.which("pymol") and \
            not os.path.exists(os.path.join("/", "Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")):
             if platform == "linux" or platform == "linux2":
