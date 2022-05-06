@@ -4,7 +4,7 @@ Development
 Pyinstaller
 -----------
 
-FREEDA is packaged using PyInstaller (`documentation <https://pyinstaller.org/>`). PyInstaller automatically finds the Python interpreter and relevant packages in a system and freezes them for distribution. However, PyInstaller does not find all the required packages for FREEDA automatically. In general, packages which are available only through Conda, and not PyPI, will not be automatically packaged by PyInstaller.
+FREEDA is packaged using PyInstaller (`documentation <https://pyinstaller.org/>`_). PyInstaller automatically finds the Python interpreter and relevant packages in a system and freezes them for distribution. However, PyInstaller does not find all the required packages for FREEDA automatically. In general, packages which are available only through Conda, and not PyPI, will not be automatically packaged by PyInstaller.
 
 Manually Adding PyInstaller Packages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -49,7 +49,7 @@ Replacing ``<PACKAGE-MANAGER>`` with your chosen one and replacing ``python3.8-d
 Installing UPX
 ^^^^^^^^^^^^^^
 
-PyInstaller can reduce the size of compiled executables using `UPX (the Ultimate Packer for eXecutables) <https://upx.github.io/>`. Using UPX is easy: just download it (either from the link or through your package manager), then run PyInstaller as normal.
+PyInstaller can reduce the size of compiled executables using `UPX (the Ultimate Packer for eXecutables) <https://upx.github.io/>`_. Using UPX is easy: just download it (either from the link or through your package manager), then run PyInstaller as normal.
 
 
 Creating a .spec File 
@@ -60,8 +60,8 @@ PyInstaller uses files with the .spec extension. These are Python files used to 
 Documentation
 -------------
 
-This FREEDA documentation is written using `Sphinx <sphinx-doc.org/>`. Sphinx generates HTML documentation from multiple files like this one. Files are related using Table of Contents trees, like the one found in the "index.rst" file. New documentation files can be added by creating a new file with the ".rst" extension in the "source" folder of the docs. The name of this file can then be added to a Table of Contents for access. More information can be found online at the `Sphinx tutorial
-<https://www.sphinx-doc.org/en/master/tutorial/index.html>`.
+This FREEDA documentation is written using `Sphinx <https://sphinx-doc.org/>`_. Sphinx generates HTML documentation from multiple files like this one. Files are related using Table of Contents trees, like the one found in the "index.rst" file. New documentation files can be added by creating a new file with the ".rst" extension in the "source" folder of the docs. The name of this file can then be added to a Table of Contents for access. More information can be found online at the `Sphinx tutorial
+<https://www.sphinx-doc.org/en/master/tutorial/index.html>`_.
 
-Sphinx documentation files can be written either in `Markdown <https://www.markdownguide.org/>`, like the README file, or in `ReStructuredText <https://www.writethedocs.org/guide/writing/reStructuredText/>`, like this file.
+Sphinx documentation files can be written either in `Markdown <https://www.markdownguide.org/>`_, like the README file, or in `ReStructuredText <https://www.writethedocs.org/guide/writing/reStructuredText/>`_, like this file.
 

@@ -6,11 +6,15 @@ Mac
 
 The easiest way to install FREEDA is to download the prepackaged versions available on the GitHub Releases page. (INSERT LINK) After downloading, just double-click the Mac .app file to run FREEDA.
 
+
+.. _linux installation anchor:
+
 Linux
 -----
 
 A prepackaged version of FREEDA is available for Linux. Download the latest release from the GitHub Releases page. Once you have, FREEDA is run from the command line. To do so, open a terminal either by pressing CTRL + ALT + t or by clicking on it in the Applications menu. Then, navigate to the folder where FREEDA was downloaded, allow it to be executed, and run it. For example, if FREEDA was downloaded to the Downloads folder:
-.. code-block:: bash
+
+.. code-block:: sh
 
     cd ~/Downloads
     chmod +x freeda
