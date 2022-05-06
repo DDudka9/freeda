@@ -31,8 +31,10 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
     """Runs tblastn based on NCBI makedatabase routine."""
 
     database_path = wdir + "Genomes/"
-    query_path = wdir + "Blast_input/"  # from Coding_sequences/
+    query_path = wdir + "Blast_input/"  # Coding_sequences/
     output_path = wdir + "Blast_output/"
+    task = "blastn"  # this is to delete
+    evalue = "0.01"
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means " \
            "bitscore length means pident means mismatch means gapopen means qlen means slen means"
 
@@ -60,8 +62,10 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
             database = database_path + genome + ".fasta"
             query = query_path + gene + "_" + ref_species + "_protein.fasta"  # from _cds.fasta
             output = output_path + gene + "_" + genome + ".txt"
-            to_blast = [tblastn_path, "-db", database, "-query", query, "-out", output, "-outfmt",
-                        form, "-num_threads", "8"]
+            to_blast = [tblastn_path, "-db", database, "-query", query,
+                        "-out", output, "-outfmt", form, "-num_threads", "8"]
+            #to_blast = [tblastn_path, "-db", database, "-query", query, "-task", task, "-evalue", evalue,
+            #            "-out", output, "-outfmt", form, "-num_threads", "8"]
             message = "\nPerforming tblastn for gene: %s from genome: %s\n" % (gene, genome)
             logging.info(message)
             subprocess.call(to_blast)

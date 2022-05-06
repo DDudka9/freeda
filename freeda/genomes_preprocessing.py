@@ -2262,33 +2262,38 @@ def substitute_abbreviations(ref_species, path, tree=False):
 
     names = extend_abbreviations(ref_species)
 
-    # filename is a tree
+    # tree name substitution not ready
     if tree:
-        with open(path, "r") as f:
-            tree = f.readlines()[0]
-            tree_branches = tree.split(":")
+        return
+    #    with open(path, "r") as f:
+    #        tree = f.readlines()[0]
+    #        tree_branches = tree.split(":")
+    #        tree_branches_with_separator = [branch + ":" for branch in tree_branches]  # put back colons
+    #        last = tree_branches_with_separator[-1].rstrip(":")  # get last element and remove colon
+    #        tree_branches_with_separator[-1] = last  # put back in the list
+    #        tree_branches = tree_branches_with_separator
 
-        new_tree_branches = {}
-        for branch in tree_branches:
-            # make a dict with where branch keys and values are initially the same
-            new_tree_branches[branch] = branch
+    #    new_tree_branches = {}
+    #    for branch in tree_branches:
+    #        # make a dict with where branch keys and values are initially the same
+    #        new_tree_branches[branch] = branch
 
-        for ab, name in names.items():
-            for branch in tree_branches:
+    #    for ab, name in names.items():
+    #        for branch in tree_branches:
 
-                # this branch contains species abbreviation
-                if ab == branch[-2::]:
-                    # swap abbreviation with species name
-                    new_branch = branch.replace(ab, name + ":")
-                    # swap dict values into new branches
-                    new_tree_branches[branch] = new_branch
+    #            # this branch contains species abbreviation
+    #            if ab == branch[-3:-1]:
+    #                # swap abbreviation with species name
+    #                new_branch = branch.replace(ab, name)
+    #                # swap dict values into new branches
+    #                new_tree_branches[branch] = new_branch
 
-        # reconstruct the tree with new branch names
-        with open(path, "w") as f:
-            new_tree = ""
-            for old_branch, new_branch in new_tree_branches.items():
-                new_tree = new_tree + new_branch
-            f.write(new_tree)
+    #    # reconstruct the tree with new branch names
+    #    with open(path, "w") as f:
+    #        new_tree = ""
+    #        for old_branch, new_branch in new_tree_branches.items():
+    #            new_tree = new_tree + new_branch
+    #        f.write(new_tree)
 
     # filename is an alignment
     else:

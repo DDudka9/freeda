@@ -68,9 +68,13 @@ def reorder_alignment(in_filename, out_filename):
             f.write(seq + "\n")
 
 
-def alignment_file_to_dict(wdir, ref_species, filename):
+def alignment_file_to_dict(wdir, ref_species, filename, raw_cds=False):
     """Reads alignment file and transforms it into python dictionary.
     Alignment needs to be in the working directory (Data folder)."""
+
+    # need to cancel wdir for path compliance
+    if raw_cds:
+        wdir = ""
 
     all_seq_dict = {}
     seq = ""
@@ -116,7 +120,7 @@ def read_fasta_record(record):
     return header, seq
 
 
-def find_gene_and_cds(wdir, gene, ref_species):  # USEFUL IF MANUAL (non-one line) INPUT
+def find_gene_and_cds(wdir, gene, ref_species):  # useful if non-one line onput
     """Reads exons, CDS and gene of reference species making sure CDS is a one-liner"""
 
     ref_exons, expected_exons = get_ref_exons(wdir, gene, ref_species)

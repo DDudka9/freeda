@@ -11,6 +11,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Test blastn instead of tblastn -> maybe faster, less hits?
 #       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason
 #       0) Convert the abbreviations back to long names for final results -> DONE
 #       0) Suggest to users that first debugging tip is to clear all folders except Genomes (takes longer to regenerate)
@@ -587,6 +588,14 @@ def freeda_pipeline():
 
         # get all species and genome names
         all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species)]
+
+        # ----------------------------------------#
+        ######## ASSIGN ENVIRONMENT VARIABLES ########
+        # ----------------------------------------#
+
+        if pyinstaller_compatibility.is_bundled():
+            os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
+            os.environ["REQUESTS_CA_BUNDLE"] = pyinstaller_compatibility.resource_path("certifi/cacert.pem")
 
         # ----------------------------------------#
         ######## INSTALL PYMOL IF NEEDED ########
