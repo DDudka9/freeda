@@ -175,3 +175,7 @@ cython_debug/
 
 # large files
 sequences.fasta
+
+# ADDED 2022-05-09 RBA
+.idea/
+
