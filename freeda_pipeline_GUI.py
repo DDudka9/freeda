@@ -11,6 +11,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) Test blastn instead of tblastn -> maybe faster, less hits?
 #       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason
 #       0) Convert the abbreviations back to long names for final results -> DONE
 #       0) Suggest to users that first debugging tip is to clear all folders except Genomes (takes longer to regenerate)
@@ -588,16 +589,16 @@ def freeda_pipeline():
         # get all species and genome names
         all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species)]
 
-        # -----------------------------#
-        # ASSIGN ENVIRONMENT VARIABLES #
-        # -----------------------------#
+        # ----------------------------------------#
+        ######## ASSIGN ENVIRONMENT VARIABLES ########
+        # ----------------------------------------#
         if pyinstaller_compatibility.is_bundled():
             os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
             os.environ["REQUESTS_CA_BUNDLE"] = pyinstaller_compatibility.resource_path("certifi/cacert.pem")
 
-        # ------------------------#
-        # INSTALL PYMOL IF NEEDED #
-        # ------------------------#
+        # ----------------------------------------#
+        ######## INSTALL PYMOL IF NEEDED ########
+        # ----------------------------------------#
         if not shutil.which("pymol") and \
            not os.path.exists(os.path.join("/", "Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")):
             if platform == "linux" or platform == "linux2":
@@ -1204,28 +1205,28 @@ results_labels.grid(column=0, row=3, columnspan=8, sticky=(N, W, E, S), padx=5, 
 results_labels.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 1 result frame
-g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g1_results_frame.grid(column=0, row=4, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g1_results_frame.grid(column=0, row=4, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g1_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 2 result frame
-g2_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g2_results_frame.grid(column=0, row=5, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g2_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g2_results_frame.grid(column=0, row=5, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g2_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 3 result frame
-g3_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g3_results_frame.grid(column=0, row=6, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g3_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g3_results_frame.grid(column=0, row=6, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g3_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 4 result frame
-g4_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g4_results_frame.grid(column=0, row=7, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g4_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g4_results_frame.grid(column=0, row=7, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g4_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # create user gene 5 result frame
-g5_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="5 5 5 5")
-g5_results_frame.grid(column=0, row=8, columnspan=8, sticky=(N, W, E, S), padx=5, pady=5)
+g5_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
+g5_results_frame.grid(column=0, row=8, columnspan=8, sticky=(N, W, E, S), padx=2, pady=2)
 g5_results_frame.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
 
 # CHECKS

@@ -439,7 +439,7 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
                 f.write("select " + residue + ", resi " + str(site) + "\n")
                 f.write("color gray40, " + residue + "\n")
 
-            if float(features[2]) >= 0.90:
+            if float(features[2]) >= 0.90:   # changed from 0.90 05/04/2022
                 residue = features[0] + str(site)
                 if paint_sites:
                     f.write("select " + residue + ", resi " + str(site) + "\n")

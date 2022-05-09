@@ -182,6 +182,16 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             # align the final cds sequences
             out_msa, aligner = align_final_cds(wdir, gene, result_path)
 
+            # write the alignment into a file from dict and swap full names
+            path = gene_folder_path + "/" + out_msa
+            all_seq_dict = fasta_reader.alignment_file_to_dict(wdir, ref_species, path, raw_cds=True)
+            new_result_path = result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments/" + out_msa
+            with open(new_result_path, 'w') as file:
+                for ab, s in all_seq_dict.items():
+                    file.write(ab + "\n")
+                    file.write(s + "\n")
+            genomes_preprocessing.substitute_abbreviations(ref_species, new_result_path)
+
             # check and eliminate insertions that cause dashes in ref species
             correction, corrected_filename = eliminate_all_insertions(gene_folder_path, out_msa)
             if correction is True:
@@ -196,12 +206,10 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             # remove STOP codons
             final_cds_file_no_STOP = STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner)
 
-            # move raw alignment to result folder
-            path = result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments/" + out_msa
-            shutil.move(gene_folder_path + "/" + out_msa, path)
-
-            # match abbreviations with species names
-            genomes_preprocessing.substitute_abbreviations(ref_species, path)
+            # match abbreviations with species names; out_msa is a filename
+            #path = result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments/" + out_msa
+            #shutil.copy(wdir + final_cds_file_no_STOP, path)
+            #genomes_preprocessing.substitute_abbreviations(ref_species, path)
 
             # check for rare frameshifts in cloned cds
             to_delete = cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, final_cds_file_no_STOP)
@@ -240,9 +248,6 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
                       % (gene, str(nr_of_species), str(final_species_headers))
             print(message)
             logging.info(message)
-
-            # run seqret (file is already in gene folder)
-            #phylip_path = run_seqret(gene, out_Gblocks)
 
             # convert fasta alignment to phylip format
             convert_to_phylip(out_Gblocks)
@@ -781,7 +786,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
         logging.info(message)
 
         # flag cds with rare extreme frameshifts or just missing too many exons
-        if score < 0.70:
+        if score < 0.69:  # from 0.70 for Rs Prm2
             to_delete.append(species)
             message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
                       "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), gene)
