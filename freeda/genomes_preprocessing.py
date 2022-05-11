@@ -2427,7 +2427,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)
     mouse_ref_dict = {"Mm": (("Mm", "MusMusculus_genome", "GCA_000001635.9"))} # GeneBank GRCm39
     rat_ref_dict = {"Rn": (("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0 -> NOT SAME AS GENOMES
-    human_ref_dict = {"Hs": (("Hs", "HomoSapiens_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39
+    human_ref_dict = {"Hs": (("Hs", "HomoSapiens_genome", "GCA_000001405.29"))} # RefSeq GCF_000001405.39 UPDATED
     cat_ref_dict = {"Fc": (("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # pyensembl is using Felis_catu_6.2
     dog_ref_dict = {"Cf": (("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # CanFam3.1
     chicken_ref_dict = {"Gg": (("Gg", "GallusGallus_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0

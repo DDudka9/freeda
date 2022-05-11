@@ -29,32 +29,57 @@ TKinter is automatically installed on MacOS systems. For Linux systems, you may 
 Setting up the Virtual Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PyInstaller works best when it is run from a virtual environment containing only the necessary files. Running PyInstaller from a conda environment will create much larger output files. Create a virtual enviroment folder and activate it with::
+PyInstaller works best when it is run from a virtual environment containing only the necessary files. Running PyInstaller from a conda environment will create much larger output files. Create a virtual enviroment folder and activate it with:
+
+.. code-block:: sh
     
     python3 -m venv venv
+    conda deactivate
     source venv/bin/activate
 
-Note that the activate script must be run with "source" before it.
+Once only the venv environment is activated, install the required packages with pip using:
 
-Install the required packages with pip using::
+.. code-block:: sh
 
-    pip install matplotlib numpy scipy pybedtools 
+    pip install biopython bioservices matplotlib numpy openpyxl pandas pybedtools pyensembl pyinstaller scipy
 
-If the build fails for pybedtools, download the lastest python devolepment tools from your package manager with::
+This will install the newest version of all of these packages and their dependencies.
+
+If the build fails for pybedtools, download the lastest python devolepment tools from your package manager with:
+
+.. code-block:: sh
 
     sudo <PACKAGE-MANAGER> install python3.8-dev
 
 Replacing ``<PACKAGE-MANAGER>`` with your chosen one and replacing ``python3.8-dev`` with the version of python you are using.
+
+Once this virtual environment has been created, it can be deactivated with:
+
+.. code-block:: sh
+
+    deactivate
+
+ And it can be reactivated with:
+
+ ..code-block:: sh
+
+    conda deactivate
+    source venv/bin/activate
 
 Installing UPX
 ^^^^^^^^^^^^^^
 
 PyInstaller can reduce the size of compiled executables using `UPX (the Ultimate Packer for eXecutables) <https://upx.github.io/>`_. Using UPX is easy: just download it (either from the link or through your package manager), then run PyInstaller as normal.
 
-
 Creating a .spec File 
 ^^^^^^^^^^^^^^^^^^^^^
-PyInstaller uses files with the .spec extension. These are Python files used to tell the program what to build and which files to include. These files should already be included at one-
+PyInstaller uses files with the .spec extension. These are Python files used to tell the program what to build and which files to include. Working .spec files are already created. To create a new .spec file, use:
+
+.. code-block:: sh
+
+    pyi-makespec <PYTHON_SCRIPT_NAME>
+
+There are multiple useful options for this command, including --windowed, --onefile, or --onedir. For more information, see `https://pyinstaller.org/en/stable/spec-files.html <https://pyinstaller.org/en/stable/spec-files.html>`_.
 
 
 Documentation
