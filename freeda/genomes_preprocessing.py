@@ -2365,7 +2365,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                       ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
                       ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # Mona monkey
                       ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),
-                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),
+                      ("Pu", "PapioAnubis_genome", "GCA_008728515.2"),
                       ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),
                       ("Tf", "TrachypithecusFrancoisi_genome", "GCA_009764325.1"),  # Francois's langur
                       ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # added Colobus monkey
