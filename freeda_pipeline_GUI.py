@@ -11,6 +11,12 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) FREEDA gets stuck sometimes - Ccnd3 Ap contig BDUI01012397.1__rev runs over 1h never aligns
+#                   -> same for Wasf2 Ay or Ap (cant remeber)
+#       0) Modify the check comparing cloned Rn to ensembl Rn -> surely takes indels into account (e.g. Vash2 Rn 49%)
+#       0) Add a check for min numbr of species? e.g. 8?
+#       0) Include filtered evalue in tblastn -> sometimes matches occur twice in the same (overlaping) region of
+#                   a contig e.g. Tpx2 Mp LT608307.1_for
 #       0) Test blastn instead of tblastn -> maybe faster, less hits?
 #       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason
 #       0) Convert the abbreviations back to long names for final results -> DONE

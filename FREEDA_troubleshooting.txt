@@ -978,3 +978,7 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 #       0) Allow user to get rid of species -> DONE
 #       0) Allow user to run freeda with two different models (F3x4 and F61) -> DONE
 0) Test the command line agg workaround -> seem to be working well (FIXED)
+
+05_10_2022
+When NCBI updates an assembly (status "replaced") it gives an error when trying to download the genome
+-> make sure the reference is up to date

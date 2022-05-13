@@ -62,7 +62,7 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
             database = database_path + genome + ".fasta"
             query = query_path + gene + "_" + ref_species + "_protein.fasta"  # from _cds.fasta
             output = output_path + gene + "_" + genome + ".txt"
-            to_blast = [tblastn_path, "-db", database, "-query", query,
+            to_blast = [tblastn_path, "-db", database, "-query", query, "-evalue", evalue,  # added evalue 05_12_2022
                         "-out", output, "-outfmt", form, "-num_threads", "8"]
             #to_blast = [tblastn_path, "-db", database, "-query", query, "-task", task, "-evalue", evalue,
             #            "-out", output, "-outfmt", form, "-num_threads", "8"]
@@ -129,7 +129,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     if not ref_genome and genome_file_database is False and zip_file not in all_files:
 
         message = "\nGenome : %s blast database does not exist" \
-              " -> downloading and decompressing the genome (it might take couple of minutes)...\n" % genome
+              " -> downloading and decompressing the genome (it might take a couple of minutes)...\n" % genome
         logging.info(message)
 
         all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
@@ -150,7 +150,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         if not genome_found:
             genome_file_database = False
             message = "...FATAL_ERROR... : Genome : %s failed to download or decompress" \
-                      " -> exciting the pipeline now...\n" % genome
+                      " -> exiting the pipeline now...\n" % genome
             logging.info(message)
             return genome_file_database
 
@@ -164,7 +164,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             # look for indices
             if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
                 message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
-                      " -> exciting the pipeline now...\n" % genome
+                      " -> exiting the pipeline now...\n" % genome
                 logging.info(message)
                 genome_file_database = False
                 return genome_file_database
