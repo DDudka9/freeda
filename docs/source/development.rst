@@ -31,8 +31,8 @@ Setting up the Virtual Environment
 
 PyInstaller works best when it is run from a virtual environment containing only the necessary files. Running PyInstaller from a conda environment will create much larger output files. Create a virtual enviroment folder and activate it with:
 
-.. code-block:: sh
-    
+.. code-block:: sh 
+
     python3 -m venv venv
     conda deactivate
     source venv/bin/activate
@@ -41,7 +41,16 @@ Once only the venv environment is activated, install the required packages with 
 
 .. code-block:: sh
 
-    pip install biopython bioservices matplotlib numpy openpyxl pandas pybedtools pyensembl pyinstaller scipy
+    pip install biopython \ 
+    bioservices \ 
+    matplotlib \ 
+    numpy \ 
+    openpyxl \ 
+    pandas \ 
+    pybedtools \ 
+    pyensembl \ 
+    pyinstaller \ 
+    scipy
 
 This will install the newest version of all of these packages and their dependencies.
 
@@ -59,9 +68,9 @@ Once this virtual environment has been created, it can be deactivated with:
 
     deactivate
 
- And it can be reactivated with:
+And it can be reactivated with:
 
- ..code-block:: sh
+.. code-block:: sh
 
     conda deactivate
     source venv/bin/activate

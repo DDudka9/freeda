@@ -27,7 +27,11 @@ Optional Controls
 
 FREEDA offers additional options to control the analysis. They can be used to include already-known information when running FREEDA or to fine tune analysis from previous FREEDA results.
 
-1. If there are
+1. If there is a duplication expected of one of the genes, check the "Duplication expected" box, which will <WHAT EXACTLY DOES THIS DO>.
+
+2. If there are known residues or regions in one of the genes, they can be labeled. The "start" and "end" columns mark amino acid residue numbers (where 1 is the N-terminal residue). The "label" column can be any string. These labels do not affect the FREEDA analysis, but they will be shown on the final PyMOL structure.
+
+3. If there are problems with specific genomes, they can be excluded with the "Exclude species" box. The input should be two letters for each species with spaces in between (for example, "Mp Rr" would exclude Mus pahari and Rattus rattus).
 
 Using FREEDA from the Command Line
 ----------------------------------
