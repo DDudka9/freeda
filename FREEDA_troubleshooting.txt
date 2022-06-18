@@ -982,3 +982,10 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 05_10_2022
 When NCBI updates an assembly (status "replaced") it gives an error when trying to download the genome
 -> make sure the reference is up to date
+
+06_14_2022
+#       0) Single matches are stiched together the opposite way (1st exon is last etc) for "for" contigs
+#                                       regardless on which strand ref gene is coded
+#                                                           -> test on Cenpl -> FIXED (global variables were the issue)
+#       0) Currently uniprot_id reported is just the last of possible_uniprot_ids list -> FIXED
+#       0) Convert the abbreviations back to long names for final results -> DONE

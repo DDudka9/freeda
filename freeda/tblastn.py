@@ -121,6 +121,22 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         logging.info(message)
         # make database
         make_blast_database(database_path, genome)
+
+        # validate that the database was generated
+        all_files = []
+        for root, dirs, files in os.walk(database_path, topdown=False):
+            for f in files:
+                all_files.append(f)
+
+        for file in all_files:
+            # look for indices
+            if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
+                message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
+                          " -> exiting the pipeline now...\n" % genome
+                logging.info(message)
+                genome_file_database = False
+                return genome_file_database
+
         # make sure to assign back this variable to TRUE
         genome_file_database = True
         return genome_file_database

@@ -11,6 +11,12 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 
 
 # TODO
+#       0) PCNT in primates has some duplicated domains -> ilke TACC3 -> cds doesnt 100% match gene in alignment
+#                   -> code a sliding window in input extractor to scan genomic sequence for duplicates
+#                   e.g. stretch of 30bp and then look for it in the cds -> if a match -> delete from cds
+#       0) Implement blast treshold ("More stringent search" - 80%)
+#       0) Drawback of using long contigs -> H3C1 has clusters of histone 3 genes, messes alignment
+#                   -> implement "Tandem duplication expecred" -> limit range of matches to e.g. 10kb
 #       0) FREEDA gets stuck sometimes - Ccnd3 Ap contig BDUI01012397.1__rev runs over 1h never aligns
 #                   -> same for Wasf2 Ay or Ap (cant remeber)
 #       0) Modify the check comparing cloned Rn to ensembl Rn -> surely takes indels into account (e.g. Vash2 Rn 49%)
@@ -19,7 +25,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                   a contig e.g. Tpx2 Mp LT608307.1_for
 #       0) Test blastn instead of tblastn -> maybe faster, less hits?
 #       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason
-#       0) Convert the abbreviations back to long names for final results -> DONE
 #       0) Suggest to users that first debugging tip is to clear all folders except Genomes (takes longer to regenerate)
 #       0) PRANK alignment of Dlgap5 leads to no positive selection with 12 species (does score with 16 though)
 #                               -> try improve MAFFT alignment by -maxiters 1000
@@ -36,10 +41,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #       0) User should check if a given site under positive selection is not at intron/exon boundery (might not be real)
 #       0) Get rid of ensembl check -> not informative?
 #       0) If species eliminated due to cds check in paml launcher -> best to not report the number of species on graph?
-#       0) Single matches are stiched together the opposite way (1st exon is last etc) for "for" contigs
-#                                       regardless on which strand ref gene is coded
-#                                                           -> test on Cenpl -> FIXED (global variables were the issue)
-#       0) Currently uniprot_id reported is just the last of possible_uniprot_ids list -> FIXED
 #       0) Best way to deal with single uncalled bases is to mask them as "-" -> test on Pahari Anapc15
 #       0) cite Wang and Han 2021 J Virol for Primates, Carnivora that span similar phylogeny
 #       "Pervasive Positive Selection on Virus Receptors Driven by Host-Virus Conflicts in Mammals"
@@ -63,7 +64,7 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                   -> I started punishing indels -> test on Izumo1, Izumo 3 and Haus8 -> decided against it finally?
 #       0) Possible issue with length of gene -> how TRIM5a human gene is soo long? Trim-214 in ensembl is
 #                   only 20k while I get over 200k linear seq -> check input from pyensembl
-#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long -< no clue why
+#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long -< no clue why but UTR is too plong most likely
 #       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
 #                                       : "A beginners guide to estimating the non-synonymous to
 #                                                 synonymous rate ratio of all protein-coding genes in a genome"
@@ -74,14 +75,12 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #                           -> indentity of 70% produces reliable alignments
 #       0) Lccr37a -> leucine rich repetitive protein -> example of protein FREEDA cannot analyse
 #       0) Get rid of the "another intron interpheres with introny check" for clarity
-#       0) Consider showing only 0.95 adaptive sites on structure if more than 20 sites
+#       0) Consider showing only 0.95 adaptive sites on structure if more than 20 sites -> no, that is not fair
 #                       or only 0.99 when more than 50 sites -> not sure
 #       0) Either disable the interpro domains or restrict them even more (too overlapping) -> not sure
 #       0) Change pr >= 0.9 residues to black if 0 -> DONE
 #       0) Make a file from the list of genomes -> will allow users to add more genomes are more is being sequenced
-#                   -> DONE
-#       0) Similar to Cenpn, terf2 rat is only 92% similar to ensembl but 100% identical to uniprot predited sequence
-#                   -> disable the check in the final freeda verison
+#                   -> DONE -> much better to just release new FREEDA app !!!
 #       0) General issue -> Traceback are not logged in, in case of crashing the GUI will not stop
 #                               -> confusing for user
 #                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
