@@ -120,7 +120,8 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                              " -> building database...\n" % (genome, expected_genome_file)
         logging.info(message)
         # make database
-        make_blast_database(database_path, genome)
+        #make_blast_database(database_path, genome)
+        make_blast_database_v2(database_path, genome)
 
         # validate that the database was generated
         all_files = []
@@ -153,7 +154,8 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         # download genome
         download_genome(genome, accession_nr, database_path)
         # make database
-        make_blast_database(database_path, genome)
+        #make_blast_database(database_path, genome)
+        make_blast_database_v2(database_path, genome)
 
         # check if genome was downloaded and unpacked successfully
         genome_found = False
@@ -260,3 +262,18 @@ def make_blast_database(database_path, genome):
     subprocess.call(make_database_nucl, stdout=open(os.devnull, 'wb'))  # mute log info
     subprocess.call(make_database_prot, stdout=open(os.devnull, 'wb'))  # mute log info
 
+
+def make_blast_database_v2(database_path, genome):
+    """ Makes a blast database based on genome fasta file using BioPython wrapper."""
+    from Bio.Blast.Applications import NcbimakeblastdbCommandline
+
+    genome_file = genome + ".fasta"
+    cline_nucl = NcbimakeblastdbCommandline(dbtype="nucl",
+                                       input_file=database_path + genome_file)
+    cline_prot = NcbimakeblastdbCommandline(dbtype="prot",
+                                       input_file=database_path + genome_file)
+
+    message = "\n                  Building blast database for genome : %s ..." % genome
+    logging.info(message)
+    stdout_nucl, stderr_nucl = cline_nucl()
+    stdout_prot, stderr_prot = cline_prot()

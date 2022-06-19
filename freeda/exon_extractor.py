@@ -83,10 +83,10 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
                 # index given genome
                 genome_index = genome_indexer.index_genome_database(wdir, genome_name)
                 # generate matches dataframe
-                matches = matches_generator.generate_matches(match_path, t, gene, genome_name)
+                matches = matches_generator.generate_matches(match_path, t, gene, genome_name, all_genes_dict)
                 # process the final dataframe
                 MSA_path = matches_processor.process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path,
-                                                             gene, genome_name, genome_index)
+                                                             gene, genome_name, genome_index, all_genes_dict)
                 # run MSA and write them into files
                 msa_aligner.run_msa(MSA_path)
                 # return potential exons for a current gene in current genome

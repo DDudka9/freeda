@@ -15,7 +15,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def generate_matches(match_path, t, gene, genome_name):
+def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
     """Generates matches based on the blast results"""
 
     columns = ["qseqid", "sseqid", "qstart", "qend", "sstart", "send",
@@ -30,7 +30,7 @@ def generate_matches(match_path, t, gene, genome_name):
                         "send": int,
                         "pident": float})
     # select matches above treshold (30% defult) and add template "strand" Series
-    selected_matches = threshold_matches(m_assigned_dataframe, t, gene, genome_name)
+    selected_matches = threshold_matches(m_assigned_dataframe, t, gene, genome_name, all_genes_dict)
     # sort matches by "sstart" column to be able to split indicated contigs
     sorted_selected_matches = selected_matches.sort_values(by=["sseqid", "sstart"])
     # reindex the rows to itertare over them easier
@@ -40,7 +40,7 @@ def generate_matches(match_path, t, gene, genome_name):
     d = make_contigs_dict(matches)
     dataframes = split_contigs_to_dataframes(matches, d)
     # split matches if further than most known mouse genes
-    concatenated_matches = split_large_contigs(dataframes).reset_index(drop=True)
+    concatenated_matches = split_large_contigs(dataframes, gene, all_genes_dict).reset_index(drop=True)
     matches = concatenated_matches.astype({"sstart": int, "send": int})
     
     # record all contigs and starts/ends for strand determination
@@ -64,8 +64,14 @@ def generate_matches(match_path, t, gene, genome_name):
     return matches
 
 
-def threshold_matches(matches, t, gene, genome_name):
+def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
     """Sets a dynamic threshold for matches depending on their number"""
+
+    # GUI is used to run FREEDA
+    if all_genes_dict:
+        # check if strict search is needed
+        if all_genes_dict[gene][3] is True:
+            t = 80
 
     # add empty "strand" column
     strand = ["for" for index in range(len(matches))]
@@ -128,11 +134,22 @@ def split_contigs_to_dataframes(matches, d):
     return dataframes
 
 
-def split_large_contigs(dataframes):
-    """Splits large contigs (where matches are >200kb apart)"""
+def split_large_contigs(dataframes, gene, all_genes_dict):
+    """Splits large contigs (where matches are 30kb apart as default)"""
     # Most mouse introns are smaller than 30kb
     # Long and Deutsch 1999 Nucleic Acids Research
-    
+
+    # default length
+    length = 30000
+    # GUI is used to run FREEDA
+    if all_genes_dict:
+        # check if long introns expected
+        if all_genes_dict[gene][2] is True:
+            length = 200000
+        # check if tandem duplication expected (overrides the long introns variable)
+        if all_genes_dict[gene][1] is True:
+            length = 10000
+
     list_new_matches = []
     for matches in dataframes:
         number = 1
@@ -145,11 +162,11 @@ def split_large_contigs(dataframes):
                 contig_name = row[0]
                 new_matches.iloc[index] = matches.iloc[index]
                 continue
-            if start - new_matches.iloc[index-1][1] < 200000:   # temporary from 30000
+            if start - new_matches.iloc[index-1][1] < length:   # temporary from 30000
                 new_matches.iloc[index] = matches.iloc[index]
                 new_matches.at[index, "sseqid"] = contig_name
                 continue
-            if start - new_matches.iloc[index-1][1] > 200000:   # temporary from 30000
+            if start - new_matches.iloc[index-1][1] > length:   # temporary from 30000
                 contig_name = row[0] + "__" + str(number)
                 number += 1
                 new_matches.iloc[index] = matches.iloc[index]

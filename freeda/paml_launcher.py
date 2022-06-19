@@ -28,6 +28,8 @@ from Bio import pairwise2
 from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from Bio.Phylo.PAML import codeml
+from Bio.Phylo.PAML.chi2 import cdf_chi2
 
 import datetime
 import time
@@ -598,9 +600,6 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
 def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     """Runs PAML by calling the control file"""
 
-    from Bio.Phylo.PAML import codeml
-    from Bio.Phylo.PAML.chi2 import cdf_chi2
-
     # change working directory to given PAML gene folder
     os.chdir(PAML_path)
 
@@ -663,7 +662,7 @@ def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     os.chdir(wdir)
     
     return M2a_M1a, M8_M7
-    
+
 
 def run_RAxML(gene, gene_folder_path, out_Gblocks):
     """Makes a gene tree using RAxML"""

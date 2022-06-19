@@ -252,6 +252,10 @@ def block_user_entries():
     dup4_button.configure(state="disabled")
     dup5_button.configure(state="disabled")
 
+    tandem_duplication1_button.configure(state="disabled")
+    long_introns1_button.configure(state="disabled")
+    strict_search1_button.configure(state="disabled")
+
     site11_start.configure(state="disabled")
     site11_end.configure(state="disabled")
     site11_label.configure(state="disabled")
@@ -331,6 +335,10 @@ def ublock_user_entries():
     dup3_button.configure(state="normal")
     dup4_button.configure(state="normal")
     dup5_button.configure(state="normal")
+
+    tandem_duplication1_button.configure(state="normal")
+    long_introns1_button.configure(state="normal")
+    strict_search1_button.configure(state="normal")
 
     site11_start.configure(state="normal")
     site11_end.configure(state="normal")
@@ -533,7 +541,8 @@ def freeda_pipeline():
         ref_species = clade.get()
         codon_frequencies = codon_freq.get()
         t = 60
-        all_genes_dict = {gene_name1.get(): [dup1_var.get(),
+        all_genes_dict = {gene_name1.get(): [dup1_var.get(), tandem_duplication1_var.get(),
+                                             long_introns1_var.get(), strict_search1_var.get(),
                                         [site11_label.get(), site11_start.get(), site11_end.get()],
                                         [site12_label.get(), site12_start.get(), site12_end.get()],
                                         [site13_label.get(), site13_start.get(), site13_end.get()]],
@@ -1131,15 +1140,24 @@ codon_freq_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
 codon_freq_frame.grid(column=3, row=0, sticky=(N, W, E, S), padx=5, pady=1)
 
 # create a gene 1 frame
-gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
 gene1_frame.grid(column=0, row=11, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene1_frame.columnconfigure(0, weight=3, minsize=50, uniform="group1")
 gene1_frame.columnconfigure((1, 2), weight=1, minsize=50, uniform="group1")
 gene1_frame.columnconfigure(3, weight=2, minsize=50, uniform="group1")
+# create a gene 1 name frame
+gene1_name_frame = ttk.Frame(gene1_frame, padding="1 1 1 1")
+gene1_name_frame.grid(column=0, row=11, columnspan=2, sticky=(N, W, E, S), padx=5, pady=1)
+# create a gene 1 duplication frame
+gene1_duplication_frame = ttk.Frame(gene1_frame, padding="1 1 1 1")
+gene1_duplication_frame.grid(column=0, row=12, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5, pady=1)
+# create a gene 1 introns frame
+gene1_introns_frame = ttk.Frame(gene1_frame, padding="1 1 1 1")
+gene1_introns_frame.grid(column=0, row=13, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5, pady=1)
 
 # create a gene 2 frame
-gene2_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene2_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
 gene2_frame.grid(column=0, row=14, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene2_frame.columnconfigure(0, weight=3, uniform="group1")
@@ -1147,7 +1165,7 @@ gene2_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene2_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene 3 frame
-gene3_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene3_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
 gene3_frame.grid(column=0, row=17, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene3_frame.columnconfigure(0, weight=3, uniform="group1")
@@ -1155,7 +1173,7 @@ gene3_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene3_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene 4 frame
-gene4_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene4_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
 gene4_frame.grid(column=0, row=18, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene4_frame.columnconfigure(0, weight=3, uniform="group1")
@@ -1163,7 +1181,7 @@ gene4_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene4_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene 5 frame
-gene5_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene5_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
 gene5_frame.grid(column=0, row=19, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 gene5_frame.columnconfigure(0, weight=3, uniform="group1")
@@ -1171,7 +1189,7 @@ gene5_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene5_frame.columnconfigure(3, weight=2, uniform="group1")
 
 # create a gene working directory frame
-wdir_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+wdir_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
 wdir_frame.grid(column=0, row=20, columnspan=5, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 wdir_frame.columnconfigure(0, weight=3, uniform="group1")
@@ -1179,7 +1197,7 @@ wdir_frame.columnconfigure(1, weight=5, uniform="group1")
 wdir_frame.columnconfigure((2, 3), weight=2, uniform="group1")
 
 # create exclude frame
-exclude_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+exclude_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
 exclude_frame.grid(column=0, row=21, columnspan=5, sticky=(N, W, E, S), padx=5, pady=1)
 # let all columns resize
 exclude_frame.columnconfigure(0, weight=3, uniform="group1")
@@ -1244,7 +1262,7 @@ check_excluded_species = (settings_frame.register(check_excluded_species), "%P",
 
 # ERRORS
 error_message1 = StringVar()
-message1 = "Invalid gene name (follow pattern: Cenpo for mouse and : CENPO for others)"
+message1 = "Invalid gene name (follow pattern: Cenpo for mouse; CENPO for other clades)"
 error_message2 = StringVar()
 message2 = "Invalid residue number (follow pattern: 100)"
 # error labels
@@ -1293,12 +1311,27 @@ ttk.Label(input_frame, text="label").grid(column=3, row=9)
 
 # USER INPUT GENE 1
 gene_name1 = StringVar()
-ttk.Label(gene1_frame, text="Gene name").grid(column=0, row=11, padx=6, pady=1, sticky=(W))
-name1 = ttk.Entry(gene1_frame, textvariable=gene_name1, validate="all", validatecommand=check_gene_name_wrapper)
-name1.grid(column=0, row=12, padx=5, pady=1, sticky=(W))
+ttk.Label(gene1_name_frame, text="Gene name").grid(column=0, row=0, padx=1, pady=1, sticky=(W))
+name1 = ttk.Entry(gene1_name_frame, textvariable=gene_name1, width=12, validate="all",
+                  validatecommand=check_gene_name_wrapper)
+name1.grid(column=1, row=0, padx=5, pady=1, sticky=(W))
 dup1_var = BooleanVar()
-dup1_button = ttk.Checkbutton(gene1_frame, text="Duplication expected", variable=dup1_var, onvalue=1, offvalue=0)
-dup1_button.grid(column=0, row=13, padx=6, pady=1, sticky=(W))
+dup1_button = ttk.Checkbutton(gene1_duplication_frame, text="Duplicated",
+                              variable=dup1_var, onvalue=1, offvalue=0)
+dup1_button.grid(column=0, row=0, padx=2, pady=1, sticky=(W))
+tandem_duplication1_var = BooleanVar()
+tandem_duplication1_button = ttk.Checkbutton(gene1_duplication_frame, text="Tandem duplicat.",
+                                       variable=tandem_duplication1_var, onvalue=1, offvalue=0)
+tandem_duplication1_button.grid(column=1, row=0, padx=2, pady=1, sticky=(W))
+long_introns1_var = BooleanVar()
+long_introns1_button = ttk.Checkbutton(gene1_introns_frame, text="Long introns",
+                                       variable=long_introns1_var, onvalue=1, offvalue=0)
+long_introns1_button.grid(column=0, row=0, padx=2, pady=1, sticky=(W))
+strict_search1_var = BooleanVar()
+strict_search1_button = ttk.Checkbutton(gene1_introns_frame, text="Strict search",
+                                       variable=strict_search1_var, onvalue=1, offvalue=0)
+strict_search1_button.grid(column=1, row=0, padx=2, pady=1, sticky=(W))
+
 
 s11_start = StringVar()
 s11_end = StringVar()
