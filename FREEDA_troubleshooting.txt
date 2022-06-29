@@ -989,3 +989,16 @@ When NCBI updates an assembly (status "replaced") it gives an error when trying 
 #                                                           -> test on Cenpl -> FIXED (global variables were the issue)
 #       0) Currently uniprot_id reported is just the last of possible_uniprot_ids list -> FIXED
 #       0) Convert the abbreviations back to long names for final results -> DONE
+
+06/28/2022
+
+Figure out why Spc25 and Spcs2 are both taken in uniprot ID search
+    -> because Spcs2 is an actual gene with an alternative name Spc25
+    -> solved this specific case by counting the number of times the name Spc25 appears in each uniprot entry
+
+"Tandem duplication button" -> limit the overhags to 10kb (check on H3C1 histone gene) -> DONE
+
+Add "Strict search" -> 80% threshold -> DONE
+
+Restrict contig splitting back to 30kb (from 200kb)
+    Add "Long introns" button -> 200kb (advised for >50kb introns) -> DONE

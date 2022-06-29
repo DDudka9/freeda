@@ -161,20 +161,56 @@ def get_uniprot_id(ref_species, gene):
     elif ref_species == "Gg":
         ref_species_number = "9031"
 
-    possible_uniprot_ids = set()
+    possible_uniprot_ids = []
+    name_count = 0
+    last_id = None
 
+    query = "https://rest.uniprot.org/uniprotkb/search?query=gene_exact:" + gene + "+AND+taxonomy_id:" + \
+            ref_species_number + "&format=tsv"
+
+    # get possible uniprot ids
+    try:  # need to use exception handling as sometimes error in connecting to url
+        data = requests.get(query)
+        data.raise_for_status()  # Raises an HTTPError if the return code is 4xx or 5xx
+        data_text = data.text  # gets a string from tab format
+        data_list = data_text.split("\n")
+        for element in data_list:
+            # it might help to resolve multiple proteins under same alternative gene name
+            current_name_count = element.count(gene) + element.count(gene.upper())
+            # uniprot ID is always under "Entry" which is the first element
+            possible_id = element.split("\t")[0]
+            if current_name_count > name_count:
+                name_count = current_name_count
+                last_id = possible_id
+            if possible_id != "Entry":
+                possible_uniprot_ids.append(possible_id)
+
+        # put the id with highest probability (name_count) last -> make a dict (remove duplicates) from list and back
+        # to list, then append last_id
+        id_list = list(dict.fromkeys(possible_uniprot_ids))
+        # need to get rid of the last id to prevent duplications
+        id_list.remove(last_id)
+        id_list.append(last_id)
+        possible_uniprot_ids = id_list
+
+        # there is an empty row sometimes
+        possible_uniprot_ids.remove("")
+    except HTTPError:
+        pass
+
+    # DEPRECATED as of 06/28/2022 ???
     # generate a search for given gene
-    u = UniProt(verbose=False)
-    data = u.search(gene + "+and+taxonomy:" + ref_species_number, frmt="tab", limit=10,
-             columns="genes,length,id")
+    #u = UniProt(verbose=False)
+    #data = u.search(gene + "+and+taxonomy:" + ref_species_number, frmt="tab", limit=10,
+    #         columns="genes,length,id")
 
-    data_list = data.split("\n")
-    for line in data_list:
-        elements = line.split("\t")
-        names = elements[0].split(" ")
-        for n in names:
-            if gene.upper() == n.upper():
-                possible_uniprot_ids.add(elements[2])
+    #data_list = data.split("\n")
+    #for line in data_list:
+    #    elements = line.split("\t")
+    #    names = elements[0].split(" ")
+    #    for n in names:
+    #        if gene.upper() == n.upper():
+    #            possible_uniprot_ids.add(elements[2])
 
     return possible_uniprot_ids
 
@@ -198,6 +234,7 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
     model_seq = ""
     gene_filepath = wdir + gene + "_" + ref_species + ".pdb"
 
+    valid_uniprot_ids = 0
     for uniprot_id in possible_uniprot_ids:
         url = "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + "-F1-model_v1.pdb"
         try:
@@ -206,8 +243,15 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
             with open(gene_filepath, "wb") as f:
                 f.write(r.content)
             retrieved_uniprot_id = uniprot_id
+            valid_uniprot_ids += 1
         except HTTPError:
             pass
+
+    # more than one uniprot id is associated with Alpha Fold address (likely two proteins share a gene name)
+    # e.g. Spc25 and Spcs2 (alt. name Spc25)
+    if valid_uniprot_ids > 1 :
+        message = "...WARNING... : More than one valid protein detected under provided gene name: %s\n" % gene
+        logging.info(message)
 
     if not os.path.isfile(gene_filepath):
         message = "...WARNING... : Structure prediction for gene: %s HAS NOT BEEN FOUND " \

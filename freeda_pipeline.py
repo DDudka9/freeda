@@ -241,7 +241,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
             if not model_matches_input:
                 print("...WARNING... : No matching structure prediction model is available for : %s "
                       "-> cannot overlay FREEDA results onto a 3D structure\n" % gene)
-                print("...WARNING... : gene will still be analyzed using PAML but without 3D structure overlay\n")
+                print("...WARNING... : Gene will still be analyzed using PAML but without 3D structure overlay\n")
 
 
     # ----------------------------------------#
@@ -365,7 +365,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Hs")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=75)
     parser.add_argument("-f", "--codon_frequencies",

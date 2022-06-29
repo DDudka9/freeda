@@ -119,9 +119,12 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         message = "\nNOT detected database for : %s but %s file is present" \
                              " -> building database...\n" % (genome, expected_genome_file)
         logging.info(message)
+
         # make database
-        #make_blast_database(database_path, genome)
-        make_blast_database_v2(database_path, genome)
+        make_blast_database(database_path, genome)
+        logging.exception("\n\n...FATALERROR...:Something went wrong (see below)...\n\n")
+
+        #make_blast_database_v3(database_path, genome)
 
         # validate that the database was generated
         all_files = []
@@ -154,8 +157,11 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         # download genome
         download_genome(genome, accession_nr, database_path)
         # make database
-        #make_blast_database(database_path, genome)
-        make_blast_database_v2(database_path, genome)
+
+        make_blast_database(database_path, genome)
+        logging.exception("\n\n...FATALERROR...:Something went wrong (see below)...\n\n")
+
+        #make_blast_database_v3(database_path, genome)
 
         # check if genome was downloaded and unpacked successfully
         genome_found = False
@@ -268,12 +274,43 @@ def make_blast_database_v2(database_path, genome):
     from Bio.Blast.Applications import NcbimakeblastdbCommandline
 
     genome_file = genome + ".fasta"
-    cline_nucl = NcbimakeblastdbCommandline(dbtype="nucl",
-                                       input_file=database_path + genome_file)
-    cline_prot = NcbimakeblastdbCommandline(dbtype="prot",
-                                       input_file=database_path + genome_file)
+    cline_nucl = NcbimakeblastdbCommandline(cmd=pyinstaller_compatibility.resource_path("makeblastdb"),
+                                            dbtype="nucl",
+                                            input_file=database_path + genome_file)
+    cline_prot = NcbimakeblastdbCommandline(cmd=pyinstaller_compatibility.resource_path("makeblastdb"),
+                                            dbtype="prot",
+                                            input_file=database_path + genome_file)
 
     message = "\n                  Building blast database for genome : %s ..." % genome
     logging.info(message)
     stdout_nucl, stderr_nucl = cline_nucl()
     stdout_prot, stderr_prot = cline_prot()
+
+
+def make_blast_database_v3(database_path, genome):
+    """ Makes a blast database based on genome fasta file."""
+
+    from subprocess import Popen, PIPE
+
+    genome_file = genome + ".fasta"
+    make_database_nucl = [pyinstaller_compatibility.resource_path("makeblastdb"),
+                          "-in", database_path + genome_file, "-dbtype", "nucl"]
+    make_database_prot = [pyinstaller_compatibility.resource_path("makeblastdb"),
+                          "-in", database_path + genome_file, "-dbtype", "prot"]
+
+    message = "\n                  Building blast database for genome : %s ..." % genome
+    logging.info(message)
+
+    x = Popen(make_database_nucl, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    output_x, err_x = x.communicate(b"input data that is passed to subprocess' stdin")
+    rc_x = x.returncode
+    logging.info(rc_x)
+    logging.info(output_x)
+    logging.info(err_x)
+
+    y = Popen(make_database_prot, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    output_y, err_y = y.communicate(b"input data that is passed to subprocess' stdin")
+    rc_y = y.returncode
+    logging.info(rc_y)
+    logging.info(output_y)
+    logging.info(err_y)

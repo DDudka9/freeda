@@ -405,7 +405,8 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
 
         # paint user residues if indicated
         if all_genes_dict:
-            dup, label1, label2, label3 = all_genes_dict[gene]  # dup variable not used here
+            dup, tandem_dup, long_introns, strict_search, \
+            label1, label2, label3 = all_genes_dict[gene]  # dup, tandem_dup, long_introns, strict_search not used here
             # make sure label is present, end is bigger than start, end is within the protein length
             # do not allow start larger than end; do not allow end larger than total length
 
