@@ -122,9 +122,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
 
         # make database
         make_blast_database(database_path, genome)
-        logging.exception("\n\n...FATALERROR...:Something went wrong (see below)...\n\n")
-
-        #make_blast_database_v3(database_path, genome)
 
         # validate that the database was generated
         all_files = []
@@ -159,9 +156,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         # make database
 
         make_blast_database(database_path, genome)
-        logging.exception("\n\n...FATALERROR...:Something went wrong (see below)...\n\n")
-
-        #make_blast_database_v3(database_path, genome)
 
         # check if genome was downloaded and unpacked successfully
         genome_found = False
