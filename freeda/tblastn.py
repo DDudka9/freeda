@@ -75,10 +75,24 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
     return
 
 
+def remove_empty_files(database_path):
+    """Checks if there are any empty files (failed downloads) from previous runs and eliinates them."""
+
+    # get all files in the genomes directory
+    all_files = [database_path + f for f in os.listdir(database_path) if os.path.isfile(os.path.join(database_path, f))]
+    # check is any of them is empty
+    for f in all_files:
+        if not os.stat(f).st_size:
+            os.remove(f)
+
+
 def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False):
     """Checks if a given genome is present. Unpacks and unzips genomes downloaded from NCBI Assembly.
     Non-ncbi assemblies must be prepared as ".fasta" files conform with "genomes.txt" names.
     It also looks for reference genome if key-only argument reference_genome is invoked."""
+
+    # check for empty files (failed downloads)
+    remove_empty_files(database_path)
 
     genome_file_database = True
 
@@ -262,9 +276,10 @@ def make_blast_database(database_path, genome):
     subprocess.call(make_database_nucl, stdout=open(os.devnull, 'wb'))  # mute log info
     subprocess.call(make_database_prot, stdout=open(os.devnull, 'wb'))  # mute log info
 
+"""
 
 def make_blast_database_v2(database_path, genome):
-    """ Makes a blast database based on genome fasta file using BioPython wrapper."""
+    Makes a blast database based on genome fasta file using BioPython wrapper.
     from Bio.Blast.Applications import NcbimakeblastdbCommandline
 
     genome_file = genome + ".fasta"
@@ -282,7 +297,7 @@ def make_blast_database_v2(database_path, genome):
 
 
 def make_blast_database_v3(database_path, genome):
-    """ Makes a blast database based on genome fasta file."""
+    Makes a blast database based on genome fasta file
 
     from subprocess import Popen, PIPE
 
@@ -308,3 +323,5 @@ def make_blast_database_v3(database_path, genome):
     logging.info(rc_y)
     logging.info(output_y)
     logging.info(err_y)
+
+"""

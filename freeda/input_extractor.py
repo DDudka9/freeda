@@ -6,7 +6,6 @@ Created on Fri Jul  9 22:47:43 2021
 """
 
 from freeda import tblastn, genomes_preprocessing, pyinstaller_compatibility, fasta_reader
-from bioservices import UniProt
 from Bio import SeqIO
 import pyensembl
 import pybedtools
@@ -15,6 +14,36 @@ import shutil
 import logging
 import requests
 from requests.exceptions import HTTPError
+
+
+def get_gene_names(wdir):  # THIS IS ONLY FOR TESTING
+    """Gets sample of gene names from ensembl using pyensembl package"""
+
+    import re
+    release = 104
+    species = "homo sapiens"
+    ensembl = pyensembl.EnsemblRelease(release, species)
+    ensembl.download()  # this is suppose to bypass installing the release from outside python
+    ensembl.index()  # this is suppose to bypass installing the release from outside python
+
+    all_genes_ensembl = ensembl.gene_names()
+    with open(wdir + "proteins_temp.txt", "w") as f:
+
+        genes = []
+        for i in range(5000, len(all_genes_ensembl), 150):
+            gene = all_genes_ensembl[i]
+            if not gene.startswith("MIR") \
+                    and not gene.startswith("LINC") \
+                    and "-" not in gene \
+                    and "PS" not in gene \
+                    and "OS" not in gene \
+                    and "IK" not in gene \
+                    and "SNO" not in gene \
+                    and "GM" not in gene \
+                    and "RNA" not in gene \
+                    and not re.search(r"P\d{0,2}$", gene):  # pseudogenes often or dont have transcripts
+                genes.append(gene)
+                f.write(gene + "\n")
 
 # PYINSTALLER: Set bedtools path to a bedtools folder in the FREEDA directory.
 if pyinstaller_compatibility.is_bundled():
@@ -189,8 +218,9 @@ def get_uniprot_id(ref_species, gene):
         # to list, then append last_id
         id_list = list(dict.fromkeys(possible_uniprot_ids))
         # need to get rid of the last id to prevent duplications
-        id_list.remove(last_id)
-        id_list.append(last_id)
+        if last_id:
+            id_list.remove(last_id)
+            id_list.append(last_id)
         possible_uniprot_ids = id_list
 
         # there is an empty row sometimes
@@ -411,7 +441,7 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
 
     # find reference gene sequence
     extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id, ref_genomes_path, ref_genome_name,
-                 ref_genome_contigs_dict, gene, transcript, UTR_3, cds_sequence_expected)
+                 ref_genome_contigs_dict, gene, transcript, UTR_5, UTR_3, cds_sequence_expected)
 
     # find reference exons sequence
     input_correct, microexon_present, microexons, missing_bp_list = extract_exons(wdir, ref_species, gene,
@@ -429,6 +459,64 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
         input_correct = False
 
     return input_correct, model_matches_input, microexon_present, microexons
+
+
+def trim_long_gene(wdir, ref_species, gene, UTR_5, UTR_3):
+    """Maps UTRs within the gene sequence of the reference gene; eliminates if > 2000bp"""
+
+    path_to_gene = wdir + "Genes/" + gene + "_" + ref_species + "_gene.fasta"
+
+    # check if UTRs are not too short (too many off target matches)
+
+    # get gene sequence
+    with open(path_to_gene, "r") as f:
+        file = f.readlines()
+        header = file[0]
+        seq = file[1].upper()
+
+    # short UTRs may align randomly
+    if len(UTR_5) > 50:
+        # use only the first 50 bp to map UTR
+        UTR_5 = UTR_5.upper()[0:51]
+        # map 5' UTR using sliding window
+        for position in range(len(seq)-len(UTR_5)+1):
+            if seq[position:position+len(UTR_5)] == UTR_5:
+                # check if there is room to trim
+                if position > 2000:
+                    message = "\n...NOTE... : Reference locus for gene : %s was trimmed at 5' (performance)" % gene
+                    logging.info(message)
+                    trim_position = position - 2000
+                    print("Length trimmed at 5' : %s" % str(trim_position))
+                    # trim the gene sequence at its 5'
+                    seq = seq[trim_position::]
+                    break
+                break
+
+    # short UTRs may align randomly
+    if len(UTR_3) > 50:
+        # use only the last 50 bp to map UTR
+        UTR_3 = UTR_3.upper()[len(UTR_3)-50::]
+        # map 3' UTR using sliding window
+        locus_length_3 = len(seq)
+        for position in range(len(seq)-len(UTR_3)+1):
+            # represents how much sequence is left
+            locus_length_3 -= 1
+            if seq[position:position+len(UTR_3)] == UTR_3:
+                # check if there is room to trim
+                if locus_length_3 - position - len(UTR_3) > 2000:
+                    message = "\n...NOTE... : Reference locus for gene : %s was trimmed at 3' (performance)" % gene
+                    logging.info(message)
+                    trim_position = position + len(UTR_3) + 2000
+                    print("Length trimmed at 3' : %s" % str(len(seq)-trim_position))
+                    # trim the gene sequence at its 3'
+                    seq = seq[0:trim_position+1]
+                    break
+                break
+
+    # overwrite the gene sequence
+    with open(path_to_gene, "w") as f:
+        f.write(header)
+        f.write(seq)
 
 
 def check_exons_gene_compatibility(wdir, ref_species, gene):
@@ -666,7 +754,7 @@ def get_single_exon(ref_species, gene, ref_genome_contigs_dict, ref_genomes_path
 
 def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, gene_id,
                  ref_genomes_path, ref_genome_name, ref_genome_contigs_dict, gene,
-                 transcript, UTR_3, cds_sequence_expected):
+                 transcript, UTR_5, UTR_3, cds_sequence_expected):
     """Extracts gene sequence based on Genome object"""
 
     # list all genes in contig
@@ -718,6 +806,8 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
                         w.write("\n" + file[1] + "A" + "A")  # TGA or TAA + placeholder bp
                     else:
                         w.write("\n" + file[1] + "G" + "G")  # TAG + placeholder bp
+
+    trim_long_gene(wdir, ref_species, gene, UTR_5, UTR_3)
 
 
 def parse_sequence(ref_species, output_path, fasta_sequence, gene, transcript, strand, sequence_type):

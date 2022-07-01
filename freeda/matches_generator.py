@@ -10,6 +10,7 @@ of genomic loci of interest
 
 """
 
+import os
 import pandas as pd
 import logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -31,6 +32,14 @@ def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
                         "pident": float})
     # select matches above treshold (30% defult) and add template "strand" Series
     selected_matches = threshold_matches(m_assigned_dataframe, t, gene, genome_name, all_genes_dict)
+    # do not allow the dataframe to be empty
+    if selected_matches.empty:
+        os.remove(match_path)
+        message = "\nNo matches pass the used blast threshold (%s percent) for gene : %s in %s -> species removed" \
+                  % (str(t), gene, genome_name)
+        print(message)
+        logging.info(message)
+        return selected_matches
     # sort matches by "sstart" column to be able to split indicated contigs
     sorted_selected_matches = selected_matches.sort_values(by=["sseqid", "sstart"])
     # reindex the rows to itertare over them easier
@@ -138,8 +147,8 @@ def split_large_contigs(dataframes, gene, all_genes_dict):
     """Splits large contigs (where matches are 30kb apart as default)"""
     # Most mouse introns are smaller than 30kb
     # Long and Deutsch 1999 Nucleic Acids Research
-
     # default length
+
     length = 30000
     # GUI is used to run FREEDA
     if all_genes_dict:
@@ -155,7 +164,7 @@ def split_large_contigs(dataframes, gene, all_genes_dict):
         number = 1
         # make an empty matches dataframe template to avoid copying the orginal
         new_matches = pd.DataFrame().reindex_like(matches)
-        # populate the new dataframe with new contig names whenever > 30kb
+        # populate the new dataframe with new contig names whenever > length
         for index, row in matches.iterrows():
             start = row[1]
             if index == 0:
