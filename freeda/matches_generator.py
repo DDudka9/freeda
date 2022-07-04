@@ -35,8 +35,8 @@ def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
     # do not allow the dataframe to be empty
     if selected_matches.empty:
         os.remove(match_path)
-        message = "\nNo matches pass the used blast threshold (%s percent) for gene : %s in %s -> species removed" \
-                  % (str(t), gene, genome_name)
+        message = "\n...WARNING... No matches pass the used blast threshold (%s percent) for gene : " \
+                  "%s in %s -> species removed" % (str(t), gene, genome_name)
         print(message)
         logging.info(message)
         return selected_matches

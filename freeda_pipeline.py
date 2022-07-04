@@ -208,10 +208,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
         # stop pipeline if the reference genome is absent
         if not ref_genome_present:
-            print("\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...\n"
-                  "\n   Make sure you downloaded it into ../Data/Reference_genomes from "
-                  " https://www.ncbi.nlm.nih.gov/assembly -> (mouse: GCA_000001635.8; human: GCA_000001405.28) -> "
-                  "GenBank -> Genomic FASTA(.fna)")
+            print("\n...FATAL ERROR... : There is no reference genome detected -> exiting the pipeline now...")
             return
 
         # get names of

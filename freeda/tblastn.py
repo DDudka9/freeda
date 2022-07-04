@@ -86,6 +86,120 @@ def remove_empty_files(database_path):
             os.remove(f)
 
 
+def check_genome_downloads(ref_species, database_path, genome, zip=False):
+    """Removes failed downloads -> .zip and .fasta files."""
+
+    # check for zip files (should be absent)
+    if zip:
+        if os.path.exists(database_path + genome + ".zip"):
+            os.remove(database_path + genome + ".zip")
+            return False
+        else:
+            return True
+
+    # fasta files size (-100 000 bytes)
+    rodents = {"MusMusculus_genome": 2762231583,  # zip 870318080
+             "MusSpicilegus_genome": 2530495171,  # zip 786432000
+             "MusSpretus_genome": 2658802980,  # zip 781189120
+             "MusCaroli_genome": 2585244504,  # zip 754974720,
+             "MusMinutoides_genome": 2876597405,  # zip 807403520
+             "MusPahari_genome": 2506109361,  # zip 744488960
+             "ApodemusSylvaticus_genome": 3860843764,  # zip 744488960
+             "ApodemusSpeciosus_genome": 3576911245,  # zip 723517440
+             "HylomyscusAlleni_genome": 2268841987,  # zip 734003200
+             "PraomysDelectorum_genome": 2461069712,  # zip 786432000
+             "MastomysNatalensis_genome": 2548983787,  # zip 807403520
+             "MastomysCoucha_genome": 2538410655,  # zip 765460480
+             "GrammomysDolichurus_genome": 2168341549,  # zip 692060160
+             "GrammomysSurdaster_genome": 2444834577,  # zip 786432000
+             "ArvicanthisNiloticus_genome": 2528074480,  # zip 807403520
+             "RhabdomysDilectus_genome": 2288892761,  # zip 713031680
+             "RhynchomysSoricoides_genome" : 2211968598,  # zip 713031680
+             "RattusRattus_genome": 2412685692,  # zip 786432000
+             "RattusNorvegicus_genome": 2906067117}  # zip 891289600
+
+    primates = {"HomoSapiens_genome": 3138414431,
+             "PanTroglodytes_genome": 3062328323,
+             "GorillaGorilla_genome": 3083663602,
+             "PongoAbelli_genome": 3103792067,
+             "NomascusLeucogenys_genome": 2879637870,
+             "HylobatesMoloch_genome": 2885571806,
+             "CercopithecusMona_genome": 2939174695,
+             "MacacaMulatta_genome": 3075206655,
+             "PapioAnubis_genome": 2906552752,
+             "ChlorocebusSabaeus_genome": 2975174619,
+             "TrachypithecusFrancoisi_genome": 2938846753,
+             "PiliocolobusTephrosceles_genome": 3080829369,
+             "PitheciaPithecia_genome": 3060979898,
+             "AotusNancymaae_genome": 2900243235,
+             "PlecturocebusDonacophilus_genome": 3112365802,
+             "AlouattaPalliata_genome": 3188439879,
+             "CallithrixJacchus_genome": 2761618951,
+             "SaimiriBoliviensis_genome": 2684668098,
+             "AtelesGeoffroyi_genome": 3020749703}
+
+    carnivora = {"CanisFamiliaris_genome": 2705909865,
+           "UrsusMaritimus_genome": 2359879905,
+           "MiroungaLeonina_genome": 2447526042,
+           "OdobenusRosmarus_genome": 2430488797,
+           "ZalophusCalifornianus_genome": 2439711162,
+           "AilurusFulgens_genome": 2373290453,
+           "ProcyonLotor_genome": 2283274334,
+           "LutraLutra_genome": 2365629721,
+           "SpilogaleGracilis_genome": 2540140529,
+           "ParadoxurusHermaphroditus_genome": 2559496470,
+           "CryptoproctaFerox_genome": 2539739378,
+           "SuricataSuricatta_genome": 2389361575,
+           "HyaenaHyaena_genome": 2512114800,
+           "FelisCatus_genome": 2486898359}
+
+    phasianidae = {"GallusGallus_genome": 1248683961,
+               "BambusicolaThoracicus_genome": 1061115573,
+               "AlectorisRufa_genome": 1041225438,
+               "PavoMuticus_genome": 1074499003,
+               "MeleagrisGallopavo_genome": 1158971686,
+               "CentrocercusUrophasianus_genome": 1023355947,
+               "LyrurusTetrix_genome": 748849483,
+               "LagopusLeucura_genome": 1029379726,
+               "TympanuchusCupido_genome": 997281378,
+               "ChrysolophusPictus_genome": 1038257264,
+               "PhasianusColchicus_genome": 1034344338,
+               "CrossoptilonMantchuricum_genome": 1026225886,
+               "SyrmaticusMikado_genome": 1086380439,
+               "CoturnixJaponica_genome": 939336855}
+
+    # define clade
+    if ref_species in ["Mm", "Rn"]:
+        genomes = rodents
+    elif ref_species in ["Hs"]:
+        genomes = primates
+    elif ref_species in ["Cf", "Fc"]:
+        genomes = carnivora
+    elif ref_species in ["Gg"]:
+        genomes = phasianidae
+
+    genome_file = False
+    # check if genome fasta file was downloaded and unpacked successfully
+    for root, dirs, files in os.walk(database_path, topdown=False):
+        for file in files:
+            if file == genome + ".fasta":
+                # check size
+                if os.stat(database_path + genome + ".fasta").st_size < genomes[genome]:
+                    # partial fasta file -> remove
+                    message = "\n...NOTE... : Partial genome file : %s.fasta detected: " \
+                              "\n     -> removing..." % genome
+                    logging.info(message)
+                    os.remove(database_path + genome + ".fasta")
+                    return genome_file
+                # complete fasta file
+                else:
+                    genome_file = True
+                    return genome_file
+
+    # no fasta file
+    return genome_file
+
+
 def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=False):
     """Checks if a given genome is present. Unpacks and unzips genomes downloaded from NCBI Assembly.
     Non-ncbi assemblies must be prepared as ".fasta" files conform with "genomes.txt" names.
@@ -94,148 +208,164 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
     # check for empty files (failed downloads)
     remove_empty_files(database_path)
 
-    genome_file_database = True
-
     # if function called by input extractor module not tblastn module
     if ref_genome is True:
         ref_genome_path = database_path
-    
-    # define expected files
-    zip_file = genome + ".zip"
-    expected_genome_file = genome + ".fasta"
-    
+
     # get info on all files available
     all_files = []
     for root, dirs, files in os.walk(database_path, topdown=False):
         for f in files:
             all_files.append(f)
 
-    # there are no genomes in the folder
-    if not all_files:
-        all_files.append("empty")
-    
-    # check if genome database is present
-    for file in all_files:
-        # look for indices
-        if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
-            genome_file_database = False
+    ### --- Getting the non-reference genomes --- ###
 
-    # move on to next genome if database present
-    if not ref_genome and genome_file_database is True:
-        
-        message = "\nGenome : %s blast database already exists" % genome
-        logging.info(message)
-        return genome_file_database
-    
-    # build database on existing genome fasta file if present
-    if not ref_genome and expected_genome_file in all_files:
+    if not ref_genome:
 
-        message = "\nNOT detected database for : %s but %s file is present" \
-                             " -> building database...\n" % (genome, expected_genome_file)
-        logging.info(message)
+        genome_file_databases = False
 
-        # make database
-        make_blast_database(database_path, genome)
-
-        # validate that the database was generated
-        all_files = []
-        for root, dirs, files in os.walk(database_path, topdown=False):
-            for f in files:
-                all_files.append(f)
-
-        for file in all_files:
-            # look for indices
-            if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
-                message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
-                          " -> exiting the pipeline now...\n" % genome
-                logging.info(message)
-                genome_file_database = False
-                return genome_file_database
-
-        # make sure to assign back this variable to TRUE
-        genome_file_database = True
-        return genome_file_database
-    
-    # download the genome as a tar file if both database and tar are missing
-    if not ref_genome and genome_file_database is False and zip_file not in all_files:
-
-        message = "\nGenome : %s blast database does not exist" \
-              " -> downloading and decompressing the genome (it might take a couple of minutes)...\n" % genome
-        logging.info(message)
-
-        all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
-        accession_nr = [names[2] for names in all_genomes if genome in names][0]
-        # download genome
-        download_genome(genome, accession_nr, database_path)
-        # make database
-
-        make_blast_database(database_path, genome)
-
-        # check if genome was downloaded and unpacked successfully
-        genome_found = False
-        for root, dirs, files in os.walk(database_path, topdown=False):
-            for file in files:
-                if file == genome + ".fasta":
-                    genome_found = True
-
-        # exit pipeline if fasta genome absent
-        if not genome_found:
-            genome_file_database = False
-            message = "...FATAL_ERROR... : Genome : %s failed to download or decompress" \
-                      " -> exiting the pipeline now...\n" % genome
+        # check if genome database is present (most cases)
+        if genome + ".fasta.pal" in all_files and genome + ".fasta.nin" in all_files:
+            message = "\nGenome : %s blast database already exists" % genome
             logging.info(message)
-            return genome_file_database
+            genome_file_databases = True
+            return genome_file_databases
 
-        # validate that the database was generated
-        all_files = []
-        for root, dirs, files in os.walk(database_path, topdown=False):
-            for f in files:
-                all_files.append(f)
-
-        for file in all_files:
-            # look for indices
-            if expected_genome_file + ".pal" not in all_files and expected_genome_file + ".nin" not in all_files:
-                message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
-                      " -> exiting the pipeline now...\n" % genome
-                logging.info(message)
-                genome_file_database = False
-                return genome_file_database
-
-        genome_file_database = True
-
-        # fasta file and databases are present for the genome
-        if genome_found and genome_file_database is True:
-            genome_file_database = True
-            message = "\nGenome : %s was downloaded and decompressed successfully" % genome
+        # check if a compressed zip file from previous run is present (and remove)
+        if not check_genome_downloads(ref_species, database_path, genome, zip=True):
+            message = "\n...NOTE... : Detected compressed genome file : %s.zip from a previous run" \
+                      "\n   -> removed..." % genome
             logging.info(message)
-            return genome_file_database
 
-    # unpack and decompress reference genome
+        # complete fasta file present but no databases
+        if check_genome_downloads(ref_species, database_path, genome):
+            message = "\n...NOTE... : Genome : %s.fasta file already exists but blast databases are missing" % genome
+            logging.info(message)
+
+            # proceed to making databases
+            make_blast_database(database_path, genome)
+
+            # validate that the database was generated
+            all_files = []
+            for root, dirs, files in os.walk(database_path, topdown=False):
+                for f in files:
+                    all_files.append(f)
+
+            # failed to build databases
+            if genome + ".fasta.pal" not in all_files or genome + ".fasta.nin" not in all_files:
+                message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
+                              "\n     -> exiting the pipeline now..." % genome
+                logging.info(message)
+                return genome_file_databases
+
+            # successful build
+            else:
+                message = "\nGenome : %s was downloaded and decompressed successfully" \
+                              "\n        -> blast databases were built successfully" % genome
+                logging.info(message)
+                genome_file_databases = True
+                return genome_file_databases
+
+        # databases, zip and fasta files are all absent
+        else:
+            message = "\n...NOTE... : Did not detect genome or blast databases for : %s" \
+              "\n -> downloading and decompressing the genome (it might take a couple of minutes)...\n" % genome
+            logging.info(message)
+
+            # download genome
+            all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
+            accession_nr = [names[2] for names in all_genomes if genome in names][0]
+            download_genome(genome, accession_nr, database_path)
+
+            # check if zip file is still present (should not be)
+            if not check_genome_downloads(ref_species, database_path, genome, zip=True):
+                message = "\n...FATAL_ERROR... : Genome : %s failed to download or decompress" \
+                          "   \n        -> likely Internet connection was disrupted" \
+                          "\n               -> please run FREEDA again..." % genome
+                logging.info(message)
+                return genome_file_databases
+
+            # check if fasta file is still partial/empty (should not be)
+            if not check_genome_downloads(ref_species, database_path, genome):
+                message = "\n...FATAL_ERROR... : Partial or empty genome file : %s.fasta" \
+                          "   \n        -> likely Internet connection was disrupted" \
+                          "\n               -> please run FREEDA again..." % genome
+                logging.info(message)
+                return genome_file_databases
+
+            # proceed to making databases
+            make_blast_database(database_path, genome)
+
+            # validate that the database was generated
+            all_files = []
+            for root, dirs, files in os.walk(database_path, topdown=False):
+                for f in files:
+                    all_files.append(f)
+
+            # failed to build databases
+            if genome + ".fasta.pal" not in all_files or genome + ".fasta.nin" not in all_files:
+                message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
+                      "\n     -> exiting the pipeline now..." % genome
+                logging.info(message)
+                return genome_file_databases
+
+            # successful build
+            else:
+                message = "\nGenome : %s was downloaded and decompressed successfully" \
+                      "\n        -> blast databases were built successfully" % genome
+                logging.info(message)
+                genome_file_databases = True
+                return genome_file_databases
+
+    ### ---- Getting the reference genome ---- ###
+
     if ref_genome:
-        
-        if expected_genome_file in all_files:
 
-            message = "\nReference genome : %s is present\n" % genome
-            logging.info(message)
-            return True
-            
-        elif expected_genome_file not in all_files:
+        ref_genome_file = False
 
-            message = "\nReference genome : %s does not exist" \
-                              " -> downloading and decompressing it now...\n" % genome
+        # check if ref genome present (most of the cases)
+        if check_genome_downloads(ref_species, database_path, genome):
+            message = "\nReference genome : %s is present" % genome
             logging.info(message)
+            ref_genome_file = True
+            return ref_genome_file
+
+        # check if a compressed zip file from previous run is present (and remove)
+        if not check_genome_downloads(ref_species, database_path, genome, zip=True):
+            message = "\n...NOTE... : Detected compressed reference genome file : %s.zip from a previous run" \
+                        "\n      -> removed..." % genome
+            logging.info(message)
+
+        # no complete fasta file detected
+        if not check_genome_downloads(ref_species, database_path, genome):
+            message = "\n...NOTE... : Did not detect a complete reference genome file : %s.fasta" \
+                    "\n    -> downloading and decompressing the genome (it might take a couple of minutes)...\n" % genome
+            logging.info(message)
+
+            # download genome
             all_genomes = genomes_preprocessing.get_names(wdir, ref_species, ref_genome=True)
             accession_nr = all_genomes[2]
-            # download genome
             download_genome(genome, accession_nr, ref_genome_path)
-            return True
+
+            # check if fasta size is correct:
+            if check_genome_downloads(ref_species, database_path, genome):
+                message = "\nReference genome : %s was downloaded and decompressed successfully" % genome
+                logging.info(message)
+                ref_genome_file = True
+                return ref_genome_file
+
+            # failed to download or decompress the ref genome
+            else:
+                message = "\n...FATAL_ERROR... : Reference genome : %s downloading or decompression failed" \
+                            "   \n      -> likely Internet connection was disrupted" \
+                            "\n             -> please run FREEDA again..." % genome
+                logging.info(message)
+                return ref_genome_file
 
     else:
-        message = "Else statement when making blast database"
+        message = "\nElse statement when making blast database\n"
         logging.info(message)
         print("Else statement when making blast database")
-        
-    return genome_file_database
 
 
 def download_genome(genome, accession_nr, database_path):
