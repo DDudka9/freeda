@@ -246,15 +246,16 @@ def block_user_entries():
     name4.configure(state="disabled")
     name5.configure(state="disabled")
 
-    dup1_button.configure(state="disabled")
-    dup2_button.configure(state="disabled")
-    dup3_button.configure(state="disabled")
-    dup4_button.configure(state="disabled")
-    dup5_button.configure(state="disabled")
-
-    tandem_duplication1_button.configure(state="disabled")
-    long_introns1_button.configure(state="disabled")
-    strict_search1_button.configure(state="disabled")
+    advanced_1_1_sb.configure(state="disabled")
+    advanced_1_2_sb.configure(state="disabled")
+    advanced_2_1_sb.configure(state="disabled")
+    advanced_2_2_sb.configure(state="disabled")
+    advanced_3_1_sb.configure(state="disabled")
+    advanced_3_2_sb.configure(state="disabled")
+    advanced_4_1_sb.configure(state="disabled")
+    advanced_4_2_sb.configure(state="disabled")
+    advanced_5_1_sb.configure(state="disabled")
+    advanced_5_2_sb.configure(state="disabled")
 
     site11_start.configure(state="disabled")
     site11_end.configure(state="disabled")
@@ -330,15 +331,16 @@ def ublock_user_entries():
     name4.configure(state="normal")
     name5.configure(state="normal")
 
-    dup1_button.configure(state="normal")
-    dup2_button.configure(state="normal")
-    dup3_button.configure(state="normal")
-    dup4_button.configure(state="normal")
-    dup5_button.configure(state="normal")
-
-    tandem_duplication1_button.configure(state="normal")
-    long_introns1_button.configure(state="normal")
-    strict_search1_button.configure(state="normal")
+    advanced_1_1_sb.configure(state="normal")
+    advanced_1_2_sb.configure(state="normal")
+    advanced_2_1_sb.configure(state="normal")
+    advanced_2_2_sb.configure(state="normal")
+    advanced_3_1_sb.configure(state="normal")
+    advanced_3_2_sb.configure(state="normal")
+    advanced_4_1_sb.configure(state="normal")
+    advanced_4_2_sb.configure(state="normal")
+    advanced_5_1_sb.configure(state="normal")
+    advanced_5_2_sb.configure(state="normal")
 
     site11_start.configure(state="normal")
     site11_end.configure(state="normal")
@@ -541,24 +543,23 @@ def freeda_pipeline():
         ref_species = clade.get()
         codon_frequencies = codon_freq.get()
         t = 60
-        all_genes_dict = {gene_name1.get(): [dup1_var.get(), tandem_duplication1_var.get(),
-                                             long_introns1_var.get(), strict_search1_var.get(),
+        all_genes_dict = {gene_name1.get(): [advanced_1_2_sb.get(), advanced_1_2_sb.get(),
                                         [site11_label.get(), site11_start.get(), site11_end.get()],
                                         [site12_label.get(), site12_start.get(), site12_end.get()],
                                         [site13_label.get(), site13_start.get(), site13_end.get()]],
-                             gene_name2.get(): [dup2_var.get(),
+                             gene_name2.get(): [advanced_2_1_sb.get(), advanced_2_2_sb.get(),
                                         [site21_label.get(), site21_start.get(), site21_end.get()],
                                         [site22_label.get(), site22_start.get(), site22_end.get()],
                                         [site23_label.get(), site23_start.get(), site23_end.get()]],
-                             gene_name3.get(): [dup3_var.get(),
+                             gene_name3.get(): [advanced_3_1_sb.get(), advanced_3_2_sb.get(),
                                         [site31_label.get(), site31_start.get(), site31_end.get()],
                                         [site32_label.get(), site32_start.get(), site32_end.get()],
                                         [site33_label.get(), site33_start.get(), site33_end.get()]],
-                             gene_name4.get(): [dup4_var.get(),
+                             gene_name4.get(): [advanced_4_1_sb.get(), advanced_4_2_sb.get(),
                                         [site41_label.get(), site41_start.get(), site41_end.get()],
                                         [site42_label.get(), site42_start.get(), site42_end.get()],
                                         [site43_label.get(), site43_start.get(), site43_end.get()]],
-                             gene_name5.get(): [dup5_var.get(),
+                             gene_name5.get(): [advanced_5_1_sb.get(), advanced_5_2_sb.get(),
                                         [site51_label.get(), site51_start.get(), site51_end.get()],
                                         [site52_label.get(), site52_start.get(), site52_end.get()],
                                         [site53_label.get(), site53_start.get(), site53_end.get()]]}
@@ -810,7 +811,6 @@ def check_label(label, op):
         return ok_so_far
 
     return valid
-
 
 def check_excluded_species(label, op):
     """Checks if user provided a valid species name"""
@@ -1141,65 +1141,106 @@ codon_freq_frame = ttk.Frame(input_frame, relief="ridge", padding="5 5 5 5")
 codon_freq_frame.grid(column=3, row=0, sticky=(N, W, E, S), padx=5, pady=1)
 
 # create a gene 1 frame
-gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
-gene1_frame.grid(column=0, row=11, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
+gene1_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene1_frame.grid(column=0, row=11, columnspan=4, sticky=(N, W, E, S), padx=5)
 # let all columns resize
 gene1_frame.columnconfigure(0, weight=3, minsize=50, uniform="group1")
 gene1_frame.columnconfigure((1, 2), weight=1, minsize=50, uniform="group1")
 gene1_frame.columnconfigure(3, weight=2, minsize=50, uniform="group1")
+
 # create a gene 1 name frame
-gene1_name_frame = ttk.Frame(gene1_frame, padding="1 1 1 1")
-gene1_name_frame.grid(column=0, row=11, columnspan=2, sticky=(N, W, E, S), padx=5, pady=1)
-# create a gene 1 duplication frame
-gene1_duplication_frame = ttk.Frame(gene1_frame, padding="1 1 1 1")
-gene1_duplication_frame.grid(column=0, row=12, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5, pady=1)
-# create a gene 1 introns frame
-gene1_introns_frame = ttk.Frame(gene1_frame, padding="1 1 1 1")
-gene1_introns_frame.grid(column=0, row=13, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5, pady=1)
+gene1_name_frame = ttk.Frame(gene1_frame, padding="2 2 2 2")
+gene1_name_frame.grid(column=0, row=11, columnspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 1 advanced options 1 frame
+gene1_advanced_1_frame = ttk.Frame(gene1_frame, padding="2 2 2 2")
+gene1_advanced_1_frame.grid(column=0, row=12, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 1 advanced options 2 frame
+gene1_advanced_2_frame = ttk.Frame(gene1_frame, padding="2 2 2 2")
+gene1_advanced_2_frame.grid(column=0, row=13, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
 
 # create a gene 2 frame
-gene2_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
-gene2_frame.grid(column=0, row=14, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
+gene2_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene2_frame.grid(column=0, row=14, columnspan=4, sticky=(N, W, E, S), padx=5)
 # let all columns resize
 gene2_frame.columnconfigure(0, weight=3, uniform="group1")
 gene2_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene2_frame.columnconfigure(3, weight=2, uniform="group1")
 
+# create a gene 2 name frame
+gene2_name_frame = ttk.Frame(gene2_frame, padding="2 2 2 2")
+gene2_name_frame.grid(column=0, row=14, columnspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 2 advanced options 1 frame
+gene2_advanced_1_frame = ttk.Frame(gene2_frame, padding="2 2 2 2")
+gene2_advanced_1_frame.grid(column=0, row=15, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 2 advanced options 2 frame
+gene2_advanced_2_frame = ttk.Frame(gene2_frame, padding="2 2 2 2")
+gene2_advanced_2_frame.grid(column=0, row=16, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+
 # create a gene 3 frame
-gene3_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
-gene3_frame.grid(column=0, row=17, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
+gene3_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene3_frame.grid(column=0, row=17, columnspan=4, sticky=(N, W, E, S), padx=5)
 # let all columns resize
 gene3_frame.columnconfigure(0, weight=3, uniform="group1")
 gene3_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene3_frame.columnconfigure(3, weight=2, uniform="group1")
 
+# create a gene 3 name frame
+gene3_name_frame = ttk.Frame(gene3_frame, padding="2 2 2 2")
+gene3_name_frame.grid(column=0, row=17, columnspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 3 advanced options 1 frame
+gene3_advanced_1_frame = ttk.Frame(gene3_frame, padding="2 2 2 2")
+gene3_advanced_1_frame.grid(column=0, row=18, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 3 advanced options 2 frame
+gene3_advanced_2_frame = ttk.Frame(gene3_frame, padding="2 2 2 2")
+gene3_advanced_2_frame.grid(column=0, row=19, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+
 # create a gene 4 frame
-gene4_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
-gene4_frame.grid(column=0, row=18, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
+gene4_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene4_frame.grid(column=0, row=20, columnspan=4, sticky=(N, W, E, S), padx=5)
 # let all columns resize
 gene4_frame.columnconfigure(0, weight=3, uniform="group1")
 gene4_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene4_frame.columnconfigure(3, weight=2, uniform="group1")
 
+# create a gene 4 name frame
+gene4_name_frame = ttk.Frame(gene4_frame, padding="2 2 2 2")
+gene4_name_frame.grid(column=0, row=20, columnspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 4 advanced options 1 frame
+gene4_advanced_1_frame = ttk.Frame(gene4_frame, padding="2 2 2 2")
+gene4_advanced_1_frame.grid(column=0, row=21, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 4 advanced options 2 frame
+gene4_advanced_2_frame = ttk.Frame(gene4_frame, padding="2 2 2 2")
+gene4_advanced_2_frame.grid(column=0, row=22, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+
 # create a gene 5 frame
-gene5_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
-gene5_frame.grid(column=0, row=19, columnspan=4, sticky=(N, W, E, S), padx=5, pady=1)
+gene5_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+gene5_frame.grid(column=0, row=23, columnspan=4, sticky=(N, W, E, S), padx=5)
 # let all columns resize
 gene5_frame.columnconfigure(0, weight=3, uniform="group1")
 gene5_frame.columnconfigure((1, 2), weight=1, uniform="group1")
 gene5_frame.columnconfigure(3, weight=2, uniform="group1")
 
+# create a gene 5 name frame
+gene5_name_frame = ttk.Frame(gene5_frame, padding="2 2 2 2")
+gene5_name_frame.grid(column=0, row=23, columnspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 5 advanced options 1 frame
+gene5_advanced_1_frame = ttk.Frame(gene5_frame, padding="2 2 2 2")
+gene5_advanced_1_frame.grid(column=0, row=24, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+# create a gene 5 advanced options 2 frame
+gene5_advanced_2_frame = ttk.Frame(gene5_frame, padding="2 2 2 2")
+gene5_advanced_2_frame.grid(column=0, row=25, columnspan=2, rowspan=2, sticky=(N, W, E, S), padx=5)
+
 # create a gene working directory frame
-wdir_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
-wdir_frame.grid(column=0, row=20, columnspan=5, sticky=(N, W, E, S), padx=5, pady=1)
+wdir_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+wdir_frame.grid(column=0, row=26, columnspan=5, sticky=(N, W, E, S), padx=5)
 # let all columns resize
 wdir_frame.columnconfigure(0, weight=3, uniform="group1")
 wdir_frame.columnconfigure(1, weight=5, uniform="group1")
 wdir_frame.columnconfigure((2, 3), weight=2, uniform="group1")
 
 # create exclude frame
-exclude_frame = ttk.Frame(input_frame, relief="ridge", padding="1 1 1 1")
-exclude_frame.grid(column=0, row=21, columnspan=5, sticky=(N, W, E, S), padx=5, pady=1)
+exclude_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
+exclude_frame.grid(column=0, row=27, columnspan=5, sticky=(N, W, E, S), padx=5)
 # let all columns resize
 exclude_frame.columnconfigure(0, weight=3, uniform="group1")
 exclude_frame.columnconfigure(1, weight=5, uniform="group1")
@@ -1268,9 +1309,9 @@ error_message2 = StringVar()
 message2 = "Invalid residue number (follow pattern: 100)"
 # error labels
 error_label1 = ttk.Label(input_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message1)
-error_label1.grid(column=0, row=22, columnspan=4, padx=5, pady=1, sticky=(W))
+error_label1.grid(column=0, row=28, columnspan=4, padx=5, pady=1, sticky=(W))
 error_label2 = ttk.Label(input_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message2)
-error_label2.grid(column=0, row=23, columnspan=4, padx=5, pady=1, sticky=(W))
+error_label2.grid(column=0, row=29, columnspan=4, padx=5, pady=1, sticky=(W))
 
 # LOGO
 canvas = Canvas(logo_frame, width=200, height=50)
@@ -1283,7 +1324,6 @@ raise_logger()
 
 # CLADE
 clade = StringVar()
-#ttk.Label(settings_frame, text="Clade").grid(column=0, row=0, pady=5, sticky=(W))
 rodents = ttk.Radiobutton(settings_frame, text="Mouse (Murinae)", variable=clade, value="Mm")
 rodents.grid(column=0, row=1, columnspan=3, sticky=(W))
 primates = ttk.Radiobutton(settings_frame, text="Human (Primates)", variable=clade, value="Hs")
@@ -1304,227 +1344,296 @@ codon_freq_F61 = ttk.Radiobutton(codon_freq_frame, text="F3X4 and F61", variable
 codon_freq_F61.grid(column=0, row=2, sticky=(W))
 
 # RESIDUES
-ttk.Label(input_frame, text="Indicate functional residues -----> ").grid(column=0, row=9, columnspan=2,
+ttk.Label(input_frame, text="Label residues (optional) ------> ").grid(column=0, row=9, columnspan=2,
                                                                      sticky=(W, E), padx=5)
 ttk.Label(input_frame, text="start").grid(column=1, row=9)
 ttk.Label(input_frame, text="end").grid(column=2, row=9)
 ttk.Label(input_frame, text="label").grid(column=3, row=9)
 
+# ADVANCED OPTIONS
+advanced_options_1 = ["Advanced options (OFF)",
+                      "Duplication expected",
+                      "Tandem duplication expected",
+                      "Long introns expected (>50kb)"]
+advanced_options_2 = ["Advanced options (OFF)",
+                      "Common domains expected"]
+
 # USER INPUT GENE 1
 gene_name1 = StringVar()
-ttk.Label(gene1_name_frame, text="Gene name").grid(column=0, row=0, padx=1, pady=1, sticky=(W))
+#ttk.Label(gene1_frame, text="Gene name").grid(column=0, row=11, padx=6, pady=1, sticky=(W))
+#name1 = ttk.Entry(gene1_frame, textvariable=gene_name1, validate="all", validatecommand=check_gene_name_wrapper)
+#name1.grid(column=0, row=12, padx=5, pady=1, sticky=(W))
+#dup1_var = BooleanVar()
+#dup1_button = ttk.Checkbutton(gene1_frame, text="Duplication expected",
+#                              variable=dup1_var, onvalue=1, offvalue=0)
+#dup1_button.grid(column=0, row=13, padx=6, pady=1, sticky=(W))
+
+ttk.Label(gene1_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
 name1 = ttk.Entry(gene1_name_frame, textvariable=gene_name1, width=12, validate="all",
                   validatecommand=check_gene_name_wrapper)
-name1.grid(column=1, row=0, padx=5, pady=1, sticky=(W))
-dup1_var = BooleanVar()
-dup1_button = ttk.Checkbutton(gene1_duplication_frame, text="Duplicated",
-                              variable=dup1_var, onvalue=1, offvalue=0)
-dup1_button.grid(column=0, row=0, padx=2, pady=1, sticky=(W))
-tandem_duplication1_var = BooleanVar()
-tandem_duplication1_button = ttk.Checkbutton(gene1_duplication_frame, text="Tandem duplicat.",
-                                       variable=tandem_duplication1_var, onvalue=1, offvalue=0)
-tandem_duplication1_button.grid(column=1, row=0, padx=2, pady=1, sticky=(W))
-long_introns1_var = BooleanVar()
-long_introns1_button = ttk.Checkbutton(gene1_introns_frame, text="Long introns",
-                                       variable=long_introns1_var, onvalue=1, offvalue=0)
-long_introns1_button.grid(column=0, row=0, padx=2, pady=1, sticky=(W))
-strict_search1_var = BooleanVar()
-strict_search1_button = ttk.Checkbutton(gene1_introns_frame, text="Strict search",
-                                       variable=strict_search1_var, onvalue=1, offvalue=0)
-strict_search1_button.grid(column=1, row=0, padx=2, pady=1, sticky=(W))
+name1.grid(column=1, row=0, padx=5, sticky=(W))
 
+advanced_1_1 = StringVar(value="Advanced options (OFF)")
+advanced_1_1_sb = ttk.Spinbox(gene1_advanced_1_frame, foreground="dark grey", textvariable=advanced_1_1,
+                              value=advanced_options_1, width=22, wrap=True)
+advanced_1_1_sb.grid(column=0, row=0, padx=2, sticky=(W))
+
+advanced_1_2 = StringVar(value="Advanced options (OFF)")
+advanced_1_2_sb = ttk.Spinbox(gene1_advanced_2_frame, foreground="dark grey", textvariable=advanced_1_2,
+                              value=advanced_options_2, width=22, wrap=True)
+advanced_1_2_sb.grid(column=0, row=1, padx=2, sticky=(W))
 
 s11_start = StringVar()
 s11_end = StringVar()
 s11_label = StringVar()
 site11_start = ttk.Entry(gene1_frame, textvariable=s11_start, validate="all", validatecommand=check_functional_residues)
-site11_start.grid(column=1, row=11, padx=5, pady=1, sticky=(W))
+site11_start.grid(column=1, row=11, padx=5, sticky=(W))
 site11_end = ttk.Entry(gene1_frame, textvariable=s11_end, validate="all", validatecommand=check_functional_residues)
-site11_end.grid(column=2, row=11, padx=5, pady=1, sticky=(W))
+site11_end.grid(column=2, row=11, padx=5, sticky=(W))
 site11_label = ttk.Entry(gene1_frame, textvariable=s11_label, validate="all", validatecommand=check_label)
-site11_label.grid(column=3, row=11, padx=5, pady=1, sticky=(W))
+site11_label.grid(column=3, row=11, padx=5, sticky=(W))
 
 s12_start = StringVar()
 s12_end = StringVar()
 s12_label = StringVar()
 site12_start = ttk.Entry(gene1_frame, textvariable=s12_start, validate="all", validatecommand=check_functional_residues)
-site12_start.grid(column=1, row=12, padx=5, pady=1, sticky=(W))
+site12_start.grid(column=1, row=12, padx=5, sticky=(W))
 site12_end = ttk.Entry(gene1_frame, textvariable=s12_end, validate="all", validatecommand=check_functional_residues)
-site12_end.grid(column=2, row=12, padx=5, pady=1, sticky=(W))
+site12_end.grid(column=2, row=12, padx=5, sticky=(W))
 site12_label = ttk.Entry(gene1_frame, textvariable=s12_label, validate="all", validatecommand=check_label)
-site12_label.grid(column=3, row=12, padx=5, pady=1, sticky=(W))
+site12_label.grid(column=3, row=12, padx=5, sticky=(W))
 
 s13_start = StringVar()
 s13_end = StringVar()
 s13_label = StringVar()
 site13_start = ttk.Entry(gene1_frame, textvariable=s13_start, validate="all", validatecommand=check_functional_residues)
-site13_start.grid(column=1, row=13, padx=5, pady=1, sticky=(W))
+site13_start.grid(column=1, row=13, padx=5, sticky=(W))
 site13_end = ttk.Entry(gene1_frame, textvariable=s13_end, validate="all", validatecommand=check_functional_residues)
-site13_end.grid(column=2, row=13, padx=5, pady=1, sticky=(W))
+site13_end.grid(column=2, row=13, padx=5, sticky=(W))
 site13_label = ttk.Entry(gene1_frame, textvariable=s13_label, validate="all", validatecommand=check_label)
-site13_label.grid(column=3, row=13, padx=5, pady=1, sticky=(W))
+site13_label.grid(column=3, row=13, padx=5, sticky=(W))
 
 # USER INPUT GENE 2
 gene_name2 = StringVar()
-ttk.Label(gene2_frame, text="Gene name").grid(column=0, row=14, padx=6, pady=1, sticky=(W))
-name2 = ttk.Entry(gene2_frame, textvariable=gene_name2, validate="all", validatecommand=check_gene_name_wrapper)
-name2.grid(column=0, row=15, padx=5, pady=1, sticky=(W))
-dup2_var = BooleanVar()
-dup2_button = ttk.Checkbutton(gene2_frame, text="Duplication expected", variable=dup2_var, onvalue=1, offvalue=0)
-dup2_button.grid(column=0, row=16, padx=6, pady=1, sticky=(W))
+#ttk.Label(gene2_frame, text="Gene name").grid(column=0, row=14, padx=6, pady=1, sticky=(W))
+#name2 = ttk.Entry(gene2_frame, textvariable=gene_name2, validate="all", validatecommand=check_gene_name_wrapper)
+#name2.grid(column=0, row=15, padx=5, pady=1, sticky=(W))
+#dup2_var = BooleanVar()
+#dup2_button = ttk.Checkbutton(gene2_frame, text="Duplication expected", variable=dup2_var, onvalue=1, offvalue=0)
+#dup2_button.grid(column=0, row=16, padx=6, pady=1, sticky=(W))
+
+ttk.Label(gene2_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
+name2 = ttk.Entry(gene2_name_frame, textvariable=gene_name2, width=12, validate="all",
+                  validatecommand=check_gene_name_wrapper)
+name2.grid(column=1, row=0, padx=5, sticky=(W))
+
+advanced_2_1 = StringVar(value="Advanced options (OFF)")
+advanced_2_1_sb = ttk.Spinbox(gene2_advanced_1_frame, foreground="dark grey", textvariable=advanced_2_1,
+                              value=advanced_options_1, width=22, wrap=True)
+advanced_2_1_sb.grid(column=0, row=0, padx=2, sticky=(W))
+
+advanced_2_2 = StringVar(value="Advanced options (OFF)")
+advanced_2_2_sb = ttk.Spinbox(gene2_advanced_2_frame, foreground="dark grey", textvariable=advanced_2_2,
+                              value=advanced_options_2, width=22, wrap=True)
+advanced_2_2_sb.grid(column=0, row=1, padx=2, sticky=(W))
 
 s21_start = StringVar()
 s21_end = StringVar()
 s21_label = StringVar()
 site21_start = ttk.Entry(gene2_frame, textvariable=s21_start, validate="all", validatecommand=check_functional_residues)
-site21_start.grid(column=1, row=14, padx=5, pady=1, sticky=(W))
+site21_start.grid(column=1, row=14, padx=5, sticky=(W))
 site21_end = ttk.Entry(gene2_frame, textvariable=s21_end, validate="all", validatecommand=check_functional_residues)
-site21_end.grid(column=2, row=14, padx=5, pady=1, sticky=(W))
+site21_end.grid(column=2, row=14, padx=5, sticky=(W))
 site21_label = ttk.Entry(gene2_frame, textvariable=s21_label, validate="all", validatecommand=check_label)
-site21_label.grid(column=3, row=14, padx=5, pady=1, sticky=(W))
+site21_label.grid(column=3, row=14, padx=5, sticky=(W))
 
 s22_start = StringVar()
 s22_end = StringVar()
 s22_label = StringVar()
 site22_start = ttk.Entry(gene2_frame, textvariable=s22_start, validate="all", validatecommand=check_functional_residues)
-site22_start.grid(column=1, row=15, padx=5, pady=1, sticky=(W))
+site22_start.grid(column=1, row=15, padx=5, sticky=(W))
 site22_end = ttk.Entry(gene2_frame, textvariable=s22_end, validate="all", validatecommand=check_functional_residues)
-site22_end.grid(column=2, row=15, padx=5, pady=1, sticky=(W))
+site22_end.grid(column=2, row=15, padx=5, sticky=(W))
 site22_label = ttk.Entry(gene2_frame, textvariable=s22_label, validate="all", validatecommand=check_label)
-site22_label.grid(column=3, row=15, padx=5, pady=1, sticky=(W))
+site22_label.grid(column=3, row=15, padx=5, sticky=(W))
 
 s23_start = StringVar()
 s23_end = StringVar()
 s23_label = StringVar()
 site23_start = ttk.Entry(gene2_frame, textvariable=s23_start, validate="all", validatecommand=check_functional_residues)
-site23_start.grid(column=1, row=16, padx=5, pady=1, sticky=(W))
+site23_start.grid(column=1, row=16, padx=5, sticky=(W))
 site23_end = ttk.Entry(gene2_frame, textvariable=s23_end, validate="all", validatecommand=check_functional_residues)
-site23_end.grid(column=2, row=16, padx=5, pady=1, sticky=(W))
+site23_end.grid(column=2, row=16, padx=5, sticky=(W))
 site23_label = ttk.Entry(gene2_frame, textvariable=s23_label, validate="all", validatecommand=check_label)
-site23_label.grid(column=3, row=16, padx=5, pady=1, sticky=(W))
+site23_label.grid(column=3, row=16, padx=5, sticky=(W))
 
 # USER INPUT GENE 3
 gene_name3 = StringVar()
-ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, pady=1, sticky=(W))
-name3 = ttk.Entry(gene3_frame, textvariable=gene_name3, validate="all", validatecommand=check_gene_name_wrapper)
-name3.grid(column=0, row=18, padx=5, pady=1, sticky=(W))
-dup3_var = BooleanVar()
-dup3_button = ttk.Checkbutton(gene3_frame, text="Duplication expected", variable=dup3_var, onvalue=1, offvalue=0)
-dup3_button.grid(column=0, row=19, padx=6, pady=1, sticky=(W))
+#ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, pady=1, sticky=(W))
+#name3 = ttk.Entry(gene3_frame, textvariable=gene_name3, validate="all", validatecommand=check_gene_name_wrapper)
+#name3.grid(column=0, row=18, padx=5, pady=1, sticky=(W))
+#dup3_var = BooleanVar()
+#dup3_button = ttk.Checkbutton(gene3_frame, text="Duplication expected", variable=dup3_var, onvalue=1, offvalue=0)
+#dup3_button.grid(column=0, row=19, padx=6, pady=1, sticky=(W))
+
+ttk.Label(gene3_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
+name3 = ttk.Entry(gene3_name_frame, textvariable=gene_name3, width=12, validate="all",
+                  validatecommand=check_gene_name_wrapper)
+name3.grid(column=1, row=0, padx=5, sticky=(W))
+
+advanced_3_1 = StringVar(value="Advanced options (OFF)")
+advanced_3_1_sb = ttk.Spinbox(gene3_advanced_1_frame, foreground="dark grey", textvariable=advanced_3_1,
+                              value=advanced_options_1, width=22, wrap=True)
+advanced_3_1_sb.grid(column=0, row=0, padx=2, sticky=(W))
+
+advanced_3_2 = StringVar(value="Advanced options (OFF)")
+advanced_3_2_sb = ttk.Spinbox(gene3_advanced_2_frame, foreground="dark grey", textvariable=advanced_3_2,
+                              value=advanced_options_2, width=22, wrap=True)
+advanced_3_2_sb.grid(column=0, row=1, padx=2, sticky=(W))
 
 s31_start = StringVar()
 s31_end = StringVar()
 s31_label = StringVar()
 site31_start = ttk.Entry(gene3_frame, textvariable=s31_start, validate="all", validatecommand=check_functional_residues)
-site31_start.grid(column=1, row=17, padx=5, pady=1, sticky=(W))
+site31_start.grid(column=1, row=17, padx=5, sticky=(W))
 site31_end = ttk.Entry(gene3_frame, textvariable=s31_end, validate="all", validatecommand=check_functional_residues)
-site31_end.grid(column=2, row=17, padx=5, pady=1, sticky=(W))
+site31_end.grid(column=2, row=17, padx=5, sticky=(W))
 site31_label = ttk.Entry(gene3_frame, textvariable=s31_label, validate="all", validatecommand=check_label)
-site31_label.grid(column=3, row=17, padx=5, pady=1, sticky=(W))
+site31_label.grid(column=3, row=17, padx=5, sticky=(W))
 
 s32_start = StringVar()
 s32_end = StringVar()
 s32_label = StringVar()
 site32_start = ttk.Entry(gene3_frame, textvariable=s32_start, validate="all", validatecommand=check_functional_residues)
-site32_start.grid(column=1, row=18, padx=5, pady=1, sticky=(W))
+site32_start.grid(column=1, row=18, padx=5, sticky=(W))
 site32_end = ttk.Entry(gene3_frame, textvariable=s32_end, validate="all", validatecommand=check_functional_residues)
-site32_end.grid(column=2, row=18, padx=5, pady=1, sticky=(W))
+site32_end.grid(column=2, row=18, padx=5, sticky=(W))
 site32_label = ttk.Entry(gene3_frame, textvariable=s32_label, validate="all", validatecommand=check_label)
-site32_label.grid(column=3, row=18, padx=5, pady=1, sticky=(W))
+site32_label.grid(column=3, row=18, padx=5, sticky=(W))
 
 s33_start = StringVar()
 s33_end = StringVar()
 s33_label = StringVar()
 site33_start = ttk.Entry(gene3_frame, textvariable=s33_start, validate="all", validatecommand=check_functional_residues)
-site33_start.grid(column=1, row=19, padx=5, pady=1, sticky=(W))
+site33_start.grid(column=1, row=19, padx=5, sticky=(W))
 site33_end = ttk.Entry(gene3_frame, textvariable=s33_end, validate="all", validatecommand=check_functional_residues)
-site33_end.grid(column=2, row=19, padx=5, pady=1, sticky=(W))
+site33_end.grid(column=2, row=19, padx=5, sticky=(W))
 site33_label = ttk.Entry(gene3_frame, textvariable=s33_label, validate="all", validatecommand=check_label)
-site33_label.grid(column=3, row=19, padx=5, pady=1, sticky=(W))
+site33_label.grid(column=3, row=19, padx=5, sticky=(W))
 
 # USER INPUT GENE 4
 gene_name4 = StringVar()
-ttk.Label(gene4_frame, text="Gene name").grid(column=0, row=20, padx=6, pady=1, sticky=(W))
-name4 = ttk.Entry(gene4_frame, textvariable=gene_name4, validate="all", validatecommand=check_gene_name_wrapper)
-name4.grid(column=0, row=21, padx=5, pady=1, sticky=(W))
-dup4_var = BooleanVar()
-dup4_button = ttk.Checkbutton(gene4_frame, text="Duplication expected", variable=dup4_var, onvalue=1, offvalue=0)
-dup4_button.grid(column=0, row=22, padx=6, pady=1, sticky=(W))
+#ttk.Label(gene4_frame, text="Gene name").grid(column=0, row=20, padx=6, pady=1, sticky=(W))
+#name4 = ttk.Entry(gene4_frame, textvariable=gene_name4, validate="all", validatecommand=check_gene_name_wrapper)
+#name4.grid(column=0, row=21, padx=5, pady=1, sticky=(W))
+#dup4_var = BooleanVar()
+#dup4_button = ttk.Checkbutton(gene4_frame, text="Duplication expected", variable=dup4_var, onvalue=1, offvalue=0)
+#dup4_button.grid(column=0, row=22, padx=6, pady=1, sticky=(W))
+
+ttk.Label(gene4_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
+name4 = ttk.Entry(gene4_name_frame, textvariable=gene_name4, width=12, validate="all",
+                  validatecommand=check_gene_name_wrapper)
+name4.grid(column=1, row=0, padx=5, sticky=(W))
+
+advanced_4_1 = StringVar(value="Advanced options (OFF)")
+advanced_4_1_sb = ttk.Spinbox(gene4_advanced_1_frame, foreground="dark grey", textvariable=advanced_4_1,
+                              value=advanced_options_1, width=22, wrap=True)
+advanced_4_1_sb.grid(column=0, row=0, padx=2, sticky=(W))
+
+advanced_4_2 = StringVar(value="Advanced options (OFF)")
+advanced_4_2_sb = ttk.Spinbox(gene4_advanced_2_frame, foreground="dark grey", textvariable=advanced_4_2,
+                              value=advanced_options_2, width=22, wrap=True)
+advanced_4_2_sb.grid(column=0, row=1, padx=2, sticky=(W))
 
 s41_start = StringVar()
 s41_end = StringVar()
 s41_label = StringVar()
 site41_start = ttk.Entry(gene4_frame, textvariable=s41_start, validate="all", validatecommand=check_functional_residues)
-site41_start.grid(column=1, row=20, padx=5, pady=1, sticky=(W))
+site41_start.grid(column=1, row=20, padx=5, sticky=(W))
 site41_end = ttk.Entry(gene4_frame, textvariable=s41_end, validate="all", validatecommand=check_functional_residues)
-site41_end.grid(column=2, row=20, padx=5, pady=1, sticky=(W))
+site41_end.grid(column=2, row=20, padx=5, sticky=(W))
 site41_label = ttk.Entry(gene4_frame, textvariable=s41_label, validate="all", validatecommand=check_label)
-site41_label.grid(column=3, row=20, padx=5, pady=1, sticky=(W))
+site41_label.grid(column=3, row=20, padx=5, sticky=(W))
 
 s42_start = StringVar()
 s42_end = StringVar()
 s42_label = StringVar()
 site42_start = ttk.Entry(gene4_frame, textvariable=s42_start, validate="all", validatecommand=check_functional_residues)
-site42_start.grid(column=1, row=21, padx=5, pady=1, sticky=(W))
+site42_start.grid(column=1, row=21, padx=5, sticky=(W))
 site42_end = ttk.Entry(gene4_frame, textvariable=s42_end, validate="all", validatecommand=check_functional_residues)
-site42_end.grid(column=2, row=21, padx=5, pady=1, sticky=(W))
+site42_end.grid(column=2, row=21, padx=5, sticky=(W))
 site42_label = ttk.Entry(gene4_frame, textvariable=s42_label, validate="all", validatecommand=check_label)
-site42_label.grid(column=3, row=21, padx=5, pady=1, sticky=(W))
+site42_label.grid(column=3, row=21, padx=5, sticky=(W))
 
 s43_start = StringVar()
 s43_end = StringVar()
 s43_label = StringVar()
 site43_start = ttk.Entry(gene4_frame, textvariable=s43_start, validate="all", validatecommand=check_functional_residues)
-site43_start.grid(column=1, row=22, padx=5, pady=1, sticky=(W))
+site43_start.grid(column=1, row=22, padx=5, sticky=(W))
 site43_end = ttk.Entry(gene4_frame, textvariable=s43_end, validate="all", validatecommand=check_functional_residues)
-site43_end.grid(column=2, row=22, padx=5, pady=1, sticky=(W))
+site43_end.grid(column=2, row=22, padx=5, sticky=(W))
 site43_label = ttk.Entry(gene4_frame, textvariable=s43_label, validate="all", validatecommand=check_label)
-site43_label.grid(column=3, row=22, padx=5, pady=1, sticky=(W))
+site43_label.grid(column=3, row=22, padx=5, sticky=(W))
 
 # USER INPUT GENE 5
 gene_name5 = StringVar()
-ttk.Label(gene5_frame, text="Gene name").grid(column=0, row=23, padx=6, pady=1, sticky=(W))
-name5 = ttk.Entry(gene5_frame, textvariable=gene_name5, validate="all", validatecommand=check_gene_name_wrapper)
-name5.grid(column=0, row=24, padx=5, pady=1, sticky=(W))
-dup5_var = BooleanVar()
-dup5_button = ttk.Checkbutton(gene5_frame, text="Duplication expected", variable=dup5_var, onvalue=1, offvalue=0)
-dup5_button.grid(column=0, row=25, padx=6, pady=1, sticky=(W))
+#ttk.Label(gene5_frame, text="Gene name").grid(column=0, row=23, padx=6, pady=1, sticky=(W))
+#name5 = ttk.Entry(gene5_frame, textvariable=gene_name5, validate="all", validatecommand=check_gene_name_wrapper)
+#name5.grid(column=0, row=24, padx=5, pady=1, sticky=(W))
+#dup5_var = BooleanVar()
+#dup5_button = ttk.Checkbutton(gene5_frame, text="Duplication expected", variable=dup5_var, onvalue=1, offvalue=0)
+#dup5_button.grid(column=0, row=25, padx=6, pady=1, sticky=(W))
+
+ttk.Label(gene5_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
+name5 = ttk.Entry(gene5_name_frame, textvariable=gene_name5, width=12, validate="all",
+                  validatecommand=check_gene_name_wrapper)
+name5.grid(column=1, row=0, padx=5, sticky=(W))
+
+advanced_5_1 = StringVar(value="Advanced options (OFF)")
+advanced_5_1_sb = ttk.Spinbox(gene5_advanced_1_frame, foreground="dark grey", textvariable=advanced_5_1,
+                              value=advanced_options_1, width=22, wrap=True)
+advanced_5_1_sb.grid(column=0, row=0, padx=2, sticky=(W))
+
+advanced_5_2 = StringVar(value="Advanced options (OFF)")
+advanced_5_2_sb = ttk.Spinbox(gene5_advanced_2_frame, foreground="dark grey", textvariable=advanced_5_2,
+                              value=advanced_options_2, width=22, wrap=True)
+advanced_5_2_sb.grid(column=0, row=1, padx=2, sticky=(W))
 
 s51_start = StringVar()
 s51_end = StringVar()
 s51_label = StringVar()
 site51_start = ttk.Entry(gene5_frame, textvariable=s51_start, validate="all", validatecommand=check_functional_residues)
-site51_start.grid(column=1, row=23, padx=5, pady=1, sticky=(W))
+site51_start.grid(column=1, row=23, padx=5, sticky=(W))
 site51_end = ttk.Entry(gene5_frame, textvariable=s51_end, validate="all", validatecommand=check_functional_residues)
-site51_end.grid(column=2, row=23, padx=5, pady=1, sticky=(W))
+site51_end.grid(column=2, row=23, padx=5, sticky=(W))
 site51_label = ttk.Entry(gene5_frame, textvariable=s51_label, validate="all", validatecommand=check_label)
-site51_label.grid(column=3, row=23, padx=5, pady=1, sticky=(W))
+site51_label.grid(column=3, row=23, padx=5, sticky=(W))
 
 s52_start = StringVar()
 s52_end = StringVar()
 s52_label = StringVar()
 site52_start = ttk.Entry(gene5_frame, textvariable=s52_start, validate="all", validatecommand=check_functional_residues)
-site52_start.grid(column=1, row=24, padx=5, pady=1, sticky=(W))
+site52_start.grid(column=1, row=24, padx=5, sticky=(W))
 site52_end = ttk.Entry(gene5_frame, textvariable=s52_end, validate="all", validatecommand=check_functional_residues)
-site52_end.grid(column=2, row=24, padx=5, pady=1, sticky=(W))
+site52_end.grid(column=2, row=24, padx=5, sticky=(W))
 site52_label = ttk.Entry(gene5_frame, textvariable=s52_label, validate="all", validatecommand=check_label)
-site52_label.grid(column=3, row=24, padx=5, pady=1, sticky=(W))
+site52_label.grid(column=3, row=24, padx=5, sticky=(W))
 
 s53_start = StringVar()
 s53_end = StringVar()
 s53_label = StringVar()
 site53_start = ttk.Entry(gene5_frame, textvariable=s53_start, validate="all", validatecommand=check_functional_residues)
-site53_start.grid(column=1, row=25, padx=5, pady=1, sticky=(W))
+site53_start.grid(column=1, row=25, padx=5, sticky=(W))
 site53_end = ttk.Entry(gene5_frame, textvariable=s53_end, validate="all", validatecommand=check_functional_residues)
-site53_end.grid(column=2, row=25, padx=5, pady=1, sticky=(W))
+site53_end.grid(column=2, row=25, padx=5, sticky=(W))
 site53_label = ttk.Entry(gene5_frame, textvariable=s53_label, validate="all", validatecommand=check_label)
-site53_label.grid(column=3, row=25, padx=5, pady=1, sticky=(W))
+site53_label.grid(column=3, row=25, padx=5, sticky=(W))
 
 # EXCLUDE SPECIES
 exclude_species_var = StringVar()
 exclude_species_entry = ttk.Entry(exclude_frame, textvariable=exclude_species_var, validate="all",
                                   validatecommand=check_excluded_species)
-exclude_species_entry.grid(column=1, row=21, padx=5, pady=1, sticky=(W, E))
+exclude_species_entry.grid(column=1, row=21, padx=5, pady=3, sticky=(W, E))
 ttk.Label(exclude_frame, text="   Exclude species: ").grid(column=0, row=21, padx=5, sticky=(W))
 ttk.Label(exclude_frame, text="(optional; e.g. Ha Gs)").grid(column=2, row=21, columnspan=2, sticky=(W))
 
@@ -1533,18 +1642,18 @@ result_path_var = StringVar()
 
 # Working directory button
 wdir_button = ttk.Button(wdir_frame, text="Set directory", command=get_wdir)
-wdir_button.grid(column=0, row=0, sticky=(N, W, E, S), padx=1, pady=1)
+wdir_button.grid(column=0, row=0, sticky=(N, W, E, S), padx=1, pady=3)
 wdirectory = StringVar()
 wdir_entry = ttk.Entry(wdir_frame, textvariable=wdirectory)
-wdir_entry.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=1)  # columnspan=4
+wdir_entry.grid(column=1, row=0, sticky=(N, W, E, S), padx=5, pady=3)  # columnspan=4
 
 # ANALYZE button
 analyze_button = ttk.Button(wdir_frame, text="Analyze", state="normal", command=thread_freeda)  # default="active"
-analyze_button.grid(column=2, row=0, pady=1, sticky=(W))  # columnspan=2
+analyze_button.grid(column=2, row=0, pady=3, sticky=(W))  # columnspan=2
 
 # ABORT button
 abort_button = ttk.Button(wdir_frame, text="ABORT", state="normal", command=abort_freeda)  # default="active"
-abort_button.grid(column=3, row=0,  pady=1, sticky=(W))
+abort_button.grid(column=3, row=0,  pady=3, sticky=(W))
 
 # LABELS
 ttk.Label(results_labels_upper, text="nr of adapt. residues").grid(column=7, row=2, columnspan=2, sticky=(E), padx=15)
@@ -1557,179 +1666,199 @@ ttk.Label(results_labels, text="species").grid(column=5, row=3)
 ttk.Label(results_labels, text="pr < 0.9").grid(column=6, row=3)
 ttk.Label(results_labels, text="pr >= 0.9").grid(column=7, row=3)
 
+# default white entry widget color cannot be changed -> need to modify the style
+# inspired by: https://stackoverflow.com/questions/17635905/ttk-entry-background-colour
+bg_style = ttk.Style()
+bg_style.element_create("plain.field", "from", "clam")  # clam is a theme that "from" is cloning from
+bg_style.layout("EntryStyle.TEntry",
+                   [('Entry.plain.field', {'children': [(
+                       'Entry.background', {'children': [(
+                           'Entry.padding', {'children': [(
+                               'Entry.textarea', {'sticky': 'nswe'})],
+                      'sticky': 'nswe'})], 'sticky': 'nswe'})],
+                      'border':'1', 'sticky': 'nswe'})])
+bg_style.configure("EntryStyle.TEntry", fieldbackground="gainsboro")
+
 # ENTRIES
 # gene 1 results
 g1_results_var = StringVar()
-g1_results_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_results_var, justify='center')
+g1_results_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_results_var, justify='center')
 g1_results_entry.config(foreground="black")  # text will be black despite disabled state
 g1_results_entry.grid(column=0, row=0, sticky=(W))
 g1_pos_sel_var = StringVar()
-g1_pos_sel_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_pos_sel_var, justify='center')
+g1_pos_sel_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_pos_sel_var, justify='center')
 g1_pos_sel_entry.grid(column=1, row=0, sticky=(W))
 g1_pos_sel_entry.config(foreground="black")  # text will be black despite disabled state
 g1_lrt_var = StringVar()
-g1_lrt_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_lrt_var, justify='center')
+g1_lrt_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_lrt_var, justify='center')
 g1_lrt_entry.grid(column=2, row=0, sticky=(W))
 g1_lrt_entry.config(foreground="black")  # text will be black despite disabled state
 g1_pvalue_var = StringVar()
-g1_pvalue_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_pvalue_var, justify='center')
+g1_pvalue_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_pvalue_var, justify='center')
 g1_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g1_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
 g1_coverage_var = StringVar()
-g1_coverage_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_coverage_var, justify='center')
+g1_coverage_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_coverage_var, justify='center')
 g1_coverage_entry.grid(column=4, row=0, sticky=(W))
 g1_coverage_entry.config(foreground="black")  # text will be black despite disabled state
 g1_species_var = StringVar()
-g1_species_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_species_var, justify='center')
+g1_species_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_species_var, justify='center')
 g1_species_entry.grid(column=5, row=0, sticky=(W))
 g1_species_entry.config(foreground="black")  # text will be black despite disabled state
 g1_adapt_less_var = StringVar()
-g1_adapt_less_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_adapt_less_var, justify='center')
+g1_adapt_less_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_adapt_less_var, justify='center')
 g1_adapt_less_entry.grid(column=6, row=0, sticky=(W))
 g1_adapt_less_entry.config(foreground="black")  # text will be black despite disabled state
 g1_adapt_more_var = StringVar()
-g1_adapt_more_entry = ttk.Entry(g1_results_frame, state="disabled", text=g1_adapt_more_var, justify='center')
+g1_adapt_more_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", state="disabled", text=g1_adapt_more_var, justify='center')
 g1_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g1_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
 
 # gene 2 results
 g2_results_var = StringVar()
-g2_results_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_results_var, justify='center')
+g2_results_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_results_var, justify='center')
 g2_results_entry.grid(column=0, row=0, sticky=(W))
 g2_results_entry.config(foreground="black")  # text will be black despite disabled state
 g2_pos_sel_var = StringVar()
-g2_pos_sel_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_pos_sel_var, justify='center')
+g2_pos_sel_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_pos_sel_var, justify='center')
 g2_pos_sel_entry.grid(column=1, row=0, sticky=(W))
 g2_pos_sel_entry.config(foreground="black")  # text will be black despite disabled state
 g2_lrt_var = StringVar()
-g2_lrt_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_lrt_var, justify='center')
+g2_lrt_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_lrt_var, justify='center')
 g2_lrt_entry.grid(column=2, row=0, sticky=(W))
 g2_lrt_entry.config(foreground="black")  # text will be black despite disabled state
 g2_pvalue_var = StringVar()
-g2_pvalue_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_pvalue_var, justify='center')
+g2_pvalue_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_pvalue_var, justify='center')
 g2_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g2_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
 g2_coverage_var = StringVar()
-g2_coverage_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_coverage_var, justify='center')
+g2_coverage_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_coverage_var, justify='center')
 g2_coverage_entry.grid(column=4, row=0, sticky=(W))
 g2_coverage_entry.config(foreground="black")  # text will be black despite disabled state
 g2_species_var = StringVar()
-g2_species_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_species_var, justify='center')
+g2_species_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_species_var, justify='center')
 g2_species_entry.grid(column=5, row=0, sticky=(W))
 g2_species_entry.config(foreground="black")  # text will be black despite disabled state
 g2_adapt_less_var = StringVar()
-g2_adapt_less_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_adapt_less_var, justify='center')
+g2_adapt_less_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_adapt_less_var, justify='center')
 g2_adapt_less_entry.grid(column=6, row=0, sticky=(W))
 g2_adapt_less_entry.config(foreground="black")  # text will be black despite disabled state
 g2_adapt_more_var = StringVar()
-g2_adapt_more_entry = ttk.Entry(g2_results_frame, state="disabled", text=g2_adapt_more_var, justify='center')
+g2_adapt_more_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", state="disabled", text=g2_adapt_more_var, justify='center')
 g2_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g2_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
 # gene 3 results
 g3_results_var = StringVar()
-g3_results_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_results_var, justify='center')
+g3_results_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_results_var, justify='center')
 g3_results_entry.grid(column=0, row=0, sticky=(W))
 g3_results_entry.config(foreground="black")  # text will be black despite disabled state
 g3_pos_sel_var = StringVar()
-g3_pos_sel_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_pos_sel_var, justify='center')
+g3_pos_sel_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_pos_sel_var, justify='center')
 g3_pos_sel_entry.grid(column=1, row=0, sticky=(W))
 g3_pos_sel_entry.config(foreground="black")  # text will be black despite disabled state
 g3_lrt_var = StringVar()
-g3_lrt_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_lrt_var, justify='center')
+g3_lrt_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_lrt_var, justify='center')
 g3_lrt_entry.grid(column=2, row=0, sticky=(W))
 g3_lrt_entry.config(foreground="black")  # text will be black despite disabled state
 g3_pvalue_var = StringVar()
-g3_pvalue_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_pvalue_var, justify='center')
+g3_pvalue_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_pvalue_var, justify='center')
 g3_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g3_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
 g3_coverage_var = StringVar()
-g3_coverage_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_coverage_var, justify='center')
+g3_coverage_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_coverage_var, justify='center')
 g3_coverage_entry.grid(column=4, row=0, sticky=(W))
 g3_coverage_entry.config(foreground="black")  # text will be black despite disabled state
 g3_species_var = StringVar()
-g3_species_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_species_var, justify='center')
+g3_species_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_species_var, justify='center')
 g3_species_entry.grid(column=5, row=0, sticky=(W))
 g3_species_entry.config(foreground="black")  # text will be black despite disabled state
 g3_adapt_less_var = StringVar()
-g3_adapt_less_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_adapt_less_var, justify='center')
+g3_adapt_less_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_adapt_less_var, justify='center')
 g3_adapt_less_entry.grid(column=6, row=0, sticky=(W))
 g3_adapt_less_entry.config(foreground="black")  # text will be black despite disabled state
 g3_adapt_more_var = StringVar()
-g3_adapt_more_entry = ttk.Entry(g3_results_frame, state="disabled", text=g3_adapt_more_var, justify='center')
+g3_adapt_more_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_adapt_more_var, justify='center')
 g3_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g3_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
 
 # gene 4 results
 g4_results_var = StringVar()
-g4_results_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_results_var, justify='center')
+g4_results_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_results_var, justify='center')
 g4_results_entry.grid(column=0, row=0, sticky=(W))
 g4_results_entry.config(foreground="black")  # text will be black despite disabled state
 g4_pos_sel_var = StringVar()
-g4_pos_sel_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_pos_sel_var, justify='center')
+g4_pos_sel_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_pos_sel_var, justify='center')
 g4_pos_sel_entry.grid(column=1, row=0, sticky=(W))
 g4_pos_sel_entry.config(foreground="black")  # text will be black despite disabled state
 g4_lrt_var = StringVar()
-g4_lrt_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_lrt_var, justify='center')
+g4_lrt_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_lrt_var, justify='center')
 g4_lrt_entry.grid(column=2, row=0, sticky=(W))
 g4_lrt_entry.config(foreground="black")  # text will be black despite disabled state
 g4_pvalue_var = StringVar()
-g4_pvalue_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_pvalue_var, justify='center')
+g4_pvalue_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_pvalue_var, justify='center')
 g4_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g4_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
 g4_coverage_var = StringVar()
-g4_coverage_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_coverage_var, justify='center')
+g4_coverage_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_coverage_var, justify='center')
 g4_coverage_entry.grid(column=4, row=0, sticky=(W))
 g4_coverage_entry.config(foreground="black")  # text will be black despite disabled state
 g4_species_var = StringVar()
-g4_species_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_species_var, justify='center')
+g4_species_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_species_var, justify='center')
 g4_species_entry.grid(column=5, row=0, sticky=(W))
 g4_species_entry.config(foreground="black")  # text will be black despite disabled state
 g4_adapt_less_var = StringVar()
-g4_adapt_less_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_adapt_less_var, justify='center')
+g4_adapt_less_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_adapt_less_var, justify='center')
 g4_adapt_less_entry.grid(column=6, row=0, sticky=(W))
 g4_adapt_less_entry.config(foreground="black")  # text will be black despite disabled state
 g4_adapt_more_var = StringVar()
-g4_adapt_more_entry = ttk.Entry(g4_results_frame, state="disabled", text=g4_adapt_more_var, justify='center')
+g4_adapt_more_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", state="disabled", text=g4_adapt_more_var, justify='center')
 g4_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g4_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
 
 # gene 5 results
 g5_results_var = StringVar()
-g5_results_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_results_var, justify='center')
+g5_results_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_results_var, justify='center')
 g5_results_entry.grid(column=0, row=0, sticky=(W))
 g5_results_entry.config(foreground="black")  # text will be black despite disabled state
 g5_pos_sel_var = StringVar()
-g5_pos_sel_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_pos_sel_var, justify='center')
+g5_pos_sel_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_pos_sel_var, justify='center')
 g5_pos_sel_entry.grid(column=1, row=0, sticky=(W))
 g5_pos_sel_entry.config(foreground="black")  # text will be black despite disabled state
 g5_lrt_var = StringVar()
-g5_lrt_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_lrt_var, justify='center')
+g5_lrt_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_lrt_var, justify='center')
 g5_lrt_entry.grid(column=2, row=0, sticky=(W))
 g5_lrt_entry.config(foreground="black")  # text will be black despite disabled state
 g5_pvalue_var = StringVar()
-g5_pvalue_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_pvalue_var, justify='center')
+g5_pvalue_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_pvalue_var, justify='center')
 g5_pvalue_entry.grid(column=3, row=0, sticky=(W))
 g5_pvalue_entry.config(foreground="black")  # text will be black despite disabled state
 g5_coverage_var = StringVar()
-g5_coverage_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_coverage_var, justify='center')
+g5_coverage_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_coverage_var, justify='center')
 g5_coverage_entry.grid(column=4, row=0, sticky=(W))
 g5_coverage_entry.config(foreground="black")  # text will be black despite disabled state
 g5_species_var = StringVar()
-g5_species_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_species_var, justify='center')
+g5_species_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_species_var, justify='center')
 g5_species_entry.grid(column=5, row=0, sticky=(W))
 g5_species_entry.config(foreground="black")  # text will be black despite disabled state
 g5_adapt_less_var = StringVar()
-g5_adapt_less_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_adapt_less_var, justify='center')
+g5_adapt_less_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_adapt_less_var, justify='center')
 g5_adapt_less_entry.grid(column=6, row=0, sticky=(W))
 g5_adapt_less_entry.config(foreground="black")  # text will be black despite disabled state
 g5_adapt_more_var = StringVar()
-g5_adapt_more_entry = ttk.Entry(g5_results_frame, state="disabled", text=g5_adapt_more_var, justify='center')
+g5_adapt_more_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_adapt_more_var, justify='center')
 g5_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g5_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
+
+
+# REMEMBER TO CHANGE GET_PYMOL_SCRIPT FOR EACH GENE
+#   if all_genes_dict:
+#             dup, tandem_dup, long_introns, strict_search, \
+#             label1, label2, label3 = all_genes_dict[gene]
+
 
 """
 def open_options(gene_nr):

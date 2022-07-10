@@ -79,7 +79,7 @@ def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
     # GUI is used to run FREEDA
     if all_genes_dict:
         # check if strict search is needed
-        if all_genes_dict[gene][3] is True:
+        if all_genes_dict[gene][1] == "Common domains expected":
             t = 80
 
     # add empty "strand" column
@@ -153,10 +153,10 @@ def split_large_contigs(dataframes, gene, all_genes_dict):
     # GUI is used to run FREEDA
     if all_genes_dict:
         # check if long introns expected
-        if all_genes_dict[gene][2] is True:
+        if all_genes_dict[gene][0] == "Long introns expected (>50kb)":
             length = 200000
         # check if tandem duplication expected (overrides the long introns variable)
-        if all_genes_dict[gene][1] is True:
+        elif all_genes_dict[gene][0] == "Tandem duplication expected":
             length = 10000
 
     list_new_matches = []

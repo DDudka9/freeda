@@ -333,7 +333,7 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     base_name = contig.split("__")[0]
     seq = genome_index[str(base_name)].seq
     prefix, suffix = get_prefix_suffix(ref_species, start, len(seq), gene, all_genes_dict)
-    # try trim contig and add 100bp overhangs for later introny check
+    # try trim contig and add 10000bp overhangs for later introny check
     seq = seq[start - prefix: end + suffix]
     # if full contig lacks enough bp on either end, the Seq object
     # will have length 0 and needs to be created again from genome.index
@@ -360,25 +360,25 @@ def get_prefix_suffix(ref_species, start, seq_length, gene, all_genes_dict):
     """Generates extension for each contig"""
 
     # set length of the prefix and suffix extensions
-    if ref_species == "Hs":
-        length = 30000
-    else:
-        length = 10000
+    #if ref_species == "Hs":
+    #    length = 10000   # testing from 30000 07/05/2022
+    #else:
+    #    length = 10000
 
     # GUI is used to run FREEDA
-    if all_genes_dict:
-        # check if tandem duplication expected (overrides default length)
-        if all_genes_dict[gene][1] is True:
-            length = 10000
+    #if all_genes_dict:
+    #    # check if tandem duplication expected (overrides default length)
+    #    if all_genes_dict[gene][1] is True:
+    #        length = 10000
 
     prefix = 0
     longest_prefix = prefix
-    while prefix < start and prefix < length:
+    while prefix < start and prefix < 10000:
         prefix += 1
         longest_prefix = prefix
     suffix = 0
     longest_suffix = suffix
-    while suffix < seq_length and suffix < length:
+    while suffix < seq_length and suffix < 10000:
         suffix += 1
         longest_suffix = suffix
 
