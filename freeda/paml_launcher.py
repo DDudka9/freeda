@@ -1037,12 +1037,21 @@ def align_final_cds(wdir, gene, result_path):
     aligner = "mafft"
 
     # define which aligner is used
-    if aligner == "mafft":
+    #if aligner == "mafft":   # runs mafft in G-INS-i with VSM (Katoh et al., 2016 Bioinformatics)
+    #    cmd = ["mafft-ginsi", "--allowshift", "--unalignlevel", "0.8", "--out", gene_folder_path + out_msa, in_filepath]
+    #    subprocess.call(cmd)
+        # need to reorder seqs post msa
+        #fasta_reader.reorder_alignment(in_filepath, gene_folder_path + out_msa)
+        # returns the filename after MSA
+    #    return out_msa, aligner
+
+    # define which aligner is used
+    if aligner == "mafft":   # runs mafft in G-INS-i
         cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
                                  input=in_filepath,
                                  thread=-1,  # thread -1 is suppose to automatically calculate physical cores
                                  globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
-                                 maxiterate=1000)  # improves alignment -> FFT-NS-i; added 04/09/2022
+                                 maxiterate=1000)  # improves alignment -> added 04/09/2022
 
         # record standard output and standard error
         stdout, stderr = cline()

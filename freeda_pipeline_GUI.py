@@ -1853,68 +1853,6 @@ g5_adapt_more_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", sta
 g5_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g5_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
-
-# REMEMBER TO CHANGE GET_PYMOL_SCRIPT FOR EACH GENE
-#   if all_genes_dict:
-#             dup, tandem_dup, long_introns, strict_search, \
-#             label1, label2, label3 = all_genes_dict[gene]
-
-
-"""
-def open_options(gene_nr):
-
-    options_window = Toplevel()
-    options_window.title("Advanced options")
-    options_window.geometry("100x100")
-    label = Label(options_window, text="Advanced options")
-    label.grid(row=0, column=0)
-    frame = ttk.Frame(options_window, relief="ridge", padding="1 1 1 1")
-    frame.grid(row=0, column=0)
-
-    dup_var = BoleanVar()
-    duplication_option = Checkbutton(frame, text="Gene duplication expected",
-                                     variable=globals()["var{}".format(dup_var)])
-    globals()["var{}".format("Gene duplication expected")] = BooleanVar()
-    duplication_option.grid(row=0, column=0)
-    tandem_option = Checkbutton(frame, text="Gene duplication expected")
-    tandem_option.grid(row=0, column=1)
-    close_button = Button(options_window, text="Close", command=options_window.destroy)
-    close_button.grid(row=4, column=1)
-
-list_of_genes = ["gene_1", "gene_2", "gene_3", "gene_4", "gene_5"]
-options = ["Gene duplication expected",
-          "Tandem gene duplication expected",
-          "Long introns (>50kb) expected",
-          "Common domains expected"]
-
-text_value = StringVar()
-text_value.set("Advanced options")
-advanced_options = OptionMenu(gene1_duplication_frame, text_value, *options)
-advanced_options.grid(column=0, row=0, padx=2, pady=1, sticky=(W))
-
-for gene_nr in list_of_genes:
-    for option in options:
-        globals()["var{}".format(option)] = BooleanVar()
-        globals()["checkbox{}".format(option)] = Checkbutton(gene2_frame, text=option,
-                                                    variable=globals()["var{}".format(option)])
-
-def onselect(evt):
-    # Note here that Tkinter passes an event object to onselect()
-    w = evt.widget
-    x = 0
-    index = int(w.curselection()[0])
-    value = w.get(index)
-    print('You selected item %d: "%s"' % (index, value))
-
-    for option in options:
-        globals()["checkbox{}".format(option)].grid_forget()
-        globals()["checkbox{}".format(value)].grid(row=x, column=0)
-        # here you can add Text
-        x += 1
-
-#advanced_options.bind('<<ListboxSelect>>', onselect)
-"""
-
 try:
     root.mainloop()
 except KeyboardInterrupt as kie:
