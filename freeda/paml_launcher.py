@@ -1037,33 +1037,32 @@ def align_final_cds(wdir, gene, result_path):
     aligner = "mafft"
 
     # define which aligner is used
-    #if aligner == "mafft":   # runs mafft in G-INS-i with VSM (Katoh et al., 2016 Bioinformatics)
-    #    cmd = ["mafft-ginsi", "--allowshift", "--unalignlevel", "0.8", "--out", gene_folder_path + out_msa, in_filepath]
-    #    subprocess.call(cmd)
-        # need to reorder seqs post msa
-        #fasta_reader.reorder_alignment(in_filepath, gene_folder_path + out_msa)
-        # returns the filename after MSA
-    #    return out_msa, aligner
-
-    # define which aligner is used
-    if aligner == "mafft":   # runs mafft in G-INS-i
-        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
-                                 input=in_filepath,
-                                 thread=-1,  # thread -1 is suppose to automatically calculate physical cores
-                                 globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
-                                 maxiterate=1000)  # improves alignment -> added 04/09/2022
-
-        # record standard output and standard error
-        stdout, stderr = cline()
-        # make a post-MSA file using out_filename
-        with open(out_msa, "w") as f:
-            f.write(stdout)
-        shutil.move(out_msa, gene_folder_path)
-
+    if aligner == "mafft":   # runs mafft in G-INS-i with VSM (Katoh et al., 2016 Bioinformatics) 07/10/2022
+        cmd = [pyinstaller_compatibility.resource_path("mafft-ginsi"), "--allowshift", "--unalignlevel", "0.8",
+               "--out", gene_folder_path + out_msa, in_filepath]
+        subprocess.call(cmd)
         # returns the filename after MSA
         return out_msa, aligner
 
-    if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
+    # define which aligner is used
+    #elif aligner == "mafft":   # runs mafft in G-INS-i
+    #    cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
+    #                             input=in_filepath,
+    #                             thread=-1,  # thread -1 is suppose to automatically calculate physical cores
+    #                             globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
+    #                             maxiterate=1000)  # improves alignment -> added 04/09/2022
+    #
+    #    # record standard output and standard error
+    #    stdout, stderr = cline()
+    #    # make a post-MSA file using out_filename
+    #    with open(out_msa, "w") as f:
+    #        f.write(stdout)
+    #    shutil.move(out_msa, gene_folder_path)
+    #
+    #    # returns the filename after MSA
+    #    return out_msa, aligner
+
+    elif aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
 
         cmd = ['muscle', "-in", in_filepath, "-quiet", "-maxiters", "2", "-out", gene_folder_path + out_msa]
         subprocess.call(cmd)
@@ -1073,7 +1072,7 @@ def align_final_cds(wdir, gene, result_path):
         # returns the filename after MSA
         return out_msa, aligner
 
-    if aligner == "prank":
+    elif aligner == "prank":
 
         cline = PrankCommandline(d=in_filepath,
                                        o=out_msa,  # prefix only!

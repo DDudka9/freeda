@@ -364,9 +364,9 @@ if __name__ == '__main__':
     parser.add_argument("-rs", "--ref_species",
                         help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
+                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=80)
     parser.add_argument("-f", "--codon_frequencies",
-                        help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4")
+                        help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4, F61")
     parser.add_argument("-es", "--excluded_species",
                         help="specify species to exclude (e.g. Ha Gs)", type=str, default="")
 

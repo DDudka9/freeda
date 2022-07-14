@@ -282,8 +282,13 @@ def get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel
     - converts sites < 0.90 into 0.00"""
 
     consensus_dict = {}
+
+    # the gene is not under positive selection
+    if gene not in genes_under_pos_sel["F3X4"] and gene not in genes_under_pos_sel["F61"]:
+        return consensus_dict
+
     # check if consensus is to be built (more than one codon frequency used)
-    if len(all_matched_adaptive_sites_ref.keys()) > 1 and gene in genes_under_pos_sel["F3X4"] \
+    elif len(all_matched_adaptive_sites_ref.keys()) > 1 and gene in genes_under_pos_sel["F3X4"] \
             and gene in genes_under_pos_sel["F61"]:
         consensus_dict[gene] = {}
         # compare probabilities at each position between models
@@ -321,10 +326,10 @@ def get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel
             position_F61 = all_matched_adaptive_sites_ref["F61"][gene][str(position)]
             consensus_dict[gene][str(position)] = position_F61
 
+    # only one model was invoked
     elif len(all_matched_adaptive_sites_ref.keys()) == 1:
 
         consensus_dict[gene] = {}
-        # only one model
         for position in range(1,
                               len(all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][
                                       gene]) + 1):
@@ -333,7 +338,8 @@ def get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel
             consensus_dict[gene][str(position)] = positions
 
     else:
-        print("Something went wrong with the consensus dict")
+        message = "Something went wrong with the consensus dict"
+        logging.info(message)
 
     return consensus_dict
 
@@ -350,14 +356,13 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
 
     # get consensus (more than one codon frequency used)
     consensus_dict = get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel)
-    matched_adaptive_sites_ref = consensus_dict[gene]
+    #matched_adaptive_sites_ref = consensus_dict[gene]
 
-    # if consensus_dict:
-    #    matched_adaptive_sites_ref = consensus_dict[gene]
-    # else:
-    #    matched_adaptive_sites_ref = all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][gene]
-    # pick the first key
-    # (only one codon model)
+    if consensus_dict:
+        matched_adaptive_sites_ref = consensus_dict[gene]
+    # pick the first key; only one codon model
+    else:
+        matched_adaptive_sites_ref = all_matched_adaptive_sites_ref[next(iter(all_matched_adaptive_sites_ref))][gene]
 
     structure_prediction_path = wdir + "Structures/" + gene + "_" + ref_species
 

@@ -611,7 +611,6 @@ def freeda_pipeline():
         if pyinstaller_compatibility.is_bundled():
             os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
             os.environ["REQUESTS_CA_BUNDLE"] = pyinstaller_compatibility.resource_path("certifi/cacert.pem")
-            #os.environ["PATH"] += os.pathsep + pyinstaller_compatibility.resource_path("")
 
         # ----------------------------------------#
         ######## INSTALL PYMOL IF NEEDED ########
