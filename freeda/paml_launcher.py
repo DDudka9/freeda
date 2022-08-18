@@ -147,7 +147,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             # log species
             final_species_headers.insert(0, ref_species)
             nr_of_species = len(final_species_headers)
-            nr_of_species_total_dict[gene] = nr_of_species
+            #nr_of_species_total_dict[gene] = nr_of_species
 
             message = "\n\n --------- * %s * --------- \n\n" % gene
             print(message)
@@ -244,10 +244,11 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             check_compatibility(ref_species, gene, translated_path)
 
             # correct number of species in the final analysis
-            nr_of_species = nr_of_species - len(to_delete)
+            final_nr_of_species = nr_of_species - len(to_delete)
+            nr_of_species_total_dict[gene] = final_nr_of_species
             final_species_headers = [species for species in final_species_headers if species not in to_delete]
             message = "\n Final species cloned and aligned (+ ref) for %s : %s %s \n" \
-                      % (gene, str(nr_of_species), str(final_species_headers))
+                      % (gene, str(final_nr_of_species), str(final_species_headers))
             print(message)
             logging.info(message)
 
@@ -1040,6 +1041,15 @@ def align_final_cds(wdir, gene, result_path):
     if aligner == "mafft":   # runs mafft in G-INS-i with VSM (Katoh et al., 2016 Bioinformatics) 07/10/2022
         cmd = [pyinstaller_compatibility.resource_path("mafft-ginsi"), "--allowshift", "--unalignlevel", "0.8",
                "--out", gene_folder_path + out_msa, in_filepath]
+        subprocess.call(cmd)
+        # returns the filename after MSA
+        return out_msa, aligner
+
+    if aligner == "guidance":
+        guidance_path = "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/include_mac/www/Guidance/guidance.pl"
+        cmd = ["perl", guidance_path, "--seqFile", in_filepath, "--msaProgram", "MAFFT", "--mafft",
+               pyinstaller_compatibility.resource_path("mafft-ginsi"), "--seqType", "nuc",
+               "--outDir", gene_folder_path + out_msa, "--outOrder", "as_input"]
         subprocess.call(cmd)
         # returns the filename after MSA
         return out_msa, aligner

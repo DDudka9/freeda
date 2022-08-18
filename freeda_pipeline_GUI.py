@@ -14,26 +14,15 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #       0) PCNT in primates has some duplicated domains -> ilke TACC3 -> cds doesnt 100% match gene in alignment
 #                   -> code a sliding window in input extractor to scan genomic sequence for duplicates
 #                   e.g. stretch of 30bp and then look for it in the cds -> if a match -> delete from cds
-#       0) Implement blast treshold ("More stringent search" - 80%)
-#       0) Drawback of using long contigs -> H3C1 has clusters of histone 3 genes, messes alignment
-#                   -> implement "Tandem duplication expecred" -> limit range of matches to e.g. 10kb
 #       0) FREEDA gets stuck sometimes - Ccnd3 Ap contig BDUI01012397.1__rev runs over 1h never aligns
 #                   -> same for Wasf2 Ay or Ap (cant remeber)
 #       0) Modify the check comparing cloned Rn to ensembl Rn -> surely takes indels into account (e.g. Vash2 Rn 49%)
 #       0) Add a check for min numbr of species? e.g. 8?
 #       0) Include filtered evalue in tblastn -> sometimes matches occur twice in the same (overlaping) region of
-#                   a contig e.g. Tpx2 Mp LT608307.1_for
+#                   a contig e.g. Tpx2 Mp LT608307.1_for -> I decided not to do that cose multiple proteins have evalue
+#                       >0.01 for legitimate exons and we loose power; Tpx2 case is rare
 #       0) Test blastn instead of tblastn -> maybe faster, less hits?
-#       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason
 #       0) Suggest to users that first debugging tip is to clear all folders except Genomes (takes longer to regenerate)
-#       0) PRANK alignment of Dlgap5 leads to no positive selection with 12 species (does score with 16 though)
-#                               -> try improve MAFFT alignment by -maxiters 1000
-#                                               (improved alignment marginally, not different in time)
-#                               -> globalpair or globalpair did not change much -> left globalpair
-#                               -> I decided to use PRANK instead of Mafft in final cds alignment
-#                                   -> that did not change result for Haus1-Haus8 but Haus6 is now marginally posititve
-#                                                                           (0.044 instead of 0.012)
-#                               -> test PRANK on single exon alignments
 #       0) Alternative explanations for positive selection:
 #               - polymorphism -> how to check?
 #               - intron/exon bounderies -> check by copying ref species sequence and CTRL+F against exons fasta file
@@ -49,7 +38,8 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #               -> PAML graph also shows sites in NUMA1 F3X4 model -> DONE (I think ->test on NUMA1)
 #                   -> it works but structure overlays only F61 sites that also score in F3X4
 #                                                                       (even if this model is rejected)
-#               -> it turns out that actually freeda picks the first codon model if consensus dict is not neded (fix it)
+#               -> it turns out that actually freeda picks the first codon model if consensus dict is not needed
+#                               (this is an issue only for command line where user could pick F61 only)
 #       0) Test current folder scheme using command line
 #       0) When F61 scores only, then structure has these residues -> its ok, command line can run only F61
 #       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0
@@ -78,13 +68,6 @@ and molecular evolution analysis (PAML) followed by overlay of putative adaptive
 #       0) Consider showing only 0.95 adaptive sites on structure if more than 20 sites -> no, that is not fair
 #                       or only 0.99 when more than 50 sites -> not sure
 #       0) Either disable the interpro domains or restrict them even more (too overlapping) -> not sure
-#       0) Change pr >= 0.9 residues to black if 0 -> DONE
-#       0) Make a file from the list of genomes -> will allow users to add more genomes are more is being sequenced
-#                   -> DONE -> much better to just release new FREEDA app !!!
-#       0) General issue -> Traceback are not logged in, in case of crashing the GUI will not stop
-#                               -> confusing for user
-#                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
-#                           -> tried to add it as a try/except statement -> doesnt work
 #       0) Figures:
 #               1) Accuracy - Show both ways (rat and mouse)
 #                           - Show dealing with duplications (Pot1a and Pot1b?)
@@ -622,7 +605,8 @@ def freeda_pipeline():
                 logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
                 structure_builder.install_pymol_linux(wdir)
             else:
-                message = "\n...FATAL ERROR... : PyMOL not installed. Install PyMOL online from: https://pymol.org/\n"
+                message = "\nWELCOME! It seems that you are running FREEDA\nfor the first time -> " \
+                          "Please download PyMOL from:\n\nhttps://pymol.org/\n\nand place it in the Applications folder"
                 logging.info(message)
                 ublock_user_entries()
                 return

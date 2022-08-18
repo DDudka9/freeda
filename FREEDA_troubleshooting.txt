@@ -1002,3 +1002,27 @@ Add "Strict search" -> 80% threshold -> DONE
 
 Restrict contig splitting back to 30kb (from 200kb)
     Add "Long introns" button -> 200kb (advised for >50kb introns) -> DONE
+
+07/16/2022
+
+#       0) Implement blast treshold ("More stringent search" - 80%) -> DONE
+#       0) Drawback of using long contigs -> H3C1 has clusters of histone 3 genes, messes alignment
+#                   -> implement "Tandem duplication expecred" -> limit range of matches to e.g. 10kb -> DONE
+#       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason -> FIXED (somewhat)
+                -> scoring the number of times a given name is present in uniprot table from requests
+        0) PRANK alignment of Dlgap5 leads to no positive selection with 12 species (does score with 16 though)
+#                               -> try improve MAFFT alignment by -maxiters 1000
+#                                               (improved alignment marginally, not different in time)
+#                               -> globalpair or globalpair did not change much -> left globalpair
+#                               -> I decided to use PRANK instead of Mafft in final cds alignment
+#                                   -> that did not change result for Haus1-Haus8 but Haus6 is now marginally posititve
+#                                                                           (0.044 instead of 0.012)
+#                                   -> went back to mafft but with overalignmet protection (Katoh et al., 2016 Bioinformatics)
+#                               -> test PRANK on single exon alignments
+#       0) Change pr >= 0.9 residues to black if 0 -> DONE
+#       0) Make a file from the list of genomes -> will allow users to add more genomes are more is being sequenced
+#                   -> DONE -> much better to just release new FREEDA app !!! -> deprecated
+#       0) General issue -> Traceback are not logged in, in case of crashing the GUI will not stop
+#                               -> confusing for user
+#                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
+#                           -> tried to add it as a try/except statement -> fixed

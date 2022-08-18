@@ -34,7 +34,7 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
     query_path = wdir + "Blast_input/"  # Coding_sequences/
     output_path = wdir + "Blast_output/"
     task = "blastn"  # this is to delete
-    evalue = "0.01"
+    #evalue = "0.01"  decided not to use it as some legitimate exons were omitted
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means " \
            "bitscore length means pident means mismatch means gapopen means qlen means slen means"
 
@@ -62,7 +62,7 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
             database = database_path + genome + ".fasta"
             query = query_path + gene + "_" + ref_species + "_protein.fasta"  # from _cds.fasta
             output = output_path + gene + "_" + genome + ".txt"
-            to_blast = [tblastn_path, "-db", database, "-query", query, "-evalue", evalue,  # added evalue 05_12_2022
+            to_blast = [tblastn_path, "-db", database, "-query", query,  # added evalue 05_12_2022; removed 07_16_2022
                         "-out", output, "-outfmt", form, "-num_threads", "8"]
             #to_blast = [tblastn_path, "-db", database, "-query", query, "-task", task, "-evalue", evalue,
             #            "-out", output, "-outfmt", form, "-num_threads", "8"]
@@ -124,48 +124,69 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
              "PongoAbelli_genome": 3103792067,
              "NomascusLeucogenys_genome": 2879637870,
              "HylobatesMoloch_genome": 2885571806,
+             "SymphalangusSyndactylus_genome": 2808876019,  # added 08/17/22
+             "HoolockLeuconedys_genome": 2820095160,  # added 08/17/22
              "CercopithecusMona_genome": 2939174695,
              "MacacaMulatta_genome": 3075206655,
              "PapioAnubis_genome": 2906552752,
              "ChlorocebusSabaeus_genome": 2975174619,
+             "ErythrocebusPatas_genome": 3136127270,  # added 08/17/22
+             "MandrillusSphinx_genome": 2872009988,  # added 08/17/22
+             "LophocebusAterrimus_genome": 2940078738,  # added 08/17/22
              "TrachypithecusFrancoisi_genome": 2938846753,
              "PiliocolobusTephrosceles_genome": 3080829369,
+             "RhinopithecusStrykeri_genome": 2971349299,  # added 08/17/22
+             "PygathrixNigripes_genome": 2932771300,  # added 08/17/22
              "PitheciaPithecia_genome": 3060979898,
              "AotusNancymaae_genome": 2900243235,
              "PlecturocebusDonacophilus_genome": 3112365802,
              "AlouattaPalliata_genome": 3188439879,
              "CallithrixJacchus_genome": 2761618951,
              "SaimiriBoliviensis_genome": 2684668098,
-             "AtelesGeoffroyi_genome": 3020749703}
+             "AtelesGeoffroyi_genome": 3020749703,
+             "CebusAlbifrons_genome": 2910572252,  # added 08/17/22
+             "SapajusApella_genome": 2794074315}  # added 08/17/22
 
     carnivora = {"CanisFamiliaris_genome": 2705909865,
+           "SpeothosVenaticus_genome": 2351270082,
+           "VulpesFerrilata_genome": 2409426090,
            "UrsusMaritimus_genome": 2359879905,
+           "UrsusAmericanus_genome": 2631398004,
            "MiroungaLeonina_genome": 2447526042,
            "OdobenusRosmarus_genome": 2430488797,
            "ZalophusCalifornianus_genome": 2439711162,
            "AilurusFulgens_genome": 2373290453,
            "ProcyonLotor_genome": 2283274334,
+           "MelesMeles_genome": 2772983809,
+           "GuloGulo_genome": 2287813027,
+           "MustelaNigripes_genome": 2418506728,
            "LutraLutra_genome": 2365629721,
            "SpilogaleGracilis_genome": 2540140529,
            "ParadoxurusHermaphroditus_genome": 2559496470,
            "CryptoproctaFerox_genome": 2539739378,
            "SuricataSuricatta_genome": 2389361575,
            "HyaenaHyaena_genome": 2512114800,
+           "PantheraTigris_genome": 2437681936,
+           "LynxRufus_genome": 2469754470,
            "FelisCatus_genome": 2486898359}
 
     phasianidae = {"GallusGallus_genome": 1248683961,
                "BambusicolaThoracicus_genome": 1061115573,
-               "AlectorisRufa_genome": 1041225438,
+               "PavoCristatus_genome": 0,  # added 08/17/22
                "PavoMuticus_genome": 1074499003,
                "MeleagrisGallopavo_genome": 1158971686,
                "CentrocercusUrophasianus_genome": 1023355947,
+               "CentrocercusMinimus_genome": 0,  # added 08/17/22
                "LyrurusTetrix_genome": 748849483,
                "LagopusLeucura_genome": 1029379726,
+               "LagopusMuta_genome": 0,  # added 08/17/22
                "TympanuchusCupido_genome": 997281378,
                "ChrysolophusPictus_genome": 1038257264,
                "PhasianusColchicus_genome": 1034344338,
                "CrossoptilonMantchuricum_genome": 1026225886,
                "SyrmaticusMikado_genome": 1086380439,
+               "LophuraNycthemera_genome": 0,  # added 08/17/22
+               "AlectorisRufa_genome": 1041225438,
                "CoturnixJaponica_genome": 939336855}
 
     # define clade
@@ -225,7 +246,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         genome_file_databases = False
 
         # check if genome database is present (most cases)
-        if genome + ".fasta.pal" in all_files and genome + ".fasta.nin" in all_files:
+        if genome + ".fasta.nin" in all_files:  # removed .pal 08/16/2022
             message = "\nGenome : %s blast database already exists" % genome
             logging.info(message)
             genome_file_databases = True
@@ -252,7 +273,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                     all_files.append(f)
 
             # failed to build databases
-            if genome + ".fasta.pal" not in all_files or genome + ".fasta.nin" not in all_files:
+            if genome + ".fasta.nin" not in all_files:  # removed .pal 08/16/2022
                 message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
                               "\n     -> exiting the pipeline now..." % genome
                 logging.info(message)
@@ -303,7 +324,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                     all_files.append(f)
 
             # failed to build databases
-            if genome + ".fasta.pal" not in all_files or genome + ".fasta.nin" not in all_files:
+            if genome + ".fasta.nin" not in all_files:  # removed .pal 08/16/2022
                 message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
                       "\n     -> exiting the pipeline now..." % genome
                 logging.info(message)

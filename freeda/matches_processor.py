@@ -365,20 +365,21 @@ def get_prefix_suffix(ref_species, start, seq_length, gene, all_genes_dict):
     #else:
     #    length = 10000
 
+    length = 10000
     # GUI is used to run FREEDA
-    #if all_genes_dict:
-    #    # check if tandem duplication expected (overrides default length)
-    #    if all_genes_dict[gene][1] is True:
-    #        length = 10000
+    if all_genes_dict:
+        # check if long exons are expected (overrides default length)
+        if all_genes_dict[gene][1] is True:
+            length = 30000
 
     prefix = 0
     longest_prefix = prefix
-    while prefix < start and prefix < 10000:
+    while prefix < start and prefix < length:
         prefix += 1
         longest_prefix = prefix
     suffix = 0
     longest_suffix = suffix
-    while suffix < seq_length and suffix < 10000:
+    while suffix < seq_length and suffix < length:
         suffix += 1
         longest_suffix = suffix
 

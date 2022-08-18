@@ -266,7 +266,8 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
 
     valid_uniprot_ids = 0
     for uniprot_id in possible_uniprot_ids:
-        url = "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + "-F1-model_v1.pdb"
+        model_version = "-F1-model_v3.pdb"  # AlphaFold database updated to v3 since writing this module
+        url = "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + model_version
         try:
             r = requests.get(url)
             r.raise_for_status()  # Raises an HTTPError if the return code is 4xx or 5xx
