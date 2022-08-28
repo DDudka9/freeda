@@ -2119,6 +2119,26 @@ def get_available_species(ref_species):
                    "Rr": "RattusRattus",
                    "Rn": "RattusNorvegicus"}
 
+    if ref_species == "Rn":
+        species = {"Rr": "RattusRattus",
+                   "Rs": "RhynchomysSoricoides",
+                   "Rd": "RhabdomysDilectus",
+                   "An": "ArvicanthisNiloticus",
+                   "Gs": "GrammomysSurdaster",
+                   "Gd": "GrammomysDolichurus",
+                   "Mo": "MastomysCoucha",
+                   "Mn": "MastomysNatalensis",
+                   "Pd": "PraomysDelectorum",
+                   "Ha": "HylomyscusAlleni",
+                   "Ap": "ApodemusSpeciosus",
+                   "Ay": "ApodemusSylvaticus",
+                   "Mp": "MusPahari",
+                   "Mu": "MusMinutoides",
+                   "Mc": "MusCaroli",
+                   "Ms": "MusSpretus",
+                   "Mi": "MusSpicilegus",
+                   "Mm": "MusMusculus"}
+
     elif ref_species == "Hs":
         species = {"Pt": "PanTroglodytes",
                       "Gg": "GorillaGorilla",
@@ -2267,7 +2287,7 @@ def extend_abbreviations(ref_species):
              "Sa": "Sapajus apella (Sa)"}  # added 08/17/22 (Nanopore)
 
     dog = {"Cf": "Canis familiaris (Cf)",
-           "Sv": "Speothos venaticus",
+           "Sv": "Speothos venaticus (Sv)",
            "Vf": "Vulpes ferrilata (Vf)",
            "Um": "Ursus maritimus (Um)",
            "Ua": "Ursus americanus (Ua)",

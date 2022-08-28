@@ -61,7 +61,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if ref_species is None:
         ref_species = "Mm"
-    elif ref_species not in ["Mm", "Hs", "Cf", "Gg", "Fc"]:  # added Fc 08/16/2022
+    elif ref_species not in ["Mm", "Hs", "Rn", "Cf", "Gg", "Fc"]:  # added Fc 08/16/2022
         print("\n...FATAL_ERROR... : Invalid reference species (try: Mm for mouse, Hs for human) "
               "-> exiting the pipeline now...")
         return
@@ -236,8 +236,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                 return
 
             if not model_matches_input:
-                print("...WARNING... : No matching structure prediction model is available for : %s "
-                      "-> cannot overlay FREEDA results onto a 3D structure\n" % gene)
+                print("...WARNING... : No entry in searched Ensembl release matches prediction model for : %s [%s] "
+                      "-> cannot overlay FREEDA results onto a 3D structure\n" % (gene, uniprot_id))
                 print("...WARNING... : Gene will still be analyzed using PAML but without 3D structure overlay\n")
 
 
@@ -362,7 +362,7 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Ms")
+                        help="specify reference organism (default is mouse)", type=str, default="Rn")
     parser.add_argument("-t", "--blast_threshold",
                         help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",

@@ -659,8 +659,8 @@ def freeda_pipeline():
                 return
 
             if not model_matches_input:
-                message = "\n...WARNING... : No matching structure prediction model is available for : %s " \
-                      "-> cannot overlay FREEDA results onto a 3D structure\n" % gene
+                message = "\n...WARNING... : No entry in searched Ensembl release matches prediction model for : %s [%s] " \
+                      "-> cannot overlay FREEDA results onto a 3D structure\n" % (gene, uniprot_id)
                 logging.info(message)
 
         # ----------------------------------------#

@@ -191,8 +191,10 @@ def get_uniprot_id(ref_species, gene):
         ref_species_number = "9031"
 
     possible_uniprot_ids = []
+    reviewed_entry = False
+    # AlphaFold flags "reviewed" protein with "GENENAME_MOUSE" so name count helps to find canonical version
     name_count = 0
-    last_id = None
+    best_id = None
 
     query = "https://rest.uniprot.org/uniprotkb/search?query=gene_exact:" + gene + "+AND+taxonomy_id:" + \
             ref_species_number + "&format=tsv"
@@ -203,44 +205,49 @@ def get_uniprot_id(ref_species, gene):
         data.raise_for_status()  # Raises an HTTPError if the return code is 4xx or 5xx
         data_text = data.text  # gets a string from tab format
         data_list = data_text.split("\n")
+
+        # record reviewed entry
         for element in data_list:
             # it might help to resolve multiple proteins under same alternative gene name
             current_name_count = element.count(gene) + element.count(gene.upper())
             # uniprot ID is always under "Entry" which is the first element
             possible_id = element.split("\t")[0]
+            # define if entry is reviewed
+            try:
+                reviewed = element.split("\t")[2]
+            except IndexError:  # when empty element
+                continue
             if current_name_count > name_count:
                 name_count = current_name_count
-                last_id = possible_id
-            if possible_id != "Entry":
+                best_id = possible_id
+            if possible_id != "Entry" and reviewed.upper() == "REVIEWED":  # only consider "reviewed" entries
                 possible_uniprot_ids.append(possible_id)
 
+        if not possible_uniprot_ids:
+            # get the first non-reviewed entry (limited chance that this entry will have an AlphaFold prediction)
+            for element in data_list:
+                # uniprot ID is always under "Entry" which is the first element
+                possible_id = element.split("\t")[0]
+                if possible_id != "Entry" and possible_id != "":
+                    possible_uniprot_ids.append(possible_id)
+                    break
+            return possible_uniprot_ids
+
+        # there was no entries, including non-reviewed ones
+        if not possible_uniprot_ids:
+            return possible_uniprot_ids
+
         # put the id with highest probability (name_count) last -> make a dict (remove duplicates) from list and back
-        # to list, then append last_id
+        # to list, then append best_id
         id_list = list(dict.fromkeys(possible_uniprot_ids))
         # need to get rid of the last id to prevent duplications
-        if last_id:
-            id_list.remove(last_id)
-            id_list.append(last_id)
+        if best_id:
+            id_list.remove(best_id)
+            id_list.append(best_id)
         possible_uniprot_ids = id_list
 
-        # there is an empty row sometimes
-        possible_uniprot_ids.remove("")
     except HTTPError:
         pass
-
-    # DEPRECATED as of 06/28/2022 ???
-    # generate a search for given gene
-    #u = UniProt(verbose=False)
-    #data = u.search(gene + "+and+taxonomy:" + ref_species_number, frmt="tab", limit=10,
-    #         columns="genes,length,id")
-
-    #data_list = data.split("\n")
-    #for line in data_list:
-    #    elements = line.split("\t")
-    #    names = elements[0].split(" ")
-    #    for n in names:
-    #        if gene.upper() == n.upper():
-    #            possible_uniprot_ids.add(elements[2])
 
     return possible_uniprot_ids
 
@@ -264,7 +271,7 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
     model_seq = ""
     gene_filepath = wdir + gene + "_" + ref_species + ".pdb"
 
-    valid_uniprot_ids = 0
+    valid_uniprot_ids = []
     for uniprot_id in possible_uniprot_ids:
         model_version = "-F1-model_v3.pdb"  # AlphaFold database updated to v3 since writing this module
         url = "https://alphafold.ebi.ac.uk/files/AF-" + uniprot_id + model_version
@@ -274,22 +281,24 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
             with open(gene_filepath, "wb") as f:
                 f.write(r.content)
             retrieved_uniprot_id = uniprot_id
-            valid_uniprot_ids += 1
+            valid_uniprot_ids.append(retrieved_uniprot_id)
         except HTTPError:
             pass
 
-    # more than one uniprot id is associated with Alpha Fold address (likely two proteins share a gene name)
+    # more than one uniprot id is associated with Alpha Fold address
     # e.g. Spc25 and Spcs2 (alt. name Spc25)
-    if valid_uniprot_ids > 1 :
-        message = "...WARNING... : More than one valid protein detected under provided gene name: %s\n" % gene
+    if len(valid_uniprot_ids) > 1 :
+        message = "...WARNING... : More than one valid structure prediction %s detected for: %s\n" \
+                  % (gene, valid_uniprot_ids)
         logging.info(message)
 
     if not os.path.isfile(gene_filepath):
-        message = "...WARNING... : Structure prediction for gene: %s HAS NOT BEEN FOUND " \
+        message = "...WARNING... : Structure prediction for gene: %s could not be fetched " \
                   "-> Cannot overlay FREEDA results onto a 3D structure\n" % gene
         logging.info(message)
         with open(structure_path + "/model_incompatible.txt", "w") as f:
-            f.write("No model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
+            f.write("Either no reviewed entry is present in searched Ensembl release for the gene name provided or "
+                    "no model has been found in AlphaFold database. Cannot overlay FREEDA results onto a 3D structure.")
         uniprot_id = None
 
         return model_seq, uniprot_id
@@ -352,7 +361,7 @@ def generate_ref_genome_object(wdir, ref_species):
     elif ref_species == "Fc":
         ref_genome_name = "FelisCatus_genome"
         species = "felis catus"
-        release = 90
+        release = 90  # changed from 90 08/23/22
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     elif ref_species == "Cf":
@@ -457,6 +466,12 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
 
     # check if all expected reference exons are found in the expected reference gene sequnce
     if not check_exons_gene_compatibility(wdir, ref_species, gene):
+        input_correct = False
+
+    # sometimes poorly curated sequences would have masked residues "N" -> cannot analyse that
+    if "N" in cds_sequence_expected:
+        message = "...WARNING... : There are masked bases in the reference coding sequence -> cannot analyse"
+        logging.info(message)
         input_correct = False
 
     return input_correct, model_matches_input, microexon_present, microexons
@@ -940,7 +955,7 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
 
     # some gene names in ensembl do not code proteins -> exit pipeline
     if not selected_transcript_id:
-        message = "\n...FATAL ERROR... : Gene name %s does not have a coding transcript" % gene
+        message = "\n...FATAL ERROR... : No reliable coding sequence annotation detected for gene %s" % gene
         logging.info(message)
         return transcript, selected_transcript_id, gene_id, contig, strand, \
                UTR_5, UTR_3, cds_sequence_expected, matching_length
