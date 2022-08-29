@@ -960,6 +960,8 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
         return transcript, selected_transcript_id, gene_id, contig, strand, \
                UTR_5, UTR_3, cds_sequence_expected, matching_length
 
+
+
     # unpack features of the selected transcript
     gene_id, contig, strand, transcript_name, start, end, \
     cds_sequence_expected, length = all_transcripts_dict[selected_transcript_id]
