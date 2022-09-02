@@ -710,6 +710,7 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
     return matched_adaptive_sites_ref
 
 
+
 def get_omegas(gene, result_path, final_length, codon_frequency):
     """Gets Dn/Ds ratio (omega) for each site in aa seq of reference species"""
     
