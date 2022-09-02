@@ -1026,3 +1026,20 @@ Restrict contig splitting back to 30kb (from 200kb)
 #                               -> confusing for user
 #                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
 #                           -> tried to add it as a try/except statement -> fixed
+
+	1. Cenpf rat crashed:
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda_pipeline.py", line 375, in <module>
+    codon_frequencies=args.codon_frequencies, excluded_species=args.excluded_species)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda_pipeline.py", line 324, in freeda_pipeline
+    day, genes_under_pos_sel, failed_paml, codon_frequencies)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda/paml_visualizer.py", line 48, in analyze_PAML_results
+    genes_under_pos_sel, gui, codon_frequency)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda/paml_visualizer.py", line 388, in plot_PAML
+    omega_dict = get_omegas(gene, result_path, final_length, codon_frequency)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda/paml_visualizer.py", line 768, in get_omegas
+    if int((values[-4]).lstrip("(").rstrip(")")) == 11:
+IndexError: list index out of range
+
+Turns out that rat coding sequences in Ensembl may contains masked residues (residue 7354 in PAML template is "N") and so translation gives "X" and so the final length in PAML_result_dict (rst file) is 2919 instead of actual 2920 -> index out of range
+-> normally this should not happen for curated sequences but a quick fix would be to raise FATAL ERROR when getting coding sequence

@@ -470,7 +470,7 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
 
     # sometimes poorly curated sequences would have masked residues "N" -> cannot analyse that
     if "N" in cds_sequence_expected:
-        message = "...WARNING... : There are masked bases in the reference coding sequence -> cannot analyse"
+        message = "\n...WARNING... : There are masked bases in the reference coding sequence -> cannot analyse"
         logging.info(message)
         input_correct = False
 
