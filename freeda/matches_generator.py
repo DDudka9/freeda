@@ -95,7 +95,7 @@ def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
     
     # if not, increase identity threshold until getting < 40 matches
     else:
-        while len(matches_above_threshold) > 100:  # changed to 100 01/09/2022
+        while len(matches_above_threshold) > 100 and t < 90:  # changed to 100 01/09/2022 and added threshold break 10/06/22
             t = t + 5
             threshold = matches["pident"] > t
             m = matches[threshold]

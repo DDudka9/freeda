@@ -176,4 +176,12 @@ cython_debug/
 # large files
 sequences.fasta
 /include_mac_old_good/
+/include_mac/
 /venvMAC/
+/venMAC2/
+/venMAC3/
+/venMAC4/
+/venMAC5/
+/codesigning/
+/build/
+/dist/

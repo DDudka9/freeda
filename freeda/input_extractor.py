@@ -716,12 +716,12 @@ def extract_exons(wdir, ref_species, gene, exons_input_path, ref_genomes_path, r
         exons_file.write(exon_sequence + "\n")
 
     if start_codon_present is False:
-        message = "\nFirst exon in: %s in missing a START codon!!!\n" % header.split("_")[0].replace(">","")
+        message = "\nFirst exon in: %s is missing a START codon!!!\n" % header.split("_")[0].replace(">","")
         logging.info(message)
         input_correct = False
 
     if stop_codon_present is False:
-        message = "\nLast exon in: %s in missing a STOP codon!!!\n" % header.split("_")[0].replace(">","")
+        message = "\nLast exon in: %s is missing a STOP codon!!!\n" % header.split("_")[0].replace(">","")
         logging.info(message)
         input_correct = False
 
