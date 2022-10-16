@@ -3,7 +3,8 @@
 """
 Created on Sun May  9 14:12:04 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
+
 """
 
 from freeda import fasta_reader
@@ -56,7 +57,6 @@ def analyze_PAML_results(wdir, result_path, all_genes, nr_of_species_total_dict,
         # if all_matched_adaptive_sites_ref dictionary was not generated (all genes failed paml)
         # or no species in alignment (no protein alignment)
         except KeyError:
-            #return
             continue
 
     final_PAML_log_dict = {}
@@ -87,9 +87,6 @@ def get_alignment_matching_structure(result_path, ref_species, gene, dictionary)
     aa_features_dict = dictionary[next(iter(dictionary))][gene]  # next(iter(dictionary)) gets first key
     filename = gene + "_protein_alignment.fasta"
     all_seq_dict = fasta_reader.alignment_file_to_dict(result_path, ref_species, filename)
-
-    # remove alignment file (since its not needed anymore here)
-    #os.remove(result_path + filename)
 
     # make temporary dictionary donor of aa
     temp_seq_dict = {}
@@ -159,8 +156,6 @@ def read_output_PAML(result_path, PAML_logfile_name, all_matched_adaptive_sites_
             for key, values in PAML_log_dict.items():
                 if key == "Gene name":
                     PAML_log_dict[key].append(gene)
-                #elif "p-value" in key:
-                #    PAML_log_dict[key].append("1")
                 else:
                     PAML_log_dict[key].append("NA")
 
@@ -311,7 +306,7 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day, codon_freque
     header_count = 1
     for header in headers:
         
-        # THIS IS MOST LIKELY NOT NEEDED (CHECK)
+        # THIS IS MOST LIKELY NOT NEEDED
         head = heads.pop(0)
         ws.cell(row=1, column=header_count, value=head)
         
@@ -402,8 +397,9 @@ def collect_entries(wdir):
                ws1["F1"], ws1["G1"], ws1["H1"], ws1["I1"], ws1["J1"]]
     heads = list(PAML_log_dict.keys())
     header_count = 1
+
     for header in headers:
-        # THIS IS MOST LIKELY NOT NEEDED (CHECK)
+        # THIS IS MOST LIKELY NOT NEEDED
         head = heads.pop(0)
         ws1.cell(row=1, column=header_count, value=head)
 
@@ -793,7 +789,6 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
             matched_adaptive_sites_ref[site] = [aa[1], "0.000", "0.000"]
 
     return matched_adaptive_sites_ref
-
 
 
 def get_omegas(gene, result_path, final_length, codon_frequency):

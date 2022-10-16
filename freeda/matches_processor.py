@@ -3,7 +3,7 @@
 """
 Created on Wed Mar 24 17:40:58 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
 Extracts fasta sequence based on the matches dataframe and writes it into 
 a fasta file together with cds and genomic locus of the protein from ref species.
@@ -356,14 +356,8 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     shutil.move(file_name, fasta_path)
 
 
-def get_prefix_suffix(ref_species, start, seq_length, gene, all_genes_dict):
+def get_prefix_suffix(start, seq_length, gene, all_genes_dict):
     """Generates extension for each contig"""
-
-    # set length of the prefix and suffix extensions
-    #if ref_species == "Hs":
-    #    length = 10000   # testing from 30000 07/05/2022
-    #else:
-    #    length = 10000
 
     length = 10000
     # GUI is used to run FREEDA
@@ -421,7 +415,7 @@ def select_contigs_to_MSA(contig, fasta_path):
     # get paths to fasta files for a given contig
     pattern = "*_" + str(contig) + ".fasta"
     sorted_paths = sorted(glob.glob(fasta_path + "/" + pattern), key=os.path.getsize,
-                          reverse=False)  # ADDED sorting (07/06/2021)
+                          reverse=False)
 
     for path in sorted_paths:
 

@@ -3,7 +3,7 @@
 """
 Created on Wed Mar 24 18:13:46 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
 Takes a MSA output, finds exons, clones exons and makes a final cds for protein
 of a given genome.
@@ -21,6 +21,7 @@ import logging
 import re
 import shutil
 import glob
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -75,7 +76,7 @@ def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expec
         logging.info(message)
         
     # remove dashes
-    final_cds = cloned_cds.replace("-", "")
+    final_cds = cloned_cds.replace("-", "")  # THIS PIECE OF CODE IS OVERWRITTEN LATER
     
     # remove Ns
     if cloned_cds.count("N") > 0:

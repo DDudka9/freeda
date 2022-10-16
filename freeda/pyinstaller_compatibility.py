@@ -3,7 +3,7 @@
 """
 Created 2022-01-25
 
-@author: R. Brian Akins
+@author: R. Brian Akins - damiandudka0@gmail.com
 
 Includes methods to run FREEDA from a frozen state inside a pyinstaller bundle.
 

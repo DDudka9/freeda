@@ -1,4 +1,5 @@
 """
+@author: Damian Dudka - damiandudka0@gmail.com
 
 Makes a control file for PAML analysis
 

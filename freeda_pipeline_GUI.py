@@ -4,6 +4,7 @@
 Created on Wed Mar 24 16:36:16 2021
 
 @author: Damian Dudka - damiandudka0@gmail.com
+
 Main module of the FREEDA package.
 
 """
@@ -17,7 +18,7 @@ from freeda import paml_launcher
 from freeda import paml_visualizer
 from freeda import structure_builder
 from freeda import genomes_preprocessing
-from freeda import TextHandler
+from freeda import gui_logging_handler
 from freeda import pyinstaller_compatibility
 from tkinter import *
 from tkinter import ttk
@@ -71,7 +72,7 @@ def raise_logger():
     logging_window.configure(font='TkFixedFont')
 
     # create handlers of the logging window
-    text_handler = TextHandler.TextHandler(logging_window)
+    text_handler = gui_logging_handler.TextHandler(logging_window)
     # Logging configuration
     logging.basicConfig(format="%(message)s")
     logger = logging.getLogger()
@@ -489,7 +490,7 @@ def freeda_pipeline():
         logging_window.configure(font='TkFixedFont')
 
         # create handlers of the logging window
-        text_handler = TextHandler.TextHandler(logging_window)
+        text_handler = gui_logging_handler.TextHandler(logging_window)
         # Logging configuration
         logging.basicConfig(format="%(message)s")
         logger = logging.getLogger()

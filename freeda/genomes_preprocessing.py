@@ -3,7 +3,10 @@
 """
 Created on Mon Jul 19 20:57:13 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
+
+Prepares genomic assemblies for blast search and exons extraction
+
 """
 
 from json import dumps
@@ -13,13 +16,7 @@ import os
 
 def get_ref_genome_contigs_dict(ref_species):
     """Returns a dictionary of contigs in Genome object (ensembl 104; GRCm39) as keys and
-    Sequence-Name or GeneBank-Accn of GCA_000001635.9 mouse genome as values
-    
-    or
-    
-    Returns a dictionary of contigs in Genome object (ensembl 104; GRCh38.p13) as keys and
-    Sequence-Name or GeneBank-Accn of GCA_000001405.28 human genome as values"""
-
+    Sequence-Name or GeneBank-Accn of GCA_000001635.9 mouse genome as values"""
 
     mouse_dict = {'1': 'CM000994.3',
                     '10': 'CM001003.3',
@@ -2345,38 +2342,9 @@ def substitute_abbreviations(ref_species, path, tree=False):
 
     names = extend_abbreviations(ref_species)
 
-    # tree name substitution not ready
+    # tree name substitution not supported yet
     if tree:
         return
-    #    with open(path, "r") as f:
-    #        tree = f.readlines()[0]
-    #        tree_branches = tree.split(":")
-    #        tree_branches_with_separator = [branch + ":" for branch in tree_branches]  # put back colons
-    #        last = tree_branches_with_separator[-1].rstrip(":")  # get last element and remove colon
-    #        tree_branches_with_separator[-1] = last  # put back in the list
-    #        tree_branches = tree_branches_with_separator
-
-    #    new_tree_branches = {}
-    #    for branch in tree_branches:
-    #        # make a dict with where branch keys and values are initially the same
-    #        new_tree_branches[branch] = branch
-
-    #    for ab, name in names.items():
-    #        for branch in tree_branches:
-
-    #            # this branch contains species abbreviation
-    #            if ab == branch[-3:-1]:
-    #                # swap abbreviation with species name
-    #                new_branch = branch.replace(ab, name)
-    #                # swap dict values into new branches
-    #                new_tree_branches[branch] = new_branch
-
-    #    # reconstruct the tree with new branch names
-    #    with open(path, "w") as f:
-    #        new_tree = ""
-    #        for old_branch, new_branch in new_tree_branches.items():
-    #            new_tree = new_tree + new_branch
-    #        f.write(new_tree)
 
     # filename is an alignment
     else:
@@ -2414,15 +2382,15 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                       ("Pd", "PraomysDelectorum_genome", "GCA_019843815.1"),
                       ("Mn", "MastomysNatalensis_genome", "GCA_019843795.1"),
                       ("Mo", "MastomysCoucha_genome", "GCA_008632895.1"),
-                      ("Gd", "GrammomysDolichurus_genome", "GCA_019843835.1"),  # this one is almost as bad as Ha
+                      ("Gd", "GrammomysDolichurus_genome", "GCA_019843835.1"),
                       ("Gs", "GrammomysSurdaster_genome", "GCA_004785775.1"),
                       ("An", "ArvicanthisNiloticus_genome", "GCA_011762505.1"),
                       ("Rd", "RhabdomysDilectus_genome", "GCA_019844195.1"),
                       ("Rs", "RhynchomysSoricoides_genome", "GCA_019843965.1"),
-                      ("Rr", "RattusRattus_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
-                      ("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # Previously used : GCA_015227675.2
+                      ("Rr", "RattusRattus_genome", "GCA_011064425.1"),
+                      ("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}
 
-    rat_dict = {"Rn": (("Rr", "RattusRattus_genome", "GCA_011064425.1"),  # Rattus rattus (Black rat)  alt -> GCA_011800105.1
+    rat_dict = {"Rn": (("Rr", "RattusRattus_genome", "GCA_011064425.1"),
                          ("Rs", "RhynchomysSoricoides_genome", "GCA_019843965.1"),
                          ("Rd", "RhabdomysDilectus_genome", "GCA_019844195.1"),
                          ("An", "ArvicanthisNiloticus_genome", "GCA_011762505.1"),
@@ -2441,59 +2409,56 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                          ("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
                          ("Mm", "MusMusculus_genome", "GCA_000001635.9"))}
 
-    human_dict_old = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
-                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),
-                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),
+    # Simiiformes sccording to Timetree 40-44.2 (42.9 Mya)
+    # Nwk format tree is missing Pongo abeli!
+    human_dict = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
+                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),  # western lowland gorilla
+                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
                       ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
                       ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
-                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # Mona monkey
-                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),
-                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),
-                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),
+                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # mona monkey
+                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),  # rhesus monkey
+                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),  # olive baboon
+                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),  # green monkey
                       ("Tf", "TrachypithecusFrancoisi_genome", "GCA_009764325.1"),  # Francois's langur
-                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # added Colobus monkey
-                      ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # added White-faced saki
-                      ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # added Ma's night monkey
-                      ("Pd", "PlecturocebusDonacophilus_genome", "GCA_004027715.1"),  # Bolivian titi
+                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # colobus monkey
+                      ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # white-faced saki
+                      ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # Ma's night monkey
+                      ("Pd", "PlecturocebusDonacophilus_genome", "GCA_004027715.1"),  # bolivian titi
                       ("Ap", "AlouattaPalliata_genome", "GCA_004027835.1"),  # mantled howler monkey
                       ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),  # common marmoset
-                      ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # added Squirrel monkey
-                      ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"))}  # added Spider monkey
-                      # ("Mm", "MURINUS_genome", "GCA_000165445.3"),  # added Mouse lemur
-                      # ("Og", "GARNETTI_genome", "GCA_000181295.3"))}   # added Galago lemur
+                      ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # squirrel monkey
+                      ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"))}  # spider monkey
 
     # Simiiformes sccording to Timetree 40-44.2 (42.9 Mya)
     # Nwk format tree is missing Pongo abeli!
-    human_dict = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
-                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),
-                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),
+    human_dict_extended = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
+                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),  # western lowland gorilla
+                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
                       ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
                       ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
-                      ("Ss", "SymphalangusSyndactylus_genome", "GCA_023761135.1"),  # siamang  3 added 08/17/22
-                      ("Hl", "HoolockLeuconedys_genome", "GCA_023748175.1"),  # eastern hoolock gibbon  added 08/17/22
-                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # Mona monkey
-                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),
-                      ("Ep", "ErythrocebusPatas_genome", "GCA_023783455.1"),  # red guenon added 08/17/22
-                      ("Ms", "MandrillusSphinx_genome", "GCA_023783085.1"),  # mandrill added 08/17/22
-                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),
-                      ("La", "LophocebusAterrimus_genome", "GCA_023783235.1"),  #Black crested mangabey added 08/17/22
-                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),
-                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # added Colobus monkey
+                      ("Ss", "SymphalangusSyndactylus_genome", "GCA_023761135.1"),  # siamang -> added 08/17/22
+                      ("Hl", "HoolockLeuconedys_genome", "GCA_023748175.1"),  # eastern hoolock gibbon -> added 08/17/22
+                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # mona monkey
+                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),  # green monkey
+                      ("Ep", "ErythrocebusPatas_genome", "GCA_023783455.1"),  # red guenon -> added 08/17/22
+                      ("Ms", "MandrillusSphinx_genome", "GCA_023783085.1"),  # mandrill -> added 08/17/22
+                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),  # rhesus monkey
+                      ("La", "LophocebusAterrimus_genome", "GCA_023783235.1"),  # black crested mangabey -> added 08/17/22
+                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),  # olive baboon
+                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # colobus monkey
                       ("Tf", "TrachypithecusFrancoisi_genome", "GCA_009764325.1"),  # Francois's langur
-                      ("Rs", "RhinopithecusStrykeri_genome", "GCA_023764705.1"),  # Burmese snub-nosed monkey added 08/17/22
-                      ("Pn", "PygathrixNigripes_genome", "GCA_023764695.1"),  # Black-shanked douc langur added 08/17/22
-                      ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # added White-faced saki
-                      ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # added Ma's night monkey
-                      ("Pd", "PlecturocebusDonacophilus_genome", "GCA_004027715.1"),  # Bolivian titi
+                      ("Rs", "RhinopithecusStrykeri_genome", "GCA_023764705.1"),  # burmese snub-nosed monkey -> added 08/17/22
+                      ("Pn", "PygathrixNigripes_genome", "GCA_023764695.1"),  # black-shanked douc langur -> added 08/17/22
+                      ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # white-faced saki
+                      ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # Ma's night monkey
+                      ("Pd", "PlecturocebusDonacophilus_genome", "GCA_004027715.1"),  # bolivian titi
                       ("Ap", "AlouattaPalliata_genome", "GCA_004027835.1"),  # mantled howler monkey
                       ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),  # common marmoset
                       ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # squirrel monkey
                       ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"),  # spider monkey
-                      ("Sa", "SapajusApella_genome", "GCA_023762875.1"),  # white-fronted capuchin added 08/17/22
-                      ("Ca", "CebusAlbifrons_genome", "GCA_023783575.1"))}  # tufted capuchin added 08/17/22
-                      # ("Mm", "MURINUS_genome", "GCA_000165445.3"),  # added Mouse lemur
-                      # ("Og", "GARNETTI_genome", "GCA_000181295.3"))}   # added Galago lemur
-
+                      ("Sa", "SapajusApella_genome", "GCA_023762875.1"),  # white-fronted capuchin -> added 08/17/22
+                      ("Ca", "CebusAlbifrons_genome", "GCA_023783575.1"))}  # tufted capuchin -> added 08/17/22
 
     # Carnivora according to Timetree 52.9-57.3 (55.4mya)
     carnivora_cat_dict = {"Fc": (
@@ -2544,7 +2509,6 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
         ("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # cat
 
     # Phasianidae according to Timetree 29.9-40.7 (36.9 Mya)
-    # Missing
     phasianidae_dict = {"Gg": (("Bt", "BambusicolaThoracicus_genome", "GCA_002909625.1"),  # Chinese bamboo-partridge
                                ("Pm", "PavoMuticus_genome", "GCA_016647715.1"),  # green peafowl
                                ("Pc", "PavoCristatus_genome", "GCA_021513735.1"),  # Indian peafowl
@@ -2566,7 +2530,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
 
     # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)
     mouse_ref_dict = {"Mm": (("Mm", "MusMusculus_genome", "GCA_000001635.9"))} # GeneBank GRCm39
-    rat_ref_dict = {"Rn": (("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0 -> NOT SAME AS GENOMES
+    rat_ref_dict = {"Rn": (("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0
     human_ref_dict = {"Hs": (("Hs", "HomoSapiens_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39
                                                         # updated from GCA_000001405.28  05_10_2022
 

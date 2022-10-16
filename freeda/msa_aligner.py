@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Mar 24 18:09:48 2021
-@author: damian
+
+@author: Damian Dudka - damiandudka0@gmail.com
+
 Runs MAFFT using a BioPython wrapper.
+
 """
 
 from freeda import pyinstaller_compatibility
@@ -76,23 +79,3 @@ def run_msa(MSA_path):
             logging.info(message)
 
             return
-
-
-"""
-            if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
-                cmd = ['muscle', "-in", in_filename, "-quiet", "-maxiters", "2", "-out", MSA_path + out_filename]
-                subprocess.call(cmd)
-                # need to reorder seqs post msa
-                try:
-                    fasta_reader.reorder_alignment(in_filename, MSA_path + out_filename)
-                except Exception:   # formerly FileNotFound but I think it doesnt work
-                    message = "...WARNING... : Aligner failed at file %s (probably too big)" % in_filename
-                    print(message)
-                    logging.info(message)
-                stop_time = time.time()
-                message = "Done : in %s minutes" % ((stop_time - start_time) / 60)
-                print(message)
-                logging.info(message)
-                return
-
-"""

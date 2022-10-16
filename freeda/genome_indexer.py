@@ -3,7 +3,7 @@
 """
 Created on Wed Mar 24 17:10:33 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
 Indexes a genome of interest using a BioPython module SeqIO
 

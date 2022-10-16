@@ -3,39 +3,10 @@
 """
 Created on Wed Mar 24 16:36:16 2021
 
-@author: damian
-Main module of the freeda package. Takes user input and performs automatic input extraction, tblastn, exon finding
-and molecular evolution analysis (PAML) followed by overlay of putative adaptive sites onto 3D structure (PyMOL).
+@author: Damian Dudka - damiandudka0@gmail.com
+Main module of the FREEDA package used for debugging. Use from terminal only.
 
 """
-
-"""
-
-Traceback (most recent call last):
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 378, in <module>
-    freeda_pipeline(ref_species=args.ref_species, t=args.blast_threshold, wdir=args.wdir)
-  File "/Users/damian/PycharmProjects/freeda_2.0/freeda_pipeline.py", line 310, in freeda_pipeline
-    gene, genes_under_pos_sel)
-TypeError: run_pymol() missing 1 required positional argument: 'all_genes_dict'
-
-Process finished with exit code 1
-
-
-"""
-
-# TODO:
-#    0) ESSENTIAL -> test CENPP in Cf and check compatibility cose Fc doesnt have it annotated
-#    0) ESSENTIAL -> cloned cds frameshift check should not penalize gaps or at least not say "frameshift"
-#                               because Cj in NRLP11 is called frameshift despite having just an exon missing
-#                                    -> I have to rerun it with lower threshold because Cj did not blast enough
-#    15) ISSUE with early STOP codons :
-#           THERE IS AN ISSUE WITH: if earlier STOP present in other species then
-#           ref species gets translated normally and final_ref_dict is +1
-#           which leads to ValueError in get_omegas function
-#           SOLUTION: enabled the STOP_remover function( FIXED?)
-#           TO FIX: dashes in the MAFFT alignment (need to remove these positions before
-#           counting codons -> test on Haus8)
-#           08_21_2021 -> I dont really know what this comment mean
 
 print("\nImporting all modules and libraries...\n")
 

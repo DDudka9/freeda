@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar 26 10:51:27 2021
-
-@author: damian
-"""
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
 Created on Sun Jan 24 21:48:45 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
 Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 
@@ -20,9 +12,8 @@ Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 from freeda import fasta_reader
 from freeda import genomes_preprocessing
 from freeda import control_file
-from freeda import TextHandler
+from freeda import gui_logging_handler
 from freeda import pyinstaller_compatibility
-from Bio.Align.Applications import MafftCommandline
 from Bio.Align.Applications import PrankCommandline
 from Bio import pairwise2
 from Bio import AlignIO
@@ -124,8 +115,6 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
                 
                     # second line is always the ref species sequence
                     if line_nr == 2:
-                        # remove STOP codon if present
-                        # ref_seq = STOP_remover(line.rstrip("\n"))
                         ref_seq = line.rstrip("\n")
                         final_species[ref_head] = ref_seq
                         continue
@@ -136,18 +125,15 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
                         continue
                 
                     else:
-                        # remove STOP codon if present
-                        # seq = STOP_remover(line.rstrip("\n"))
                         seq = line.rstrip("\n")
                         seq_no_dashes = seq.replace("-", "")
-                        if len(seq_no_dashes) / len(ref_seq) >= 0.90:  # changed from 0.90 to run Dlgap5 (04/07/2022)
+                        if len(seq_no_dashes) / len(ref_seq) >= 0.90:
                             final_species[head] = seq
                             final_species_headers.append(head)
                
             # log species
             final_species_headers.insert(0, ref_species)
             nr_of_species = len(final_species_headers)
-            #nr_of_species_total_dict[gene] = nr_of_species
 
             message = "\n\n --------- * %s * --------- \n\n" % gene
             print(message)
@@ -207,11 +193,6 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
 
             # remove STOP codons
             final_cds_file_no_STOP = STOP_remover(gene_folder_path, no_dashes_out_msa, gene, aligner)
-
-            # match abbreviations with species names; out_msa is a filename
-            #path = result_path.replace("Raw_data/", "Results/") + "Nucleotide_alignments/" + out_msa
-            #shutil.copy(wdir + final_cds_file_no_STOP, path)
-            #genomes_preprocessing.substitute_abbreviations(ref_species, path)
 
             # check for rare frameshifts in cloned cds
             to_delete = cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, final_cds_file_no_STOP)
@@ -282,7 +263,6 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
                 shutil.copy(best_tree_path, PAML_path + "/gene.tree")
 
                 # rename path
-                #best_tree_path = best_tree_path.split("/")[-1]
                 path = result_path.replace("Raw_data/", "Results/Gene_trees/") + gene + ".tree"
                 shutil.copy(best_tree_path, path)
 
@@ -308,8 +288,6 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
                 logging.info(message)
 
     shutil.move(wdir + PAML_logfile_name, result_path)
-
-    # for now final analysis complete message logs into the PAML log file -> change that later
 
     # mark the end of the analysis
     message = ("\n --------------->  PAML analysis completed in %s minutes or %s hours"
@@ -507,14 +485,13 @@ def eliminate_frameshits_cds(wdir, ref_species, gene, raw_translated_path, raw_o
 
     # make an empty dict to fill with headers and prot seq
     ref_protein = all_seq_dict_protein[">" + ref_species]
-    #to_delete = []
 
     # detect frameshifts
     for species, seq in all_seq_dict_protein.items():
         mismatches = 0
 
         for position, aa in enumerate(seq):
-            # eliminate sequence > 10 consecutive aa are mismatched (threshold at 10 legit mismatches in Izumo1 Rn)
+            # eliminate sequence > 10 consecutive aa are mismatched
             if mismatches > 10:
                 to_delete.append(species)
                 message = "\n...WARNING... : CDS for species : %s in %s protein contains a possible frameshift " \
@@ -786,7 +763,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
         logging.info(message)
 
         # flag cds with rare extreme frameshifts or just missing too many exons
-        if score < 0.69:  # from 0.70 for Rs Prm2
+        if score < 0.69:
             to_delete.append(species)
             message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
                       "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), gene)
@@ -851,7 +828,7 @@ def convert_to_phylip(out_Gblocks):
     AlignIO.convert(out_Gblocks, "fasta", phylip_path, "phylip")
 
 
-def run_seqret(gene, out_Gblocks):  # deprecated
+def run_seqret(gene, out_Gblocks):  # DEPRECATED
     """Takes a fasta squence aligment and converts it into phylip format"""
 
     phylip_path = out_Gblocks.replace(".fasta", ".phy")
@@ -864,7 +841,6 @@ def run_seqret(gene, out_Gblocks):  # deprecated
     if result == 0:
         message = "\n Phylip format was created for gene : %s " % gene
         print(message)
-        #logging.info(message)
         return phylip_path
     else:
         message = "\n PROBLEM with making phylip for gene : %s " % gene
@@ -1038,14 +1014,14 @@ def align_final_cds(wdir, gene, result_path):
     aligner = "mafft"
 
     # define which aligner is used
-    if aligner == "mafft":   # runs mafft in G-INS-i with VSM (Katoh et al., 2016 Bioinformatics) 07/10/2022
+    if aligner == "mafft":   # runs mafft in G-INS-i with VSM (Katoh et al., 2016 Bioinformatics) added 07/10/2022
         cmd = [pyinstaller_compatibility.resource_path("mafft-ginsi"), "--allowshift", "--unalignlevel", "0.8",
                "--out", gene_folder_path + out_msa, in_filepath]
         subprocess.call(cmd)
         # returns the filename after MSA
         return out_msa, aligner
 
-    if aligner == "guidance":
+    if aligner == "guidance":  # NOT SUPPORTED YET
         guidance_path = "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/include_mac/www/Guidance/guidance.pl"
         cmd = ["perl", guidance_path, "--seqFile", in_filepath, "--msaProgram", "MAFFT", "--mafft",
                pyinstaller_compatibility.resource_path("mafft-ginsi"), "--seqType", "nuc",
@@ -1054,25 +1030,7 @@ def align_final_cds(wdir, gene, result_path):
         # returns the filename after MSA
         return out_msa, aligner
 
-    # define which aligner is used
-    #elif aligner == "mafft":   # runs mafft in G-INS-i
-    #    cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
-    #                             input=in_filepath,
-    #                             thread=-1,  # thread -1 is suppose to automatically calculate physical cores
-    #                             globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
-    #                             maxiterate=1000)  # improves alignment -> added 04/09/2022
-    #
-    #    # record standard output and standard error
-    #    stdout, stderr = cline()
-    #    # make a post-MSA file using out_filename
-    #    with open(out_msa, "w") as f:
-    #        f.write(stdout)
-    #    shutil.move(out_msa, gene_folder_path)
-    #
-    #    # returns the filename after MSA
-    #    return out_msa, aligner
-
-    elif aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
+    elif aligner == "muscle":  # POOR ALIGNMENT USUALLY -> DEPRECATED
 
         cmd = ['muscle', "-in", in_filepath, "-quiet", "-maxiters", "2", "-out", gene_folder_path + out_msa]
         subprocess.call(cmd)
@@ -1082,7 +1040,7 @@ def align_final_cds(wdir, gene, result_path):
         # returns the filename after MSA
         return out_msa, aligner
 
-    elif aligner == "prank":
+    elif aligner == "prank":  # TAKES TOO LONG
 
         cline = PrankCommandline(d=in_filepath,
                                        o=out_msa,  # prefix only!

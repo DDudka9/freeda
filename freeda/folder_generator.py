@@ -3,7 +3,10 @@
 """
 Created on Wed Mar 24 17:04:31 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
+
+Generates the initial folders before input can be extracted
+
 """
 
 import os

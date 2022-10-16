@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jul  9 22:47:43 2021
-@author: damian
+
+@author: Damian Dudka - damiandudka0@gmail.com
+
+Extracts input using pyensembl API that communicates with Ensembl database
+
 """
 
 from freeda import tblastn, genomes_preprocessing, pyinstaller_compatibility, fasta_reader
@@ -15,35 +19,6 @@ import logging
 import requests
 from requests.exceptions import HTTPError
 
-
-def get_gene_names(wdir):  # THIS IS ONLY FOR TESTING
-    """Gets sample of gene names from ensembl using pyensembl package"""
-
-    import re
-    release = 104
-    species = "homo sapiens"
-    ensembl = pyensembl.EnsemblRelease(release, species)
-    ensembl.download()  # this is suppose to bypass installing the release from outside python
-    ensembl.index()  # this is suppose to bypass installing the release from outside python
-
-    all_genes_ensembl = ensembl.gene_names()
-    with open(wdir + "proteins_temp.txt", "w") as f:
-
-        genes = []
-        for i in range(5000, len(all_genes_ensembl), 150):
-            gene = all_genes_ensembl[i]
-            if not gene.startswith("MIR") \
-                    and not gene.startswith("LINC") \
-                    and "-" not in gene \
-                    and "PS" not in gene \
-                    and "OS" not in gene \
-                    and "IK" not in gene \
-                    and "SNO" not in gene \
-                    and "GM" not in gene \
-                    and "RNA" not in gene \
-                    and not re.search(r"P\d{0,2}$", gene):  # pseudogenes often or dont have transcripts
-                genes.append(gene)
-                f.write(gene + "\n")
 
 # PYINSTALLER: Set bedtools path to a bedtools folder in the FREEDA directory.
 if pyinstaller_compatibility.is_bundled():
@@ -191,7 +166,6 @@ def get_uniprot_id(ref_species, gene):
         ref_species_number = "9031"
 
     possible_uniprot_ids = []
-    reviewed_entry = False
     # AlphaFold flags "reviewed" protein with "GENENAME_MOUSE" so name count helps to find canonical version
     name_count = 0
     best_id = None
@@ -361,7 +335,7 @@ def generate_ref_genome_object(wdir, ref_species):
     elif ref_species == "Fc":
         ref_genome_name = "FelisCatus_genome"
         species = "felis catus"
-        release = 90  # changed from 90 08/23/22
+        release = 90
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     elif ref_species == "Cf":
@@ -960,8 +934,6 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
         return transcript, selected_transcript_id, gene_id, contig, strand, \
                UTR_5, UTR_3, cds_sequence_expected, matching_length
 
-
-
     # unpack features of the selected transcript
     gene_id, contig, strand, transcript_name, start, end, \
     cds_sequence_expected, length = all_transcripts_dict[selected_transcript_id]
@@ -1018,3 +990,33 @@ def check_microexons(wdir, gene, ref_species):
         microexons = []
 
     return microexons
+
+
+def get_gene_names(wdir):  # THIS FUNCTION IS ONLY FOR TESTING
+    """Gets sample of gene names from ensembl using pyensembl package"""
+
+    import re
+    release = 104
+    species = "homo sapiens"
+    ensembl = pyensembl.EnsemblRelease(release, species)
+    ensembl.download()  # this is suppose to bypass installing the release from outside python
+    ensembl.index()  # this is suppose to bypass installing the release from outside python
+
+    all_genes_ensembl = ensembl.gene_names()
+    with open(wdir + "proteins_temp.txt", "w") as f:
+
+        genes = []
+        for i in range(5000, len(all_genes_ensembl), 150):
+            gene = all_genes_ensembl[i]
+            if not gene.startswith("MIR") \
+                    and not gene.startswith("LINC") \
+                    and "-" not in gene \
+                    and "PS" not in gene \
+                    and "OS" not in gene \
+                    and "IK" not in gene \
+                    and "SNO" not in gene \
+                    and "GM" not in gene \
+                    and "RNA" not in gene \
+                    and not re.search(r"P\d{0,2}$", gene):  # pseudogenes often or dont have transcripts
+                genes.append(gene)
+                f.write(gene + "\n")

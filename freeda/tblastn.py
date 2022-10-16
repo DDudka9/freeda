@@ -3,19 +3,9 @@
 """
 Created on Wed Mar 24 16:21:53 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
 Runs blast using NCBI tblastn.
-
-Fasta genome names need to be stored in "genomes.txt" file one per line using one underscore:
-    xxxxx_xxxxx.fasta
-    yyyyy_yyyyy.fasta
-    
-Gene names need to be stored in "genes.txt" file one per line:
-    aaaaa
-    bbbbb
-
-Outputs tabulated text files per gene per genomes.
 
 """
 
@@ -31,10 +21,8 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
     """Runs tblastn based on NCBI makedatabase routine."""
 
     database_path = wdir + "Genomes/"
-    query_path = wdir + "Blast_input/"  # Coding_sequences/
+    query_path = wdir + "Blast_input/"
     output_path = wdir + "Blast_output/"
-    task = "blastn"  # this is to delete
-    #evalue = "0.01"  decided not to use it as some legitimate exons were omitted
     form = "6 qseqid means sseqid means qstart means qend means sstart means send means evalue means " \
            "bitscore length means pident means mismatch means gapopen means qlen means slen means"
 
@@ -54,18 +42,16 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
             return None
 
     # PYINSTALLER: Add path to os path variable.
-    tblastn_path = pyinstaller_compatibility.resource_path("tblastn")  # from blastn
+    tblastn_path = pyinstaller_compatibility.resource_path("tblastn")
 
     # perform blast
     for genome in genomes:
         for gene in all_genes:
             database = database_path + genome + ".fasta"
-            query = query_path + gene + "_" + ref_species + "_protein.fasta"  # from _cds.fasta
+            query = query_path + gene + "_" + ref_species + "_protein.fasta"
             output = output_path + gene + "_" + genome + ".txt"
-            to_blast = [tblastn_path, "-db", database, "-query", query,  # added evalue 05_12_2022; removed 07_16_2022
+            to_blast = [tblastn_path, "-db", database, "-query", query,
                         "-out", output, "-outfmt", form, "-num_threads", "8"]
-            #to_blast = [tblastn_path, "-db", database, "-query", query, "-task", task, "-evalue", evalue,
-            #            "-out", output, "-outfmt", form, "-num_threads", "8"]
             message = "\nPerforming tblastn for gene: %s from genome: %s\n" % (gene, genome)
             logging.info(message)
             subprocess.call(to_blast)
@@ -246,7 +232,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         genome_file_databases = False
 
         # check if genome database is present (most cases)
-        if genome + ".fasta.nin" in all_files:  # removed .pal 08/16/2022
+        if genome + ".fasta.nin" in all_files:
             message = "\nGenome : %s blast database already exists" % genome
             logging.info(message)
             genome_file_databases = True
@@ -273,7 +259,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                     all_files.append(f)
 
             # failed to build databases
-            if genome + ".fasta.nin" not in all_files:  # removed .pal 08/16/2022
+            if genome + ".fasta.nin" not in all_files:
                 message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
                               "\n     -> exiting the pipeline now..." % genome
                 logging.info(message)
@@ -324,7 +310,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                     all_files.append(f)
 
             # failed to build databases
-            if genome + ".fasta.nin" not in all_files:  # removed .pal 08/16/2022
+            if genome + ".fasta.nin" not in all_files:
                 message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
                       "\n     -> exiting the pipeline now..." % genome
                 logging.info(message)
@@ -426,53 +412,3 @@ def make_blast_database(database_path, genome):
     logging.info(message)
     subprocess.call(make_database_nucl, stdout=open(os.devnull, 'wb'))  # mute log info
     subprocess.call(make_database_prot, stdout=open(os.devnull, 'wb'))  # mute log info
-
-"""
-
-def make_blast_database_v2(database_path, genome):
-    Makes a blast database based on genome fasta file using BioPython wrapper.
-    from Bio.Blast.Applications import NcbimakeblastdbCommandline
-
-    genome_file = genome + ".fasta"
-    cline_nucl = NcbimakeblastdbCommandline(cmd=pyinstaller_compatibility.resource_path("makeblastdb"),
-                                            dbtype="nucl",
-                                            input_file=database_path + genome_file)
-    cline_prot = NcbimakeblastdbCommandline(cmd=pyinstaller_compatibility.resource_path("makeblastdb"),
-                                            dbtype="prot",
-                                            input_file=database_path + genome_file)
-
-    message = "\n                  Building blast database for genome : %s ..." % genome
-    logging.info(message)
-    stdout_nucl, stderr_nucl = cline_nucl()
-    stdout_prot, stderr_prot = cline_prot()
-
-
-def make_blast_database_v3(database_path, genome):
-    Makes a blast database based on genome fasta file
-
-    from subprocess import Popen, PIPE
-
-    genome_file = genome + ".fasta"
-    make_database_nucl = [pyinstaller_compatibility.resource_path("makeblastdb"),
-                          "-in", database_path + genome_file, "-dbtype", "nucl"]
-    make_database_prot = [pyinstaller_compatibility.resource_path("makeblastdb"),
-                          "-in", database_path + genome_file, "-dbtype", "prot"]
-
-    message = "\n                  Building blast database for genome : %s ..." % genome
-    logging.info(message)
-
-    x = Popen(make_database_nucl, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output_x, err_x = x.communicate(b"input data that is passed to subprocess' stdin")
-    rc_x = x.returncode
-    logging.info(rc_x)
-    logging.info(output_x)
-    logging.info(err_x)
-
-    y = Popen(make_database_prot, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output_y, err_y = y.communicate(b"input data that is passed to subprocess' stdin")
-    rc_y = y.returncode
-    logging.info(rc_y)
-    logging.info(output_y)
-    logging.info(err_y)
-
-"""

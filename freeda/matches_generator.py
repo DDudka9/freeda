@@ -3,16 +3,16 @@
 """
 Created on Wed Mar 24 17:32:54 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
-Uses pandas to parse blast output into a dataframe with location
-of genomic loci of interest
+Uses pandas to parse blast output into a dataframe with location of genomic loci of interest
 
 """
 
 import os
 import pandas as pd
 import logging
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -90,12 +90,12 @@ def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
     
     # get only columns of interest and check that there is less than 40 matches (to reduce MSA time)
     matches_above_threshold = matches[threshold]
-    if len(matches_above_threshold) <= 100:  # changed to 100 01/09/2022
+    if len(matches_above_threshold) <= 100:
         pass
     
-    # if not, increase identity threshold until getting < 40 matches
+    # if not, increase identity threshold
     else:
-        while len(matches_above_threshold) > 100 and t < 90:  # changed to 100 01/09/2022 and added threshold break 10/06/22
+        while len(matches_above_threshold) > 100 and t < 90:  # changed to 100 01/09/2022 and capped at t<90 10/06/22
             t = t + 5
             threshold = matches["pident"] > t
             m = matches[threshold]
@@ -110,6 +110,7 @@ def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
         
     # get rid of duplicated contig names
     selected_matches = matches_above_threshold[["sseqid", "sstart", "send", "qseqid", "strand"]]
+
     return selected_matches
 
 
@@ -126,6 +127,7 @@ def make_contigs_dict(matches):
         contig_idx = row.name
         # write sstart and sseqid tuple into the d dictionary under index for this row
         d[contig_idx] = contig_name, start, end, strand
+
     return d
 
 
@@ -139,7 +141,8 @@ def split_contigs_to_dataframes(matches, d):
     for contig_name in contig_names:
         m = matches[matches["sseqid"] == contig_name]
         m = m.reset_index(drop=True)
-        dataframes.append(m) 
+        dataframes.append(m)
+
     return dataframes
 
 
@@ -147,8 +150,8 @@ def split_large_contigs(dataframes, gene, all_genes_dict):
     """Splits large contigs (where matches are 30kb apart as default)"""
     # Most mouse introns are smaller than 30kb
     # Long and Deutsch 1999 Nucleic Acids Research
-    # default length
 
+    # default length
     length = 30000
     # GUI is used to run FREEDA
     if all_genes_dict:
@@ -171,11 +174,11 @@ def split_large_contigs(dataframes, gene, all_genes_dict):
                 contig_name = row[0]
                 new_matches.iloc[index] = matches.iloc[index]
                 continue
-            if start - new_matches.iloc[index-1][1] < length:   # temporary from 30000
+            if start - new_matches.iloc[index-1][1] < length:
                 new_matches.iloc[index] = matches.iloc[index]
                 new_matches.at[index, "sseqid"] = contig_name
                 continue
-            if start - new_matches.iloc[index-1][1] > length:   # temporary from 30000
+            if start - new_matches.iloc[index-1][1] > length:
                 contig_name = row[0] + "__" + str(number)
                 number += 1
                 new_matches.iloc[index] = matches.iloc[index]
@@ -185,6 +188,7 @@ def split_large_contigs(dataframes, gene, all_genes_dict):
         list_new_matches.append(new_matches)    
     # concatenate all the new dataframes into one
     concatenated_matches = pd.concat([i for i in list_new_matches])
+
     return concatenated_matches
 
 
@@ -207,6 +211,7 @@ def assign_strand(dataframes2):
         list_new_matches.append(new_matches)    
     # concatenate the matches into one new dataframe
     concatenated_matches = pd.concat([i for i in list_new_matches])
+
     return concatenated_matches
 
 
@@ -226,6 +231,7 @@ def split_strands(dataframes3):
         list_new_matches.append(new_matches)    
     # concatenate the matches into one new dataframe
     concatenated_matches = pd.concat([i for i in list_new_matches])
+
     return concatenated_matches
 
 

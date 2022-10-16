@@ -3,7 +3,10 @@
 """
 Created on Fri Mar 26 11:00:54 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
+
+Extracts exons from genomic assemblies
+
 """
 
 from freeda import folder_generator
@@ -13,7 +16,7 @@ from freeda import matches_generator
 from freeda import matches_processor
 from freeda import msa_aligner
 from freeda import msa_analyzer
-from freeda import TextHandler
+from freeda import gui_logging_handler
 import datetime
 import glob
 import time
@@ -60,7 +63,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
     # remove blast output files for excluded species
     for blast in all_blasts:
         for species, genome in final_excluded_species.items():
-            if genome in blast:  # find genome name e.e. "MusSpicilegus" in absolute path of blast file
+            if genome in blast:  # find genome name e.g. "MusSpicilegus" in absolute path of blast file
                 all_blasts.remove(blast)
 
     # remove previous fasta files for these genes (unfinished runs)

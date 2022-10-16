@@ -3,13 +3,16 @@
 """
 Created on Wed Mar 24 19:01:01 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
+Contains functions helpful to parse fasta files
 
 """
+
 from freeda import input_extractor
 import re
 import logging
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -147,12 +150,10 @@ def get_ref_exons(wdir, gene, ref_species, at_input=False):
     """Reads reference species exons from input exons file into a dict used to cloned each single exon from MSA"""
 
     # get path to the exons for given gene
-
     ref_exons = {}
     seq_recorded = False
     header = ""
     seq = ""
-    # microexons = []
 
     with open(wdir + "Exons/" + gene + "_" + ref_species + "_exons.fasta", "r") as f:
         file = f.read()

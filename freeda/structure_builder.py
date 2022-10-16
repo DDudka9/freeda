@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 27 20:35:28 2021
 
-@author: damian
+@author: Damian Dudka and R. Brian Akins - damiandudka0@gmail.com
 
 Generates a PyMOL script and runs it internally. Saves the PyMOL session per gene.
 
@@ -19,10 +19,6 @@ import simplejson.errors
 from pathlib import Path
 import logging
 from requests.exceptions import HTTPError
-
-
-# LAST RESIDUE IS NOT MARKED IN PYMOL MODEL IF SCORING (C-term label interferes?)
-# Done but NOT TESTED YET
 
 
 # 2021-09-15
@@ -161,6 +157,7 @@ def check_structure(wdir, ref_species, gene):
 
 
 def download_pymol_linux(wdir, pymol_tar_name):
+    """Downloads pymol on Linux systems"""
     linux_url = "http://pymol.org/installers/PyMOL-2.5.2_293-Linux-x86_64-py37.tar.bz2"
     try:
         r = requests.get(linux_url)
@@ -174,6 +171,7 @@ def download_pymol_linux(wdir, pymol_tar_name):
 
 
 def unpack_pymol_linux(wdir, pymol_tar_name):
+    """Unpacks pymol download on Linux systems"""
     unpack_cmd = ["tar", "-xf", pymol_tar_name, "-C", wdir]
     unpack_exit_code = subprocess.call(unpack_cmd)
     os.remove(pymol_tar_name)
@@ -181,6 +179,7 @@ def unpack_pymol_linux(wdir, pymol_tar_name):
 
 
 def create_desktop_file_linux(wdir, pymol_desktop_path):
+    """Creates desktop file for pymol on Linux systems"""
     pymol_executable_path = os.path.join(wdir, "pymol", "pymol")
     pymol_icon_path = os.path.join(wdir, "pymol", "share", "pymol", "data", "pymol", "icons", "icon2_128x128.png")
     pymol_desktop_contents = f"[Desktop Entry]\nEncoding=UTF-8\nType=Application\nTerminal=false\n" \
@@ -198,11 +197,13 @@ def create_desktop_file_linux(wdir, pymol_desktop_path):
 
 
 def link_pse_files_linux():
+    """Links pse files for pymol on Linux systems"""
     subprocess.call([pyinstaller_compatibility.resource_path("xdg-mime"),
                      "default", "freeda-pymol.desktop", "application/x-extension-pse"])
 
 
 def install_pymol_linux(wdir):
+    """Installs pymol on Linux systems"""
     if not os.path.exists(os.path.join(wdir, "pymol", "pymol")):
         pymol_tar_name = os.path.join(wdir, "pymol.tar.bz2")
         wget_exit_code = download_pymol_linux(wdir, pymol_tar_name)
@@ -255,7 +256,6 @@ def run_pymol(wdir, ref_species, result_path, gene, genes_under_pos_sel, all_gen
                             protein_structure_path, genes_under_pos_sel, domains, all_genes_dict):
         return False
 
-    # run that script in pymol without triggering external GUI (-cq) -> DOES NOT WORK IN PYCHARM?
     mac_pymol_path = os.path.join("/", "Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")
     linux_pymol_path = os.path.join(wdir, "pymol", "pymol")
     if os.path.exists(linux_pymol_path):
@@ -356,7 +356,6 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
 
     # get consensus (more than one codon frequency used)
     consensus_dict = get_consensus_dict(all_matched_adaptive_sites_ref, gene, genes_under_pos_sel)
-    #matched_adaptive_sites_ref = consensus_dict[gene]
 
     if consensus_dict:
         matched_adaptive_sites_ref = consensus_dict[gene]

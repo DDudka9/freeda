@@ -3,18 +3,11 @@
 """
 Created on Wed Mar 24 18:23:12 2021
 
-@author: damian
+@author: Damian Dudka - damiandudka0@gmail.com
 
-Uses the fact that dictionaries in Python 3 are ordered to iterate over an MSA
-and finds exons, which are then identified as: missing, with introns, without introns or possibly
-retrotransposition. It also calls synteny and duplications.
+Finds exons in genomic assemblies
 
 """
-
-
-# CONSIDER ELIMINATING FRAMESHIFR CHECK -> currently only detects insertions and not deletions
-# use nomLeu3_genome (Ne) for CENPT -> exon 1 goes cose its 1bp deletion but exon 2 is missing cose 1bp insertion
-# I ADDED DELETION COUNT TO INSERTION COUNT
 
 import logging
 
@@ -60,18 +53,12 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
     for position in cds_seq:
 
+
         # NON-CODING REGION IN REF SPECIES
 
         if exon_checked is False and cds_seq[position] == "-":
             continue
 
-        # fail any contig where ref cds_seq does not align with the ref gene_seq -> likely a tandem duplication region
-        #if cds_seq[position] != "-" and cds_seq[position] != gene_seq[position]:
-        #    message = "\nContig %s likely contains a tandem repetition preventing robust exon calling -> skipped" \
-        #              % contig_name
-        #    print(message)
-        #    logging.info(message)
-        #    return None, None, None, None, None
 
         # EXON STARTS IN REF SPECIES -> define 5-prime for contig locus_seq
 
@@ -119,15 +106,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                             five_prime_retrotransposition = check_retrotransposition(position, last_bp, cds_seq,
                                                                                      locus_seq, gene_seq)
 
-                            # check for very divergent introns (will be counted as intron)
-                            # does not allow the first exon to have divergent introns (possibly not-syntenic exon)
-
-                            # ALLOWED EXON 1 TO BE DIVERGENT ON 08_21_2021
-                            # -> Terf2 looses exon 1 in Ay because of this -> keep testing
-                            # exon_number != 1
-                            # note from 08_22_2021
-                            # -> this does not allow first exons to be divergent cose of the previous statement
-
                     # KeyError triggered when match at the edge of alignment)
                     except KeyError:
                         intron_at_5_prime = False
@@ -135,6 +113,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             # this exon seems to be missing from the contig
             else:
                 exon_missing = True
+
 
         # EXON CONTINUES IN REF SPECIES (includes first bp)
 
@@ -173,6 +152,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             # go to next position
             continue
 
+
         # EXON ENDS IN REF SPECIES -> define 3_prime
 
         if exon_checked is True and cds_seq[position] == "-" and gene_seq[position] != "-":
@@ -197,8 +177,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                     # do not allow intron in last exon if not syntenic (often RETRO have 5UTR)
                     intron_at_3_prime = False
 
-            # swapped retro check and divergent exons statements (10/02/2021) -> that means that 3' retro never called!
-            # changed it back on 03/12/2022
             # check possible retrotransposition since no intron attached -> retro is never checked in the last exon
             # but last exon retro seem to always cary a chunk of 3'UTR so last exon would unlikely ever be retro
             else:
@@ -222,7 +200,6 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                         and three_prime_retrotransposition is False \
                         and homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                         divergent_introns = True
-
 
 
         # CALL EXON IN CONTIG LOCUS ANALYZED
@@ -455,6 +432,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 intron, exon_missing, last_bp, big_insertion, insertion_with_N = reset_exon_parameters()
 
                 continue
+
 
             # CATCH NO CALL DECISIONS
             else:
@@ -709,10 +687,6 @@ def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
 
             if stretch_length < min_stretch_length and indels < allowed_indels:
 
-                #message = "* N - stretch : %s bp and matches : %s" % (stretch_length, matches)
-                #logging.info(message)
-                #print(message)
-
                 if locus_seq[i] == cds_seq[i]:
                     matches += 1
                     stretch_length += 1
@@ -843,6 +817,7 @@ def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
 
 
 def check_synteny_5_prime(starting_position, locus_seq, gene_seq):
+    """Checks synteny at 5'"""
 
     synteny = False
     UTR_length = 200
@@ -913,6 +888,7 @@ def check_synteny_5_prime(starting_position, locus_seq, gene_seq):
 
 
 def check_synteny_3_prime(starting_position, locus_seq, gene_seq):
+    """Checks synteny at 3'"""
 
     synteny = False
     UTR_length = 200
@@ -971,6 +947,7 @@ def check_synteny_3_prime(starting_position, locus_seq, gene_seq):
 
 
 def check_retrotransposition(position, last_bp, cds_seq, locus_seq, gene_seq):  # runs only when intron is False
+    """Checks for retrotransposition events"""
 
     retrotransposition = False
 
@@ -982,22 +959,25 @@ def check_retrotransposition(position, last_bp, cds_seq, locus_seq, gene_seq):  
 
 
 def reset_exon_parameters():
+    """Resets parameters before the next exon is analysed"""
 
-     exon = ""
-     insertion = 0
-     intron_at_5_prime = False
-     intron_at_3_prime = False
-     intron = False
-     exon_missing = False
-     last_bp = False
-     big_insertion = False
-     insertion_with_N = False
+    exon = ""
+    insertion = 0
+    intron_at_5_prime = False
+    intron_at_3_prime = False
+    intron = False
+    exon_missing = False
+    last_bp = False
+    big_insertion = False
+    insertion_with_N = False
 
-     return exon, insertion, intron_at_5_prime, intron_at_3_prime, \
+    return exon, insertion, intron_at_5_prime, intron_at_3_prime, \
          intron, exon_missing, last_bp, big_insertion, insertion_with_N
 
 
 def check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N):
+    """Checks for insertions"""
+
     big_insertion = False
 
     # do not allow Ns in insertions to avoid misalignment
