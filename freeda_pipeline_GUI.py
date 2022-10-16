@@ -3,90 +3,11 @@
 """
 Created on Wed Mar 24 16:36:16 2021
 
-@author: damian
-Main module of the freeda package. Takes user input and performs automatic input extraction, tblastn, exon finding
-and molecular evolution analysis (PAML) followed by overlay of putative adaptive sites onto 3D structure (PyMOL).
+@author: Damian Dudka - damiandudka0@gmail.com
+Main module of the FREEDA package.
 
 """
 
-
-# TODO
-#       0) PCNT in primates has some duplicated domains -> ilke TACC3 -> cds doesnt 100% match gene in alignment
-#                   -> code a sliding window in input extractor to scan genomic sequence for duplicates
-#                   e.g. stretch of 30bp and then look for it in the cds -> if a match -> delete from cds
-#       0) FREEDA gets stuck sometimes - Ccnd3 Ap contig BDUI01012397.1__rev runs over 1h never aligns
-#                   -> same for Wasf2 Ay or Ap (cant remeber)
-#       0) Modify the check comparing cloned Rn to ensembl Rn -> surely takes indels into account (e.g. Vash2 Rn 49%)
-#       0) Add a check for min numbr of species? e.g. 8?
-#       0) Include filtered evalue in tblastn -> sometimes matches occur twice in the same (overlaping) region of
-#                   a contig e.g. Tpx2 Mp LT608307.1_for -> I decided not to do that cose multiple proteins have evalue
-#                       >0.01 for legitimate exons and we loose power; Tpx2 case is rare
-#       0) Test blastn instead of tblastn -> maybe faster, less hits?
-#       0) Suggest to users that first debugging tip is to clear all folders except Genomes (takes longer to regenerate)
-#       0) Alternative explanations for positive selection:
-#               - polymorphism -> how to check?
-#               - intron/exon bounderies -> check by copying ref species sequence and CTRL+F against exons fasta file
-#               - ....
-#       0) User should check if a given site under positive selection is not at intron/exon boundery (might not be real)
-#       0) Get rid of ensembl check -> not informative?
-#       0) If species eliminated due to cds check in paml launcher -> best to not report the number of species on graph?
-#       0) Best way to deal with single uncalled bases is to mask them as "-" -> test on Pahari Anapc15
-#       0) cite Wang and Han 2021 J Virol for Primates, Carnivora that span similar phylogeny
-#       "Pervasive Positive Selection on Virus Receptors Driven by Host-Virus Conflicts in Mammals"
-#       0) There might be an issue with RETRO calling -> Only 5-prime RETRO called in Mad1l1 Mi (the one that didnt fail)
-#       0) Whn only F61 scores (NUMA1) PAML log has annotated uniprot like sites in F3X4 too -> need to fix it
-#               -> PAML graph also shows sites in NUMA1 F3X4 model -> DONE (I think ->test on NUMA1)
-#                   -> it works but structure overlays only F61 sites that also score in F3X4
-#                                                                       (even if this model is rejected)
-#               -> it turns out that actually freeda picks the first codon model if consensus dict is not needed
-#                               (this is an issue only for command line where user could pick F61 only)
-#       0) Test current folder scheme using command line
-#       0) When F61 scores only, then structure has these residues -> its ok, command line can run only F61
-#       0) Cenpk using Rn as reference, Ha genome exon 8 is eliminated but introns are 0.74 and 1.0
-#                   -> the 1.0 intron is actually completely missing -> no mismatches are treated as full alignment
-#       0) You need to introduce info about the ref exon length and pass it to single exon checkpoint to avoid
-#               the code recognising intronic dashes as indels -> one of the dicts "ref_exons" should have it
-#                   -> I added the exon length variable to single exon mapping checkpoint, penalized gaps
-#                           by giving 0.25 point instead of 1 -> test on CD55
-#                   -> I decided to go back to not penalizing indels because that leads to rejection of exons e.g.
-#                           Cenp-a ends up with only 7 species becuase of the exon 1 indels (which are true)
-#       0) CD55 in primates An species has clear misalignment in exon 4 and 5 -> passes single exon check though (0.69 and 0.74)
-#                   -> I started punishing indels -> test on Izumo1, Izumo 3 and Haus8 -> decided against it finally?
-#       0) Possible issue with length of gene -> how TRIM5a human gene is soo long? Trim-214 in ensembl is
-#                   only 20k while I get over 200k linear seq -> check input from pyensembl
-#                               -> seems that its pyensembl doing; gives bed coordinates for gene that long -< no clue why but UTR is too plong most likely
-#       0) Consider papers when writing: "The effects of alignment error and alignment filtering on the sitewise detection of positive selection"
-#                                       : "A beginners guide to estimating the non-synonymous to
-#                                                 synonymous rate ratio of all protein-coding genes in a genome"
-#       0) Program to make "denovo codon-based nucleotide alignment" when protein-coding sequences are unreliable or absent":
-#                   -> MACSE "Ranwez et al., 2011 PLoS One"
-#       0) Jeffares et al., 2015 Methods Mol Biol A beginners guide to estimating the non-synonymous to
-#               synonymous rate ratio of all protein-coding genes in a genome
-#                           -> indentity of 70% produces reliable alignments
-#       0) Lccr37a -> leucine rich repetitive protein -> example of protein FREEDA cannot analyse
-#       0) Get rid of the "another intron interpheres with introny check" for clarity
-#       0) Consider showing only 0.95 adaptive sites on structure if more than 20 sites -> no, that is not fair
-#                       or only 0.99 when more than 50 sites -> not sure
-#       0) Either disable the interpro domains or restrict them even more (too overlapping) -> not sure
-#       0) Figures:
-#               1) Accuracy - Show both ways (rat and mouse)
-#                           - Show dealing with duplications (Pot1a and Pot1b?)
-#                           - Show dealing with tandem sequences (Hoxd9, Hoxd10)
-#                                   -> warning that it cannot distinguish tandem duplications
-#                                               that are too recent, especially in lower quality genomes (Mug1, Mug2)
-#                           - Show dealing with microexons (Cenpx)
-#                           - Show dealing with premature STOP (Haus...)
-#                           - Show dealing with uncalled bases (Mug1 Caroli contig FMAL02029158.1__rev)
-#       0) Use debugger to go through the matches_processor module and make sure docstrings are correct
-#       0) Double check all the assemblies (I swapped white faced saki in order)
-#       2) Talk to Mike about who to ask concering licenses
-#       3) Fix nomenclature -> "intronic" -> DONE
-#                           -> "gene/gene_name" -> gene_name -> DONE
-#                           -> "None" is not the best info for M2a etc tests in PAML excel file -> 0 (zero)
-#                                   -> DONE (testing...)
-#                           -> eliminate aligner option (at the end when figure is done)
-#                           -> fill out missing docstrings
-#      12) Use Hyland et al. 2021 Gen Biol Evol for testing -> TRIP gene in mammals
 
 from freeda import input_extractor
 from freeda import folder_generator
@@ -152,7 +73,7 @@ def raise_logger():
     # create handlers of the logging window
     text_handler = TextHandler.TextHandler(logging_window)
     # Logging configuration
-    logging.basicConfig(format="%(message)s")  # level=logging.INFO,
+    logging.basicConfig(format="%(message)s")
     logger = logging.getLogger()
     logger.addHandler(text_handler)
 
@@ -570,7 +491,7 @@ def freeda_pipeline():
         # create handlers of the logging window
         text_handler = TextHandler.TextHandler(logging_window)
         # Logging configuration
-        logging.basicConfig(format="%(message)s")  # level=logging.INFO,
+        logging.basicConfig(format="%(message)s")
         logger = logging.getLogger()
         logger.addHandler(text_handler)
 
@@ -757,7 +678,7 @@ def check_gene_name(gene_name, op):
     analyze_button.state(["!disabled"] if valid else ["disabled"])
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[A-Za-z0-9]+$", gene_name) is not None  # ^(?![\s\S]) -> completely empty
+        ok_so_far = re.match(r"^(?![\s\S])|[A-Za-z0-9]+$", gene_name) is not None
         if not ok_so_far:
             error_message1.set(message1)
         return ok_so_far
@@ -771,10 +692,10 @@ def check_functional_residues(residue, op):
     """Checks if user provided a valid residue number"""
     error_message2.set("")
     # accept only entry starting with non-0 number followed by max 3 numbers
-    valid = re.match(r"^[1-9]{1}([0-9]{0,3}$)", residue) is not None  # max 4 digits, first one not a zero
+    valid = re.match(r"^[1-9]{1}([0-9]{0,3}$)", residue) is not None
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[0-9]+$", residue) is not None  # ^(?![\s\S]) -> completely empty
+        ok_so_far = re.match(r"^(?![\s\S])|[0-9]+$", residue) is not None
         if not ok_so_far:
             error_message2.set(message2)
         return ok_so_far
@@ -790,7 +711,7 @@ def check_label(label, op):
     valid = re.match(r"^[A-Za-z0-9]+$", label) is not None
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None  # ^(?![\s\S]) -> completely empty
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None
         return ok_so_far
 
     return valid
@@ -801,7 +722,7 @@ def check_excluded_species(label, op):
     valid = re.match(r"^[A-Z]{1}[a-z]{1}$", label) is not None
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None  # ^(?![\s\S]) -> completely empty
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None
         return ok_so_far
 
     return valid
@@ -1343,14 +1264,6 @@ advanced_options_2 = ["Advanced options (OFF)",
 
 # USER INPUT GENE 1
 gene_name1 = StringVar()
-#ttk.Label(gene1_frame, text="Gene name").grid(column=0, row=11, padx=6, pady=1, sticky=(W))
-#name1 = ttk.Entry(gene1_frame, textvariable=gene_name1, validate="all", validatecommand=check_gene_name_wrapper)
-#name1.grid(column=0, row=12, padx=5, pady=1, sticky=(W))
-#dup1_var = BooleanVar()
-#dup1_button = ttk.Checkbutton(gene1_frame, text="Duplication expected",
-#                              variable=dup1_var, onvalue=1, offvalue=0)
-#dup1_button.grid(column=0, row=13, padx=6, pady=1, sticky=(W))
-
 ttk.Label(gene1_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
 name1 = ttk.Entry(gene1_name_frame, textvariable=gene_name1, width=12, validate="all",
                   validatecommand=check_gene_name_wrapper)
@@ -1398,13 +1311,6 @@ site13_label.grid(column=3, row=13, padx=5, sticky=(W))
 
 # USER INPUT GENE 2
 gene_name2 = StringVar()
-#ttk.Label(gene2_frame, text="Gene name").grid(column=0, row=14, padx=6, pady=1, sticky=(W))
-#name2 = ttk.Entry(gene2_frame, textvariable=gene_name2, validate="all", validatecommand=check_gene_name_wrapper)
-#name2.grid(column=0, row=15, padx=5, pady=1, sticky=(W))
-#dup2_var = BooleanVar()
-#dup2_button = ttk.Checkbutton(gene2_frame, text="Duplication expected", variable=dup2_var, onvalue=1, offvalue=0)
-#dup2_button.grid(column=0, row=16, padx=6, pady=1, sticky=(W))
-
 ttk.Label(gene2_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
 name2 = ttk.Entry(gene2_name_frame, textvariable=gene_name2, width=12, validate="all",
                   validatecommand=check_gene_name_wrapper)
@@ -1452,13 +1358,6 @@ site23_label.grid(column=3, row=16, padx=5, sticky=(W))
 
 # USER INPUT GENE 3
 gene_name3 = StringVar()
-#ttk.Label(gene3_frame, text="Gene name").grid(column=0, row=17, padx=6, pady=1, sticky=(W))
-#name3 = ttk.Entry(gene3_frame, textvariable=gene_name3, validate="all", validatecommand=check_gene_name_wrapper)
-#name3.grid(column=0, row=18, padx=5, pady=1, sticky=(W))
-#dup3_var = BooleanVar()
-#dup3_button = ttk.Checkbutton(gene3_frame, text="Duplication expected", variable=dup3_var, onvalue=1, offvalue=0)
-#dup3_button.grid(column=0, row=19, padx=6, pady=1, sticky=(W))
-
 ttk.Label(gene3_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
 name3 = ttk.Entry(gene3_name_frame, textvariable=gene_name3, width=12, validate="all",
                   validatecommand=check_gene_name_wrapper)
@@ -1506,13 +1405,6 @@ site33_label.grid(column=3, row=19, padx=5, sticky=(W))
 
 # USER INPUT GENE 4
 gene_name4 = StringVar()
-#ttk.Label(gene4_frame, text="Gene name").grid(column=0, row=20, padx=6, pady=1, sticky=(W))
-#name4 = ttk.Entry(gene4_frame, textvariable=gene_name4, validate="all", validatecommand=check_gene_name_wrapper)
-#name4.grid(column=0, row=21, padx=5, pady=1, sticky=(W))
-#dup4_var = BooleanVar()
-#dup4_button = ttk.Checkbutton(gene4_frame, text="Duplication expected", variable=dup4_var, onvalue=1, offvalue=0)
-#dup4_button.grid(column=0, row=22, padx=6, pady=1, sticky=(W))
-
 ttk.Label(gene4_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
 name4 = ttk.Entry(gene4_name_frame, textvariable=gene_name4, width=12, validate="all",
                   validatecommand=check_gene_name_wrapper)
@@ -1560,13 +1452,6 @@ site43_label.grid(column=3, row=22, padx=5, sticky=(W))
 
 # USER INPUT GENE 5
 gene_name5 = StringVar()
-#ttk.Label(gene5_frame, text="Gene name").grid(column=0, row=23, padx=6, pady=1, sticky=(W))
-#name5 = ttk.Entry(gene5_frame, textvariable=gene_name5, validate="all", validatecommand=check_gene_name_wrapper)
-#name5.grid(column=0, row=24, padx=5, pady=1, sticky=(W))
-#dup5_var = BooleanVar()
-#dup5_button = ttk.Checkbutton(gene5_frame, text="Duplication expected", variable=dup5_var, onvalue=1, offvalue=0)
-#dup5_button.grid(column=0, row=25, padx=6, pady=1, sticky=(W))
-
 ttk.Label(gene5_name_frame, text="Gene name").grid(column=0, row=0, padx=1, sticky=(W))
 name5 = ttk.Entry(gene5_name_frame, textvariable=gene_name5, width=12, validate="all",
                   validatecommand=check_gene_name_wrapper)
