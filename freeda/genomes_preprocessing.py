@@ -2119,54 +2119,116 @@ def get_available_species(ref_species):
                    "Rr": "RattusRattus",
                    "Rn": "RattusNorvegicus"}
 
+    if ref_species == "Rn":
+        species = {"Rr": "RattusRattus",
+                   "Rs": "RhynchomysSoricoides",
+                   "Rd": "RhabdomysDilectus",
+                   "An": "ArvicanthisNiloticus",
+                   "Gs": "GrammomysSurdaster",
+                   "Gd": "GrammomysDolichurus",
+                   "Mo": "MastomysCoucha",
+                   "Mn": "MastomysNatalensis",
+                   "Pd": "PraomysDelectorum",
+                   "Ha": "HylomyscusAlleni",
+                   "Ap": "ApodemusSpeciosus",
+                   "Ay": "ApodemusSylvaticus",
+                   "Mp": "MusPahari",
+                   "Mu": "MusMinutoides",
+                   "Mc": "MusCaroli",
+                   "Ms": "MusSpretus",
+                   "Mi": "MusSpicilegus",
+                   "Mm": "MusMusculus"}
+
     elif ref_species == "Hs":
         species = {"Pt": "PanTroglodytes",
                       "Gg": "GorillaGorilla",
                       "Pb": "PongoAbelli",
                       "Ne": "NomascusLeucogenys",
                       "Hm": "HylobatesMoloch",
+                      "Ss": "SymphalangusSyndactylus",  # added 08/17/22
+                      "Hl": "HoolockLeuconedys",  # added 08/17/22
                       "Cm": "CercopithecusMona",
-                      "Mu": "MacacaMulatta",
-                      "Pu": "PapioAnubis",
                       "Cs": "ChlorocebusSabaeus",
-                      "Tf": "TrachypithecusFrancoisi",
+                      "Ep": "ErythrocebusPatas",  # added 08/17/22
+                      "Ms": "MandrillusSphinx",  # added 08/17/22
+                      "Mu": "MacacaMulatta",
+                      "La": "LophocebusAterrimus",  # added 08/17/22
+                      "Pu": "PapioAnubis",
                       "Pi": "PiliocolobusTephrosceles",
+                      "Tf": "TrachypithecusFrancoisi",
+                      "Rs": "RhinopithecusStrykeri",  # added 08/17/22
+                      "Pn": "PygathrixNigripes",  # added 08/17/22
                       "Pp": "PitheciaPithecia",
                       "An": "AotusNancymaae",
                       "Pd": "PlecturocebusDonacophilus",
                       "Ap": "AlouattaPalliata",
                       "Cj": "CallithrixJacchus",
                       "Sb": "SaimiriBoliviensis",
-                      "Ag": "AtelesGeoffroyi"}
+                      "Ag": "AtelesGeoffroyi",
+                      "Ca": "CebusAlbifrons",  # added 08/17/22
+                      "Sa": "SapajusApella"}  # added 08/17/22
 
     elif ref_species == "Cf":
-        species = {"Um": "UrsusMaritimus",
-                       "Ml":  "MiroungaLeonina",
+        species = {"Vf": "VulpesFerrilata",
+                       "Um": "UrsusMaritimus",
+                       "Ua": "UrsusAmericanus",
+                       "Ml": "MiroungaLeonina",
                        "Or": "OdobenusRosmarus",
                        "Zc": "ZalophusCalifornianus",
+                       "Sg": "SpilogaleGracilis",
                        "Af": "AilurusFulgens",
                        "Pl": "ProcyonLotor",
+                       "Mm": "MelesMeles",
+                       "Gg": "GuloGulo",
+                       "Mn": "MustelaNigripes",
                        "Ll": "LutraLutra",
-                       "Sg": "SpilogaleGracilis",
                        "Ph": "ParadoxurusHermaphroditus",
+                       "Hh": "HyaenaHyaena",
+                       "Cg": "CryptoproctaFerox",
+                       "Ss": "SuricataSuricatta",
+                       "Pt": "PantheraTigris",
+                       "Lr": "LynxRufus",
+                       "Fc": "FelisCatus"}
+
+    elif ref_species == "Fc":
+        species = {"Lr": "LynxRufus",
+                       "Pt": "PantheraTigris",
+                       "Ss": "SuricataSuricatta",
                        "Cg": "CryptoproctaFerox",
                        "Hh": "HyaenaHyaena",
-                       "Ss": "SuricataSuricatta",
-                       "Fc": "FelisCatus"}
+                       "Ph": "ParadoxurusHermaphroditus",
+                       "Ll": "LutraLutra",
+                       "Mn": "MustelaNigripes",
+                       "Gg": "GuloGulo",
+                       "Mm": "MelesMeles",
+                       "Pl": "ProcyonLotor",
+                       "Af": "AilurusFulgens",
+                       "Sg": "SpilogaleGracilis",
+                       "Zc": "ZalophusCalifornianus",
+                       "Or": "OdobenusRosmarus",
+                       "Ml": "MiroungaLeonina",
+                       "Ua": "UrsusAmericanus",
+                       "Um": "UrsusMaritimus",
+                       "Vf": "VulpesFerrilata",
+                       "Cf": "CanisFamiliaris"}
 
     elif ref_species == "Gg":
         species = {"Bt": "BambusicolaThoracicus",
-                       "Ag": "AlectorisRufa",
+                       "Pc": "PavoCristatus",  # added 08/17/22
                        "Pm": "PavoMuticus",
                        "Mg": "MeleagrisGallopavo",
                        "Cu": "CentrocercusUrophasianus",
+                       "Ci": "CentrocercusMinimus",  # added 08/17/22
                        "Lt": "LyrurusTetrix",
                        "Ll": "LagopusLeucura",
+                       "Lm": "LagopusMuta", # added 08/17/22
                        "Tc": "TympanuchusCupido",
                        "Cp": "ChrysolophusPictus",
                        "Ph": "PhasianusColchicus",
                        "Cr": "CrossoptilonMantchuricum",
                        "Sm": "SyrmaticusMikado",
+                       "Ln": "LophuraNycthemera",  # added 08/17/22
+                       "Ag": "AlectorisRufa",
                        "Cj": "CoturnixJaponica"}
 
     return species
@@ -2175,75 +2237,96 @@ def get_available_species(ref_species):
 def extend_abbreviations(ref_species):
     """Matches species abbreviations to species names"""
 
-    mouse = {"Mm": "Mus musculus",
-             "Mi": "Mus spicilegus",
-             "Ms": "Mus spretus",
-             "Mc": "Mus caroli",
-             "Mu": "Mus minutoides",
-             "Mp": "Mus pahari",
-             "Ay": "Apodemus sylvaticus",
-             "Ap": "Apodemus speciosus",
-             "Ha": "Hylomyscus alleni",
-             "Pd": "Praomys delectorum",
-             "Mn": "Mastomys natalensis",
-             "Mo": "Mastomys coucha",
-             "Gd": "Grammomys dolichurus",
-             "Gs": "Grammomys surdaster",
-             "An": "Arvicanthis niloticus",
-             "Rd": "Rhabdomys dilectus",
-             "Rs": "Rhynchomys soricoides",
-             "Rr": "Rattus rattus",
-             "Rn": "Rattus norvegicus"}
+    mouse = {"Mm": "Mus musculus (Mm)",
+             "Mi": "Mus spicilegus (Mi)",
+             "Ms": "Mus spretus (Ms)",
+             "Mc": "Mus caroli (Mc)",
+             "Mu": "Mus minutoides (Mu)",
+             "Mp": "Mus pahari (Mp)",
+             "Ay": "Apodemus sylvaticus (Ay)",
+             "Ap": "Apodemus speciosus (Ap)",
+             "Ha": "Hylomyscus alleni (Ha)",
+             "Pd": "Praomys delectorum (Pd)",
+             "Mn": "Mastomys natalensis (Mn)",
+             "Mo": "Mastomys coucha (Mo)",
+             "Gd": "Grammomys dolichurus (Gd)",
+             "Gs": "Grammomys surdaster (Gs)",
+             "An": "Arvicanthis niloticus (An)",
+             "Rd": "Rhabdomys dilectus (Rd)",
+             "Rs": "Rhynchomys soricoides (Rs)",
+             "Rr": "Rattus rattus (Rr)",
+             "Rn": "Rattus norvegicus (Rn)"}
 
-    human = {"Hs": "Homo sapiens",
-             "Pt": "Pan troglodytes",
-             "Gg": "Gorilla gorilla",
-             "Pb": "Pongo abelli",
-             "Ne": "Nomascus leucogenys",
-             "Hm": "Hylobates moloch",
-             "Cm": "Cercopithecus mona",
-             "Mu": "Macaca mulatta",
-             "Pu": "Papio anubis",
-             "Cs": "Chlorocebus sabaeus",
-             "Tf": "Trachypithecus francoisi",
-             "Pi": "Piliocolobus tephrosceles",
-             "Pp": "Pithecia pithecia",
-             "An": "Aotus nancymaae",
-             "Pd": "Plecturocebus donacophilus",
-             "Ap": "Alouatta palliata",
-             "Cj": "Callithrix jacchus",
-             "Sb": "Saimiri boliviensis",
-             "Ag": "Ateles geoffroyi"}
+    human = {"Hs": "Homo sapiens (Hs)",
+             "Pt": "Pan troglodytes (Pt)",
+             "Gg": "Gorilla gorilla (Gg)",
+             "Pb": "Pongo abelli (Pb)",
+             "Ne": "Nomascus leucogenys (Ne)",
+             "Hm": "Hylobates moloch (Hm)",
+             "Ss": "SymphalangusSyndactylus (Ss)",  # added 08/17/22 (PacBio)
+             "Hl": "HoolockLeuconedys (Hl)",  # added 08/17/22 (Nanopore)
+             "Cm": "Cercopithecus mona (Cm)",
+             "Cs": "Chlorocebus sabaeus (Cs)",
+             "Ep": "Erythrocebus patas (Ep)",  # added 08/17/22 (Nanopore)
+             "Ms": "Mandrillus sphinx (Ms)",  # added 08/17/22 (Nanopore)
+             "Mu": "Macaca mulatta (Mu)",
+             "La": "Lophocebus aterrimus (La)",  # added 08/17/22 (PacBio)
+             "Pu": "Papio anubis (Pu)",
+             "Pi": "Piliocolobus tephrosceles (Pi)",
+             "Tf": "Trachypithecus francoisi (Tf)",
+             "Rs": "Rhinopithecus strykeri (Rs)",  # added 08/17/22 (Nanopore)
+             "Pn": "Pygathrix nigripes (Pn)",  # added 08/17/22 (Nanopore)
+             "Pp": "Pithecia pithecia (Pp)",
+             "An": "Aotus nancymaae (An)",
+             "Pd": "Plecturocebus donacophilus (Pd)",
+             "Ap": "Alouatta palliata (Ap)",
+             "Cj": "Callithrix jacchus (Cj)",
+             "Sb": "Saimiri boliviensis (Sb)",
+             "Ag": "Ateles geoffroyi (Ag)",
+             "Ca": "Cebus albifrons (Ca)",  # added 08/17/22 (Nanopore)
+             "Sa": "Sapajus apella (Sa)"}  # added 08/17/22 (Nanopore)
 
-    dog = {"Cf": "Canis familiaris",
-           "Um": "Ursus maritimus",
-           "Ml": "Mirounga leonina",
-           "Or": "Odobenus rosmarus",
-           "Zc": "Zalophus californianus",
-           "Af": "Ailurus fulgens",
-           "Pl": "Procyon lotor",
-           "Ll": "Lutra lutra",
-           "Sg": "Spilogale gracilis",
-           "Ph": "Paradoxurus hermaphroditus",
-           "Cg": "Cryptoprocta ferox",
-           "Ss": "Suricata suricatta",
-           "Hh": "Hyaena hyaena",
-           "Fc": "Felis catus"}
+    dog = {"Cf": "Canis familiaris (Cf)",
+           "Sv": "Speothos venaticus (Sv)",
+           "Vf": "Vulpes ferrilata (Vf)",
+           "Um": "Ursus maritimus (Um)",
+           "Ua": "Ursus americanus (Ua)",
+           "Ml": "Mirounga leonina (Ml)",
+           "Or": "Odobenus rosmarus (Or)",
+           "Zc": "Zalophus californianus (Zc)",
+           "Sg": "Spilogale gracilis (Sg)",
+           "Af": "Ailurus fulgens (Af)",
+           "Pl": "Procyon lotor (Pl)",
+           "Mm": "Meles meles (Mm)",
+           "Gg": "Gulo gulo (Gg)",
+           "Mn": "Mustela nigripes (Mn)",
+           "Ll": "Lutra lutra (Ll)",
+           "Ph": "Paradoxurus hermaphroditus (Ph)",
+           "Cg": "Cryptoprocta ferox (Cg)",
+           "Ss": "Suricata suricatta (Ss)",
+           "Hh": "Hyaena hyaena (Hh)",
+           "Pt": "Panthera tigris (Pt)",
+           "Lr": "Lynx rufus (Lr)",
+           "Fc": "Felis catus (Fc)"}
 
-    chicken = {"Gg": "Gallus gallus",
-               "Bt": "Bambusicola thoracicus",
-               "Ag": "Alectoris rufa",
-               "Pm": "Pavo muticus",
-               "Mg": "Meleagris gallopavo",
-               "Cu": "Centrocercus urophasianus",
-               "Lt": "Lyrurus tetrix",
-               "Ll": "Lagopus leucura",
-               "Tc": "Tympanuchus cupido",
-               "Cp": "Chrysolophus pictus",
-               "Ph": "Phasianus colchicus",
-               "Cr": "Crossoptilon mantchuricum",
-               "Sm": "Syrmaticus mikado",
-               "Cj": "Coturnix japonica"}
+    chicken = {"Gg": "Gallus gallus (Gg)",
+               "Bt": "Bambusicola thoracicus (Bt)",
+               "Pm": "Pavo muticus (Pm)",
+               "Pc": "Pavo cristatus (Pc)",  # added 08/17/22
+               "Mg": "Meleagris gallopavo (Mg)",
+               "Cu": "Centrocercus urophasianus (Cu)",
+               "Ci": "Centrocercus minimus (Ci)",  # added 08/17/22
+               "Lt": "Lyrurus tetrix (Lt)",
+               "Ll": "Lagopus leucura (Ll)",
+               "Lm": "Lagopus muta (Lm)",  # added 08/17/2022
+               "Tc": "Tympanuchus cupido (Tc)",
+               "Cp": "Chrysolophus pictus (Cp)",
+               "Ph": "Phasianus colchicus (Ph)",
+               "Cr": "Crossoptilon mantchuricum (Cr)",
+               "Sm": "Syrmaticus mikado (Sm)",
+               "Ln": "Lophura nycthemera (Ln)",  # added 08/17/22
+               "Ag": "Alectoris rufa (Ag)",
+               "Cj": "Coturnix japonica (Cj)"}
 
     if ref_species == "Mm" or ref_species == "Rn":
         names = mouse
@@ -2358,7 +2441,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                          ("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
                          ("Mm", "MusMusculus_genome", "GCA_000001635.9"))}
 
-    human_dict = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
+    human_dict_old = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
                       ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),
                       ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),
                       ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
@@ -2379,48 +2462,105 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                       # ("Mm", "MURINUS_genome", "GCA_000165445.3"),  # added Mouse lemur
                       # ("Og", "GARNETTI_genome", "GCA_000181295.3"))}   # added Galago lemur
 
-    # Carnivora (diverged 50 myo)
-    carnivora_cat_dict = {"Fc": (("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
-                       ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
-                       ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
-                       ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
-                       ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),  # western spotted skunk
-                       ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
-                       ("Pl", "ProcyonLotor_genome",  "GCA_015708975.1"),  # raccoon
-                       ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
-                       ("Zc", "ZalophusCalifornianus_genome", "GCA_009762305.2"),  # sea lion
-                       ("Or", "OdobenusRosmarus_genome", "GCA_000321225.1"),  # pacific walrus
-                       ("Ml", "MiroungaLeonina_genome",  "GCA_011800145.1"),  # elephant seal
-                       ("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
-                       ("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # dog
+    # Simiiformes sccording to Timetree 40-44.2 (42.9 Mya)
+    # Nwk format tree is missing Pongo abeli!
+    human_dict = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),
+                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),
+                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),
+                      ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
+                      ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
+                      ("Ss", "SymphalangusSyndactylus_genome", "GCA_023761135.1"),  # siamang  3 added 08/17/22
+                      ("Hl", "HoolockLeuconedys_genome", "GCA_023748175.1"),  # eastern hoolock gibbon  added 08/17/22
+                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # Mona monkey
+                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),
+                      ("Ep", "ErythrocebusPatas_genome", "GCA_023783455.1"),  # red guenon added 08/17/22
+                      ("Ms", "MandrillusSphinx_genome", "GCA_023783085.1"),  # mandrill added 08/17/22
+                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),
+                      ("La", "LophocebusAterrimus_genome", "GCA_023783235.1"),  #Black crested mangabey added 08/17/22
+                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),
+                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # added Colobus monkey
+                      ("Tf", "TrachypithecusFrancoisi_genome", "GCA_009764325.1"),  # Francois's langur
+                      ("Rs", "RhinopithecusStrykeri_genome", "GCA_023764705.1"),  # Burmese snub-nosed monkey added 08/17/22
+                      ("Pn", "PygathrixNigripes_genome", "GCA_023764695.1"),  # Black-shanked douc langur added 08/17/22
+                      ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # added White-faced saki
+                      ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # added Ma's night monkey
+                      ("Pd", "PlecturocebusDonacophilus_genome", "GCA_004027715.1"),  # Bolivian titi
+                      ("Ap", "AlouattaPalliata_genome", "GCA_004027835.1"),  # mantled howler monkey
+                      ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),  # common marmoset
+                      ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # squirrel monkey
+                      ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"),  # spider monkey
+                      ("Sa", "SapajusApella_genome", "GCA_023762875.1"),  # white-fronted capuchin added 08/17/22
+                      ("Ca", "CebusAlbifrons_genome", "GCA_023783575.1"))}  # tufted capuchin added 08/17/22
+                      # ("Mm", "MURINUS_genome", "GCA_000165445.3"),  # added Mouse lemur
+                      # ("Og", "GARNETTI_genome", "GCA_000181295.3"))}   # added Galago lemur
 
-    carnivora_dog_dict = {"Cf": (("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
-                       ("Ml",  "MiroungaLeonina_genome",  "GCA_011800145.1"),  # elephant seal
-                       ("Or", "OdobenusRosmarus_genome", "GCA_000321225.1"),  # pacific walrus
-                       ("Zc", "ZalophusCalifornianus_genome", "GCA_009762305.2"),  # sea lion
-                       ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
-                       ("Pl", "ProcyonLotor_genome",  "GCA_015708975.1"),  # raccoon
-                       ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
-                       ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),   # western spotted skunk
-                       ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
-                       ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
-                       ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
-                       ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
-                       ("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # cat
 
-    # Phasianidae (diverged about 40 myo)
+    # Carnivora according to Timetree 52.9-57.3 (55.4mya)
+    carnivora_cat_dict = {"Fc": (
+        ("Lr", "LynxRufus_genome", "GCA_022079265.1"),  # bobcat
+        ("Pt", "PantheraTigris_genome", "GCA_024034525.1"),  # tiger
+        ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
+        ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
+        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
+        ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
+        ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
+        ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret
+        ("Gg", "GuloGulo_genome", "GCA_023973185.1"),  # American wolverine
+        ("Mm", "MelesMeles_genome", "GCA_922984935.2"),  # Eurasian badger
+        ("Pl", "ProcyonLotor_genome", "GCA_015708975.1"),  # raccoon
+        ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
+        ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),  # western spotted skunk
+        ("Zc", "ZalophusCalifornianus_genome", "GCA_009762305.2"),  # sea lion
+        ("Or", "OdobenusRosmarus_genome", "GCA_000321225.1"),  # pacific walrus
+        ("Ml", "MiroungaLeonina_genome", "GCA_011800145.1"),  # elephant seal
+        ("Ua", "UrsusAmericanus_genome", "GCA_003344425.1"),  # American black bear
+        ("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
+        ("Vf", "VulpesFerrilata_genome", "GCA_024500485.1"),  # Tybethan sand fox
+        ("Sv", "SpeothosVenaticus_genome", "GCA_023170115.1"),  # bush dog
+        ("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # dog
+
+    # Carnivora according to Timetree 52.9-57.3 (55.4 Mya)
+    carnivora_dog_dict = {"Cf": (
+        ("Sv", "SpeothosVenaticus_genome", "GCA_023170115.1"),  # bush dog
+        ("Vf", "VulpesFerrilata_genome", "GCA_024500485.1"),  # Tybethan sand fox
+        ("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
+        ("Ua", "UrsusAmericanus_genome", "GCA_003344425.1"),  # American black bear
+        ("Ml", "MiroungaLeonina_genome", "GCA_011800145.1"),  # elephant seal
+        ("Or", "OdobenusRosmarus_genome", "GCA_000321225.1"),  # pacific walrus
+        ("Zc", "ZalophusCalifornianus_genome", "GCA_009762305.2"),  # sea lion
+        ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),  # western spotted skunk
+        ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
+        ("Pl", "ProcyonLotor_genome", "GCA_015708975.1"),  # raccoon
+        ("Mm", "MelesMeles_genome", "GCA_922984935.2"),  # Eurasian badger
+        ("Gg", "GuloGulo_genome", "GCA_023973185.1"),  # American wolverine
+        ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret
+        ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
+        ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
+        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
+        ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
+        ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
+        ("Pt", "PantheraTigris_genome", "GCA_024034525.1"),  # tiger
+        ("Lr", "LynxRufus_genome", "GCA_022079265.1"),  # bobcat
+        ("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # cat
+
+    # Phasianidae according to Timetree 29.9-40.7 (36.9 Mya)
+    # Missing
     phasianidae_dict = {"Gg": (("Bt", "BambusicolaThoracicus_genome", "GCA_002909625.1"),  # Chinese bamboo-partridge
-                               ("Ag", "AlectorisRufa_genome", "GCA_019345075.1"),  # red-legged partridge
                                ("Pm", "PavoMuticus_genome", "GCA_016647715.1"),  # green peafowl
+                               ("Pc", "PavoCristatus_genome", "GCA_021513735.1"),  # Indian peafowl
                                ("Mg", "MeleagrisGallopavo_genome", "GCA_000146605.4"),  # turkey
-                               ("Cu", "CentrocercusUrophasianus_genome", "GCA_019232065.1"),  # greater sage-grouse
                                ("Lt", "LyrurusTetrix_genome", "GCA_000586395.1"),  # black grouse
                                ("Ll", "LagopusLeucura_genome", "GCA_019238085.1"),  # white-tailed ptarmigan
+                               ("Lm", "LagopusMuta_genome", "GCA_023343835.1"),  # rock ptarmigan
                                ("Tc", "TympanuchusCupido_genome", "GCA_001870855.1"),  # greater prairie chicken
-                               ("Cp", "ChrysolophusPictus_genome", "GCA_003413605.1"),  # golden pheasant
-                               ("Ph", "PhasianusColchicus_genome", "GCA_004143745.1"), # ring-necked pheasant
-                               ("Cr", "CrossoptilonMantchuricum_genome", "GCA_019593555.1"),  # brown eared-pheasant
+                               ("Ci", "CentrocercusMinimus_genome", "GCA_005890655.1"),  # Gunnison sage-grouse
+                               ("Cu", "CentrocercusUrophasianus_genome", "GCA_019232065.1"),  # greater sage-grouse
                                ("Sm", "SyrmaticusMikado_genome", "GCA_003435085.1"),  # mikado pheasant
+                               ("Cp", "ChrysolophusPictus_genome", "GCA_003413605.1"),  # golden pheasant
+                               ("Ph", "PhasianusColchicus_genome", "GCA_004143745.1"),  # ring-necked pheasant
+                               ("Cr", "CrossoptilonMantchuricum_genome", "GCA_019593555.1"),  # brown eared-pheasant
+                               ("Ln", "LophuraNycthemera_genome", "GCA_021292215.1"),  # silver pheasant
+                               ("Ag", "AlectorisRufa_genome", "GCA_019345075.1"),  # red-legged partridge
                                ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  # Japanese quail
 
 

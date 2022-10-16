@@ -52,7 +52,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
     duplication_score_parameter = False
 
     if all_genes_dict:
-        if all_genes_dict[gene_name][0] is True:
+        if all_genes_dict[gene_name][0] == "Duplication expected":
             duplication_score_parameter = True
 
     # all sequences are in capital letters at this point
@@ -541,6 +541,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
 
 def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
+    """Assesses if intron is present based on hamming distance scores"""
 
     # default state of intron is false
     intron = False

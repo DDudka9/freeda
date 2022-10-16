@@ -19,7 +19,8 @@ import pybedtools
 import glob
 
 
-def process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path, gene, genome_name, genome_index):
+def process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path, gene, genome_name, genome_index,
+                    all_genes_dict=None):
     """Processes blast matches and prepares them for the alignment with reference cds and gene"""
 
     # make a no-duplicates list of contig names
@@ -43,7 +44,8 @@ def process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path, 
         # convert the bed file into fasta file
         make_fasta_file(wdir, fasta_name, bed_object, expanded_bed_object, genome_name)
         fasta_path = process_fasta_file(fasta_name, contig, result_path, gene, genome_name, rev)
-        get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index, rev)
+        get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index, rev,
+                         all_genes_dict)
         MSA_path = generate_files_to_MSA(contig, cds_seq, gene_seq, fasta_path)
 
     message = "\nAnalysing all contigs ..."
@@ -315,7 +317,8 @@ def reverse_complement(fasta_name, gene, genome_name, contig, rev):
     return rev_comp_filename
 
 
-def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index, rev):
+def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, end, genome_index, rev,
+                     all_genes_dict=None):
     """Generates a fasta file for given contig locus"""
 
     # naming of the file and header will depend on if contig was rev_comp or not
@@ -329,8 +332,8 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     # pull the contig by its base name
     base_name = contig.split("__")[0]
     seq = genome_index[str(base_name)].seq
-    prefix, suffix = get_prefix_suffix(ref_species, start, len(seq))
-    # try trim contig and add 100bp overhangs for later introny check
+    prefix, suffix = get_prefix_suffix(ref_species, start, len(seq), gene, all_genes_dict)
+    # try trim contig and add 10000bp overhangs for later introny check
     seq = seq[start - prefix: end + suffix]
     # if full contig lacks enough bp on either end, the Seq object
     # will have length 0 and needs to be created again from genome.index
@@ -353,14 +356,22 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     shutil.move(file_name, fasta_path)
 
 
-def get_prefix_suffix(ref_species, start, seq_length):
+def get_prefix_suffix(ref_species, start, seq_length, gene, all_genes_dict):
     """Generates extension for each contig"""
 
     # set length of the prefix and suffix extensions
-    if ref_species == "Hs":
-        length = 30000
-    else:
-        length = 10000
+    #if ref_species == "Hs":
+    #    length = 10000   # testing from 30000 07/05/2022
+    #else:
+    #    length = 10000
+
+    length = 10000
+    # GUI is used to run FREEDA
+    if all_genes_dict:
+        # check if long exons are expected (overrides default length)
+        if all_genes_dict[gene][1] is True:
+            length = 30000
+
     prefix = 0
     longest_prefix = prefix
     while prefix < start and prefix < length:

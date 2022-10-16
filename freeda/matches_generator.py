@@ -10,12 +10,13 @@ of genomic loci of interest
 
 """
 
+import os
 import pandas as pd
 import logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def generate_matches(match_path, t, gene, genome_name):
+def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
     """Generates matches based on the blast results"""
 
     columns = ["qseqid", "sseqid", "qstart", "qend", "sstart", "send",
@@ -30,7 +31,15 @@ def generate_matches(match_path, t, gene, genome_name):
                         "send": int,
                         "pident": float})
     # select matches above treshold (30% defult) and add template "strand" Series
-    selected_matches = threshold_matches(m_assigned_dataframe, t, gene, genome_name)
+    selected_matches = threshold_matches(m_assigned_dataframe, t, gene, genome_name, all_genes_dict)
+    # do not allow the dataframe to be empty
+    if selected_matches.empty:
+        os.remove(match_path)
+        message = "\n...WARNING... No matches pass the used blast threshold (%s percent) for gene : " \
+                  "%s in %s -> species removed" % (str(t), gene, genome_name)
+        print(message)
+        logging.info(message)
+        return selected_matches
     # sort matches by "sstart" column to be able to split indicated contigs
     sorted_selected_matches = selected_matches.sort_values(by=["sseqid", "sstart"])
     # reindex the rows to itertare over them easier
@@ -40,7 +49,7 @@ def generate_matches(match_path, t, gene, genome_name):
     d = make_contigs_dict(matches)
     dataframes = split_contigs_to_dataframes(matches, d)
     # split matches if further than most known mouse genes
-    concatenated_matches = split_large_contigs(dataframes).reset_index(drop=True)
+    concatenated_matches = split_large_contigs(dataframes, gene, all_genes_dict).reset_index(drop=True)
     matches = concatenated_matches.astype({"sstart": int, "send": int})
     
     # record all contigs and starts/ends for strand determination
@@ -64,8 +73,14 @@ def generate_matches(match_path, t, gene, genome_name):
     return matches
 
 
-def threshold_matches(matches, t, gene, genome_name):
+def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
     """Sets a dynamic threshold for matches depending on their number"""
+
+    # GUI is used to run FREEDA
+    if all_genes_dict:
+        # check if strict search is needed
+        if all_genes_dict[gene][1] == "Common domains expected":
+            t = 80
 
     # add empty "strand" column
     strand = ["for" for index in range(len(matches))]
@@ -80,7 +95,7 @@ def threshold_matches(matches, t, gene, genome_name):
     
     # if not, increase identity threshold until getting < 40 matches
     else:
-        while len(matches_above_threshold) > 100:  # changed to 100 01/09/2022
+        while len(matches_above_threshold) > 100 and t < 90:  # changed to 100 01/09/2022 and added threshold break 10/06/22
             t = t + 5
             threshold = matches["pident"] > t
             m = matches[threshold]
@@ -128,28 +143,39 @@ def split_contigs_to_dataframes(matches, d):
     return dataframes
 
 
-def split_large_contigs(dataframes):
-    """Splits large contigs (where matches are >200kb apart)"""
+def split_large_contigs(dataframes, gene, all_genes_dict):
+    """Splits large contigs (where matches are 30kb apart as default)"""
     # Most mouse introns are smaller than 30kb
     # Long and Deutsch 1999 Nucleic Acids Research
-    
+    # default length
+
+    length = 30000
+    # GUI is used to run FREEDA
+    if all_genes_dict:
+        # check if long introns expected
+        if all_genes_dict[gene][0] == "Long introns expected (>50kb)":
+            length = 200000
+        # check if tandem duplication expected (overrides the long introns variable)
+        elif all_genes_dict[gene][0] == "Tandem duplication expected":
+            length = 10000
+
     list_new_matches = []
     for matches in dataframes:
         number = 1
         # make an empty matches dataframe template to avoid copying the orginal
         new_matches = pd.DataFrame().reindex_like(matches)
-        # populate the new dataframe with new contig names whenever > 30kb
+        # populate the new dataframe with new contig names whenever > length
         for index, row in matches.iterrows():
             start = row[1]
             if index == 0:
                 contig_name = row[0]
                 new_matches.iloc[index] = matches.iloc[index]
                 continue
-            if start - new_matches.iloc[index-1][1] < 200000:   # temporary from 30000
+            if start - new_matches.iloc[index-1][1] < length:   # temporary from 30000
                 new_matches.iloc[index] = matches.iloc[index]
                 new_matches.at[index, "sseqid"] = contig_name
                 continue
-            if start - new_matches.iloc[index-1][1] > 200000:   # temporary from 30000
+            if start - new_matches.iloc[index-1][1] > length:   # temporary from 30000
                 contig_name = row[0] + "__" + str(number)
                 number += 1
                 new_matches.iloc[index] = matches.iloc[index]

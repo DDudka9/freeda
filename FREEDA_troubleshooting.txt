@@ -982,3 +982,64 @@ Exons FAILED to assemble expected CDS for: Nudt11-201
 05_10_2022
 When NCBI updates an assembly (status "replaced") it gives an error when trying to download the genome
 -> make sure the reference is up to date
+
+06_14_2022
+#       0) Single matches are stiched together the opposite way (1st exon is last etc) for "for" contigs
+#                                       regardless on which strand ref gene is coded
+#                                                           -> test on Cenpl -> FIXED (global variables were the issue)
+#       0) Currently uniprot_id reported is just the last of possible_uniprot_ids list -> FIXED
+#       0) Convert the abbreviations back to long names for final results -> DONE
+
+06/28/2022
+
+Figure out why Spc25 and Spcs2 are both taken in uniprot ID search
+    -> because Spcs2 is an actual gene with an alternative name Spc25
+    -> solved this specific case by counting the number of times the name Spc25 appears in each uniprot entry
+
+"Tandem duplication button" -> limit the overhags to 10kb (check on H3C1 histone gene) -> DONE
+
+Add "Strict search" -> 80% threshold -> DONE
+
+Restrict contig splitting back to 30kb (from 200kb)
+    Add "Long introns" button -> 200kb (advised for >50kb introns) -> DONE
+
+07/16/2022
+
+#       0) Implement blast treshold ("More stringent search" - 80%) -> DONE
+#       0) Drawback of using long contigs -> H3C1 has clusters of histone 3 genes, messes alignment
+#                   -> implement "Tandem duplication expecred" -> limit range of matches to e.g. 10kb -> DONE
+#       0) There is a problem in finding uniprot matches - Spc25 takes Spcs2 ID for some reason -> FIXED (somewhat)
+                -> scoring the number of times a given name is present in uniprot table from requests
+        0) PRANK alignment of Dlgap5 leads to no positive selection with 12 species (does score with 16 though)
+#                               -> try improve MAFFT alignment by -maxiters 1000
+#                                               (improved alignment marginally, not different in time)
+#                               -> globalpair or globalpair did not change much -> left globalpair
+#                               -> I decided to use PRANK instead of Mafft in final cds alignment
+#                                   -> that did not change result for Haus1-Haus8 but Haus6 is now marginally posititve
+#                                                                           (0.044 instead of 0.012)
+#                                   -> went back to mafft but with overalignmet protection (Katoh et al., 2016 Bioinformatics)
+#                               -> test PRANK on single exon alignments
+#       0) Change pr >= 0.9 residues to black if 0 -> DONE
+#       0) Make a file from the list of genomes -> will allow users to add more genomes are more is being sequenced
+#                   -> DONE -> much better to just release new FREEDA app !!! -> deprecated
+#       0) General issue -> Traceback are not logged in, in case of crashing the GUI will not stop
+#                               -> confusing for user
+#                           SOLUTION : find a way to crash the GUI when exception occurs that FREEDA does not handle
+#                           -> tried to add it as a try/except statement -> fixed
+
+	1. Cenpf rat crashed:
+Traceback (most recent call last):
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda_pipeline.py", line 375, in <module>
+    codon_frequencies=args.codon_frequencies, excluded_species=args.excluded_species)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda_pipeline.py", line 324, in freeda_pipeline
+    day, genes_under_pos_sel, failed_paml, codon_frequencies)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda/paml_visualizer.py", line 48, in analyze_PAML_results
+    genes_under_pos_sel, gui, codon_frequency)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda/paml_visualizer.py", line 388, in plot_PAML
+    omega_dict = get_omegas(gene, result_path, final_length, codon_frequency)
+  File "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/freeda/paml_visualizer.py", line 768, in get_omegas
+    if int((values[-4]).lstrip("(").rstrip(")")) == 11:
+IndexError: list index out of range
+
+Turns out that rat coding sequences in Ensembl may contains masked residues (residue 7354 in PAML template is "N") and so translation gives "X" and so the final length in PAML_result_dict (rst file) is 2919 instead of actual 2920 -> index out of range
+-> normally this should not happen for curated sequences but a quick fix would be to raise FATAL ERROR when getting coding sequence

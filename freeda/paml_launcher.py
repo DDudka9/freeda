@@ -28,6 +28,8 @@ from Bio import pairwise2
 from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from Bio.Phylo.PAML import codeml
+from Bio.Phylo.PAML.chi2 import cdf_chi2
 
 import datetime
 import time
@@ -145,7 +147,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             # log species
             final_species_headers.insert(0, ref_species)
             nr_of_species = len(final_species_headers)
-            nr_of_species_total_dict[gene] = nr_of_species
+            #nr_of_species_total_dict[gene] = nr_of_species
 
             message = "\n\n --------- * %s * --------- \n\n" % gene
             print(message)
@@ -242,10 +244,11 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             check_compatibility(ref_species, gene, translated_path)
 
             # correct number of species in the final analysis
-            nr_of_species = nr_of_species - len(to_delete)
+            final_nr_of_species = nr_of_species - len(to_delete)
+            nr_of_species_total_dict[gene] = final_nr_of_species
             final_species_headers = [species for species in final_species_headers if species not in to_delete]
             message = "\n Final species cloned and aligned (+ ref) for %s : %s %s \n" \
-                      % (gene, str(nr_of_species), str(final_species_headers))
+                      % (gene, str(final_nr_of_species), str(final_species_headers))
             print(message)
             logging.info(message)
 
@@ -598,9 +601,6 @@ def eliminate_all_insertions(gene_folder_path, out_msa):
 def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     """Runs PAML by calling the control file"""
 
-    from Bio.Phylo.PAML import codeml
-    from Bio.Phylo.PAML.chi2 import cdf_chi2
-
     # change working directory to given PAML gene folder
     os.chdir(PAML_path)
 
@@ -663,7 +663,7 @@ def run_PAML(wdir, gene, PAML_path, control_file_name, codon_frequency):
     os.chdir(wdir)
     
     return M2a_M1a, M8_M7
-    
+
 
 def run_RAxML(gene, gene_folder_path, out_Gblocks):
     """Makes a gene tree using RAxML"""
@@ -1038,24 +1038,41 @@ def align_final_cds(wdir, gene, result_path):
     aligner = "mafft"
 
     # define which aligner is used
-    if aligner == "mafft":
-        cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
-                                 input=in_filepath,
-                                 thread=-1,  # thread -1 is suppose to automatically calculate physical cores
-                                 globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
-                                 maxiterate=1000)  # improves alignment -> FFT-NS-i; added 04/09/2022
-
-        # record standard output and standard error
-        stdout, stderr = cline()
-        # make a post-MSA file using out_filename
-        with open(out_msa, "w") as f:
-            f.write(stdout)
-        shutil.move(out_msa, gene_folder_path)
-
+    if aligner == "mafft":   # runs mafft in G-INS-i with VSM (Katoh et al., 2016 Bioinformatics) 07/10/2022
+        cmd = [pyinstaller_compatibility.resource_path("mafft-ginsi"), "--allowshift", "--unalignlevel", "0.8",
+               "--out", gene_folder_path + out_msa, in_filepath]
+        subprocess.call(cmd)
         # returns the filename after MSA
         return out_msa, aligner
 
-    if aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
+    if aligner == "guidance":
+        guidance_path = "/Users/damian/PycharmProjects/Freeda_pyinstaller_04_29_2022/include_mac/www/Guidance/guidance.pl"
+        cmd = ["perl", guidance_path, "--seqFile", in_filepath, "--msaProgram", "MAFFT", "--mafft",
+               pyinstaller_compatibility.resource_path("mafft-ginsi"), "--seqType", "nuc",
+               "--outDir", gene_folder_path + out_msa, "--outOrder", "as_input"]
+        subprocess.call(cmd)
+        # returns the filename after MSA
+        return out_msa, aligner
+
+    # define which aligner is used
+    #elif aligner == "mafft":   # runs mafft in G-INS-i
+    #    cline = MafftCommandline(cmd=pyinstaller_compatibility.resource_path("mafft"),
+    #                             input=in_filepath,
+    #                             thread=-1,  # thread -1 is suppose to automatically calculate physical cores
+    #                             globalpair=True,  # improve alignment accuracy by Needleman-Wunsch algorithm
+    #                             maxiterate=1000)  # improves alignment -> added 04/09/2022
+    #
+    #    # record standard output and standard error
+    #    stdout, stderr = cline()
+    #    # make a post-MSA file using out_filename
+    #    with open(out_msa, "w") as f:
+    #        f.write(stdout)
+    #    shutil.move(out_msa, gene_folder_path)
+    #
+    #    # returns the filename after MSA
+    #    return out_msa, aligner
+
+    elif aligner == "muscle":  # due to crashing muscle runs at only 1 iteration !
 
         cmd = ['muscle', "-in", in_filepath, "-quiet", "-maxiters", "2", "-out", gene_folder_path + out_msa]
         subprocess.call(cmd)
@@ -1065,7 +1082,7 @@ def align_final_cds(wdir, gene, result_path):
         # returns the filename after MSA
         return out_msa, aligner
 
-    if aligner == "prank":
+    elif aligner == "prank":
 
         cline = PrankCommandline(d=in_filepath,
                                        o=out_msa,  # prefix only!

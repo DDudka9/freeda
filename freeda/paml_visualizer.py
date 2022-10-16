@@ -14,6 +14,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio import pairwise2
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl import Workbook
+from openpyxl import load_workbook
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 from json import dump
 import re
@@ -373,6 +374,90 @@ def output_excel_sheet(wdir, final_PAML_log_dict, result_path, day, codon_freque
     shutil.move(wdir + excel_filename, result_path.replace("Raw_data/", "Results/") + "Results_sheet")
 
 
+def collect_entries(wdir):
+    """Collects entries from result sheets"""
+
+    PAML_log_dict = {"Gene name": [],
+                        "Nr of species analyzed": [],
+                        "Species": [],
+                        "CDS Coverage": [],
+                        "M2a vs M1a (LRT)": [],
+                        "M2a vs M1a (p-value)": [],
+                        "M8 vs M7 (LRT)": [],
+                        "M8 vs M7 (p-value)": [],
+                        "Sites with pr < 0.90": [],
+                        "Sites with pr >= 0.90": []}
+
+    # make an empty excel sheet using openpyxl library
+    wb1 = Workbook()
+    ws1 = wb1.active
+
+    # set column width
+    columns_to_format = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+    for c in columns_to_format:
+        ws1.column_dimensions[c].width = 19
+
+    # format headers (cell by cell)
+    headers = [ws1["A1"], ws1["B1"], ws1["C1"], ws1["D1"], ws1["E1"],
+               ws1["F1"], ws1["G1"], ws1["H1"], ws1["I1"], ws1["J1"]]
+    heads = list(PAML_log_dict.keys())
+    header_count = 1
+    for header in headers:
+        # THIS IS MOST LIKELY NOT NEEDED (CHECK)
+        head = heads.pop(0)
+        ws1.cell(row=1, column=header_count, value=head)
+
+        header.font = Font(bold=True, name="Arial", size=10)
+        double = Side(border_style="thin")
+        header.border = Border(top=double, left=double, right=double, bottom=double)
+        header.alignment = Alignment(horizontal="center", vertical="center")
+        header.fill = PatternFill("solid", fgColor="00FFCC00")
+        header_count += 1
+
+    wb1.save(wdir + "Pre_Results.xlsx")
+
+    # make a list of all the excel sheets
+    l = []
+    for subdir, dirs, files in os.walk(wdir):
+        for file in files:
+            f = os.path.join(subdir, file)
+            # avoid hidden or temp files
+            if f.endswith("xlsx") and not file.split("/")[-1].startswith(".") \
+                    and not file.split("/")[-1].startswith("~") \
+                    and file != wdir + "Pre_Results.xlsx":
+                l.append(f)
+
+    results_dict = {}
+    data_set = set()
+    for file_path in l:
+        wb = load_workbook(file_path)
+        sheet = wb.active
+
+        # get all values from each row
+        for row in sheet.rows:
+            # get all values
+            all_gene_data = [data.value for data in row]
+            # fill dict with list of values for each gene (avoid duplicates)
+            data_set.add(tuple(all_gene_data))
+
+    # sort by first value (gene name)
+    data_list = sorted(data_set)
+    wb1 = load_workbook(wdir + "Pre_Results.xlsx")
+    ws1 = wb1.active
+
+    for d in data_list:
+        # write in each value to separate cell
+        ws1.append(d)
+
+    # make all rows centered
+    for row in ws1.iter_rows():
+        for cell in row:
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # save the excel document
+    wb1.save(wdir + "Results.xlsx")
+
+
 def plot_PAML(wdir, result_path, gene, nr_of_species_total, ref_species, genes_under_pos_sel,
               gui, codon_frequency):
     """Maps PAML result onto the cds of reference species and outputs it as a bar graph"""
@@ -708,6 +793,7 @@ def match_adaptive_sites_to_ref(final_ref_species_dict, mapped_ref_and_final_res
             matched_adaptive_sites_ref[site] = [aa[1], "0.000", "0.000"]
 
     return matched_adaptive_sites_ref
+
 
 
 def get_omegas(gene, result_path, final_length, codon_frequency):

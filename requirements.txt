@@ -12,7 +12,6 @@ paml==4.9
 pyensembl==1.9.4
 raxml==8.2.12
 gblocks==0.91b
-bioservices==1.7.12
 ncbi-datasets-cli==12.13.2
 pip~=21.3
 colorlog~=5.0.1
@@ -29,3 +28,4 @@ docutils~=0.17.1
 requests~=2.26.0
 simplejson~=3.17.2
 coloredlogs~=14.0
+pyinstaller~=5.1

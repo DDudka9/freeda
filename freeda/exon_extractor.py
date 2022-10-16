@@ -22,6 +22,8 @@ import shutil
 import os
 import re
 
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+
 
 def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, all_genomes,
                           final_excluded_species=None, gui=None, logging_window=None, all_genes_dict=None):
@@ -83,10 +85,13 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
                 # index given genome
                 genome_index = genome_indexer.index_genome_database(wdir, genome_name)
                 # generate matches dataframe
-                matches = matches_generator.generate_matches(match_path, t, gene, genome_name)
+                matches = matches_generator.generate_matches(match_path, t, gene, genome_name, all_genes_dict)
+                # if some matches are present but do not pass threshold -> matches will be None
+                if matches.empty:
+                    continue
                 # process the final dataframe
                 MSA_path = matches_processor.process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path,
-                                                             gene, genome_name, genome_index)
+                                                             gene, genome_name, genome_index, all_genes_dict)
                 # run MSA and write them into files
                 msa_aligner.run_msa(MSA_path)
                 # return potential exons for a current gene in current genome
@@ -153,7 +158,8 @@ def check_blast_output(blast_output_path, t, all_genes):
                 if no_matches_above_t > 3:
                     blast_output_correct = False
                     print("\n...FATAL ERROR... : At least 3 blast output files contain no matches above threshold : %s "
-                          "for gene name: %s -> exiting the pipeline now..." % (t, gene))
+                          "for gene name: %s -> please exclude them and run FREEDA again -> exiting the pipeline now..."
+                          % (t, gene))
                     return blast_output_correct
 
     return blast_output_correct
