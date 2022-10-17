@@ -1,11 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar 26 11:00:54 2021
 
-@author: Damian Dudka - damiandudka0@gmail.com
+Copyright 2022 - Damian Dudka and R. Brian Akins - contact: damiandudka0@gmail.com
 
-Extracts exons from genomic assemblies
+This file is part of FREEDA.
+
+FREEDA is free software: you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+
+FREEDA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with FREEDA.
+If not, see <https://www.gnu.org/licenses/>.
+
+"""
+
+"""
+
+Extracts exons from genomic assemblies.
 
 """
 
@@ -47,7 +63,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
 
     if gui:
         # make a new handler
-        text_handler = TextHandler.TextHandler(logging_window)
+        text_handler = gui_logging_handler.TextHandler(logging_window)
         # configure the new logger
         logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(message)s")
         logger = logging.getLogger()

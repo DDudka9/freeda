@@ -1,13 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 24 17:40:58 2021
 
-@author: Damian Dudka - damiandudka0@gmail.com
+Copyright 2022 - Damian Dudka and R. Brian Akins - contact: damiandudka0@gmail.com
+
+This file is part of FREEDA.
+
+FREEDA is free software: you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+
+FREEDA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with FREEDA.
+If not, see <https://www.gnu.org/licenses/>.
+
+"""
+
+
+"""
 
 Extracts fasta sequence based on the matches dataframe and writes it into 
 a fasta file together with cds and genomic locus of the protein from ref species.
-Ready to MSA.
 
 """
 

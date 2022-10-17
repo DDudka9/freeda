@@ -1,11 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 24 19:01:01 2021
 
-@author: Damian Dudka - damiandudka0@gmail.com
+Copyright 2022 - Damian Dudka and R. Brian Akins - contact: damiandudka0@gmail.com
 
-Contains functions helpful to parse fasta files
+This file is part of FREEDA.
+
+FREEDA is free software: you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+
+FREEDA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with FREEDA.
+If not, see <https://www.gnu.org/licenses/>.
+
+"""
+
+
+"""
+
+Contains functions helpful to parse fasta files.
 
 """
 
@@ -123,7 +140,7 @@ def read_fasta_record(record):
     return header, seq
 
 
-def find_gene_and_cds(wdir, gene, ref_species):  # useful if non-one line onput
+def find_gene_and_cds(wdir, gene, ref_species):
     """Reads exons, CDS and gene of reference species making sure CDS is a one-liner"""
 
     ref_exons, expected_exons = get_ref_exons(wdir, gene, ref_species)

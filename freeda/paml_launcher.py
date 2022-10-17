@@ -1,9 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jan 24 21:48:45 2021
 
-@author: Damian Dudka - damiandudka0@gmail.com
+Copyright 2022 - Damian Dudka and R. Brian Akins - contact: damiandudka0@gmail.com
+
+This file is part of FREEDA.
+
+FREEDA is free software: you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+
+FREEDA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with FREEDA.
+If not, see <https://www.gnu.org/licenses/>.
+
+"""
+
+
+"""
 
 Analyses the final cds, gets a gene tree based on translated cds and runs PAML.
 
@@ -48,7 +65,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
 
     if gui:
         # make a new handler
-        text_handler = TextHandler.TextHandler(logging_window)
+        text_handler = gui_logging_handler.TextHandler(logging_window)
         # configure the logger
         logging.basicConfig(filename=PAML_logfile_name, level=logging.INFO, format="%(message)s")
         logger = logging.getLogger()

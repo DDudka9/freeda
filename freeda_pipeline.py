@@ -1,9 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 24 16:36:16 2021
 
-@author: Damian Dudka - damiandudka0@gmail.com
+Copyright 2022 - Damian Dudka and R. Brian Akins - contact: damiandudka0@gmail.com
+
+This file is part of FREEDA.
+
+FREEDA is free software: you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+
+FREEDA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with FREEDA.
+If not, see <https://www.gnu.org/licenses/>.
+
+"""
+
+
+"""
+
 Main module of the FREEDA package used for debugging. Use from terminal only.
 
 """
@@ -32,7 +50,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     if ref_species is None:
         ref_species = "Mm"
-    elif ref_species not in ["Mm", "Hs", "Rn", "Cf", "Gg", "Fc"]:  # added Fc 08/16/2022
+    elif ref_species not in ["Mm", "Hs", "Rn", "Cf", "Gg", "Fc"]:
         print("\n...FATAL_ERROR... : Invalid reference species (try: Mm for mouse, Hs for human) "
               "-> exiting the pipeline now...")
         return
