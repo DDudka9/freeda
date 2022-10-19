@@ -1,14 +1,13 @@
-# FREEDA
+# ![](../../freeda_logo.png)
 
-A Python pipeline that identifies rapidly evolving proteins from genome assemblies.
+FREEDA (Finder of Rapidly Evolving Exons in De novo Assemblies) is a Python built end-to-end automated pipeline to detect positive selection.
 
-- Documentation: LINK
-- GitHub: [https://github.com/DDudka9/freeda](https://github.com/DDudka9/freeda)
-- Conda: LINK
+- Documentation: LINK to Github Pages
+- Source code: [https://github.com/DDudka9/freeda](https://github.com/DDudka9/freeda)
 
 If you use FREEDA for published work, please cite the original paper: CITATION
 
-FREEDA is published using the LICENSE.
+FREEDA is published under the GPLv3 license.
 
 
 
