@@ -348,7 +348,7 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     # pull the contig by its base name
     base_name = contig.split("__")[0]
     seq = genome_index[str(base_name)].seq
-    prefix, suffix = get_prefix_suffix(ref_species, start, len(seq), gene, all_genes_dict)
+    prefix, suffix = get_prefix_suffix(start, len(seq), gene, all_genes_dict)
     # try trim contig and add 10000bp overhangs for later introny check
     seq = seq[start - prefix: end + suffix]
     # if full contig lacks enough bp on either end, the Seq object

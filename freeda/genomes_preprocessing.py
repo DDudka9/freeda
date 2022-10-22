@@ -2159,31 +2159,23 @@ def get_available_species(ref_species):
                       "Pb": "PongoAbelli",
                       "Ne": "NomascusLeucogenys",
                       "Hm": "HylobatesMoloch",
-                      "Ss": "SymphalangusSyndactylus",  # added 08/17/22
-                      "Hl": "HoolockLeuconedys",  # added 08/17/22
                       "Cm": "CercopithecusMona",
                       "Cs": "ChlorocebusSabaeus",
-                      "Ep": "ErythrocebusPatas",  # added 08/17/22
-                      "Ms": "MandrillusSphinx",  # added 08/17/22
                       "Mu": "MacacaMulatta",
-                      "La": "LophocebusAterrimus",  # added 08/17/22
                       "Pu": "PapioAnubis",
                       "Pi": "PiliocolobusTephrosceles",
                       "Tf": "TrachypithecusFrancoisi",
-                      "Rs": "RhinopithecusStrykeri",  # added 08/17/22
-                      "Pn": "PygathrixNigripes",  # added 08/17/22
                       "Pp": "PitheciaPithecia",
                       "An": "AotusNancymaae",
                       "Pd": "PlecturocebusDonacophilus",
                       "Ap": "AlouattaPalliata",
                       "Cj": "CallithrixJacchus",
                       "Sb": "SaimiriBoliviensis",
-                      "Ag": "AtelesGeoffroyi",
-                      "Ca": "CebusAlbifrons",  # added 08/17/22
-                      "Sa": "SapajusApella"}  # added 08/17/22
+                      "Ag": "AtelesGeoffroyi"}
 
     elif ref_species == "Cf":
-        species = {"Vf": "VulpesFerrilata",
+        species = {"Sv": "SpeothosVenaticus",
+                       "Vf": "VulpesFerrilata",
                        "Um": "UrsusMaritimus",
                        "Ua": "UrsusAmericanus",
                        "Ml": "MiroungaLeonina",
@@ -2224,24 +2216,25 @@ def get_available_species(ref_species):
                        "Ua": "UrsusAmericanus",
                        "Um": "UrsusMaritimus",
                        "Vf": "VulpesFerrilata",
+                       "Sv": "SpeothosVenaticus",
                        "Cf": "CanisFamiliaris"}
 
     elif ref_species == "Gg":
         species = {"Bt": "BambusicolaThoracicus",
-                       "Pc": "PavoCristatus",  # added 08/17/22
+                       "Pc": "PavoCristatus",
                        "Pm": "PavoMuticus",
                        "Mg": "MeleagrisGallopavo",
                        "Cu": "CentrocercusUrophasianus",
-                       "Ci": "CentrocercusMinimus",  # added 08/17/22
+                       "Ci": "CentrocercusMinimus",
                        "Lt": "LyrurusTetrix",
                        "Ll": "LagopusLeucura",
-                       "Lm": "LagopusMuta", # added 08/17/22
+                       "Lm": "LagopusMuta",
                        "Tc": "TympanuchusCupido",
                        "Cp": "ChrysolophusPictus",
                        "Ph": "PhasianusColchicus",
                        "Cr": "CrossoptilonMantchuricum",
                        "Sm": "SyrmaticusMikado",
-                       "Ln": "LophuraNycthemera",  # added 08/17/22
+                       "Ln": "LophuraNycthemera",
                        "Ag": "AlectorisRufa",
                        "Cj": "CoturnixJaponica"}
 
@@ -2277,28 +2270,19 @@ def extend_abbreviations(ref_species):
              "Pb": "Pongo abelli (Pb)",
              "Ne": "Nomascus leucogenys (Ne)",
              "Hm": "Hylobates moloch (Hm)",
-             "Ss": "SymphalangusSyndactylus (Ss)",  # added 08/17/22 (PacBio)
-             "Hl": "HoolockLeuconedys (Hl)",  # added 08/17/22 (Nanopore)
              "Cm": "Cercopithecus mona (Cm)",
              "Cs": "Chlorocebus sabaeus (Cs)",
-             "Ep": "Erythrocebus patas (Ep)",  # added 08/17/22 (Nanopore)
-             "Ms": "Mandrillus sphinx (Ms)",  # added 08/17/22 (Nanopore)
              "Mu": "Macaca mulatta (Mu)",
-             "La": "Lophocebus aterrimus (La)",  # added 08/17/22 (PacBio)
              "Pu": "Papio anubis (Pu)",
              "Pi": "Piliocolobus tephrosceles (Pi)",
              "Tf": "Trachypithecus francoisi (Tf)",
-             "Rs": "Rhinopithecus strykeri (Rs)",  # added 08/17/22 (Nanopore)
-             "Pn": "Pygathrix nigripes (Pn)",  # added 08/17/22 (Nanopore)
              "Pp": "Pithecia pithecia (Pp)",
              "An": "Aotus nancymaae (An)",
              "Pd": "Plecturocebus donacophilus (Pd)",
              "Ap": "Alouatta palliata (Ap)",
              "Cj": "Callithrix jacchus (Cj)",
              "Sb": "Saimiri boliviensis (Sb)",
-             "Ag": "Ateles geoffroyi (Ag)",
-             "Ca": "Cebus albifrons (Ca)",  # added 08/17/22 (Nanopore)
-             "Sa": "Sapajus apella (Sa)"}  # added 08/17/22 (Nanopore)
+             "Ag": "Ateles geoffroyi (Ag)"}
 
     dog = {"Cf": "Canis familiaris (Cf)",
            "Sv": "Speothos venaticus (Sv)",
@@ -2326,19 +2310,19 @@ def extend_abbreviations(ref_species):
     chicken = {"Gg": "Gallus gallus (Gg)",
                "Bt": "Bambusicola thoracicus (Bt)",
                "Pm": "Pavo muticus (Pm)",
-               "Pc": "Pavo cristatus (Pc)",  # added 08/17/22
+               "Pc": "Pavo cristatus (Pc)",
                "Mg": "Meleagris gallopavo (Mg)",
                "Cu": "Centrocercus urophasianus (Cu)",
-               "Ci": "Centrocercus minimus (Ci)",  # added 08/17/22
+               "Ci": "Centrocercus minimus (Ci)",
                "Lt": "Lyrurus tetrix (Lt)",
                "Ll": "Lagopus leucura (Ll)",
-               "Lm": "Lagopus muta (Lm)",  # added 08/17/2022
+               "Lm": "Lagopus muta (Lm)",
                "Tc": "Tympanuchus cupido (Tc)",
                "Cp": "Chrysolophus pictus (Cp)",
                "Ph": "Phasianus colchicus (Ph)",
                "Cr": "Crossoptilon mantchuricum (Cr)",
                "Sm": "Syrmaticus mikado (Sm)",
-               "Ln": "Lophura nycthemera (Ln)",  # added 08/17/22
+               "Ln": "Lophura nycthemera (Ln)",
                "Ag": "Alectoris rufa (Ag)",
                "Cj": "Coturnix japonica (Cj)"}
 
@@ -2449,6 +2433,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
 
     # Simiiformes sccording to Timetree 40-44.2 (42.9 Mya)
     # Nwk format tree is missing Pongo abeli!
+    # This list was deprecated
     human_dict_extended = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
                       ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),  # western lowland gorilla
                       ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
@@ -2549,8 +2534,6 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     mouse_ref_dict = {"Mm": (("Mm", "MusMusculus_genome", "GCA_000001635.9"))} # GeneBank GRCm39
     rat_ref_dict = {"Rn": (("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0
     human_ref_dict = {"Hs": (("Hs", "HomoSapiens_genome", "GCA_000001405.28"))} # RefSeq GCF_000001405.39
-                                                        # updated from GCA_000001405.28  05_10_2022
-
     cat_ref_dict = {"Fc": (("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # pyensembl is using Felis_catu_6.2
     dog_ref_dict = {"Cf": (("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # CanFam3.1
     chicken_ref_dict = {"Gg": (("Gg", "GallusGallus_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0

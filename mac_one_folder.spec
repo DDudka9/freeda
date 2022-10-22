@@ -1,13 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 add_binaries = []
-
-add_data = [('include_mac/entitlements.plist','.'),
-			('include_mac/freeda_logo.png', '.'), 
-			('include_mac/bedtools', 'bedtools'),
-			('include_mac/lib', '.'),
-			('include_mac/bin', '.')]
-			
+add_data = [collect_dynamic_libs('include_mac/lib'), ('include_mac/freeda_logo.png', '.'), ('include_mac/bedtools', 'bedtools'), ('include_mac/lib', '.'), ('include_mac/bin', '.')]
 add_imports = ['PIL._tkinter_finder']
 
 block_cipher = None
@@ -30,24 +24,28 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
 exe = EXE(pyz,
-          a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,  
+          a.scripts, 
           [],
+          exclude_binaries=True,
           name='freeda_pipeline_GUI',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
           console=False,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
           entitlements_file=None )
-app = BUNDLE(exe,
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas, 
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='freeda_pipeline_GUI')
+app = BUNDLE(coll,
              name='freeda_pipeline_GUI.app',
-             icon='include_mac/freeda_img4_icon.icns',
+             icon=None,
              bundle_identifier=None)

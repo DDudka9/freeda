@@ -127,28 +127,19 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
              "PongoAbelli_genome": 3103792067,
              "NomascusLeucogenys_genome": 2879637870,
              "HylobatesMoloch_genome": 2885571806,
-             "SymphalangusSyndactylus_genome": 2808876019,  # added 08/17/22
-             "HoolockLeuconedys_genome": 2820095160,  # added 08/17/22
              "CercopithecusMona_genome": 2939174695,
              "MacacaMulatta_genome": 3075206655,
              "PapioAnubis_genome": 2906552752,
              "ChlorocebusSabaeus_genome": 2975174619,
-             "ErythrocebusPatas_genome": 3136127270,  # added 08/17/22
-             "MandrillusSphinx_genome": 2872009988,  # added 08/17/22
-             "LophocebusAterrimus_genome": 2940078738,  # added 08/17/22
              "TrachypithecusFrancoisi_genome": 2938846753,
              "PiliocolobusTephrosceles_genome": 3080829369,
-             "RhinopithecusStrykeri_genome": 2971349299,  # added 08/17/22
-             "PygathrixNigripes_genome": 2932771300,  # added 08/17/22
              "PitheciaPithecia_genome": 3060979898,
              "AotusNancymaae_genome": 2900243235,
              "PlecturocebusDonacophilus_genome": 3112365802,
              "AlouattaPalliata_genome": 3188439879,
              "CallithrixJacchus_genome": 2761618951,
              "SaimiriBoliviensis_genome": 2684668098,
-             "AtelesGeoffroyi_genome": 3020749703,
-             "CebusAlbifrons_genome": 2910572252,  # added 08/17/22
-             "SapajusApella_genome": 2794074315}  # added 08/17/22
+             "AtelesGeoffroyi_genome": 3020749703}
 
     carnivora = {"CanisFamiliaris_genome": 2705909865,
            "SpeothosVenaticus_genome": 2351270082,
@@ -175,20 +166,20 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
 
     phasianidae = {"GallusGallus_genome": 1248683961,
                "BambusicolaThoracicus_genome": 1061115573,
-               "PavoCristatus_genome": 0,  # added 08/17/22
+               "PavoCristatus_genome": 1059867822,
                "PavoMuticus_genome": 1074499003,
                "MeleagrisGallopavo_genome": 1158971686,
                "CentrocercusUrophasianus_genome": 1023355947,
-               "CentrocercusMinimus_genome": 0,  # added 08/17/22
+               "CentrocercusMinimus_genome": 1012645442,
                "LyrurusTetrix_genome": 748849483,
                "LagopusLeucura_genome": 1029379726,
-               "LagopusMuta_genome": 0,  # added 08/17/22
+               "LagopusMuta_genome": 1039604974,
                "TympanuchusCupido_genome": 997281378,
                "ChrysolophusPictus_genome": 1038257264,
                "PhasianusColchicus_genome": 1034344338,
                "CrossoptilonMantchuricum_genome": 1026225886,
                "SyrmaticusMikado_genome": 1086380439,
-               "LophuraNycthemera_genome": 0,  # added 08/17/22
+               "LophuraNycthemera_genome": 1027348961,
                "AlectorisRufa_genome": 1041225438,
                "CoturnixJaponica_genome": 939336855}
 
