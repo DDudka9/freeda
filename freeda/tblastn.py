@@ -68,7 +68,7 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
             query = query_path + gene + "_" + ref_species + "_protein.fasta"
             output = output_path + gene + "_" + genome + ".txt"
             to_blast = [tblastn_path, "-db", database, "-query", query,
-                        "-out", output, "-outfmt", form, "-num_threads", "8"]
+                        "-out", output, "-outfmt", form, "-num_threads", "4"]
             message = "\nPerforming tblastn for gene: %s from genome: %s\n" % (gene, genome)
             logging.info(message)
             subprocess.call(to_blast)
@@ -79,7 +79,7 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
 
 
 def remove_empty_files(database_path):
-    """Checks if there are any empty files (failed downloads) from previous runs and eliinates them."""
+    """Checks if there are any empty files (failed downloads) from previous runs and eliminates them."""
 
     # get all files in the genomes directory
     all_files = [database_path + f for f in os.listdir(database_path) if os.path.isfile(os.path.join(database_path, f))]

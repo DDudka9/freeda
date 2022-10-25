@@ -29,7 +29,7 @@ Although FREEDA is not availabe for Windows, it is possible to run it from a Lin
 
    .. image:: /images/VB4.png
 
-7. Open the virtual machine by clicking "Run". Once it has started, choose "Install Ubuntu".
+7. Open the virtual machine by clicking "Start". Once it has started, choose "Install Ubuntu".
 
    .. image:: /images/VB5.png
 

@@ -15,7 +15,11 @@ Linux
 -----
 
 1. Download the latest Linux release from the GitHub Releases page: 
-	(INSERT LINK) 
+	(INSERT LINK)
+2. Go to the folder and "right-click" the file -> in Properties tick "Allow to run as executable"
+3. Double-click to open GUI
+
+
 2. Run FREEDA from the command line. To do so, open a terminal either by pressing CTRL + ALT + t or by clicking on it in the Applications menu. 
 3. Navigate to the folder where FREEDA was downloaded, allow it to be executed, and run it. 
 
@@ -24,12 +28,14 @@ For example, if FREEDA was downloaded to the Downloads folder copy and enter com
 .. code-block:: sh
 
     cd ~/Downloads
-    chmod +x freeda
-    ./freeda
+    chmod +x freeda_pipeline_GUI
+    ./freeda_pipeline_GUI
 
 Otherwise replace ``~/Downloads`` with your download location (path names are case sensitive).
 
 After the first time, FREEDA can be run the same way, omitting the ``chmod...`` command.
+
+We suggest increasing the resolution of the VirtualBox Linux window (Settings -> Displays -> Resolution 1360x768) to make sure the GUI fits the screen
 
 Windows
 -------
