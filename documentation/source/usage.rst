@@ -2,7 +2,7 @@ Usage
 =====
 
 Using FREEDA GUI
--------------------------
+----------------
 
 	.. image:: /images/GUI_input.png
 
@@ -48,28 +48,28 @@ i. *ABORT* (generally not recommended but useful to instantly stop the analysis 
 2. Make a dedicated folder for FREEDA (and always use the same one to avoid downloading genomes again)
 3. You can scroll text in the Events Window up-down and left-right
 4. *...NOTE:...* - information for the user - no action needed
-5. *...WARNING:...* - suboptimal behavior (e.g. no matching structure prediction found) - no action needed (see :ref:`Troubleshooting`)
-6. *...FATAL_ERROR:...* - critical failure (e.g. no Internet connection) - FREEDA will stop (see :ref:`Troubleshooting`)
+5. *...WARNING:...* - suboptimal behavior - no action needed (see :ref:`Troubleshooting`)
+6. *...FATAL_ERROR:...* - critical failure - action needed (see :ref:`Troubleshooting`)
 7. Putting your computer to sleep should not interfere with the analysis (will resume after awaking)
 8. We recommend the free software UNIPRO by Ugene for viewing alignment files `http://ugene.net/download-all.html <http://ugene.net/download-all.html>`_
 9. When opening structure files (.pse) with PyMOL you can click "Skip activation" - no license is ever needed to view the structure files 
 
 
 Understanding Events Window
--------------------------------
+---------------------------
 
 **FIRST RUN ONLY:**
 
 1. If running on MacOS, FREEDA will prompt the user to download PyMOL from `https://pymol.org/ <https://pymol.org/>`_
 2. FREEDA will first download Ensembl release information for a chosen taxon needed for input extraction (lots of text)
 3. Next FREEDA will download and decompress the reference genome for selected taxon (this will take several minutes depending on Internet speed)
-4. Next FREEDA will download, decompress genomic assemblies relevant for selected taxon and create local blast databases for each (allow 1-2h for this step dependent on Internet speed)
+4. Next FREEDA will download, decompress genomic related assemblies and create local blast databases for each (allow 1-2h for this step dependent on Internet speed)
 
 
 	.. image:: /images/GUI_genomes_downloaded.png
    
    There will be 19-21 genomic assemblies downloaded for each selected taxon.
-   This step is triggered each time you select a new working directory!
+   This step is triggered each time you select a new working directory ("Set directory" in GUI)!
 
 **EACH TIME**
 
@@ -97,7 +97,7 @@ Understanding Events Window
 
 	.. image:: /images/GUI_events_syntenic_5_3.png
 	
-**Exon calling - this contig likely contains a retro-copy of the coding sequence**
+**Exon calling - this contig likely contains a retro-duplication**
 
 	.. image:: /images/GUI_events_RETRO.png
 
@@ -105,7 +105,7 @@ Understanding Events Window
 
 	.. image:: /images/GUI_events_syntenic_5prime.png
 
-**Exon calling - this contig contains the last two syntenic exons expected**
+**Exon calling - this contig contains only the last two syntenic exons expected**
 
 	*is MISSING* and *does not have intron* are functionally equivalent - syntenic exon not found
 
@@ -138,59 +138,75 @@ Understanding Results
 
 	.. image:: /images/GUI_result_table.png
 
-**Working directory folder**
+	*Gene* - Gene name provided
+	
+	*Pos. select.* - Is there evidence of positive selection acting on the gene?
+	
+	*LRT* - Likelihood Ratio Test that determines statistical support for evidence of positive selection (>5.99 -> p=0.05)
+	
+	*p-value* - Directly linked to the LRT value
+	
+	*CDS cover.* - Percentage of codons analyzed as compared to the reference coding sequence (microexons are excluded from this calculation)
+	
+	*species* - Number of species (orthologues) analyzed. **Less than 6 species may yield unreliable results**
+	
+	*pr < 0.9* - Number of all residues that might be evolving under positive selection
+	
+	*pr >= 0.9* - Number of residues with high probability of being under positive selection
+	
 
-**Exemplary nucleotide alignment**
+**Folder with all results (inside user indicated "Set directory")**
 
-**Exemplary protein alignment**
+	.. image:: /images/Working_directory_Raw_data.png
+	.. image:: /images/Working_directory_Results_data.png
+
+**Exemplary nucleotide alignment (open in UNIPRO Ugene)**
+
+	*Cenpo_raw_nucleotide_alignment.fasta*
+
+	.. image:: /images/Exemplary_nucleotide_alignment.png
+	
+	Marked is an indel (likely deletion in *Apodemus sylvaticus*) before any processing. Region marked will be removed as it cannot be analyzed. Inspect this file to find which species causes loss of regions from final alignment. 
+
+**Exemplary protein alignment (opne in UNIPRO Ugene)**
+
+	*Cenpo_protein_alignment.fasta*
+
+	.. image:: /images/Exemplary_protein_alignment.png
+	
+	Marked is the same indel (see above) after it has been processed. Although only 9bp are missing, they span 4 codons. Therefore 4 amino acids were removed from each species (including the first species - after the analysis is complete, FREEDA adds back the missing amino acids to show what was removed). Inspect this file for frameshifts. Use abbreviations displayed here to exclude species.
+
+**Exemplary gene tree (open in Figtree)**
+	
+	*Cenpo.tree*
+	
+	.. image:: /images/Exemplary_gene_tree.png
 
 **Results worksheet**
 
+	*PAML_result-10-31-2022-13-02_F3X4*
+
+	.. image:: /images/Exemplary_results_sheet.png
+	
+	Here you can find probability of positive selection acting on each recurrently changing residue (displayed on top).
+	
 **Residues under positive selection mapped onto referene CDS**
-
-**Residues under positive selection mapped onto structural prediction**
-
-
-
-
-Troubleshooting
----------------
-
-In case your issue is not covered here please send print-screen 
-and *FREEDA-current-date.log* or *PAML-current-date.log* files ("Raw_data" folder)
-to **damiandudka0@gmail.com**
-
-**Unstable Internet connection when downloading genomes**
 	
-	*SOLUTION*: Secure Internet connection, close app, run again (finished downloads will not be affected)
+	*Cenpo_PAML_graph_F3X4.tif*
 	
-	.. image:: /images/GUI_genome_download_error.png
-
-**AlphaFold structure not found or not matching Ensembl input collected**
-
-	*SOLUTION*: No action needed, FREEDA will still run the analysis (without structure output)
-
-	.. image:: /images/GUI_events_No_structure.png
-
-**Questionable alignment of a single exon**
-
-	*SOLUTION*: No action needed, FREEDA performs additional checks (blue) and accepts or rejects the exon
+	.. image:: /images/Exemplary_graph.png
 	
-	.. image:: /images/GUI_events_single_exon_warning.png
+	Top graph (black) shows recurrently changing residues. Middle graph (blue) shows residues that evolve under positive selection with more or less probability (0-7-1.0). Bottom graph (magenta) shows residues with the highest probability of evolving under positive selection. Gray regions have been excluded from analysis (e.g. indels).
 
-**Coding sequence is not in frame**
+**Residues under positive selection mapped onto structural prediction (open in PyMOL)**
 
-	*SOLUTION*: No action needed, likely either some exons are missing (not the case in example below) 
-	or single indels (e.g. sequencing errors) - FREEDA will likely remove this sequence from analysis 
-	or remove the indels to force conserved alignment
+	*Cenpo_Mm.pse*
+
+	.. image:: /images/Exemplary_protein_structure.png
 	
-	.. image:: /images/GUI_events_CDS_not_in_frame.png
-
-**Failed check comparing cloned sequence to annotated one for most distant species (only rodents and carnivores)**
+	You can rotate the structure to have a better look at the position of each residue under positive selection. For details on how to further analyze your structure see: PyMOL wiki `https://pymolwiki.org/index.php/Practical_Pymol_for_Beginners <https://pymolwiki.org/index.php/Practical_Pymol_for_Beginners>`_ and useful user guide `https://pymol.sourceforge.net/newman/userman.pdf <https://pymol.sourceforge.net/newman/userman.pdf>`_
 	
-	*SOLUTION*: No action needed, this is a sanity check - usually <95% identity suggests alternative exons used
 	
 
 
 
-** **

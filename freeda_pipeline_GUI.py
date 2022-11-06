@@ -592,7 +592,7 @@ def freeda_pipeline():
 
             if not input_correct:
                 message = "\n...FATAL ERROR... : Input data generation FAILED for gene: %s " \
-                          "- please remove from analysis -> exiting the pipeline now...\n" % gene
+                          "- please remove %s from analysis -> exiting the pipeline now...\n" % (gene, gene)
                 logging.info(message)
                 ublock_user_entries()
                 return
@@ -624,7 +624,6 @@ def freeda_pipeline():
         else:
             message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
                   "no matches above the identity threshold used : %s \n" \
-                      "-> use a lower one or exclude from analysis" \
                   "-> exiting the pipeline now..." % t
             logging.info(message)
             ublock_user_entries()

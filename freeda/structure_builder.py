@@ -497,7 +497,7 @@ def get_pymol_script(wdir, ref_species, all_matched_adaptive_sites_ref, gene,
 
         # PyMOL command to save as figure (NO LICENSE PRINTS A NO LICENSE ON IMAGE)
         f.write("png " + protein_structure_path + gene + "_" + ref_species + ".png, width=12cm, height=8cm, "
-                                                                             "dpi=300, ray=1\n")
+                                                                             "dpi=300\n")
 
         # PyMOL command to save the session
         f.write("save " + protein_structure_path + gene + "_" + ref_species + ".pse")

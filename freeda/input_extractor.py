@@ -465,6 +465,10 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
         logging.info(message)
         input_correct = False
 
+    # check for repetitive regions in coding sequence
+    if not check_repetitive_regions(wdir, ref_species, gene):
+        input_correct = False
+
     return input_correct, model_matches_input, microexon_present, microexons
 
 
@@ -970,6 +974,7 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
     parse_sequence(ref_species, coding_sequence_input_path, cds_sequence_expected,
                    gene, transcript, strand, sequence_type="cds")
 
+    # check for START and STOP codons
     if start_codon_present and stop_codon_present:
         return transcript, selected_transcript_id, gene_id, \
                contig, strand, UTR_5, UTR_3, \
@@ -1007,6 +1012,31 @@ def check_microexons(wdir, gene, ref_species):
         microexons = []
 
     return microexons
+
+
+def check_repetitive_regions(wdir, ref_species, gene):
+    """Checks if there are large repetitive regions within the coding sequence"""
+
+    repeat_length = 80
+    path_to_cds = wdir + "Coding_sequences/" + gene + "_" + ref_species + "_cds.fasta"
+
+    with open(path_to_cds) as f:
+        seq = f.readlines()[1]
+
+        # collect sequences using sliding window
+        possible_repeats = {}
+        for i in range(len(seq) - repeat_length):
+            if seq[i:i + repeat_length + 1] not in possible_repeats:
+                repeat = seq[i:i + repeat_length + 1]
+                possible_repeats[repeat] = 1
+            else:
+                message = "\n...FATAL_ERROR... : Repetitive coding sequence detected in %s (min 80bp repeat)" \
+                          "\n   -> cannot reliably analyze this gene" % gene
+                logging.info(message)
+                return False
+
+    # no repetitive sequences detected
+    return True
 
 
 def get_gene_names(wdir):  # THIS FUNCTION IS ONLY FOR TESTING

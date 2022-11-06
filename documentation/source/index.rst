@@ -15,7 +15,6 @@ FREEDA (Finder of Rapidly Evolving Exons in De novo Assemblies) is a Python buil
    overview
    getstarted
    usage
-   advanced
    troubleshooting
    development
 

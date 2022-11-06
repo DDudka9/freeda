@@ -15,6 +15,12 @@
       <excludeFolder url="file://$MODULE_DIR$/venvMAC4" />
       <excludeFolder url="file://$MODULE_DIR$/venvMAC5" />
       <excludeFolder url="file://$MODULE_DIR$/codesigning" />
+      <excludeFolder url="file://$MODULE_DIR$/dist_10_2022" />
+      <excludeFolder url="file://$MODULE_DIR$/build_10_2022" />
+      <excludeFolder url="file://$MODULE_DIR$/codesigninig/FREEDA_MacOS_001.app" />
+      <excludeFolder url="file://$MODULE_DIR$/codesigninig/FREEDA_MacOS_001b.app" />
+      <excludeFolder url="file://$MODULE_DIR$/codesigninig" />
+      <excludeFolder url="file://$MODULE_DIR$/docs_Brian" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (py37)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
