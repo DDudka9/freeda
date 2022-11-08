@@ -110,6 +110,16 @@ Understanding Events Window
 	*is MISSING* and *does not have intron* are functionally equivalent - syntenic exon not found
 
 	.. image:: /images/GUI_events_syntenic_3prime.png
+
+**Resolution of very recent duplications (or heterozygous loci)**
+	
+	*This step is triggered only when at least two contigs bear the same number of likely syntenic exons (e.g. very recent segmental duplications). If the likelihood of synteny is the same - each exon will be compared to the corresponding reference exon using a hamming distance algorithm. The contig with the lowest hamming distance is selected as the most likely orthologous locus (most conserved)*
+	
+	(RERUN MICB in primates)
+		
+	"RETRO_score" is always active and flags retro-duplications.
+	
+	"Synteny_score" is enabled only when "Duplication expected" advanced option is selected within the GUI.
 	
 **Validating single syntenic exons cloned from selected contigs**
 

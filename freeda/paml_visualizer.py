@@ -1010,11 +1010,10 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     
     figure_name = gene + "_PAML_graph_" + codon_frequency
-    plt.savefig(figure_name + ".tif", dpi=600, bbox_inches="tight")
+    plt.savefig(figure_name + ".pdf", dpi=600, bbox_inches="tight")
     
-    shutil.move(wdir + figure_name + ".tif", result_path.replace("Raw_data/", "Results/")
-                + "Graphs/" + figure_name + ".tif")
-
+    shutil.move(wdir + figure_name + ".pdf", result_path.replace("Raw_data/", "Results/")
+                + "Graphs/" + figure_name + ".pdf")
 
     
     

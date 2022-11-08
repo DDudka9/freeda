@@ -284,7 +284,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
                 return genome_file_databases
 
             #if genome + ".fasta.nin" not in all_files:
-            #    message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
+            #    message = "\n...FATAL ERROR... : Genome : %s database failed to build" \
             #                  "\n     -> exiting the pipeline now..." % genome
             #    logging.info(message)
             #    return genome_file_databases
@@ -310,7 +310,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
 
             # check if zip file is still present (should not be)
             if not check_genome_downloads(ref_species, database_path, genome, zip=True):
-                message = "\n...FATAL_ERROR... : Genome : %s failed to download or decompress" \
+                message = "\n...FATAL ERROR... : Genome : %s failed to download or decompress" \
                           "   \n        -> likely Internet connection was disrupted" \
                           "\n               -> please run FREEDA again..." % genome
                 logging.info(message)
@@ -318,7 +318,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
 
             # check if fasta file is still partial/empty (should not be)
             if not check_genome_downloads(ref_species, database_path, genome):
-                message = "\n...FATAL_ERROR... : Partial or empty genome file : %s.fasta" \
+                message = "\n...FATAL ERROR... : Partial or empty genome file : %s.fasta" \
                           "   \n        -> likely Internet connection was disrupted" \
                           "\n               -> please run FREEDA again..." % genome
                 logging.info(message)
@@ -340,7 +340,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
 
 
             #if genome + ".fasta.nin" not in all_files:
-            #    message = "\n...FATAL_ERROR... : Genome : %s database failed to build" \
+            #    message = "\n...FATAL ERROR... : Genome : %s database failed to build" \
             #         "\n     -> exiting the pipeline now..." % genome
             #    logging.info(message)
             #    return genome_file_databases
@@ -393,7 +393,7 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
 
             # failed to download or decompress the ref genome
             else:
-                message = "\n...FATAL_ERROR... : Reference genome : %s downloading or decompression failed" \
+                message = "\n...FATAL ERROR... : Reference genome : %s downloading or decompression failed" \
                             "   \n      -> likely Internet connection was disrupted" \
                             "\n             -> please run FREEDA again..." % genome
                 logging.info(message)
@@ -445,7 +445,7 @@ def make_blast_database(database_path, genome):
 
 
 def check_blast_database(genome, database_path):
-    """Checks size of all expected blast databae files"""
+    """Checks size of all expected blast databae files. Files and sizes based on BLAST 2.12.0 version."""
 
     #  -100 bytes from each expected size
     possible_databases = {
@@ -975,299 +975,6 @@ def check_blast_database(genome, database_path):
                                    ('ZalophusCalifornianus_genome.fasta.nin', 660)]
          }
 
-    possible_databases_old = {
-        'AilurusFulgens': [('AilurusFulgens_genome.fasta.nhr', 1877290),
-                            ('AilurusFulgens_genome.fasta.nsq', 586879375),
-                            ('AilurusFulgens_genome.fasta.nin', 139184)],
-         'AlectorisRufa': [('AlectorisRufa_genome.fasta.ndb', 20480),
-                           ('AlectorisRufa_genome.fasta.ntf', 16384),
-                           ('AlectorisRufa_genome.fasta.nhr', 1653117),
-                           ('AlectorisRufa_genome.fasta.nsq', 257072801),
-                           ('AlectorisRufa_genome.fasta.not', 127184),
-                           ('AlectorisRufa_genome.fasta.nin', 127332),
-                           ('AlectorisRufa_genome.fasta.nto', 42396)],
-         'AlouattaPalliata': [('AlouattaPalliata_genome.fasta.nhr', 188085051),
-                              ('AlouattaPalliata_genome.fasta.nsq', 759308524),
-                              ('AlouattaPalliata_genome.fasta.nin', 13638904)],
-         'AotusNancymaae': [('AotusNancymaae_genome.fasta.nhr', 4682811),
-                            ('AotusNancymaae_genome.fasta.nsq', 716294816),
-                            ('AotusNancymaae_genome.fasta.nin', 347168)],
-         'ApodemusSpeciosus': [('ApodemusSpeciosus_genome.fasta.nhr', 60022195),
-                               ('ApodemusSpeciosus_genome.fasta.nsq', 906584831),
-                               ('ApodemusSpeciosus_genome.fasta.nin', 4033612)],
-         'ApodemusSylvaticus': [('ApodemusSylvaticus_genome.fasta.nhr', 90780016),
-                                ('ApodemusSylvaticus_genome.fasta.nsq', 965931952),
-                                ('ApodemusSylvaticus_genome.fasta.nin', 6715672)],
-         'ArvicanthisNiloticus': [('ArvicanthisNiloticus_genome.fasta.nin', 19276),
-                                  ('ArvicanthisNiloticus_genome.fasta.nhr', 285101),
-                                  ('ArvicanthisNiloticus_genome.fasta.nsq', 624247448)],
-         'AtelesGeoffroyi': [('AtelesGeoffroyi_genome.fasta.nhr', 141942082),
-                             ('AtelesGeoffroyi_genome.fasta.nsq', 724918141),
-                             ('AtelesGeoffroyi_genome.fasta.nin', 10429024)],
-         'BambusicolaThoracicus': [('BambusicolaThoracicus_genome.fasta.ndb', 20480),
-                                   ('BambusicolaThoracicus_genome.fasta.ntf', 16384),
-                                   ('BambusicolaThoracicus_genome.fasta.nhr', 26219422),
-                                   ('BambusicolaThoracicus_genome.fasta.nsq', 258580013),
-                                   ('BambusicolaThoracicus_genome.fasta.not', 1964984),
-                                   ('BambusicolaThoracicus_genome.fasta.nin', 1965148),
-                                   ('BambusicolaThoracicus_genome.fasta.nto', 654996)],
-         'CallithrixJacchus': [('CallithrixJacchus_genome.fasta.nhr', 231437),
-                               ('CallithrixJacchus_genome.fasta.nsq', 681897126),
-                               ('CallithrixJacchus_genome.fasta.nin', 14728)],
-         'CanisFamiliaris': [('CanisFamiliaris_genome.fasta.nhr', 15378854),
-                             ('CanisFamiliaris_genome.fasta.nsq', 665940270),
-                             ('CanisFamiliaris_genome.fasta.nin', 1029748)],
-         'CentrocercusMinimus': [('CentrocercusMinimus_genome.fasta.nhr', 162033),
-                                 ('CentrocercusMinimus_genome.fasta.nsq', 250012089),
-                                 ('CentrocercusMinimus_genome.fasta.nin', 11952)],
-         'CentrocercusUrophasianus': [('CentrocercusUrophasianus_genome.fasta.ndb',
-                                       20480),
-                                      ('CentrocercusUrophasianus_genome.fasta.ntf', 16384),
-                                      ('CentrocercusUrophasianus_genome.fasta.nhr', 257109),
-                                      ('CentrocercusUrophasianus_genome.fasta.nsq', 252812745),
-                                      ('CentrocercusUrophasianus_genome.fasta.not', 18032),
-                                      ('CentrocercusUrophasianus_genome.fasta.nin', 18204),
-                                      ('CentrocercusUrophasianus_genome.fasta.nto', 6012)],
-         'CercopithecusMona': [('CercopithecusMona_genome.fasta.nhr', 301005),
-                               ('CercopithecusMona_genome.fasta.nsq', 725702393),
-                               ('CercopithecusMona_genome.fasta.nin', 22792)],
-         'ChlorocebusSabaeus': [('ChlorocebusSabaeus_genome.fasta.nhr', 1146389),
-                                ('ChlorocebusSabaeus_genome.fasta.nsq', 734544674),
-                                ('ChlorocebusSabaeus_genome.fasta.nin', 82588)],
-         'ChrysolophusPictus': [('ChrysolophusPictus_genome.fasta.ndb', 20480),
-                                ('ChrysolophusPictus_genome.fasta.ntf', 16384),
-                                ('ChrysolophusPictus_genome.fasta.nhr', 2445887),
-                                ('ChrysolophusPictus_genome.fasta.nsq', 256435130),
-                                ('ChrysolophusPictus_genome.fasta.not', 171536),
-                                ('ChrysolophusPictus_genome.fasta.nin', 171692),
-                                ('ChrysolophusPictus_genome.fasta.nto', 57180)],
-         'CoturnixJaponica': [('CoturnixJaponica_genome.fasta.ndb', 20480),
-                              ('CoturnixJaponica_genome.fasta.ntf', 16384),
-                              ('CoturnixJaponica_genome.fasta.nhr', 324691),
-                              ('CoturnixJaponica_genome.fasta.nsq', 232015125),
-                              ('CoturnixJaponica_genome.fasta.not', 24140),
-                              ('CoturnixJaponica_genome.fasta.nin', 24296),
-                              ('CoturnixJaponica_genome.fasta.nto', 8048)],
-         'CrossoptilonMantchuricum': [('CrossoptilonMantchuricum_genome.fasta.ndb',
-                                       20480),
-                                      ('CrossoptilonMantchuricum_genome.fasta.ntf', 16384),
-                                      ('CrossoptilonMantchuricum_genome.fasta.nhr', 364778),
-                                      ('CrossoptilonMantchuricum_genome.fasta.nsq', 254660192),
-                                      ('CrossoptilonMantchuricum_genome.fasta.not', 28904),
-                                      ('CrossoptilonMantchuricum_genome.fasta.nin', 29076),
-                                      ('CrossoptilonMantchuricum_genome.fasta.nto', 9636)],
-         'CryptoproctaFerox': [('CryptoproctaFerox_genome.fasta.nhr', 79262218),
-                               ('CryptoproctaFerox_genome.fasta.nsq', 615075830),
-                               ('CryptoproctaFerox_genome.fasta.nin', 5568556)],
-         'FelisCatus': [('FelisCatus_genome.fasta.nhr', 1106666),
-                        ('FelisCatus_genome.fasta.nsq', 615585357),
-                        ('FelisCatus_genome.fasta.nin', 66116)],
-         'GorillaGorilla': [('GorillaGorilla_genome.fasta.nhr', 1189834),
-                            ('GorillaGorilla_genome.fasta.nsq', 761311729),
-                            ('GorillaGorilla_genome.fasta.nin', 65936)],
-         'GrammomysDolichurus': [('GrammomysDolichurus_genome.fasta.nhr', 84331177),
-                                 ('GrammomysDolichurus_genome.fasta.nsq', 523427335),
-                                 ('GrammomysDolichurus_genome.fasta.nin', 6108988)],
-         'GrammomysSurdaster': [('GrammomysSurdaster_genome.fasta.nhr', 3566228),
-                                ('GrammomysSurdaster_genome.fasta.nsq', 603849522),
-                                ('GrammomysSurdaster_genome.fasta.nin', 283996)],
-         'GuloGulo': [('GuloGulo_genome.fasta.nin', 972944),
-                      ('GuloGulo_genome.fasta.nhr', 15273920),
-                      ('GuloGulo_genome.fasta.nsq', 563615841)],
-         'HyaenaHyaena': [('HyaenaHyaena_genome.fasta.nhr', 58049178),
-                          ('HyaenaHyaena_genome.fasta.nsq', 611724296),
-                          ('HyaenaHyaena_genome.fasta.nin', 4202792)],
-         'HylobatesMoloch': [('HylobatesMoloch_genome.fasta.nhr', 2859180),
-                             ('HylobatesMoloch_genome.fasta.nsq', 712401166),
-                             ('HylobatesMoloch_genome.fasta.nin', 220924)],
-         'HylomyscusAlleni': [('HylomyscusAlleni_genome.fasta.nhr', 94851597),
-                              ('HylomyscusAlleni_genome.fasta.nsq', 546935056),
-                              ('HylomyscusAlleni_genome.fasta.nin', 7002964)],
-         'LagopusLeucura': [('LagopusLeucura_genome.fasta.ndb', 20480),
-                            ('LagopusLeucura_genome.fasta.ntf', 16384),
-                            ('LagopusLeucura_genome.fasta.nhr', 1210409),
-                            ('LagopusLeucura_genome.fasta.nsq', 254141026),
-                            ('LagopusLeucura_genome.fasta.not', 88124),
-                            ('LagopusLeucura_genome.fasta.nin', 88272),
-                            ('LagopusLeucura_genome.fasta.nto', 29376)],
-         'LagopusMuta': [('LagopusMuta_genome.fasta.nin', 2092),
-                         ('LagopusMuta_genome.fasta.nsq', 256690750),
-                         ('LagopusMuta_genome.fasta.nhr', 25365)],
-         'LophuraNycthemera': [('LophuraNycthemera_genome.fasta.nsq', 253603229),
-                               ('LophuraNycthemera_genome.fasta.nin', 18768),
-                               ('LophuraNycthemera_genome.fasta.nhr', 357062)],
-         'LutraLutra': [('LutraLutra_genome.fasta.nhr', 6481),
-                        ('LutraLutra_genome.fasta.nsq', 609616334),
-                        ('LutraLutra_genome.fasta.nin', 644)],
-         'LynxRufus': [('LynxRufus_genome.fasta.nin', 1028),
-                       ('LynxRufus_genome.fasta.nhr', 11889),
-                       ('LynxRufus_genome.fasta.nsq', 609814436)],
-         'LyrurusTetrix': [('LyrurusTetrix_genome.fasta.ndb', 20480),
-                           ('LyrurusTetrix_genome.fasta.ntf', 16384),
-                           ('LyrurusTetrix_genome.fasta.nhr', 144448931),
-                           ('LyrurusTetrix_genome.fasta.nsq', 164865365),
-                           ('LyrurusTetrix_genome.fasta.not', 11663984),
-                           ('LyrurusTetrix_genome.fasta.nin', 11664132),
-                           ('LyrurusTetrix_genome.fasta.nto', 3887996)],
-         'MacacaMulatta': [('MacacaMulatta_genome.fasta.nhr', 300285),
-                           ('MacacaMulatta_genome.fasta.nsq', 759318637),
-                           ('MacacaMulatta_genome.fasta.nin', 22688)],
-         'MastomysCoucha': [('MastomysCoucha_genome.fasta.nhr', 4062),
-                            ('MastomysCoucha_genome.fasta.nsq', 628226318),
-                            ('MastomysCoucha_genome.fasta.nin', 440)],
-         'MastomysNatalensis': [('MastomysNatalensis_genome.fasta.nhr', 52554976),
-                                ('MastomysNatalensis_genome.fasta.nsq', 622443436),
-                                ('MastomysNatalensis_genome.fasta.nin', 3845656)],
-         'MeleagrisGallopavo': [('MeleagrisGallopavo_genome.fasta.ndb', 20480),
-                                ('MeleagrisGallopavo_genome.fasta.ntf', 16384),
-                                ('MeleagrisGallopavo_genome.fasta.nhr', 41380424),
-                                ('MeleagrisGallopavo_genome.fasta.nsq', 279551127),
-                                ('MeleagrisGallopavo_genome.fasta.not', 2222108),
-                                ('MeleagrisGallopavo_genome.fasta.nin', 2222264),
-                                ('MeleagrisGallopavo_genome.fasta.nto', 740704)],
-         'MelesMeles': [('MelesMeles_genome.fasta.nhr', 88512),
-                        ('MelesMeles_genome.fasta.nsq', 684674875),
-                        ('MelesMeles_genome.fasta.nin', 6572)],
-         'MiroungaLeonina': [('MiroungaLeonina_genome.fasta.nhr', 174814),
-                             ('MiroungaLeonina_genome.fasta.nsq', 604534339),
-                             ('MiroungaLeonina_genome.fasta.nin', 13492)],
-         'MusCaroli': [('MusCaroli_genome.fasta.nin', 38060),
-                       ('MusCaroli_genome.fasta.nhr', 512338),
-                       ('MusCaroli_genome.fasta.nsq', 641128268)],
-         'MusMinutoides': [('MusMinutoides_genome.fasta.nhr', 11097658),
-                           ('MusMinutoides_genome.fasta.nsq', 709904529),
-                           ('MusMinutoides_genome.fasta.nin', 796316)],
-         'MusMusculus': [('MusMusculus_genome.fasta.nhr', 10040),
-                         ('MusMusculus_genome.fasta.nsq', 682201604),
-                         ('MusMusculus_genome.fasta.nin', 848)],
-         'MusPahari': [('MusPahari_genome.fasta.nin', 31088),
-                       ('MusPahari_genome.fasta.nhr', 417377),
-                       ('MusPahari_genome.fasta.nsq', 621230679)],
-         'MusSpicilegus': [('MusSpicilegus_genome.fasta.nhr', 5623936),
-                           ('MusSpicilegus_genome.fasta.nsq', 625205040),
-                           ('MusSpicilegus_genome.fasta.nin', 450548)],
-         'MusSpretus': [('MusSpretus_genome.fasta.nhr', 827906),
-                        ('MusSpretus_genome.fasta.nsq', 659192565),
-                        ('MusSpretus_genome.fasta.nin', 64964)],
-         'MustelaNigripes': [('MustelaNigripes_genome.fasta.nhr', 2840),
-                             ('MustelaNigripes_genome.fasta.nsq', 597483520),
-                             ('MustelaNigripes_genome.fasta.nin', 352)],
-         'NomascusLeucogenys': [('NomascusLeucogenys_genome.fasta.nhr', 360208),
-                                ('NomascusLeucogenys_genome.fasta.nsq', 711025789),
-                                ('NomascusLeucogenys_genome.fasta.nin', 27136)],
-         'OdobenusRosmarus': [('OdobenusRosmarus_genome.fasta.nhr', 692715),
-                              ('OdobenusRosmarus_genome.fasta.nsq', 600644237),
-                              ('OdobenusRosmarus_genome.fasta.nin', 46828)],
-         'PanTroglodytes': [('PanTroglodytes_genome.fasta.nhr', 868295),
-                            ('PanTroglodytes_genome.fasta.nin', 52260),
-                            ('PanTroglodytes_genome.fasta.nsq', 756075070)],
-         'PantheraTigris': [('PantheraTigris_genome.fasta.nhr', 200783),
-                            ('PantheraTigris_genome.fasta.nsq', 602112551),
-                            ('PantheraTigris_genome.fasta.nin', 14548)],
-         'PapioAnubis': [('PapioAnubis_genome.fasta.nhr', 1660931),
-                         ('PapioAnubis_genome.fasta.nsq', 717494536),
-                         ('PapioAnubis_genome.fasta.nin', 133844)],
-         'ParadoxurusHermaphroditus': [('ParadoxurusHermaphroditus_genome.fasta.nhr',
-                                        78774658),
-                                       ('ParadoxurusHermaphroditus_genome.fasta.nsq', 619630245),
-                                       ('ParadoxurusHermaphroditus_genome.fasta.nin', 5257632)],
-         'PavoCristatus': [('PavoCristatus_genome.fasta.nsq', 261688414),
-                           ('PavoCristatus_genome.fasta.nin', 8844),
-                           ('PavoCristatus_genome.fasta.nhr', 110127)],
-         'PavoMuticus': [('PavoMuticus_genome.fasta.ndb', 20480),
-                         ('PavoMuticus_genome.fasta.ntf', 16384),
-                         ('PavoMuticus_genome.fasta.nhr', 375449),
-                         ('PavoMuticus_genome.fasta.nsq', 265553854),
-                         ('PavoMuticus_genome.fasta.not', 29360),
-                         ('PavoMuticus_genome.fasta.nin', 29508),
-                         ('PavoMuticus_genome.fasta.nto', 9788)],
-         'PhasianusColchicus': [('PhasianusColchicus_genome.fasta.ndb', 20480),
-                                ('PhasianusColchicus_genome.fasta.ntf', 16384),
-                                ('PhasianusColchicus_genome.fasta.nhr', 6665860),
-                                ('PhasianusColchicus_genome.fasta.nsq', 254584885),
-                                ('PhasianusColchicus_genome.fasta.not', 476132),
-                                ('PhasianusColchicus_genome.fasta.nin', 476288),
-                                ('PhasianusColchicus_genome.fasta.nto', 158712)],
-         'PiliocolobusTephrosceles': [('PiliocolobusTephrosceles_genome.fasta.nhr',
-                                       7840306),
-                                      ('PiliocolobusTephrosceles_genome.fasta.nsq', 760211559),
-                                      ('PiliocolobusTephrosceles_genome.fasta.nin', 559980)],
-         'PitheciaPithecia': [('PitheciaPithecia_genome.fasta.nhr', 146647350),
-                              ('PitheciaPithecia_genome.fasta.nsq', 734089373),
-                              ('PitheciaPithecia_genome.fasta.nin', 10708084)],
-         'PlecturocebusDonacophilus': [('PlecturocebusDonacophilus_genome.fasta.nhr',
-                                        180360520),
-                                       ('PlecturocebusDonacophilus_genome.fasta.nsq', 740680283),
-                                       ('PlecturocebusDonacophilus_genome.fasta.nin', 12407928)],
-         'PongoAbelli': [('PongoAbelli_genome.fasta.nhr', 866793),
-                         ('PongoAbelli_genome.fasta.nsq', 766308141),
-                         ('PongoAbelli_genome.fasta.nin', 63236)],
-         'PraomysDelectorum': [('PraomysDelectorum_genome.fasta.nhr', 40269787),
-                               ('PraomysDelectorum_genome.fasta.nsq', 602535143),
-                               ('PraomysDelectorum_genome.fasta.nin', 2967808)],
-         'ProcyonLotor': [('ProcyonLotor_genome.fasta.nhr', 6999279),
-                          ('ProcyonLotor_genome.fasta.nsq', 565200228),
-                          ('ProcyonLotor_genome.fasta.nin', 591128)],
-         'RattusNorvegicus': [('RattusNorvegicus_genome.fasta.nhr', 164515),
-                              ('RattusNorvegicus_genome.fasta.nsq', 718887284),
-                              ('RattusNorvegicus_genome.fasta.nin', 11584)],
-         'RattusRattus': [('RattusRattus_genome.fasta.nhr', 363542),
-                          ('RattusRattus_genome.fasta.nsq', 595743466),
-                          ('RattusRattus_genome.fasta.nin', 26180)],
-         'RhabdomysDilectus': [('RhabdomysDilectus_genome.fasta.nhr', 4877427),
-                               ('RhabdomysDilectus_genome.fasta.nsq', 565470082),
-                               ('RhabdomysDilectus_genome.fasta.nin', 371560)],
-         'RhynchomysSoricoides': [('RhynchomysSoricoides_genome.fasta.nin', 170440),
-                                  ('RhynchomysSoricoides_genome.fasta.nhr', 2273749),
-                                  ('RhynchomysSoricoides_genome.fasta.nsq', 546256223)],
-         'SaimiriBoliviensis': [('SaimiriBoliviensis_genome.fasta.nhr', 349708),
-                                ('SaimiriBoliviensis_genome.fasta.nsq', 662877977),
-                                ('SaimiriBoliviensis_genome.fasta.nin', 20704)],
-         'SpeothosVenaticus': [('SpeothosVenaticus_genome.fasta.nhr', 7846448),
-                               ('SpeothosVenaticus_genome.fasta.nsq', 580856949),
-                               ('SpeothosVenaticus_genome.fasta.nin', 631360)],
-         'SpilogaleGracilis': [('SpilogaleGracilis_genome.fasta.nhr', 72497826),
-                               ('SpilogaleGracilis_genome.fasta.nsq', 616229641),
-                               ('SpilogaleGracilis_genome.fasta.nin', 5064232)],
-         'SuricataSuricatta': [('SuricataSuricatta_genome.fasta.nhr', 10417613),
-                               ('SuricataSuricatta_genome.fasta.nsq', 588957213),
-                               ('SuricataSuricatta_genome.fasta.nin', 765616)],
-         'SyrmaticusMikado': [('SyrmaticusMikado_genome.fasta.ndb', 20480),
-                              ('SyrmaticusMikado_genome.fasta.ntf', 16384),
-                              ('SyrmaticusMikado_genome.fasta.nhr', 11147117),
-                              ('SyrmaticusMikado_genome.fasta.nsq', 267358698),
-                              ('SyrmaticusMikado_genome.fasta.not', 855380),
-                              ('SyrmaticusMikado_genome.fasta.nin', 855536),
-                              ('SyrmaticusMikado_genome.fasta.nto', 285128)],
-         'TrachypithecusFrancoisi': [('TrachypithecusFrancoisi_genome.fasta.ndb',
-                                      20480),
-                                     ('TrachypithecusFrancoisi_genome.fasta.ntf', 16384),
-                                     ('TrachypithecusFrancoisi_genome.fasta.nhr', 811575),
-                                     ('TrachypithecusFrancoisi_genome.fasta.nsq', 725919435),
-                                     ('TrachypithecusFrancoisi_genome.fasta.not', 53372),
-                                     ('TrachypithecusFrancoisi_genome.fasta.nin', 53544),
-                                     ('TrachypithecusFrancoisi_genome.fasta.nto', 17792)],
-         'TympanuchusCupido': [('TympanuchusCupido_genome.fasta.ndb', 20480),
-                               ('TympanuchusCupido_genome.fasta.ntf', 16384),
-                               ('TympanuchusCupido_genome.fasta.nhr', 2057061),
-                               ('TympanuchusCupido_genome.fasta.nsq', 246353343),
-                               ('TympanuchusCupido_genome.fasta.not', 146240),
-                               ('TympanuchusCupido_genome.fasta.nin', 146396),
-                               ('TympanuchusCupido_genome.fasta.nto', 48748)],
-         'UrsusAmericanus': [('UrsusAmericanus_genome.fasta.nhr', 17585609),
-                             ('UrsusAmericanus_genome.fasta.nsq', 650150346),
-                             ('UrsusAmericanus_genome.fasta.nin', 1338064)],
-         'UrsusMaritimus': [('UrsusMaritimus_genome.fasta.nhr', 603551),
-                            ('UrsusMaritimus_genome.fasta.nsq', 582998676),
-                            ('UrsusMaritimus_genome.fasta.nin', 46916)],
-         'VulpesFerrilata': [('VulpesFerrilata_genome.fasta.nhr', 35971),
-                             ('VulpesFerrilata_genome.fasta.nsq', 594916062),
-                             ('VulpesFerrilata_genome.fasta.nin', 2932)],
-         'ZalophusCalifornianus': [('ZalophusCalifornianus_genome.fasta.nin', 688),
-                                   ('ZalophusCalifornianus_genome.fasta.nhr', 7629),
-                                   ('ZalophusCalifornianus_genome.fasta.nsq', 602458874)]
-     }
-
     # define the expected sizes of all possible databases
     expected_databases = {}
     for file in possible_databases[genome.replace("_genome", "")]:
@@ -1289,20 +996,20 @@ def check_blast_database(genome, database_path):
 
     # check if all databases are present
     if len(expected_databases) != len(generated_databases):
-        message = "\n...FATAL_ERROR... : Genome : %s blast databases failed to build (likely interrupted)" \
+        message = "\n...FATAL ERROR... : Genome : %s blast databases failed to build (likely interrupted)" \
                   "\n     -> rerun the pipeline..." % genome
         logging.info(message)
 
         # remove these databases
         for file in generated_databases:
             os.remove(database_path + file)
-            return False
+        return False
 
     # check sizes
     for file in generated_databases:
         if file in expected_databases:
             if os.path.getsize(database_path + file) < expected_databases[file]:
-                message = "\n...FATAL_ERROR... : Genome : %s blast databases were built partially (likely interrupted)" \
+                message = "\n...FATAL ERROR... : Genome : %s blast databases were built partially (likely interrupted)" \
                               "\n     -> rerun the pipeline..." % genome
                 logging.info(message)
 
@@ -1312,7 +1019,7 @@ def check_blast_database(genome, database_path):
                 return False
 
     # if all expected databases are accounted for and of correct sizes
-    message = "\nGenome : %s blast database already exists" % genome
+    message = "\nGenome : %s blast database is present" % genome
     logging.info(message)
     return True
 

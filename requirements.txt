@@ -29,3 +29,4 @@ requests~=2.26.0
 simplejson~=3.17.2
 coloredlogs~=14.0
 pyinstaller~=5.1
+blast~=2.12.0

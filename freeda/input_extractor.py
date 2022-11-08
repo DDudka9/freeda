@@ -320,7 +320,7 @@ def validate_gene_names(all_genes, all_genes_ensembl):
             absent_names.append(gene)
 
     if not all_names_valid:
-        message = "... ERROR... : Gene names %s do not exist in " \
+        message = "... FATAL_ERROR... : Gene names %s do not exist in " \
               "reference assembly -> exiting the pipeline now...\n" % absent_names
         logging.info(message)
 
@@ -1030,7 +1030,7 @@ def check_repetitive_regions(wdir, ref_species, gene):
                 repeat = seq[i:i + repeat_length + 1]
                 possible_repeats[repeat] = 1
             else:
-                message = "\n...FATAL_ERROR... : Repetitive coding sequence detected in %s (min 80bp repeat)" \
+                message = "\n...FATAL ERROR... : Repetitive coding sequence detected in %s (min 80bp repeat)" \
                           "\n   -> cannot reliably analyze this gene" % gene
                 logging.info(message)
                 return False

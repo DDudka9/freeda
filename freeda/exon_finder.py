@@ -52,18 +52,18 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
     RETRO_score = 0
     nr_of_fully_intron_exons = 0
     nr_of_partially_intron_exons = 0
-    duplication_score = 0
+    synteny_score = 0
     insertion = 0
     insertion_with_N = False
     big_insertion = False
     three_prime_synteny_message = None
     single_exon = True
     non_ACGT = False
-    duplication_score_parameter = False
+    synteny_score_parameter = False
 
     if all_genes_dict:
         if all_genes_dict[gene_name][0] == "Duplication expected":
-            duplication_score_parameter = True
+            synteny_score_parameter = True
 
     # all sequences are in capital letters at this point
     list_of_non_ACGT = ["N", "Y", "R", "W", "S", "K", "M", "D", "H", "V", "B", "X"]
@@ -515,24 +515,24 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
         print(message)
         logging.info(message)
 
-    # assess likelihood of this contig carrying a duplication
-    if duplication_score_parameter is True:
+    # assess likelihood of this contig to be syntenic
+    if synteny_score_parameter is True:
 
         if nr_of_intron_exons != 0 and nr_of_fully_intron_exons != 0:
-            duplication_score = nr_of_fully_intron_exons/nr_of_intron_exons
+            synteny_score = nr_of_fully_intron_exons/nr_of_intron_exons
 
-            message = "\n       Duplication_score (<0.5 suggests duplication) = %s" % (str(duplication_score))
+            message = "\n       Synteny_score (<0.5 suggests poor synteny) = %s" % (str(synteny_score))
             print(message)
             logging.info(message)
 
-    if duplication_score_parameter is False:
-        duplication_score = 1.0
+    if synteny_score_parameter is False:
+        synteny_score = 1.0
 
-        message = "\n       Duplication_score (<0.5 suggests duplication) = DISABLED (1.0 as default)"
+        message = "\n       Synteny_score (<0.5 suggests poor synteny) = DISABLED (1.0 as default)"
         print(message)
         logging.info(message)
 
-    return exons, possible_retrotransposition, synteny, RETRO_score, duplication_score
+    return exons, possible_retrotransposition, synteny, RETRO_score, synteny_score
 
 
 def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):

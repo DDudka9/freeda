@@ -20,25 +20,25 @@ Fatal errors (action needed)
 	
 	*SOLUTION:* Move the PyMOL .app to Applications.
 
-**...FATAL_ERROR... : Partial or empty genome file : GENOME.fasta -> likely Internet connection was disrupted -> please run FREEDA again...**
+**...FATAL ERROR... : Partial or empty genome file : GENOME.fasta -> likely Internet connection was disrupted -> please run FREEDA again...**
 
 	*REASON:* The most common error at first run - almost always caused by unstable Internet connection or ABORTing the .app when downloading the genomes at first run. 
 	
 	*SOLUTION:* Simply re-run the app.
 
-**...FATAL_ERROR... : Genome : GENOME blast databases failed to build (likely interrupted) -> rerun the pipeline...**
+**...FATAL ERROR... : Genome : GENOME blast databases failed to build (likely interrupted) -> rerun the pipeline...**
 
 	*REASON:* Most likely the .app crashed or was ABORTed while making local BLAST databases. 
 	
 	*SOLUTION:* Try re-running the app.
 
-**...FATAL_ERROR... : Genome : GENOME blast databases were built partially (likely interrupted) -> rerun the pipeline...**
+**...FATAL ERROR... : Genome : GENOME blast databases were built partially (likely interrupted) -> rerun the pipeline...**
 
 	*REASON:* Similar to the previous error. FREEDA is expecting a certain size of the generated databases. Partial files may be present when the run was interrupted.
 	
 	*SOLUTION:* Try re-running the app.
 
-**...FATAL_ERROR... : Repetitive coding sequence detected in GENE (min 80bp repeat) -> cannot reliably analyze this GENE**
+**...FATAL ERROR... : Repetitive coding sequence detected in GENE (min 80bp repeat) -> cannot reliably analyze this GENE**
 
 	*REASON:* FREEDA's ability to find orthologous exons relies on accurate alignment to the reference coding sequence. Repetitive sequences are notoriously difficult to align, therefore FREEDA will not try analyze genes with min. 80bp repeats in coding sequence (e.g. Tacc3 in rodents).
 	
@@ -83,6 +83,14 @@ Warnings (no action needed)
 	*REASON:* Either some exons are missing (not the case in example below) or single indels are present (e.g. sequencing errors). FREEDA may either remove this sequence from analysis or remove the indels to force conserved alignment.
 	
 	.. image:: /images/GUI_events_CDS_not_in_frame.png
+
+**Early STOP codon detected in final coding sequence**
+	
+	*REASON:* Coding sequences in the final alignment should not have any STOP codons anymore, except those introduced by imperfect alignment. This is rare and usually occurs in highly divergent genes. FREEDA removes the STOP codon forcing a conserved alignment.
+	
+	.. image:: /images/GUI_STOP_codon_warning.png
+
+	
 
 **Failed check comparing cloned sequence to annotated one for most distant species**
 	
