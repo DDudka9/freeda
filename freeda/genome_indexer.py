@@ -157,7 +157,8 @@ def check_index(index_path):
          'ZalophusCalifornianus_genome.idx': [20475]
     }
 
-    if os.path.getsize(index_path) < possible_indexes[index_path.split("/")[0]]:
+    expected_index_size = possible_indexes[index_path.split("/")[-1]][0]
+    if os.path.getsize(index_path) < expected_index_size:
         return False
 
     else:
