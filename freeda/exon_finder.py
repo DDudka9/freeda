@@ -225,7 +225,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
             # call it missing
             if exon_missing is True:
-                message = "Contig %s exon %s genomic locus is MISSING" \
+                message = "Contig %s exon %s is MISSING" \
                               % (contig_name, exon_number)
                 print(message)
                 logging.info(message)
@@ -252,7 +252,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 if five_prime_retrotransposition is True and three_prime_retrotransposition is True:
                     possible_retrotransposition = True
                     nr_of_RETRO_exons += 1
-                    message = "Contig %s exon %s genomic locus might be RETRO (5 and 3-prime)" \
+                    message = "Contig %s exon %s might be RETRO (5 and 3-prime)" \
                             % (contig_name, exon_number)
                     print(message)
                     logging.info(message)
@@ -267,12 +267,12 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                         # check insertions
                         big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
 
-                        message = "Contig %s exon %s genomic might be RETRO (5-prime) but has intron (3-prime)" \
+                        message = "Contig %s exon %s might be RETRO at (5-prime) but is syntenic at (3-prime)" \
                             % (contig_name, exon_number)
                         print(message)
                         logging.info(message)
                     else:
-                        message = "Contig %s exon %s genomic might be RETRO (5-prime)" \
+                        message = "Contig %s exon %s might be RETRO (5-prime)" \
                             % (contig_name, exon_number)
                         print(message)
                         logging.info(message)
@@ -287,13 +287,13 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                         # check insertions
                         big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
 
-                        message = "Contig %s exon %s genomic has intron (5-prime) but might be RETRO (3-prime)" \
+                        message = "Contig %s exon %s is syntenic at (5-prime) but might be RETRO at (3-prime)" \
                             % (contig_name, exon_number)
                         print(message)
                         logging.info(message)
 
                     else:
-                        message = "Contig %s exon %s genomic might be RETRO (3-prime)" \
+                        message = "Contig %s exon %s might be RETRO (3-prime)" \
                             % (contig_name, exon_number)
                         print(message)
                         logging.info(message)
@@ -313,7 +313,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             # call it non-intron
             if (divergent_introns is False or (divergent_introns is True and single_exon is True)) \
                                     and intron_at_5_prime is False and intron_at_3_prime is False:
-                message = "Contig %s exon %s genomic locus does not have intron" \
+                message = "Contig %s exon %s is not syntenic" \
                         % (contig_name, exon_number)
                 print(message)
                 logging.info(message)
@@ -337,7 +337,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             if non_ACGT is True:
                 intron = False
 
-                message = "Contig %s exon %s genomic locus contains non_ACGT bases (not allowed)" \
+                message = "Contig %s exon %s contains non_ACGT bases (not allowed)" \
                         % (contig_name, exon_number)
                 print(message)
                 logging.info(message)
@@ -364,7 +364,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
 
-                message = "Contig %s exon %s genomic locus has divergent introns (allowed)" \
+                message = "Contig %s exon %s has divergent introns (allowed)" \
                         % (contig_name, exon_number)
                 print(message)
                 logging.info(message)
@@ -394,7 +394,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 # at both ends
                 if intron_at_5_prime is True and intron_at_3_prime is True:
-                    message = "Contig %s exon %s genomic locus has INTRON (5 and 3-prime)" \
+                    message = "Contig %s exon %s is SYNTENIC (5 and 3-prime)" \
                         % (contig_name, exon_number)
                     print(message)
                     logging.info(message)
@@ -404,7 +404,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 # at 5-prime
                 elif intron_at_5_prime is True and intron_at_3_prime is False:
-                    message = "Contig %s exon %s genomic locus has INTRON (only 5-prime)" \
+                    message = "Contig %s exon %s is SYNTENIC (only 5-prime)" \
                         % (contig_name, exon_number)
                     print(message)
                     logging.info(message)
@@ -414,7 +414,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
 
                 # at 3-prime
                 elif intron_at_5_prime is False and intron_at_3_prime is True:
-                    message = "Contig %s exon %s genomic locus has INTRON (only 3-prime)" \
+                    message = "Contig %s exon %s is SYNTENIC (only 3-prime)" \
                         % (contig_name, exon_number)
                     print(message)
                     logging.info(message)
@@ -664,7 +664,7 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
         # the intron check function clashed with another exon -> no intron as default
         # sometimes single bp would be coopted from introns and be treated as start of another exon
         elif cds_seq[i] != "-" and cds_seq[i-1] != "-":
-            message = "intron = %s ------ another exon interferes with intron check -> no intron" % intron
+            message = "intron = %s ------ another exon interferes with synteny check -> no synteny" % intron
             print(message)
             logging.info(message)
             return intron

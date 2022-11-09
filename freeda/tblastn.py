@@ -257,7 +257,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
         #    genome_file_databases = True
         #    return genome_file_databases
 
-
         # check if a compressed zip file from previous run is present (and remove)
         if not check_genome_downloads(ref_species, database_path, genome, zip=True):
             message = "\n...NOTE... : Detected compressed genome file : %s.zip from a previous run" \
@@ -273,14 +272,14 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             make_blast_database(database_path, genome)
 
             # validate that the database was generated
-            all_files = []
-            for root, dirs, files in os.walk(database_path, topdown=False):
-                for f in files:
-                    all_files.append(f)
+            #all_files = []
+            #for root, dirs, files in os.walk(database_path, topdown=False):
+            #    for f in files:
+            #        all_files.append(f)
 
             # failed to build databases
             if not check_blast_database(genome, database_path):
-                genome_file_databases = True
+                genome_file_databases = False
                 return genome_file_databases
 
             #if genome + ".fasta.nin" not in all_files:
@@ -328,14 +327,14 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             make_blast_database(database_path, genome)
 
             # validate that the database was generated
-            all_files = []
-            for root, dirs, files in os.walk(database_path, topdown=False):
-                for f in files:
-                    all_files.append(f)
+            #all_files = []
+            #for root, dirs, files in os.walk(database_path, topdown=False):
+            #    for f in files:
+            #        all_files.append(f)
 
             # failed to build databases
             if not check_blast_database(genome, database_path):
-                genome_file_databases = True
+                genome_file_databases = False
                 return genome_file_databases
 
 
@@ -996,8 +995,7 @@ def check_blast_database(genome, database_path):
 
     # check if all databases are present
     if len(expected_databases) != len(generated_databases):
-        message = "\n...FATAL ERROR... : Genome : %s blast databases failed to build (likely interrupted)" \
-                  "\n     -> rerun the pipeline..." % genome
+        message = "\n...WARNING... : Genome : %s blast databases failed to build (likely interrupted)\n" % genome
         logging.info(message)
 
         # remove these databases
@@ -1009,8 +1007,8 @@ def check_blast_database(genome, database_path):
     for file in generated_databases:
         if file in expected_databases:
             if os.path.getsize(database_path + file) < expected_databases[file]:
-                message = "\n...FATAL ERROR... : Genome : %s blast databases were built partially (likely interrupted)" \
-                              "\n     -> rerun the pipeline..." % genome
+                message = "\n...WARNING... : Genome : %s blast databases were built partially (likely interrupted)\n" \
+                                        % genome
                 logging.info(message)
 
                 # remove these databases

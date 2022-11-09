@@ -7,7 +7,7 @@ MacOS
 1. Download the latest MacOS release from the GitHub Releases page: 
 	(INSERT LINK)
 2. Install PyMOL `https://pymol.org/2/ <https://pymol.org/2/>`_ in your Applications folder (takes minutes)
-3. Double-click the .app file to open GUI and run FREEDA (it might take a minute to load)
+3. Double-click the .app file to open FREEDA GUI (it might take a minute to load)
 
 
 .. _linux installation anchor:
@@ -20,7 +20,7 @@ Linux
 1. Download the latest Linux release from the GitHub Releases page: 
 	(INSERT LINK)
 2. "Right-click" the file -> "Properties" -> "Permissions" -> tick "Allow executing file as program"
-3. Double-click the file to open GUI and run FREEDA (it might take a minute to load)
+3. Press "ctrl"+ "alt" + "t" to open Terminal window. Drag and drop FREEDA app file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
 
 Windows
@@ -77,4 +77,4 @@ Congratulations! To run FREEDA now, just follow the steps for a Linux installati
 
 12. We suggest increasing the resolution of the VirtualBox Linux window (Settings -> Displays -> Resolution 1360x768) to make sure the GUI fits the screen. We also suggest to prevent sleeping -> "Settings" -> "Power" -> "Screen Blank" -> "Never" to ensure uninterrupted analysis.
 
-
+To run FREEDA in Virtual Machine just follow instructions for (ref:`Linux`)
