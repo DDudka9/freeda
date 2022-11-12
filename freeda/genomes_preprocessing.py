@@ -2190,7 +2190,7 @@ def get_available_species(ref_species):
                        "Ll": "LutraLutra",
                        "Ph": "ParadoxurusHermaphroditus",
                        "Hh": "HyaenaHyaena",
-                       "Cg": "CryptoproctaFerox",
+                       "Ce": "CryptoproctaFerox",
                        "Ss": "SuricataSuricatta",
                        "Pt": "PantheraTigris",
                        "Lr": "LynxRufus",
@@ -2200,7 +2200,7 @@ def get_available_species(ref_species):
         species = {"Lr": "LynxRufus",
                        "Pt": "PantheraTigris",
                        "Ss": "SuricataSuricatta",
-                       "Cg": "CryptoproctaFerox",
+                       "Ce": "CryptoproctaFerox",
                        "Hh": "HyaenaHyaena",
                        "Ph": "ParadoxurusHermaphroditus",
                        "Ll": "LutraLutra",
@@ -2235,7 +2235,7 @@ def get_available_species(ref_species):
                        "Cr": "CrossoptilonMantchuricum",
                        "Sm": "SyrmaticusMikado",
                        "Ln": "LophuraNycthemera",
-                       "Ag": "AlectorisRufa",
+                       "Ar": "AlectorisRufa",
                        "Cj": "CoturnixJaponica"}
 
     return species
@@ -2300,7 +2300,7 @@ def extend_abbreviations(ref_species):
            "Mn": "Mustela nigripes (Mn)",
            "Ll": "Lutra lutra (Ll)",
            "Ph": "Paradoxurus hermaphroditus (Ph)",
-           "Cg": "Cryptoprocta ferox (Cg)",
+           "Ce": "Cryptoprocta ferox (Ce)",
            "Ss": "Suricata suricatta (Ss)",
            "Hh": "Hyaena hyaena (Hh)",
            "Pt": "Panthera tigris (Pt)",
@@ -2323,7 +2323,7 @@ def extend_abbreviations(ref_species):
                "Cr": "Crossoptilon mantchuricum (Cr)",
                "Sm": "Syrmaticus mikado (Sm)",
                "Ln": "Lophura nycthemera (Ln)",
-               "Ag": "Alectoris rufa (Ag)",
+               "Ar": "Alectoris rufa (Ar)",
                "Cj": "Coturnix japonica (Cj)"}
 
     if ref_species == "Mm" or ref_species == "Rn":
@@ -2468,7 +2468,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
         ("Pt", "PantheraTigris_genome", "GCA_024034525.1"),  # tiger
         ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
         ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
-        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
+        ("Ce", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
         ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
         ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
         ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret
@@ -2503,7 +2503,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
         ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret
         ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
         ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
-        ("Cg", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
+        ("Ce", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
         ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
         ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
         ("Pt", "PantheraTigris_genome", "GCA_024034525.1"),  # tiger
@@ -2526,7 +2526,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                                ("Ph", "PhasianusColchicus_genome", "GCA_004143745.1"),  # ring-necked pheasant
                                ("Cr", "CrossoptilonMantchuricum_genome", "GCA_019593555.1"),  # brown eared-pheasant
                                ("Ln", "LophuraNycthemera_genome", "GCA_021292215.1"),  # silver pheasant
-                               ("Ag", "AlectorisRufa_genome", "GCA_019345075.1"),  # red-legged partridge
+                               ("Ar", "AlectorisRufa_genome", "GCA_019345075.1"),  # red-legged partridge
                                ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  # Japanese quail
 
 
