@@ -21,6 +21,7 @@
       <excludeFolder url="file://$MODULE_DIR$/codesigninig/FREEDA_MacOS_001b.app" />
       <excludeFolder url="file://$MODULE_DIR$/codesigninig" />
       <excludeFolder url="file://$MODULE_DIR$/docs_Brian" />
+      <excludeFolder url="file://$MODULE_DIR$/old_dists" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (py37)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
