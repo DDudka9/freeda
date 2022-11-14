@@ -1,0 +1,360 @@
+
+<!DOCTYPE html>
+
+<html lang="python">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usage &#8212; FREEDA 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
+    <link rel="prev" title="How to get started" href="getstarted.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+    <link rel="apple-touch-icon" href="_static/./freeda_logo.png" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/./freeda_logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">How to get started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-freeda-gui">Using FREEDA GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#understanding-events-window">Understanding Events Window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#understanding-results">Understanding Results</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="getstarted.html" title="previous chapter">How to get started</a></li>
+      <li>Next: <a href="troubleshooting.html" title="next chapter">Troubleshooting</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h1>
+<div class="section" id="using-freeda-gui">
+<h2>Using FREEDA GUI<a class="headerlink" href="#using-freeda-gui" title="Permalink to this heading">¶</a></h2>
+<blockquote>
+<div><img alt="_images/GUI_input.png" src="_images/GUI_input.png" />
+</div></blockquote>
+<p>FREEDA's graphical user interface allows analyzing up to 5 genes at a time.</p>
+<p><em>Depending on the specification of your computer, allocate about 1-2h per gene + 1-2h at first run to download genomes and make local blast databases.</em></p>
+<p><strong>Mandatory steps:</strong></p>
+<ol class="loweralpha simple">
+<li><p>Provide gene name (e.g. MX1 gene encodes MxA protein; when in doubt consult: <a class="reference external" href="https://www.uniprot.org/">https://www.uniprot.org/</a>)</p></li>
+<li><p>Select reference species</p></li>
+<li><p>Click &quot;Set directory&quot; (we recommend this to be a hard drive)</p></li>
+<li><p>Click &quot;Analyze&quot;</p></li>
+</ol>
+<p><strong>Optional steps:</strong></p>
+<ol class="loweralpha" start="5">
+<li><p>Select <em>Advanced Options</em> (default OFF):</p>
+<blockquote>
+<div><p>(We recommend visiting Ensembl or Uniprot databases before using)</p>
+<ul class="simple">
+<li><p><em>Duplication expected</em> (increases confidence in finding true orthologues but decreases recovery of full coding sequence by forcing that each exon must be syntenic at both ends)</p></li>
+<li><p><em>Tandem duplication expected</em> (essential option for tandem duplications but decreases recovery of full coding sequence by restricting exon search to regions closest to exact blast hits)</p></li>
+<li><p><em>Long introns expected</em> (increases recovery of full coding sequence but slows down the analysis by searching for exons further away from exact blast hits)</p></li>
+<li><p><em>Common domains expected</em> (speeds up the analysis but may miss divergent exons by raising similarity threshold for blast from 60% to 80%)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><em>Label residues</em> (the region of interest will be labeled and colored in the protein structure)</p></li>
+<li><p><em>Codon frequencies</em> (default F3X4)</p>
+<blockquote>
+<div><p>(We recommend consulting PAML User Guide: <a class="reference external" href="http://abacus.gene.ucl.ac.uk/software/paml.html">http://abacus.gene.ucl.ac.uk/software/paml.html</a>)</p>
+</div></blockquote>
+</li>
+<li><p><em>Exclude species</em> (recommended in case of observing frameshifts in the alignment - see <a class="reference internal" href="#understanding-results"><span class="std std-ref">Understanding Results</span></a> - use abbreviation listed next to the species causing frameshit e.g. Gd for <em>Grammomys dolichurus</em>)</p></li>
+<li><p><em>ABORT</em> (generally not recommended but useful to instantly stop the analysis - it shuts down the whole app)</p></li>
+</ol>
+<p><strong>TIPS:</strong></p>
+<ol class="arabic simple">
+<li><p>Stable Internet connection allows smooth download of all genomes (see <a class="reference internal" href="troubleshooting.html#troubleshooting"><span class="std std-ref">Troubleshooting</span></a>).</p></li>
+<li><p>Allocate 1-2h per gene (depending on your computer's CPU and RAM) + 1-2h at first run to download genomes and make local blast databases.</p></li>
+<li><p>Large genes (&gt;50kb) will take longer (hours) to analyze. Protein size matters less.</p></li>
+<li><p>Make a dedicated folder for FREEDA (and always use the same one to avoid downloading genomes again)</p></li>
+<li><dl class="simple">
+<dt>You can scroll text in the Events Window up-down and left-right</dt><dd><ul class="simple">
+<li><p><em>...NOTE... :</em> - this indicates information for the user - no action needed</p></li>
+<li><p><em>...WARNING... :</em> - this indicates suboptimal behavior - no action needed (see <a class="reference internal" href="troubleshooting.html#troubleshooting"><span class="std std-ref">Troubleshooting</span></a>).</p></li>
+<li><p><em>...FATAL ERROR... :</em> - this indicates critical failure - action needed (see <a class="reference internal" href="troubleshooting.html#troubleshooting"><span class="std std-ref">Troubleshooting</span></a>).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Putting your computer to sleep should not interfere with the analysis (will resume after awaking).</p></li>
+<li><p>We recommend the free software UNIPRO by Ugene for viewing alignment files <a class="reference external" href="http://ugene.net/download-all.html">http://ugene.net/download-all.html</a>.</p></li>
+<li><p>When opening structure files (.pse) with PyMOL you can click &quot;Skip activation&quot; - no license is ever needed to view the structure files .</p></li>
+</ol>
+</div>
+<div class="section" id="understanding-events-window">
+<h2>Understanding Events Window<a class="headerlink" href="#understanding-events-window" title="Permalink to this heading">¶</a></h2>
+<p><strong>FIRST RUN ONLY:</strong></p>
+<ol class="arabic">
+<li><p>If running on MacOS, FREEDA will prompt the user to download PyMOL from <a class="reference external" href="https://pymol.org/">https://pymol.org/</a></p></li>
+<li><p>FREEDA will first download Ensembl release information for a chosen taxon needed for input extraction (lots of text)</p></li>
+<li><p>Next FREEDA will download and decompress the reference genome for selected taxon (this will take several minutes depending on Internet speed)</p></li>
+<li><p>Next FREEDA will download, decompress genomic related assemblies and create local blast databases for each (allow 1-2h for this step dependent on Internet speed)</p>
+<blockquote>
+<div><img alt="_images/GUI_genomes_downloaded.png" src="_images/GUI_genomes_downloaded.png" />
+</div></blockquote>
+<p><em>There will be 18-22 genomic assemblies downloaded for each selected taxon.
+This step is triggered each time you select a new working directory (&quot;Set directory&quot; in GUI)!</em></p>
+</li>
+</ol>
+<p><strong>EACH TIME</strong></p>
+<p><strong>Checking for genomic assemblies and input extraction</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_input_extraction.png" src="_images/GUI_input_extraction.png" />
+</div></blockquote>
+<p><strong>Searching for homologous sequences using blast</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_tblastn.png" src="_images/GUI_events_tblastn.png" />
+</div></blockquote>
+<p><strong>Parsing blast results into separate contigs</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_analyzing_gene.png" src="_images/GUI_events_analyzing_gene.png" />
+</div></blockquote>
+<p><strong>Initial alignment of each contig</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_aligning_contigs.png" src="_images/GUI_events_aligning_contigs.png" />
+</div></blockquote>
+<p><strong>Exon calling - this contig does not contain any syntenic exons expected</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_no_introns.png" src="_images/GUI_events_no_introns.png" />
+<p><em>When analyzing the alignment FREEDA considers any alignable chunk of DNA a possible &quot;exon&quot;
+since it bears some similarity to the blasted reference coding sequence. Calling such exon
+&quot;not syntenic&quot; means that this chunk of DNA does not bear synteny to the reference locus
+(does not have recognizable introns). FREEDA does not explicitly tests if that chunk of DNA
+is a duplication but rather rejects it as an orthologous sequence.</em></p>
+<p><em>Notice &quot;Synteny_score&quot; is DISABLED. It can be enabled by selecting &quot;Duplication expected&quot;
+advanced option in the GUI. &quot;Synteny_score&quot; is a ratio of exons syntenic at both ends
+(5 and 3 prime) to all possibly syntenic exons (e.g. synteny found only at 3 prime).
+&quot;Synteny_score&quot; is not required to call synteny for an exon or contig - it helps distinguish
+recent duplications whose surrounding locus has not yet significantly diverged.</em></p>
+</div></blockquote>
+<p><strong>Exon calling - this contig contains all syntenic exons expected</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_syntenic_5_3.png" src="_images/GUI_events_syntenic_5_3.png" />
+</div></blockquote>
+<p><strong>Exon calling - this contig may contain a retro-duplication</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_RETRO.png" src="_images/GUI_events_RETRO.png" />
+<p><em>We urge manual verification of the raw alignment of that specific contig to ensure
+that the contig contains a retro-duplication (see below). &quot;RETRO_score&quot; is a ratio
+of exons that are likely retro-duplicated and likely syntenic exons. However, if no
+potentially syntenic exons are found in the contig, even a single exon flagged as possibly
+&quot;RETRO&quot; raises &quot;RETRO_score&quot; to a maximum (100). &quot;RETRO_score&quot; is always enabled.</em></p>
+</div></blockquote>
+<p><strong>Exon calling - this contig is does not have the last two syntenic exons expected</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_syntenic_5prime.png" src="_images/GUI_events_syntenic_5prime.png" />
+</div></blockquote>
+<p><strong>Exon calling - this contig contains only the last two syntenic exons expected</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_syntenic_3prime.png" src="_images/GUI_events_syntenic_3prime.png" />
+<p><em>is MISSING</em> means that no chunk of DNA aligned to the expected reference exon
+(functionally equivalent to non-syntenic exons).*</p>
+</div></blockquote>
+<p><strong>Resolution of very recent duplications (or heterozygous loci)</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_recent_duplication.png" src="_images/GUI_recent_duplication.png" />
+<p><em>This step is triggered only when at least two contigs bear the same number
+of likely syntenic exons (e.g. very recent segmental duplications). If the likelihood
+of synteny is the same - each exon will be compared to the corresponding reference exon
+using a hamming distance algorithm. The contig with the lowest hamming distance is selected
+as the most likely orthologous locus (most conserved).</em></p>
+<p><em>While &quot;Duplication expected&quot; advanced option is not needed to trigger this step,
+observing such comparison within the &quot;Events window&quot; suggests recent duplications
+and rerunning the analysis with &quot;Duplication expected&quot; option is advised.</em></p>
+</div></blockquote>
+<p><strong>Validating single syntenic exons cloned from selected contigs</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_single_exons.png" src="_images/GUI_events_single_exons.png" />
+<p><em>Additional checks (hamming distance as compared to the reference exon) are performed
+for each syntenic exon from a selected orthologus contig to ensure preservation
+of intron-exon bounderies. If exon alignment score is &lt;0.75 this suggests either
+a misalignment or high divergence of the exon. In that case the flanking introns are
+analyzed (hamming distance to the reference introns) and if synteny is confirmed at
+BOTH 5 and 3 prime ends (alignment of &gt;0.75) it is unlikely a misalignment but rather
+exon's divergence - exon is accepted. If the exon alignment score is &lt;0.60 that suggests
+a misalignment and such exon is rejected (its bases will be masked) without checking introns.</em></p>
+</div></blockquote>
+<p><strong>Detecting positive selection</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_events_Analysis_completed.png" src="_images/GUI_events_Analysis_completed.png" />
+<img alt="_images/GUI_events_LRTs.png" src="_images/GUI_events_LRTs.png" />
+<p><em>Analysis completed - time it took to find orthologous exons for all analyzed genes.
+Final multiple sequence alignment is then made for the first gene. Coding sequences with
+Alignment score &lt;0.69 are eliminated as either containing frameshifts or missing too many exons.
+Phylogenetic tree for the gene is made based on the nucleotide alignment.
+PAML analysis starts for the first gene.</em></p>
+</div></blockquote>
+</div>
+<div class="section" id="understanding-results">
+<h2>Understanding Results<a class="headerlink" href="#understanding-results" title="Permalink to this heading">¶</a></h2>
+<p><strong>Quick look up table within the GUI</strong></p>
+<blockquote>
+<div><img alt="_images/GUI_result_table.png" src="_images/GUI_result_table.png" />
+<p><em>Gene</em> - Gene name provided</p>
+<dl class="simple">
+<dt><em>Pos. select.</em> - Is there evidence of positive selection acting on the gene?</dt><dd><ul class="simple">
+<li><p><strong>YES</strong> - evidence of positive selection using both M7 vs M8 and M1a vs M2a (more conserved) model comparison</p></li>
+<li><p><strong>(YES)</strong> - evidence of positive selection using M7 vs M8 <strong>but not</strong> M1a vs M2a (more conserved) model comparison</p></li>
+<li><p><strong>NO</strong> - no evidence of positive selection</p></li>
+</ul>
+</dd>
+</dl>
+<p><em>LRT</em> - Likelihood Ratio Test that determines statistical support for evidence of positive selection (&gt;5.99 -&gt; p=0.05)</p>
+<p><em>p-value</em> - Directly linked to the LRT value</p>
+<p><em>CDS cover.</em> - Percentage of codons analyzed as compared to the reference coding sequence (microexons are excluded from this calculation)</p>
+<p><em>species</em> - Number of species (orthologues) analyzed. <strong>Less than 6 species may yield unreliable results</strong></p>
+<p><em>pr &lt; 0.9</em> - Number of all residues that might be evolving under positive selection</p>
+<p><em>pr &gt;= 0.9</em> - Number of residues with high probability of being under positive selection</p>
+</div></blockquote>
+<p><strong>Folder with all results (inside user indicated &quot;Set directory&quot;)</strong></p>
+<blockquote>
+<div><img alt="_images/Working_directory_Raw_data.png" src="_images/Working_directory_Raw_data.png" />
+<img alt="_images/Working_directory_Results_data.png" src="_images/Working_directory_Results_data.png" />
+</div></blockquote>
+<p><strong>Exemplary nucleotide alignment (opened with UNIPRO Ugene)</strong></p>
+<blockquote>
+<div><p><em>Cenpo_raw_nucleotide_alignment.fasta</em></p>
+<img alt="_images/Exemplary_nucleotide_alignment.png" src="_images/Exemplary_nucleotide_alignment.png" />
+<p><em>Marked is an indel (likely deletion in Apodemus sylvaticus) before any processing.
+Region marked will be removed as it cannot be analyzed. Inspect this file to find which
+species causes loss of regions from final alignment.</em></p>
+</div></blockquote>
+<p><strong>Exemplary protein alignment (opened with UNIPRO Ugene)</strong></p>
+<blockquote>
+<div><p><em>Cenpo_protein_alignment.fasta</em></p>
+<img alt="_images/Exemplary_protein_alignment.png" src="_images/Exemplary_protein_alignment.png" />
+<p><em>Marked is the same indel (see above) after it has been processed. Although only 9bp
+are missing, they span 4 codons. Therefore 4 amino acids were removed from each species
+(including the first species - after the analysis is complete, FREEDA adds back the
+missing amino acids to show what was removed). Inspect this file for frameshifts.
+Use abbreviations displayed here to exclude species.</em></p>
+</div></blockquote>
+<p><strong>Exemplary gene tree (opened with Figtree)</strong></p>
+<blockquote>
+<div><p><em>Cenpo.tree</em></p>
+<img alt="_images/Exemplary_gene_tree.png" src="_images/Exemplary_gene_tree.png" />
+</div></blockquote>
+<p><strong>Results worksheet</strong></p>
+<blockquote>
+<div><p><em>PAML_result-10-31-2022-13-02_F3X4</em></p>
+<img alt="_images/Exemplary_results_sheet.png" src="_images/Exemplary_results_sheet.png" />
+<p><em>Here you can find probabilities of positive selection acting on each recurrently changing
+residue (displayed on top).</em></p>
+</div></blockquote>
+<p><strong>Residues under positive selection mapped onto referene CDS</strong></p>
+<blockquote>
+<div><p><em>Cenpo_PAML_graph_F3X4.tif</em></p>
+<img alt="_images/Exemplary_graph.png" src="_images/Exemplary_graph.png" />
+<p><em>Top graph (black) shows recurrently changing residues. Middle graph (blue) shows
+residues that evolve under positive selection with more or less probability (0-7-1.0).
+Bottom graph (magenta) shows residues with the highest probability of evolving under
+positive selection. Gray regions have been excluded from analysis (e.g. indels).</em></p>
+</div></blockquote>
+<p><strong>Residues under positive selection mapped onto structural prediction (opened with PyMOL)</strong></p>
+<blockquote>
+<div><p><em>Cenpo_Mm.pse</em></p>
+<img alt="_images/Exemplary_protein_structure.png" src="_images/Exemplary_protein_structure.png" />
+<p><em>You can rotate the structure to have a better look at the position of each residue
+under positive selection. For details on how to further analyze your structure
+see:</em> PyMOL wiki <a class="reference external" href="https://pymolwiki.org/index.php/Practical_Pymol_for_Beginners">https://pymolwiki.org/index.php/Practical_Pymol_for_Beginners</a>
+<em>and useful user guide:</em> <a class="reference external" href="https://pymol.sourceforge.net/newman/userman.pdf">https://pymol.sourceforge.net/newman/userman.pdf</a></p>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2022, Damian Dudka, R. Brian Akins.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/usage.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
