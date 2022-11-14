@@ -4,7 +4,7 @@ FREEDA
 ======
 FREEDA (Finder of Rapidly Evolving Exons in De novo Assemblies) is a Python built end-to-end automated pipeline to detect positive selection. It was created for experimental cell biologists without training in computational biology and molecular evolution. 
 
-- Documentation: LINK to Github Pages
+- Documentation: [https://ddudka9.github.io/freeda/](https://ddudka9.github.io/freeda/)
 - Source code: [https://github.com/DDudka9/freeda](https://github.com/DDudka9/freeda)
 - Requirements:
 	- min 100 GB of disc space for each taxon e.g. primates (we recommend a hard drive with 500GB space)
