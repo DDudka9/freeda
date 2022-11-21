@@ -25,16 +25,16 @@ e. Select *Advanced Options* (default OFF):
 	(We recommend visiting Ensembl or Uniprot databases before using)
 	
 	- *Duplication expected* 
-		(increases confidence in finding true orthologues but decreases recovery of full coding sequence by forcing that each exon must be syntenic at both ends)
+		Increases confidence in finding true orthologues but decreases recovery of full coding sequence by forcing that each exon must be syntenic at both ends
 
 	- *Tandem duplication expected* 
-		(essential option for tandem duplications but decreases recovery of full coding sequence by restricting exon search to regions closest to exact blast hits)
+		Essential option for tandem duplications but decreases recovery of full coding sequence by restricting exon search to regions closest to exact blast hits
 		
-	- *Long introns expected* 
-		(increases recovery of full coding sequence but slows down the analysis by searching for exons further away from exact blast hits)
+	- *Long introns expected (>50kb)* 
+		Increases recovery of full coding sequence but slows down the analysis by searching for exons further away from exact blast hits
 		
 	- *Common domains expected* 
-		(speeds up the analysis but may miss divergent exons by raising similarity threshold for blast from 60% to 80%)
+		Speeds up the analysis but may miss divergent exons by raising similarity threshold for blast from 60% to 80%
 		
 f. *Label residues* (the region of interest will be labeled and colored in the protein structure)
 
