@@ -169,17 +169,38 @@
 </div></blockquote>
 <p><strong>Coding sequence is not in frame</strong></p>
 <blockquote>
-<div><p><em>REASON:</em> Either some exons are missing (not the case in example below) or single indels are present (e.g. sequencing errors). FREEDA may either remove this sequence from analysis or remove the indels to force conserved alignment.</p>
+<div><p><em>REASON:</em> Either some exons are missing (not the case in example below) or single indels
+are present (e.g. sequencing errors). FREEDA may either remove this sequence from analysis
+or remove the indels to force conserved alignment.</p>
 <img alt="_images/GUI_events_CDS_not_in_frame.png" src="_images/GUI_events_CDS_not_in_frame.png" />
 </div></blockquote>
 <p><strong>Early STOP codon detected in final coding sequence</strong></p>
 <blockquote>
-<div><p><em>REASON:</em> Coding sequences in the final alignment should not have any STOP codons anymore, except those introduced by imperfect alignment. This is rare and usually occurs in highly divergent genes. FREEDA removes the STOP codon forcing a conserved alignment.</p>
+<div><p><em>REASON:</em> Coding sequences in the final alignment should not have any STOP codons anymore,
+except those introduced by imperfect alignment. This is rare and usually occurs in highly
+divergent genes. FREEDA removes the STOP codon forcing a conserved alignment.</p>
 <img alt="_images/GUI_STOP_codon_warning.png" src="_images/GUI_STOP_codon_warning.png" />
 </div></blockquote>
 <p><strong>Failed check comparing cloned sequence to annotated one for most distant species</strong></p>
 <blockquote>
-<div><p><em>REASON:</em> This is a sanity check. Usually &lt;95% identity suggests that alternative exons are used (check supported only for rodents and carnivores).</p>
+<div><p><em>REASON:</em> This is a sanity check. Usually &lt;95% identity suggests that alternative exons
+are used (check supported only for rodents and carnivores).</p>
+</div></blockquote>
+<p><strong>Potential misalignment is visible in the protein sequence alignment</strong></p>
+<blockquote>
+<div><p><em>REASON:</em> <em>Cercopithecus mona</em> orthologue shows a distinct pattern of non-synonymous
+substitutions, raising a possibility of misalignment. The user should re-analyze the
+gene of interest using the &quot;exclude species&quot; option to avoid false positive signature
+of positive selection.</p>
+</div></blockquote>
+<p><strong>Potential misalignment is visible in the raw nucleotide sequence alignment</strong></p>
+<blockquote>
+<div><p><em>REASON:</em> <em>Cercopithecus mona</em> orthologue shows an unusual out-of-frame 2bp deletion
+in the middle of the sequence, possibly due to a sequencing error. While FREEDA alignment
+filtering is robust to prevent a global protein misalignment, a local misalignment can
+still occur as seen in the protein sequence (see above). The user should re-analyze the
+gene of interest using the &quot;exclude species&quot; option to avoid false positive signature
+of positive selection.</p>
 </div></blockquote>
 </div>
 <div class="section" id="problems-with-virtualbox">

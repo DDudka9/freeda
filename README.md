@@ -2,7 +2,9 @@
 
 FREEDA
 ======
-FREEDA (Finder of Rapidly Evolving Exons in De novo Assemblies) is a Python built end-to-end automated pipeline to detect positive selection. It was created for experimental cell biologists without training in computational biology and molecular evolution. 
+FREEDA (Finder of Rapidly Evolving Exons in De novo Assemblies) is a Python built end-to-end 
+automated pipeline to detect positive selection, created for experimental cell biologists 
+without training in computational biology and molecular evolution. 
 
 - Documentation: [https://ddudka9.github.io/freeda/](https://ddudka9.github.io/freeda/)
 - Source code: [https://github.com/DDudka9/freeda](https://github.com/DDudka9/freeda)

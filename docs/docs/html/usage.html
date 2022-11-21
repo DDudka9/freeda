@@ -118,17 +118,17 @@
 <div><p>(We recommend visiting Ensembl or UniProt databases before using)</p>
 <ul class="simple">
 <li><dl class="simple">
+<dt><em>Long introns expected (&gt;50kb)</em></dt><dd><p>Increases recovery of full coding sequence but slows down the analysis by searching for exons further away from exact blast hits</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt><em>Duplication expected</em></dt><dd><p>Increases confidence in finding true orthologues but decreases recovery of full coding sequence by forcing that each exon must be syntenic at both ends</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt><em>Tandem duplication expected</em></dt><dd><p>Essential option for tandem duplications but decreases recovery of full coding sequence by restricting exon search to regions closest to exact blast hits</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><em>Long introns expected (&gt;50kb)</em></dt><dd><p>Increases recovery of full coding sequence but slows down the analysis by searching for exons further away from exact blast hits</p>
 </dd>
 </dl>
 </li>
@@ -317,19 +317,37 @@ are missing, they span 4 codons. Therefore 4 amino acids were removed from each 
 missing amino acids to show what was removed). Inspect this file for frameshifts.
 Use abbreviations displayed here to exclude species.</em></p>
 </div></blockquote>
+<p><strong>Potential misalignment is visible in the protein sequence alignment</strong></p>
+<blockquote>
+<div><img alt="_images/Exemplary_misalignment_nucleotide.png" src="_images/Exemplary_misalignment_nucleotide.png" />
+<p><em>Cercopithecus mona</em> orthologue shows a distinct pattern of non-synonymous
+substitutions, raising a possibility of misalignment. The user should re-analyze the
+gene of interest using the &quot;exclude species&quot; option to avoid false positive signature
+of positive selection.</p>
+</div></blockquote>
+<p><strong>Potential misalignment is visible in the raw nucleotide sequence alignment</strong></p>
+<blockquote>
+<div><img alt="_images/Exemplary_misalignment_protein.png" src="_images/Exemplary_misalignment_protein.png" />
+<p><em>Cercopithecus mona</em> orthologue shows an unusual out-of-frame 2bp deletion
+in the middle of the sequence, possibly due to a sequencing error. While FREEDA alignment
+filtering is robust in preventing a global protein misalignment, a local misalignment can
+still occur as seen in the protein sequence (see above). The user should re-analyze the
+gene of interest using the &quot;exclude species&quot; option to avoid spurious signature
+of positive selection.</p>
+</div></blockquote>
 <p><strong>Exemplary gene tree (opened with Figtree)</strong></p>
 <blockquote>
 <div><p><em>Cenpo.tree</em></p>
 <img alt="_images/Exemplary_gene_tree.png" src="_images/Exemplary_gene_tree.png" />
 </div></blockquote>
-<p><strong>Results worksheet</strong></p>
+<p><strong>Results worksheet (opened in Excel)</strong></p>
 <blockquote>
 <div><p><em>PAML_result-10-31-2022-13-02_F3X4.xlsx</em></p>
 <img alt="_images/Exemplary_results_sheet.png" src="_images/Exemplary_results_sheet.png" />
 <p><em>Here you can find probabilities of positive selection acting on each recurrently changing
 residue (displayed on top).</em></p>
 </div></blockquote>
-<p><strong>Residues under positive selection mapped onto referene CDS</strong></p>
+<p><strong>Residues under positive selection mapped onto referene CDS (opened in Preview)</strong></p>
 <blockquote>
 <div><p><em>Cenpo_PAML_graph_F3X4.tif</em></p>
 <img alt="_images/Exemplary_graph.png" src="_images/Exemplary_graph.png" />

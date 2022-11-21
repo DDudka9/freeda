@@ -24,14 +24,14 @@ e. Select *Advanced Options* (default OFF):
 	
 	(We recommend visiting Ensembl or UniProt databases before using)
 	
+	- *Long introns expected (>50kb)* 
+		Increases recovery of full coding sequence but slows down the analysis by searching for exons further away from exact blast hits
+	
 	- *Duplication expected* 
 		Increases confidence in finding true orthologues but decreases recovery of full coding sequence by forcing that each exon must be syntenic at both ends
 
 	- *Tandem duplication expected* 
 		Essential option for tandem duplications but decreases recovery of full coding sequence by restricting exon search to regions closest to exact blast hits
-		
-	- *Long introns expected (>50kb)* 
-		Increases recovery of full coding sequence but slows down the analysis by searching for exons further away from exact blast hits
 		
 	- *Common domains expected* 
 		Speeds up the analysis but may miss divergent exons by raising similarity threshold for blast from 60% to 80%
@@ -235,13 +235,33 @@ Understanding Results
 	missing amino acids to show what was removed). Inspect this file for frameshifts. 
 	Use abbreviations displayed here to exclude species.*
 
+**Potential misalignment is visible in the protein sequence alignment**
+
+	.. image:: /_images/Exemplary_misalignment_nucleotide.png
+
+	*Cercopithecus mona* orthologue shows a distinct pattern of non-synonymous 
+	substitutions, raising a possibility of misalignment. The user should re-analyze the 
+	gene of interest using the "exclude species" option to avoid false positive signature 
+	of positive selection.
+
+**Potential misalignment is visible in the raw nucleotide sequence alignment**
+
+	.. image:: /_images/Exemplary_misalignment_protein.png
+	
+	*Cercopithecus mona* orthologue shows an unusual out-of-frame 2bp deletion 
+	in the middle of the sequence, possibly due to a sequencing error. While FREEDA alignment 
+	filtering is robust in preventing a global protein misalignment, a local misalignment can 
+	still occur as seen in the protein sequence (see above). The user should re-analyze the 
+	gene of interest using the "exclude species" option to avoid spurious signature 
+	of positive selection.
+
 **Exemplary gene tree (opened with Figtree)**
 	
 	*Cenpo.tree*
 	
 	.. image:: /_images/Exemplary_gene_tree.png
 
-**Results worksheet**
+**Results worksheet (opened in Excel)**
 
 	*PAML_result-10-31-2022-13-02_F3X4.xlsx*
 
@@ -250,7 +270,7 @@ Understanding Results
 	*Here you can find probabilities of positive selection acting on each recurrently changing 
 	residue (displayed on top).*
 	
-**Residues under positive selection mapped onto referene CDS**
+**Residues under positive selection mapped onto referene CDS (opened in Preview)**
 	
 	*Cenpo_PAML_graph_F3X4.tif*
 	

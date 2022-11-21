@@ -84,21 +84,41 @@ Warnings (no action needed)
 
 **Coding sequence is not in frame**
 
-	*REASON:* Either some exons are missing (not the case in example below) or single indels are present (e.g. sequencing errors). FREEDA may either remove this sequence from analysis or remove the indels to force conserved alignment.
+	*REASON:* Either some exons are missing (not the case in example below) or single indels 
+	are present (e.g. sequencing errors). FREEDA may either remove this sequence from analysis 
+	or remove the indels to force conserved alignment.
 	
 	.. image:: /_images/GUI_events_CDS_not_in_frame.png
 
 **Early STOP codon detected in final coding sequence**
 	
-	*REASON:* Coding sequences in the final alignment should not have any STOP codons anymore, except those introduced by imperfect alignment. This is rare and usually occurs in highly divergent genes. FREEDA removes the STOP codon forcing a conserved alignment.
+	*REASON:* Coding sequences in the final alignment should not have any STOP codons anymore, 
+	except those introduced by imperfect alignment. This is rare and usually occurs in highly 
+	divergent genes. FREEDA removes the STOP codon forcing a conserved alignment.
 	
 	.. image:: /_images/GUI_STOP_codon_warning.png
 
 
-
 **Failed check comparing cloned sequence to annotated one for most distant species**
 	
-	*REASON:* This is a sanity check. Usually <95% identity suggests that alternative exons are used (check supported only for rodents and carnivores).
+	*REASON:* This is a sanity check. Usually <95% identity suggests that alternative exons 
+	are used (check supported only for rodents and carnivores).
+
+**Potential misalignment is visible in the protein sequence alignment**
+
+	*REASON:* *Cercopithecus mona* orthologue shows a distinct pattern of non-synonymous 
+	substitutions, raising a possibility of misalignment. The user should re-analyze the 
+	gene of interest using the "exclude species" option to avoid false positive signature 
+	of positive selection.
+
+**Potential misalignment is visible in the raw nucleotide sequence alignment**
+	
+	*REASON:* *Cercopithecus mona* orthologue shows an unusual out-of-frame 2bp deletion 
+	in the middle of the sequence, possibly due to a sequencing error. While FREEDA alignment 
+	filtering is robust to prevent a global protein misalignment, a local misalignment can 
+	still occur as seen in the protein sequence (see above). The user should re-analyze the 
+	gene of interest using the "exclude species" option to avoid false positive signature 
+	of positive selection.
 
 
 
