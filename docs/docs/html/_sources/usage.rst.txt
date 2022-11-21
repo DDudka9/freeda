@@ -239,21 +239,21 @@ Understanding Results
 
 	.. image:: /_images/Exemplary_misalignment_nucleotide.png
 
-	*Cercopithecus mona* orthologue shows a distinct pattern of non-synonymous 
+	*Cercopithecus mona orthologue shows a distinct pattern of non-synonymous 
 	substitutions, raising a possibility of misalignment. The user should re-analyze the 
 	gene of interest using the "exclude species" option to avoid false positive signature 
-	of positive selection.
+	of positive selection.*
 
 **Potential misalignment is visible in the raw nucleotide sequence alignment**
 
 	.. image:: /_images/Exemplary_misalignment_protein.png
 	
-	*Cercopithecus mona* orthologue shows an unusual out-of-frame 2bp deletion 
+	*Cercopithecus mona orthologue shows an unusual out-of-frame 2bp deletion 
 	in the middle of the sequence, possibly due to a sequencing error. While FREEDA alignment 
 	filtering is robust in preventing a global protein misalignment, a local misalignment can 
 	still occur as seen in the protein sequence (see above). The user should re-analyze the 
 	gene of interest using the "exclude species" option to avoid spurious signature 
-	of positive selection.
+	of positive selection.*
 
 **Exemplary gene tree (opened with Figtree)**
 	
