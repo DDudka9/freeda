@@ -22,7 +22,7 @@ d. Click "Analyze"
 
 e. Select *Advanced Options* (default OFF):
 	
-	(We recommend visiting Ensembl or Uniprot databases before using)
+	(We recommend visiting Ensembl or UniProt databases before using)
 	
 	- *Duplication expected* 
 		Increases confidence in finding true orthologues but decreases recovery of full coding sequence by forcing that each exon must be syntenic at both ends
