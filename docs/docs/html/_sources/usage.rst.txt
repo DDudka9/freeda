@@ -237,7 +237,7 @@ Understanding Results
 
 **Potential misalignment is visible in the protein sequence alignment**
 
-	*CENPI_protein_alignment.fasta*
+	*CENPI_raw_nucleotide_alignment.fasta*
 
 	.. image:: /_images/Exemplary_misalignment_nucleotide.png
 
@@ -248,7 +248,7 @@ Understanding Results
 
 **Potential misalignment is visible in the raw nucleotide sequence alignment**
 
-	*CENPI_raw_nucleotide_alignment.fasta*
+	*CENPI_protein_alignment.fasta*
 
 	.. image:: /_images/Exemplary_misalignment_protein.png
 	
