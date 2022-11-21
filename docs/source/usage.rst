@@ -237,6 +237,8 @@ Understanding Results
 
 **Potential misalignment is visible in the protein sequence alignment**
 
+	*CENPI_protein_alignment.fasta*
+
 	.. image:: /_images/Exemplary_misalignment_nucleotide.png
 
 	*Cercopithecus mona orthologue shows a distinct pattern of non-synonymous 
@@ -245,6 +247,8 @@ Understanding Results
 	of positive selection.*
 
 **Potential misalignment is visible in the raw nucleotide sequence alignment**
+
+	*CENPI_raw_nucleotide_alignment.fasta*
 
 	.. image:: /_images/Exemplary_misalignment_protein.png
 	
