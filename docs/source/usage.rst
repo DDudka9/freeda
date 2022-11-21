@@ -4,7 +4,7 @@ Usage
 Using FREEDA GUI
 ----------------
 
-	.. image:: /images/GUI_input.png
+	.. image:: /images/GUI_input_2.png
 
 FREEDA's graphical user interface allows analyzing up to 5 genes at a time. 
 
@@ -243,7 +243,7 @@ Understanding Results
 
 **Results worksheet**
 
-	*PAML_result-10-31-2022-13-02_F3X4*
+	*PAML_result-10-31-2022-13-02_F3X4.xlsx*
 
 	.. image:: /images/Exemplary_results_sheet.png
 	

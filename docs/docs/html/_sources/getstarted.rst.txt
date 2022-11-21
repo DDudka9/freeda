@@ -4,7 +4,7 @@ How to get started
 MacOS
 -----
 
-(Requires iOS 10.14 or newer)
+(Requires MacOS 10.14 or newer)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
 	(INSERT LINK)
@@ -21,8 +21,8 @@ Linux
 
 1. Download the latest Linux release from the GitHub Releases page: 
 	(INSERT LINK)
-2. "Right-click" the file -> "Properties" -> "Permissions" -> tick "Allow executing file as program"
-3. Press "ctrl"+ "alt" + "t" to open Terminal window. Drag and drop FREEDA .app file and press ENTER to open FREEDA GUI (it might take a minute to load)
+2. "Right-click" the file -> Properties -> Permissions -> Allow executing file as program
+3. Press ctrl + alt + t to open Terminal window. Drag and drop FREEDA .app file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
 
 Windows
@@ -56,7 +56,7 @@ One way to set up a virtual machine is:
 
    .. image:: /images/VB4.png
 
-7. We recommend increasing performance by allocating at least 2 CPU units by going to "Settings" -> "System" -> "Processor".
+7. We recommend increasing performance by allocating at least 2 CPU units by going to Settings -> System -> Processor.
 
 
 8. Open the virtual machine by clicking "Start". Once it has started, choose "Install Ubuntu".
@@ -77,6 +77,6 @@ One way to set up a virtual machine is:
 
 Congratulations! To run FREEDA now, just follow the steps for a Linux installation at :ref:`Linux Installation <linux installation anchor>`.
 
-12. We suggest increasing the resolution of the VirtualBox Linux window (Settings -> Displays -> Resolution 1360x768) to make sure the GUI fits the screen. We also suggest to prevent sleeping -> "Settings" -> "Power" -> "Screen Blank" -> "Never" to ensure uninterrupted analysis.
+12. We suggest increasing the resolution of the VirtualBox Linux window (Settings -> Displays -> Resolution 1360x768) to make sure the GUI fits the screen. We also suggest to prevent sleeping -> Settings -> Power -> Screen Blank -> Never to ensure uninterrupted analysis.
 
 To run FREEDA in Virtual Machine just follow instructions for (:ref:`Linux`)

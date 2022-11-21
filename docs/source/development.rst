@@ -41,7 +41,7 @@ Once only the venv environment is activated, install the required packages with 
 
 .. code-block:: sh
 
-    pip install biopython bioservices matplotlib numpy openpyxl pandas pybedtools pyensembl pyinstaller scipy
+    pip install biopython matplotlib numpy openpyxl pandas pybedtools pyensembl pyinstaller
 
 This will install the newest version of all of these packages and their dependencies.
 
@@ -49,9 +49,9 @@ If the build fails for pybedtools, download the lastest python devolepment tools
 
 .. code-block:: sh
 
-    sudo <PACKAGE-MANAGER> install python3.8-dev
+    sudo <PACKAGE-MANAGER> install python3.10-dev
 
-Replacing ``<PACKAGE-MANAGER>`` with your chosen one and replacing ``python3.8-dev`` with the version of python you are using.
+Replacing ``<PACKAGE-MANAGER>`` with your chosen one and replacing ``python3.10-dev`` with the version of python you are using.
 
 Once this virtual environment has been created, it can be deactivated with:
 
