@@ -42,38 +42,38 @@ One way to set up a virtual machine is:
 
 3. Open VirtualBox and click on "New" to create a new virtual machine.
 
-   .. image:: /images/VB1.png
+   .. image:: /_images/VB1.png
 
 4. Enter a name and installation location for your virtual machine. Choose "Linux" for the type and "Ubuntu (64-bit)" for the version. Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.
 
-   .. image:: /images/VB2.png
+   .. image:: /_images/VB2.png
 
 5. On the next screen, create a disk image. 100GB of disk space is needed to run FREEDA on one taxon, but we recommend allocating 500GB to be able to run all taxons. The rest of the settings on this screen can remain as their defaults.
 
-   .. image:: /images/VB3.png
+   .. image:: /_images/VB3.png
 
 6.  After creating the virtual machine, assign the operating system image to it by clicking on the option next to IDE Secondary Device 0 and choosing the disk file you downloaded before (.iso file).
 
-   .. image:: /images/VB4.png
+   .. image:: /_images/VB4.png
 
 7. We recommend increasing performance by allocating at least 2 CPU units by going to Settings -> System -> Processor.
 
 
 8. Open the virtual machine by clicking "Start". Once it has started, choose "Install Ubuntu".
 
-   .. image:: /images/VB5.png
+   .. image:: /_images/VB5.png
 
 9. Follow the installer instructions. Note that when the screen comes up to "Erase disk and install Ubuntu" this will **not** affect the other files on your computer. It is only erasing the data inside the virtual machine.
 
-   .. image:: /images/VB6.png
+   .. image:: /_images/VB6.png
 
 10. Continue with the installation. When it is complete, the virtual machine will restart. When it asks to "remove the installation medium", just press ENTER.
 
-   .. image:: /images/VB7.png
+   .. image:: /_images/VB7.png
 
 11. If the installation has been completed successfully, the virtual machine should boot to a desktop image.
 
-    .. image:: /images/VB8.png
+    .. image:: /_images/VB8.png
 
 Congratulations! To run FREEDA now, just follow the steps for a Linux installation at :ref:`Linux Installation <linux installation anchor>`.
 

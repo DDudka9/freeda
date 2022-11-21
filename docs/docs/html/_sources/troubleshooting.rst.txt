@@ -74,25 +74,25 @@ Warnings (no action needed)
 
 	*REASON:* FREEDA will still run the analysis but without mapping residues onto structure
 
-	.. image:: /images/GUI_events_No_structure.png
+	.. image:: /_images/GUI_events_No_structure.png
 
 **Questionable alignment of a single exon**
 
 	*REASON:* FREEDA performs additional checks (blue) for a divergent exon and accepts or rejects it
 	
-	.. image:: /images/GUI_events_single_exon_warning.png
+	.. image:: /_images/GUI_events_single_exon_warning.png
 
 **Coding sequence is not in frame**
 
 	*REASON:* Either some exons are missing (not the case in example below) or single indels are present (e.g. sequencing errors). FREEDA may either remove this sequence from analysis or remove the indels to force conserved alignment.
 	
-	.. image:: /images/GUI_events_CDS_not_in_frame.png
+	.. image:: /_images/GUI_events_CDS_not_in_frame.png
 
 **Early STOP codon detected in final coding sequence**
 	
 	*REASON:* Coding sequences in the final alignment should not have any STOP codons anymore, except those introduced by imperfect alignment. This is rare and usually occurs in highly divergent genes. FREEDA removes the STOP codon forcing a conserved alignment.
 	
-	.. image:: /images/GUI_STOP_codon_warning.png
+	.. image:: /_images/GUI_STOP_codon_warning.png
 
 
 

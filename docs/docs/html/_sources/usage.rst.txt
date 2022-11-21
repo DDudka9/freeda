@@ -4,7 +4,7 @@ Usage
 Using FREEDA GUI
 ----------------
 
-	.. image:: /images/GUI_input_2.png
+	.. image:: /_images/GUI_input_2.png
 
 FREEDA's graphical user interface allows analyzing up to 5 genes at a time. 
 
@@ -74,7 +74,7 @@ Understanding Events Window
 4. Next FREEDA will download, decompress genomic related assemblies and create local blast databases for each (allow 1-2h for this step dependent on Internet speed)
 
 
-	.. image:: /images/GUI_genomes_downloaded.png
+	.. image:: /_images/GUI_genomes_downloaded.png
    
    *There will be 18-22 genomic assemblies downloaded for each selected taxon.
    This step is triggered each time you select a new working directory ("Set directory" in GUI)!*
@@ -83,23 +83,23 @@ Understanding Events Window
 
 **Checking for genomic assemblies and input extraction**
 
-	.. image:: /images/GUI_input_extraction.png
+	.. image:: /_images/GUI_input_extraction.png
 	
 **Searching for homologous sequences using blast**
 
-	.. image:: /images/GUI_events_tblastn.png
+	.. image:: /_images/GUI_events_tblastn.png
 
 **Parsing blast results into separate contigs**
 
-	.. image:: /images/GUI_events_analyzing_gene.png
+	.. image:: /_images/GUI_events_analyzing_gene.png
 
 **Initial alignment of each contig**
 
-	.. image:: /images/GUI_events_aligning_contigs.png
+	.. image:: /_images/GUI_events_aligning_contigs.png
 	
 **Exon calling - this contig does not contain any syntenic exons expected**
 
-	.. image:: /images/GUI_events_no_introns.png
+	.. image:: /_images/GUI_events_no_introns.png
 	
 	*When analyzing the alignment FREEDA considers any alignable chunk of DNA a possible "exon" 
 	since it bears some similarity to the blasted reference coding sequence. Calling such exon 
@@ -115,11 +115,11 @@ Understanding Events Window
 	
 **Exon calling - this contig contains all syntenic exons expected**
 
-	.. image:: /images/GUI_events_syntenic_5_3.png
+	.. image:: /_images/GUI_events_syntenic_5_3.png
 	
 **Exon calling - this contig may contain a retro-duplication**
 
-	.. image:: /images/GUI_events_RETRO.png
+	.. image:: /_images/GUI_events_RETRO.png
 	
 	*We urge manual verification of the raw alignment of that specific contig to ensure 
 	that the contig contains a retro-duplication (see below). "RETRO_score" is a ratio 
@@ -129,18 +129,18 @@ Understanding Events Window
 
 **Exon calling - this contig is does not have the last two syntenic exons expected**
 
-	.. image:: /images/GUI_events_syntenic_5prime.png
+	.. image:: /_images/GUI_events_syntenic_5prime.png
 
 **Exon calling - this contig contains only the last two syntenic exons expected**
 
-	.. image:: /images/GUI_events_syntenic_3prime.png
+	.. image:: /_images/GUI_events_syntenic_3prime.png
 	
 	*is MISSING* means that no chunk of DNA aligned to the expected reference exon 
 	(functionally equivalent to non-syntenic exons).*
 
 **Resolution of very recent duplications (or heterozygous loci)**
 	
-	.. image:: /images/GUI_recent_duplication.png
+	.. image:: /_images/GUI_recent_duplication.png
 	
 	*This step is triggered only when at least two contigs bear the same number 
 	of likely syntenic exons (e.g. very recent segmental duplications). If the likelihood 
@@ -154,7 +154,7 @@ Understanding Events Window
 	
 **Validating single syntenic exons cloned from selected contigs**
 
-	.. image:: /images/GUI_events_single_exons.png
+	.. image:: /_images/GUI_events_single_exons.png
 
 	*Additional checks (hamming distance as compared to the reference exon) are performed 
 	for each syntenic exon from a selected orthologus contig to ensure preservation 
@@ -168,9 +168,9 @@ Understanding Events Window
 
 **Detecting positive selection**
 	
-	.. image:: /images/GUI_events_Analysis_completed.png
+	.. image:: /_images/GUI_events_Analysis_completed.png
 
-	.. image:: /images/GUI_events_LRTs.png
+	.. image:: /_images/GUI_events_LRTs.png
 	
 	*Analysis completed - time it took to find orthologous exons for all analyzed genes. 
 	Final multiple sequence alignment is then made for the first gene. Coding sequences with 
@@ -186,7 +186,7 @@ Understanding Results
 
 **Quick look up table within the GUI**
 
-	.. image:: /images/GUI_result_table.png
+	.. image:: /_images/GUI_result_table.png
 
 	*Gene* - Gene name provided
 	
@@ -210,14 +210,14 @@ Understanding Results
 
 **Folder with all results (inside user indicated "Set directory")**
 
-	.. image:: /images/Working_directory_Raw_data.png
-	.. image:: /images/Working_directory_Results_data.png
+	.. image:: /_images/Working_directory_Raw_data.png
+	.. image:: /_images/Working_directory_Results_data.png
 
 **Exemplary nucleotide alignment (opened with UNIPRO Ugene)**
 
 	*Cenpo_raw_nucleotide_alignment.fasta*
 
-	.. image:: /images/Exemplary_nucleotide_alignment.png
+	.. image:: /_images/Exemplary_nucleotide_alignment.png
 	
 	*Marked is an indel (likely deletion in Apodemus sylvaticus) before any processing. 
 	Region marked will be removed as it cannot be analyzed. Inspect this file to find which 
@@ -227,7 +227,7 @@ Understanding Results
 
 	*Cenpo_protein_alignment.fasta*
 
-	.. image:: /images/Exemplary_protein_alignment.png
+	.. image:: /_images/Exemplary_protein_alignment.png
 	
 	*Marked is the same indel (see above) after it has been processed. Although only 9bp 
 	are missing, they span 4 codons. Therefore 4 amino acids were removed from each species 
@@ -239,13 +239,13 @@ Understanding Results
 	
 	*Cenpo.tree*
 	
-	.. image:: /images/Exemplary_gene_tree.png
+	.. image:: /_images/Exemplary_gene_tree.png
 
 **Results worksheet**
 
 	*PAML_result-10-31-2022-13-02_F3X4.xlsx*
 
-	.. image:: /images/Exemplary_results_sheet.png
+	.. image:: /_images/Exemplary_results_sheet.png
 	
 	*Here you can find probabilities of positive selection acting on each recurrently changing 
 	residue (displayed on top).*
@@ -254,7 +254,7 @@ Understanding Results
 	
 	*Cenpo_PAML_graph_F3X4.tif*
 	
-	.. image:: /images/Exemplary_graph.png
+	.. image:: /_images/Exemplary_graph.png
 	
 	*Top graph (black) shows recurrently changing residues. Middle graph (blue) shows 
 	residues that evolve under positive selection with more or less probability (0-7-1.0). 
@@ -265,7 +265,7 @@ Understanding Results
 
 	*Cenpo_Mm.pse*
 
-	.. image:: /images/Exemplary_protein_structure.png
+	.. image:: /_images/Exemplary_protein_structure.png
 	
 	*You can rotate the structure to have a better look at the position of each residue 
 	under positive selection. For details on how to further analyze your structure 
