@@ -28,14 +28,16 @@ Generates a PyMOL script and runs it internally. Saves the PyMOL session per gen
 
 from freeda import pyinstaller_compatibility
 from ast import literal_eval
+from requests.exceptions import HTTPError
+from pathlib import Path
+import distro
 import shutil
 import subprocess
 import os
 import requests
 import simplejson.errors
-from pathlib import Path
 import logging
-from requests.exceptions import HTTPError
+
 
 
 # Brian Akins
@@ -207,6 +209,10 @@ def create_desktop_file_linux(wdir, pymol_desktop_path):
             raise
     with open(pymol_desktop_path, "w") as f:
         f.write(pymol_desktop_contents)
+    # need to change ownership of the mimeinfo.cache file
+    subprocess.call([pyinstaller_compatibility.resource_path("chown"), pymol_desktop_path.split("/")[1],
+                     os.path.join(pymol_desktop_path, "mimeinfo.cache")])
+    # make pymol file executable
     subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x", pymol_desktop_path])
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
                      os.path.dirname(pymol_desktop_path)])
@@ -223,14 +229,24 @@ def install_pymol_linux(wdir):
     if not os.path.exists(os.path.join(wdir, "pymol", "pymol")):
         pymol_tar_name = os.path.join(wdir, "pymol.tar.bz2")
         wget_exit_code = download_pymol_linux(wdir, pymol_tar_name)
-        message = "PyMOL download completed with exit code %s." % wget_exit_code
-        logging.info(message)
+
+        if wget_exit_code is None:
+            message = "PyMOL download completed."
+            logging.info(message)
+        else:
+            message = "PyMOL download failed."
+            logging.info(message)
 
         unpack_pymol_linux(wdir, pymol_tar_name)
-        message = "PyMOL unpacked into the Data folder. Generating .desktop file."
+        message = "PyMOL unpacked into the working directory. Generating .desktop file."
         logging.info(message)
+
+        if distro.name() == "Ubuntu" and distro.version() == "22.04":
+            # need to remove the dynamic library due to a clash with swrast
+            os.remove(os.path.join(wdir, "pymol/lib/libstdc++.so.6"))
+
     else:
-        message = "PyMOL binary already found in Data folder."
+        message = "PyMOL binary already found in working directory."
         logging.info(message)
 
     xdg_data_home = os.environ.get("XDG_DATA_HOME")
@@ -240,11 +256,11 @@ def install_pymol_linux(wdir):
     message = "Creating PyMOL .desktop file at %s" % pymol_desktop_path
     logging.info(message)
     create_desktop_file_linux(wdir, pymol_desktop_path)
-    message = "PyMOL .desktop file generated. Linking .pse files."
-    logging.info(message)
 
     if subprocess.call([pyinstaller_compatibility.resource_path("xdg-mime"),
                         "query", "default", "application/x-extension-pse"]) == 0:
+        message = "Linking .pse files."
+        logging.info(message)
         link_pse_files_linux()
     else:
         message = ".pse files already have a default application association."

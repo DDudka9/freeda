@@ -104,6 +104,7 @@ Warnings (no action needed)
 	*REASON:* This is a sanity check. Usually <95% identity suggests that alternative exons 
 	are used (check supported only for rodents and carnivores).
 
+	.. image:: /_images/GUI_events_no_matching.png
 
 
 Problems with VirtualBox
