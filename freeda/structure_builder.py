@@ -211,7 +211,7 @@ def create_desktop_file_linux(wdir, pymol_desktop_path):
         f.write(pymol_desktop_contents)
     # need to change ownership of the mimeinfo.cache file
     subprocess.call([pyinstaller_compatibility.resource_path("chown"), pymol_desktop_path.split("/")[1],
-                     os.path.join(pymol_desktop_path, "mimeinfo.cache")])
+                     os.path.join(pymol_desktop_path.replace("freeda-pymol.desktop", ""), "mimeinfo.cache")])
     # make pymol file executable
     subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x", pymol_desktop_path])
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
