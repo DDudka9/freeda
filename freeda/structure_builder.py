@@ -196,12 +196,12 @@ def unpack_pymol_linux(wdir, pymol_tar_name):
     return unpack_exit_code
 
 
-def create_desktop_file_linux(wdir, pymol_desktop_path):
+def create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home):
     """Creates desktop file for pymol on Linux systems"""
     pymol_executable_path = os.path.join(wdir, "pymol", "pymol")
     pymol_icon_path = os.path.join(wdir, "pymol", "share", "pymol", "data", "pymol", "icons", "icon2_128x128.png")
-    pymol_desktop_contents = f"[Desktop Entry]\nEncoding=UTF-8\nType=Application\nTerminal=false\n" \
-                             f"Exec={pymol_executable_path}\nName=PyMOL\nIcon={pymol_icon_path}"
+    pymol_desktop_contents = f"[Desktop Entry]\nEncoding=UTF-8\nType=Application\nMimeType=application/x-extension-pse" \
+                             f"\nTerminal=false\nExec={pymol_executable_path}\nName=PyMOL\nIcon={pymol_icon_path}"
     if not os.path.exists(os.path.dirname(pymol_desktop_path)):
         try:
             os.makedirs(os.path.dirname(pymol_desktop_path))
@@ -210,12 +210,53 @@ def create_desktop_file_linux(wdir, pymol_desktop_path):
     with open(pymol_desktop_path, "w") as f:
         f.write(pymol_desktop_contents)
     # need to change ownership of the mimeinfo.cache file
-    subprocess.call([pyinstaller_compatibility.resource_path("chown"), pymol_desktop_path.split("/")[1],
-                     os.path.join(pymol_desktop_path.replace("freeda-pymol.desktop", ""), "mimeinfo.cache")])
+    #subprocess.call([pyinstaller_compatibility.resource_path("chown"), pymol_desktop_path.split("/")[2],
+    #                 os.path.join(pymol_desktop_path.replace("freeda-pymol.desktop", ""), "mimeinfo.cache")])
     # make pymol file executable
     subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x", pymol_desktop_path])
+    # need to make a new MIME type for PyMOL .pse files
+    make_new_mime(xdg_data_home, pymol_icon_path)
+    # install desktop entries
+    desktop_dir = os.path.join("--dir=", Path.home(), "Desktop")
+    subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"),
+                     desktop_dir, os.path.join(xdg_data_home, "applications", "freeda-pymol.desktop")])
+    # then update the desktop database
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
-                     os.path.dirname(pymol_desktop_path)])
+                     os.path.join(xdg_data_home, "applications")])
+
+
+def make_new_mime(xdg_data_home, pymol_icon_path):
+    """Generates a new MIME type for .pse files"""
+
+    html_template = """<?xml version="1.0" encoding="UTF-8"?>
+        <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+        <mime-type type="application/x-extension-pse">
+        <comment>new mime type</comment>
+        <glob pattern="*.pse"/>
+        </mime-type>
+        </mime-info>"""
+
+    # add a new mime type locally
+    mime_pckgs_dir = os.path.join(xdg_data_home, "mime", "packages")
+    if not os.path.isdir(mime_pckgs_dir):
+        os.makedirs(mime_pckgs_dir)
+
+    # make an html file for the new MIME type locally
+    with open(os.path.join(mime_pckgs_dir, "application-x-extension-pse.xml"), "w") as f:
+        f.write(html_template)
+
+    # install an icon
+    subprocess.call([pyinstaller_compatibility.resource_path("xdg-icon-resource"),
+                     "install", "--context", "mimetypes", "--size", "128", pymol_icon_path,
+                     "application-x-extension-pse"])
+
+    # install that html locally
+    subprocess.call([pyinstaller_compatibility.resource_path("xdg-mime"),
+                     "install", os.path.join(mime_pckgs_dir, "application-x-extension-pse.xml")])
+
+    # need to update the mime database locally
+    subprocess.call([pyinstaller_compatibility.resource_path("update-mime-database"),
+                     os.path.join(xdg_data_home, "mime")])
 
 
 def link_pse_files_linux():
@@ -255,7 +296,7 @@ def install_pymol_linux(wdir):
     pymol_desktop_path = os.path.join(xdg_data_home, "applications", "freeda-pymol.desktop")
     message = "Creating PyMOL .desktop file at %s" % pymol_desktop_path
     logging.info(message)
-    create_desktop_file_linux(wdir, pymol_desktop_path)
+    create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home)
 
     if subprocess.call([pyinstaller_compatibility.resource_path("xdg-mime"),
                         "query", "default", "application/x-extension-pse"]) == 0:
