@@ -220,7 +220,7 @@ def create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home):
     subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "777", os.path.join(Path.home(), "Desktop")])
     # install desktop entries
     subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"),
-                     os.path.join("--dir=", xdg_data_home, "applications"), os.path.join(xdg_data_home,
+                     os.path.join(Path.home(), "Desktop"), os.path.join(xdg_data_home,
                                                                 "applications", "freeda-pymol.desktop")])
     # then update the desktop database
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
