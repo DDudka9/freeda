@@ -215,8 +215,9 @@ def create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home):
     # need to make a new MIME type for PyMOL .pse files
     make_new_mime(xdg_data_home, pymol_icon_path)
     # install desktop entries
-    subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"), os.path.join(xdg_data_home,
-                                                                "applications", "freeda-pymol.desktop")])
+    subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"),
+                     os.path.join("--dir=", Path.home(), "Desktop", "freeda-pymol.desktop"),
+                     os.path.join(xdg_data_home, "applications", "freeda-pymol.desktop")])
     # then update the desktop database
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
                      os.path.join(xdg_data_home, "applications")])
