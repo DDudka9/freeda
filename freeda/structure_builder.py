@@ -209,18 +209,13 @@ def create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home):
             raise
     with open(pymol_desktop_path, "w") as f:
         f.write(pymol_desktop_contents)
-    # need to change ownership of the mimeinfo.cache file
-    #subprocess.call([pyinstaller_compatibility.resource_path("chown"), pymol_desktop_path.split("/")[2],
-    #                 os.path.join(pymol_desktop_path.replace("freeda-pymol.desktop", ""), "mimeinfo.cache")])
+
     # make pymol file executable
     subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x", pymol_desktop_path])
     # need to make a new MIME type for PyMOL .pse files
     make_new_mime(xdg_data_home, pymol_icon_path)
-    # make desktop directory amenable to write into by the user
-    subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "777", os.path.join(Path.home(), "Desktop")])
     # install desktop entries
-    subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"),
-                     os.path.join(Path.home(), "Desktop"), os.path.join(xdg_data_home,
+    subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"), os.path.join(xdg_data_home,
                                                                 "applications", "freeda-pymol.desktop")])
     # then update the desktop database
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
