@@ -216,6 +216,8 @@ def create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home):
     subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x", pymol_desktop_path])
     # need to make a new MIME type for PyMOL .pse files
     make_new_mime(xdg_data_home, pymol_icon_path)
+    # make desktop directory amenable to write into by the user
+    subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "777", os.path.join(Path.home(), "Desktop")])
     # install desktop entries
     subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"),
                      os.path.join("--dir=", xdg_data_home, "applications"), os.path.join(xdg_data_home,
