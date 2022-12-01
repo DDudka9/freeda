@@ -218,9 +218,12 @@ def create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home):
     path = "--dir=" + os.path.join(Path.home(), "Desktop")
     subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"), path,
                      os.path.join(xdg_data_home, "applications", "PyMOL.desktop")])
-    # make pymol file executable from desktop
-    subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x",
+    # make pymol launcher executable from desktop
+    subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "a+x",
                      os.path.join(os.path.join(Path.home(), "Desktop", "PyMOL.desktop"))])
+    # make pymol launcher trusted (CURRENTLY DOES NOT SEEM TO BE SUPPORTED BY 22.04 LTS)
+    subprocess.call(["gio", "set", os.path.join(Path.home(), "Desktop", "PyMOL.desktop"),
+                     "metadata::trusted", "yes"])
     # then update the desktop database
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
                      os.path.join(Path.home(), "Desktop")])
