@@ -217,10 +217,10 @@ def create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home):
     # install desktop entries
     path = "--dir=" + os.path.join(Path.home(), "Desktop")
     subprocess.call([pyinstaller_compatibility.resource_path("desktop-file-install"), path,
-                     os.path.join(xdg_data_home, "applications", "freeda-pymol.desktop")])
-    # then update the desktop database
-    subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
-                     os.path.join(xdg_data_home, "applications")])
+                     os.path.join(xdg_data_home, "applications", "FreedaPyMOL.desktop")])
+    # make pymol file executable from desktop
+    subprocess.call([pyinstaller_compatibility.resource_path("chmod"), "+x",
+                     os.path.join(path, "FreedaPyMOL.desktop")])
     # then update the desktop database
     subprocess.call([pyinstaller_compatibility.resource_path("update-desktop-database"),
                      os.path.join(Path.home(), "Desktop")])
@@ -263,7 +263,7 @@ def make_new_mime(xdg_data_home, pymol_icon_path):
 def link_pse_files_linux():
     """Links pse files for pymol on Linux systems"""
     subprocess.call([pyinstaller_compatibility.resource_path("xdg-mime"),
-                     "default", "freeda-pymol.desktop", "application/x-extension-pse"])
+                     "default", "FreedaPyMOL.desktop", "application/x-extension-pse"])
 
 
 def install_pymol_linux(wdir):
@@ -294,7 +294,7 @@ def install_pymol_linux(wdir):
     xdg_data_home = os.environ.get("XDG_DATA_HOME")
     if not xdg_data_home:
         xdg_data_home = Path.home() / ".local" / "share"
-    pymol_desktop_path = os.path.join(xdg_data_home, "applications", "freeda-pymol.desktop")
+    pymol_desktop_path = os.path.join(xdg_data_home, "applications", "FreedaPyMOL.desktop")
     message = "Creating PyMOL .desktop file at %s" % pymol_desktop_path
     logging.info(message)
     create_desktop_file_linux(wdir, pymol_desktop_path, xdg_data_home)
