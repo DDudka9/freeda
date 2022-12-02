@@ -22,7 +22,7 @@ Linux
 1. Download the latest Linux release from the GitHub Releases page: 
 	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux <https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux>`_
 2. "Double-click" the .zip file -> Extract (anywhere is fine)
-3. Press ctrl + alt + t to open Terminal window. Drag and drop FREEDA the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
+3. Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
 
 Windows
