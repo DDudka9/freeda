@@ -20,7 +20,7 @@ Linux
 (tested on Ubuntu 22.04.1 LTS release `https://ubuntu.com/download/desktop <https://ubuntu.com/download/desktop>`_)
 
 1. Download the latest Linux release from the GitHub Releases page: 
-	(INSERT LINK)
+	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux <https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux>`_
 2. "Right-click" the file -> Properties -> Permissions -> Allow executing file as program
 3. Press ctrl + alt + t to open Terminal window. Drag and drop FREEDA .app file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
