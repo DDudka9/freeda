@@ -25,7 +25,7 @@ MacOS
 -----
 
 1. Download the latest MacOS release from the GitHub Releases page: 
-	(INSERT LINK)
+	[https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac](https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac)
 2. Install PyMOL https://pymol.org/2 in your Applications folder (takes minutes)
 3. Double-click the .app file to run FREEDA (it might take a minute to load) and follow the steps depicted below.
 
