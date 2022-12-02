@@ -37,8 +37,8 @@ Linux
 
 1. Download the latest Linux release (compatible with Ubuntu 22.04.1 LTS) from the GitHub Releases page: 
 	[https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux](https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux)
-2. Go to the folder and "right-click" the file -> in "Properties" tick "Allow to run as executable"
-3. Press ctrl + alt + t to open Terminal window. Drag and drop FREEDA .app file and press ENTER to open FREEDA GUI (it might take a minute to load)
+2. "Double-click" the .zip file -> Extract (anywhere is fine)
+3. Press ctrl + alt + t to open Terminal window. Drag and drop FREEDA the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
 Windows
 -------
