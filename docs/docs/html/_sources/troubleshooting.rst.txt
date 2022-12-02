@@ -118,6 +118,13 @@ Your Windows system may already be using another Virtual Machine system called H
 Other problems
 --------------
 
+PyMOL desktop file may not work
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Ubuntu 22.04 LTS version does not seem to support giving launching permissions to Desktop files
+but that might change with future updates. For now just double-click on .pse files to open structures
+in PyMOL on Linux.
+
 PyMOL Tar Unpacking "Cannot Create Symlink"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
