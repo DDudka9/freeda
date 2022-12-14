@@ -29,7 +29,7 @@ MacOS
 2. Install PyMOL https://pymol.org/2 in your Applications folder (takes minutes)
 3. Double-click the .app file to run FREEDA (it might take a minute to load) and follow the steps depicted below.
 
-(Find exhaustive walkthrough and explanation of the results in Documentation: LINK to Github Pages)
+(Find exhaustive walkthrough and explanation of the results in Documentation: [https://ddudka9.github.io/freeda/](https://ddudka9.github.io/freeda/))
 ![](GUI_example.png)
 
 Linux
@@ -43,4 +43,5 @@ Linux
 Windows
 -------
 
-FREEDA is not available for Windows. However, it is easy to run FREEDA from a free Virtual Machine running Linux inside a Windows computer. Setting up a Virtual Machine takes minutes. See Documentation: LINK to Github Pages
+FREEDA is not available for Windows. However, it is easy to run FREEDA from a free Virtual Machine running Linux inside a Windows computer. 
+Setting up a Virtual Machine takes minutes. See Documentation: [https://ddudka9.github.io/freeda/](https://ddudka9.github.io/freeda/)
