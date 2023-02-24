@@ -210,24 +210,24 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
             if file == genome + ".fasta":
 
                 # THIS WAS ADDED TEMPORARILY 02/16/2023
-                message = "GENOME file: %s present of size: %s " % (file,
-                                            str(os.stat(database_path + genome + ".fasta").st_size))
-                logging.info(message)
-                genome_file = True
-                return genome_file
+                #message = "GENOME file: %s present of size: %s " % (file,
+                #                            str(os.stat(database_path + genome + ".fasta").st_size))
+                #logging.info(message)
+                #genome_file = True
+                #return genome_file
 
                 # check size
-                #if os.stat(database_path + genome + ".fasta").st_size < genomes[genome]:
-                #    # partial fasta file -> remove
-                #    message = "\n...NOTE... : Partial genome file : %s.fasta detected: " \
-                #              "\n     -> removing..." % genome
-                #    logging.info(message)
-                #    os.remove(database_path + genome + ".fasta")
-                #    return genome_file
-                ## complete fasta file
-                #else:
-                #    genome_file = True
-                #    return genome_file
+                if os.stat(database_path + genome + ".fasta").st_size < genomes[genome]:
+                    # partial fasta file -> remove
+                    message = "\n...NOTE... : Partial genome file : %s.fasta detected: " \
+                              "\n     -> removing..." % genome
+                    logging.info(message)
+                    os.remove(database_path + genome + ".fasta")
+                    return genome_file
+                # complete fasta file
+                else:
+                    genome_file = True
+                    return genome_file
 
     # no fasta file
     return genome_file

@@ -22,6 +22,8 @@
       <excludeFolder url="file://$MODULE_DIR$/codesigninig" />
       <excludeFolder url="file://$MODULE_DIR$/docs_Brian" />
       <excludeFolder url="file://$MODULE_DIR$/old_dists" />
+      <excludeFolder url="file://$MODULE_DIR$/build_122022" />
+      <excludeFolder url="file://$MODULE_DIR$/dist_122022" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (py37)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

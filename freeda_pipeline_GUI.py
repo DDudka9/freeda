@@ -95,6 +95,24 @@ def raise_logger():
     logger = logging.getLogger()
     logger.addHandler(text_handler)
 
+    logging.info("\n***************** Welcome to FREEDA *****************\n\n"
+                 "If this is your FIRST TIME please run a TEST:\n\n"
+                 "     1. In 'Gene name' window type 'Cenpo' (mouse) or 'CENPO' (human or chicken)\n"
+                 "     2. Select mouse or human or chicken species accordingly\n"
+                 "     3. Make a new folder on your hard drive\n"
+                 "     3. Select that folder in 'Set directory' window\n"
+                 "     4. Click 'Analyze'\n"
+                 "     5. FREEDA will first download genomes (1-2h) then analyze the gene (0.5-1h)\n"
+                 "     6. You should get these results:\n\n"
+                 "            Gene -> Cenpo (mouse) or CENPO (human) or CENPO (chicken)\n"
+                 "            Pos. select -> YES (mouse) or YES (human) or NO (chicken)\n"
+                 "            LRT -> 10.3976 (mouse) or 24.234 (human) or 3.5454 (chicken)\n"
+                 "            p-value -> 0.0055 (mouse) or 0.0001 (human) or 0.1699 (chicken)\n"
+                 "            CDS cover. -> 98% (mouse) or 99% (human) or 96% (chicken)\n"
+                 "            species -> 16 (mouse) or 19 (human) or 18 (chicken)\n"
+                 "            pr < 0.9 -> 42 (mouse) or 19 (human) or 0 (chicken)\n"
+                 "            pr >= 0.9 -> 15 (mouse) or 16 (human) or 0 (chicken)")
+
 
 def check_input():
     """Checks for essential user input"""
@@ -545,7 +563,8 @@ def freeda_pipeline():
                 structure_builder.install_pymol_linux(wdir)
             else:
                 message = "\nWELCOME! It seems that you are running FREEDA\nfor the first time -> " \
-                          "Please download PyMOL from:\n\nhttps://pymol.org/\n\nand place it in the Applications folder"
+                          "Please download PyMOL from:\n\nhttps://pymol.org/\n\nand place it in the Applications folder\n" \
+                          "Then close the FREEDA application (or click ABORT) and open it again"
                 logging.info(message)
                 ublock_user_entries()
                 return

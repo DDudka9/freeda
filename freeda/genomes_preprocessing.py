@@ -2489,7 +2489,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     # Carnivora according to Timetree 52.9-57.3 (55.4 Mya)
     carnivora_dog_dict = {"Cf": (
         ("Sv", "SpeothosVenaticus_genome", "GCA_023170115.1"),  # bush dog
-        ("Vf", "VulpesFerrilata_genome", "GCA_024500485.1"),  # Tybethan sand fox
+        ("Vf", "VulpesFerrilata_genome", "GCA_024500485.1"),  # Tybethan sand fox (vulpes vulpes is on ensembl)
         ("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
         ("Ua", "UrsusAmericanus_genome", "GCA_003344425.1"),  # American black bear
         ("Ml", "MiroungaLeonina_genome", "GCA_011800145.1"),  # elephant seal
@@ -2500,14 +2500,14 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
         ("Pl", "ProcyonLotor_genome", "GCA_015708975.1"),  # raccoon
         ("Mm", "MelesMeles_genome", "GCA_922984935.2"),  # Eurasian badger
         ("Gg", "GuloGulo_genome", "GCA_023973185.1"),  # American wolverine
-        ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret
+        ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret (mustela furo is on ensembl)
         ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
         ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
         ("Ce", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
         ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
         ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
         ("Pt", "PantheraTigris_genome", "GCA_024034525.1"),  # tiger
-        ("Lr", "LynxRufus_genome", "GCA_022079265.1"),  # bobcat
+        ("Lr", "LynxRufus_genome", "GCA_022079265.1"),  # bobcat (lynx canadiensis is on ensembl)
         ("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # cat
 
     # Phasianidae according to Timetree 29.9-40.7 (36.9 Mya)
