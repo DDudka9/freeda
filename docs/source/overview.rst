@@ -17,7 +17,11 @@ without training in computational biology and molecular evolution.
 	- Internet connection
 	
 
-If you use FREEDA for published work, please cite the original paper: [preprint] doi: https://doi.org/10.1101/2023.02.27.530329
+If you use FREEDA for published work, please cite the original paper [preprint]:
+
+FREEDA: an automated computational pipeline guides experimental testing of protein innovation by detecting positive selection
+Damian Dudka, R Brian Akins, Michael A Lampson
+bioRxiv 2023.02.27.530329; doi: https://doi.org/10.1101/2023.02.27.530329
 
 FREEDA is published under the GPLv3 license.
 
