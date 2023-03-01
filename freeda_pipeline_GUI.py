@@ -96,8 +96,8 @@ def raise_logger():
     logger.addHandler(text_handler)
 
     logging.info("\n***************** Welcome to FREEDA *****************\n\n"
-                 "[This release currently supports MacOS: Mojave, Big Sur and Monterrey]\n"
-                 "[Usage on M1/M2-chip MacOS may require opening the app with Rosetta2]\n\n"
+                 "[Currently supporting MacOS: Mojave, Big Sur, Monterrey and Ventura]\n"
+                 "[Use on M1/M2-chip MacOS may require opening the app with Rosetta2]\n\n"
                  "If this is your FIRST TIME please run a TEST:\n\n"
                  "     1. Select your species of interest\n"
                  "     2. In 'Gene name' window type 'Cenpo' (mouse) or 'CENPO' (other species)\n"

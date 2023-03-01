@@ -9,7 +9,7 @@ without training in computational biology and molecular evolution.
 - Source code: `https://github.com/DDudka9/freeda <https://github.com/DDudka9/freeda>`_
 - Requirements:
 	- Operating systems tested:
-		- Intel-chip MacOS Mojave, Big Sur and Monterrey (use on MacOS with M1/M2 chips might require opening the app with Rosetta2)
+		- Intel-chip MacOS: Mojave, Big Sur, Monterrey and Ventura (use on MacOS with M1/M2 chips might require opening the app with Rosetta2)
 		- Linux Ubuntu 22.04.1 LTS
 		- Windows (through virtual machine only)
 	- Disc space:
