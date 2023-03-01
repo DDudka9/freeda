@@ -4,7 +4,7 @@ How to get started
 MacOS
 -----
 
-(Tested on Intel-chip MacOS Mojave, Big Sur and Monterrey)
+(Tested on Intel-chip MacOS: Mojave, Big Sur and Monterrey and Ventura)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
 	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.1-mac>`_
