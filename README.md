@@ -12,7 +12,11 @@ without training in computational biology and molecular evolution.
 	- min 100 GB of disc space for each taxon e.g. primates (we recommend a hard drive with 500GB space)
 	- Internet connection
 
-If you use FREEDA for published work, please cite the original paper: CITATION
+If you use FREEDA for published work, please cite the original paper [preprint]
+
+FREEDA: an automated computational pipeline guides experimental testing of protein innovation by detecting positive selection
+Damian Dudka, R Brian Akins, Michael A Lampson
+bioRxiv 2023.02.27.530329; doi: https://doi.org/10.1101/2023.02.27.530329
 
 FREEDA is published under the GPLv3 license.
 
@@ -25,7 +29,7 @@ MacOS
 -----
 
 1. Download the latest MacOS release from the GitHub Releases page: 
-	[https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac](https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac)
+	[https://github.com/DDudka9/freeda/releases/tag/v1.0.1-mac](https://github.com/DDudka9/freeda/releases/tag/v1.0.1-mac)
 2. Install PyMOL https://pymol.org/2 in your Applications folder (takes minutes)
 3. Double-click the .app file to run FREEDA (it might take a minute to load) and follow the steps depicted below.
 
