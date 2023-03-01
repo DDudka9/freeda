@@ -128,7 +128,7 @@ in PyMOL on Linux.
 PyMOL Tar Unpacking "Cannot Create Symlink"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Your data folder may be in a system partition format that does not allow symbolic links. As a work around, you can install PyMol yourself from a package manager, software application, or the open source PyMol repository: `https://github.com/schrodinger/pymol-open-source <https://github.com/schrodinger/pymol-open-source>`.
+Your data folder may be in a system partition format that does not allow symbolic links. As a work around, you can install PyMOL yourself from a package manager, software application, or the open source PyMOL repository: `https://github.com/schrodinger/pymol-open-source <https://github.com/schrodinger/pymol-open-source>`.
 
 
 

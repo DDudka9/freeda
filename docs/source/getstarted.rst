@@ -4,7 +4,7 @@ How to get started
 MacOS
 -----
 
-(Requires MacOS 10.14 or newer)
+(Tested on Intel-chip MacOS Mojave, Big Sur and Monterrey)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
 	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac>`_
@@ -17,7 +17,7 @@ MacOS
 Linux
 -----
 
-(tested on Ubuntu 22.04.1 LTS release `https://ubuntu.com/download/desktop <https://ubuntu.com/download/desktop>`_)
+(Tested on Ubuntu 22.04.1 LTS release `https://ubuntu.com/download/desktop <https://ubuntu.com/download/desktop>`_)
 
 1. Download the latest Linux release from the GitHub Releases page: 
 	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux <https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux>`_

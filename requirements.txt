@@ -9,7 +9,7 @@ pandas~=1.1.0
 pybedtools==0.8.1
 pymol==2.4.2
 paml==4.9
-pyensembl==1.9.4
+pyensembl==2.2.8
 raxml==8.2.12
 gblocks==0.91b
 ncbi-datasets-cli==12.13.2

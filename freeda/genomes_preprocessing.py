@@ -2088,6 +2088,14 @@ def get_ref_genome_contigs_dict(ref_species):
      'KQ759724.1': 'KQ759724.1', 'KQ759725.1': 'KQ759725.1', 'KQ759727.1': 'KQ759727.1', 'KQ759745.1': 'KQ759745.1',
      'LGE64': 'CM000367.3', 'MT': 'na', 'W': 'CM000121.4', 'Z': 'CM000122.4'}
 
+    fly_dict = {'2L': 'AE014134.6',
+                '2R': 'AE013599.5',
+                '3L': 'AE014296.5',
+                '3R': 'AE014297.3',
+                '4': 'AE014135.4',
+                'X': 'AE014298.5',
+                'Y': 'CP007106.1'}
+
     # default is mouse
     if ref_species == "Mm":
         ref_genome_contigs_dict = mouse_dict
@@ -2106,6 +2114,9 @@ def get_ref_genome_contigs_dict(ref_species):
 
     elif ref_species == "Gg":
         ref_genome_contigs_dict = chicken_dict
+
+    elif ref_species == "Dm":
+        ref_genome_contigs_dict = fly_dict
         
     return ref_genome_contigs_dict
 
@@ -2238,6 +2249,9 @@ def get_available_species(ref_species):
                        "Ar": "AlectorisRufa",
                        "Cj": "CoturnixJaponica"}
 
+    elif ref_species == "Dm":
+        species = {}
+
     return species
 
 
@@ -2326,14 +2340,18 @@ def extend_abbreviations(ref_species):
                "Ar": "Alectoris rufa (Ar)",
                "Cj": "Coturnix japonica (Cj)"}
 
+    fly = {}
+
     if ref_species == "Mm" or ref_species == "Rn":
         names = mouse
     elif ref_species == "Hs":
         names = human
     elif ref_species == "Cf" or ref_species == "Fc":
         names = dog
-    else:
+    elif ref_species == "Gg":
         names = chicken
+    elif ref_species == "Dm":
+        names = fly
 
     return names
 
@@ -2530,6 +2548,9 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                                ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  # Japanese quail
 
 
+    fly_dict = {"Dm": (())}
+
+
     # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)
     mouse_ref_dict = {"Mm": (("Mm", "MusMusculus_genome", "GCA_000001635.9"))} # GeneBank GRCm39
     rat_ref_dict = {"Rn": (("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}  # GenBank; Rnor_6.0
@@ -2537,6 +2558,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     cat_ref_dict = {"Fc": (("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # pyensembl is using Felis_catu_6.2
     dog_ref_dict = {"Cf": (("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # CanFam3.1
     chicken_ref_dict = {"Gg": (("Gg", "GallusGallus_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0
+    fly_ref_dict = {"Dm": (("Dm", "DrosophilaMelanogaster_genome", "GCA_000001215.4"))}  # fly BDGP6.32
 
     # function used by main to get genomes for analysis
     if ref_genome is False:
@@ -2553,6 +2575,8 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
             dict_filename = "carnivores_genomes_check.txt"
         elif ref_species == "Gg":
             dict_filename = "phasanidae_genomes.txt"
+        elif ref_species == "Dm":
+            dict_filename = "drosophila_genomes.txt"
 
         # get genomes from variables
         if not os.path.isfile(wdir + dict_filename):
@@ -2569,6 +2593,8 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                 genomes_dict = carnivora_dog_dict
             elif ref_species == "Gg":
                 genomes_dict = phasianidae_dict
+            elif ref_species == "Dm":
+                genomes_dict = fly_dict
 
             with open(wdir + dict_filename, 'w') as f:
                 f.write(dumps(genomes_dict))
@@ -2594,6 +2620,8 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
             genomes_dict = dog_ref_dict
         elif ref_species == "Gg":
             genomes_dict = chicken_ref_dict
+        elif ref_species == "Dm":
+            genomes_dict = fly_ref_dict
 
     # collect genomes
     all_genomes = []
@@ -2606,7 +2634,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     return all_genomes
 
 
-def map_assembly_contigs(wdir):
+def map_assembly_contigs(wdir):  # ONLY FOR TESTING -> MAY NOT WORK FOR ALL REF GENOMES
     """Makes a dictionary linking genome indexed contig names and pyensembl release contig names - to get input"""
 
     import pyensembl

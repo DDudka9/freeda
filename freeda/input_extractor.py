@@ -181,6 +181,8 @@ def get_uniprot_id(ref_species, gene):
         ref_species_number = "9615"
     elif ref_species == "Gg":
         ref_species_number = "9031"
+    elif ref_species == "Dm":
+        ref_species_number = "7227"
 
     possible_uniprot_ids = []
     # AlphaFold flags "reviewed" protein with "GENENAME_MOUSE" so name count helps to find canonical version
@@ -208,6 +210,7 @@ def get_uniprot_id(ref_species, gene):
                 reviewed = element.split("\t")[2]
             except IndexError:  # when empty element
                 continue
+
             if current_name_count > name_count:
                 name_count = current_name_count
                 best_id = possible_id
@@ -232,7 +235,9 @@ def get_uniprot_id(ref_species, gene):
         # to list, then append best_id
         id_list = list(dict.fromkeys(possible_uniprot_ids))
         # need to get rid of the last id to prevent duplications
-        if best_id:
+        # added "in possible_uniprot_ids" to avoid ValueError if best_id is not in possible_uniprot_ids
+        # cose unreviewed entry had more name counts for some reason (e.g. Magi1 in rodents)
+        if best_id in possible_uniprot_ids:
             id_list.remove(best_id)
             id_list.append(best_id)
         possible_uniprot_ids = id_list
@@ -367,6 +372,12 @@ def generate_ref_genome_object(wdir, ref_species):
         release = 94
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
+    elif ref_species == "Dm":
+        ref_genome_name = "DrosophilaMelanogaster_genome"
+        species = "fruit fly"  # temporarily to avoid crashing on old pyensemnbl release
+        release = 109
+        ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
+
     # make sure ref species genome (reference genome) is present
     ref_genomes_path = wdir + "Reference_genomes/"
     # check if reference genome is present -> exit if not
@@ -405,6 +416,8 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
         ref_genome_name = "CanisFamiliaris_genome"
     elif ref_species == "Gg":
         ref_genome_name = "GallusGallus_genome"
+    elif ref_species == "Dm":
+        ref_genome_name = "DrosophilaMelanogaster_genome"
 
     input_correct = False
     model_matches_input = False

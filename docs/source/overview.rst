@@ -8,8 +8,8 @@ without training in computational biology and molecular evolution.
 - Documentation: `https://ddudka9.github.io/freeda/ <https://ddudka9.github.io/freeda/>`_
 - Source code: `https://github.com/DDudka9/freeda <https://github.com/DDudka9/freeda>`_
 - Requirements:
-	- Operating systems: 
-		- MacOS 10.14 or higher
+	- Operating systems tested:
+		- Intel-chip MacOS Mojave, Big Sur and Monterrey
 		- Linux Ubuntu 22.04.1 LTS
 		- Windows (through virtual machine only)
 	- Disc space:

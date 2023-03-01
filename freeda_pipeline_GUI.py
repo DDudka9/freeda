@@ -96,10 +96,11 @@ def raise_logger():
     logger.addHandler(text_handler)
 
     logging.info("\n***************** Welcome to FREEDA *****************\n\n"
+                 "[This release currently supports MacOS: Mojave, Big Sur and Monterrey]\n\n"
                  "If this is your FIRST TIME please run a TEST:\n\n"
-                 "     1. In 'Gene name' window type 'Cenpo' (mouse) or 'CENPO' (human or chicken)\n"
-                 "     2. Select mouse or human or chicken species accordingly\n"
-                 "     3. Make a new folder on your hard drive\n"
+                 "     1. Select your species of interest\n"
+                 "     2. In 'Gene name' window type 'Cenpo' (mouse) or 'CENPO' (other species)\n"
+                 "     3. Make a new folder on your hard drive (min. 100GB of free space)\n"
                  "     3. Select that folder in 'Set directory' window\n"
                  "     4. Click 'Analyze'\n"
                  "     5. FREEDA will first download genomes (1-2h) then analyze the gene (0.5-1h)\n"

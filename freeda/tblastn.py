@@ -190,6 +190,8 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
                "AlectorisRufa_genome": 1041225438,
                "CoturnixJaponica_genome": 939336855}
 
+    flies = {"DrosophilaMelanogaster_genome": 145550290}
+
     # define clade
     if ref_species in ["Mm", "Rn"]:
         genomes = rodents
@@ -199,6 +201,8 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
         genomes = carnivora
     elif ref_species in ["Gg"]:
         genomes = phasianidae
+    elif ref_species in ["Dm"]:
+        genomes = flies
 
     genome_file = False
 
