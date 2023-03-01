@@ -17,7 +17,7 @@ without training in computational biology and molecular evolution.
 	- Internet connection
 	
 
-If you use FREEDA for published work, please cite the original paper: CITATION
+If you use FREEDA for published work, please cite the original paper: [preprint] doi: https://doi.org/10.1101/2023.02.27.530329
 
 FREEDA is published under the GPLv3 license.
 
