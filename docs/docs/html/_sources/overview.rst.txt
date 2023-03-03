@@ -8,10 +8,10 @@ without training in computational biology and molecular evolution.
 - Documentation: `https://ddudka9.github.io/freeda/ <https://ddudka9.github.io/freeda/>`_
 - Source code: `https://github.com/DDudka9/freeda <https://github.com/DDudka9/freeda>`_
 - Requirements:
-	- Operating systems tested:
-		- Intel-chip MacOS: Mojave, Big Sur, Monterrey and Ventura (use on MacOS with M1/M2 chips might require opening the app with Rosetta2)
+	- Operating systems compatible:
+		- Intel-chip MacOS: Mojave, Big Sur, Monterrey and Ventura (use Linux release via VirtualBox if you have M1/M2 chip Mac)
 		- Linux Ubuntu 22.04.1 LTS
-		- Windows (through virtual machine only)
+		- Windows and M1/M2-chip MacOS (currently through VirtualBox only)
 	- Disc space:
 		- min 100 GB per taxon e.g. primates (we recommend using a hard drive with 500GB space)
 	- Internet connection

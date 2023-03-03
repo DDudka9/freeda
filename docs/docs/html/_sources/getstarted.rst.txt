@@ -1,13 +1,13 @@
 How to get started
 ==================
 
-MacOS
------
+MacOS (Intel-chip)
+------------------
 
-(Tested on Intel-chip MacOS: Mojave, Big Sur and Monterrey and Ventura)
+(Compatible with Intel-chip MacOS: Mojave, Big Sur and Monterrey and Ventura)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
-	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.1-mac>`_
+	`https://github.com/DDudka9/freeda/releases/tag/v1.0.2-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.2-mac>`_
 2. Install PyMOL `https://pymol.org/2/ <https://pymol.org/2/>`_ in your Applications folder (takes minutes)
 3. Double-click the .app file to open FREEDA GUI (it might take a minute to load)
 
@@ -17,7 +17,7 @@ MacOS
 Linux
 -----
 
-(Tested on Ubuntu 22.04.1 LTS release `https://ubuntu.com/download/desktop <https://ubuntu.com/download/desktop>`_)
+(Compatible with Ubuntu 22.04.1 LTS release `https://ubuntu.com/download/desktop <https://ubuntu.com/download/desktop>`_)
 
 1. Download the latest Linux release from the GitHub Releases page: 
 	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux <https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux>`_
@@ -25,18 +25,18 @@ Linux
 3. Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
 
-Windows
--------
+Windows (or M1/M2-chip MacOS)
+-----------------------------
 
-FREEDA is not available for Windows. However, it is easy to run FREEDA from a free Virtual Machine running Linux inside a Windows computer. Setting up a Virtual Machine takes minutes.
+FREEDA is not available for Windows and may not yet run on M1/M2-chip Macs. However, it is easy to run FREEDA from a free VirtualBox running Linux inside a Windows computer or M1/M2-chip Mac. Setting up a VirtualBox takes minutes.
 
 .. _virtual machine anchor:
 
-**Setting Up a Virtual Machine (10 min)**
+**Setting Up a VirtualBox (10 min)**
 
 One way to set up a virtual machine is:
 
-1. Download a virtual machine manager. A commonly used program is Oracle's VirtualBox, which can be downloaded from `https://virtualbox.org/wiki/Downloads <https://virtualbox.org/wiki/Downloads>`_.
+1. Download a commonly used VirtualBox from `https://virtualbox.org/wiki/Downloads <https://virtualbox.org/wiki/Downloads>`_.
 
 2. Download Linux version Ubuntu 22.04.1 LTS from `https://ubuntu.com/download/desktop <https://ubuntu.com/download/desktop>`_. In general, operating system files have the suffix ".iso".
 
@@ -79,4 +79,4 @@ Congratulations! To run FREEDA now, just follow the steps for a Linux installati
 
 12. We suggest increasing the resolution of the VirtualBox Linux window (Settings -> Displays -> Resolution 1360x768) to make sure the GUI fits the screen. We also suggest to prevent sleeping -> Settings -> Power -> Screen Blank -> Never to ensure uninterrupted analysis.
 
-To run FREEDA in Virtual Machine just follow instructions for (:ref:`Linux`)
+To run FREEDA in VirtualBox just follow instructions for (:ref:`Linux`)
