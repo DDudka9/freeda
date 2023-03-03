@@ -25,8 +25,8 @@ Created by Damian Dudka (damiandudka@0gmail.com) and R. Brian Akins
 How to get started
 ==================
 
-MacOS
------
+MacOS (Intel-chip)
+------------------
 
 1. Download the latest MacOS release from the GitHub Releases page: 
 	[https://github.com/DDudka9/freeda/releases/tag/v1.0.1-mac](https://github.com/DDudka9/freeda/releases/tag/v1.0.1-mac)
@@ -44,8 +44,8 @@ Linux
 2. "Double-click" the .zip file -> Extract (anywhere is fine)
 3. Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
-Windows
--------
+Windows (or M1/M2-chip MacOS)
+-----------------------------
 
-FREEDA is not available for Windows. However, it is easy to run FREEDA from a free Virtual Machine running Linux inside a Windows computer. 
-Setting up a Virtual Machine takes minutes. See Documentation: [https://ddudka9.github.io/freeda/](https://ddudka9.github.io/freeda/)
+FREEDA is not available for Windows and may not yet run on M1/M2-chip Macs. However, it is easy to run FREEDA from a free VirtualBox running Linux inside a Windows computer or on M1/M2-chip Macs. 
+Setting up a VirtualBox takes minutes. See Documentation: [https://ddudka9.github.io/freeda/](https://ddudka9.github.io/freeda/)

@@ -375,7 +375,7 @@ def generate_ref_genome_object(wdir, ref_species):
     elif ref_species == "Dm":
         ref_genome_name = "DrosophilaMelanogaster_genome"
         species = "fruit fly"  # temporarily to avoid crashing on old pyensemnbl release
-        release = 109
+        release = 107
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     # make sure ref species genome (reference genome) is present
@@ -942,12 +942,28 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
                 matching_length = True
 
     # select the most likely transcript by taking the lowest ensembl number (usually the canonical transcript)
-    number = float("inf")
-    for t, features in likely_transcripts.items():
-        ensembl_number = int(features[3].split("-")[1])
-        if ensembl_number < number:
-            number = ensembl_number
-            selected_transcript_id = t
+
+    # Drosophila transcripts dont have names followed by "-201", "-202"... etc conncention
+    # but rather "-RA", "-RB" etc. so the ensembl_number cannot be an integer
+
+    if ref_species == "Dm":
+
+        number = "A"
+        for t, features in likely_transcripts.items():
+            # need to pick the last element cose some gene names have "-R" as part of their name
+            ensembl_number = str(features[3].split("-R")[-1])
+            if ensembl_number < number or number == "A":
+                number = ensembl_number
+                selected_transcript_id = t
+
+    if ref_species != "Dm":
+
+        number = float("inf")
+        for t, features in likely_transcripts.items():
+            ensembl_number = int(features[3].split("-")[1])
+            if ensembl_number < number:
+                number = ensembl_number
+                selected_transcript_id = t
 
     # if there is no transcript of preference, pick the one with longest cds (not recommended)
     if matching_length is False:
