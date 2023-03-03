@@ -47,7 +47,8 @@ import shutil
 import re
 import logging
 import threading
-from sys import platform
+import platform
+import sys
 
 
 def thread_freeda():
@@ -560,7 +561,7 @@ def freeda_pipeline():
 
         if not shutil.which("pymol") and \
            not os.path.exists(os.path.join("/", "Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")):
-            if platform == "linux" or platform == "linux2":
+            if sys.platform == "linux" or sys.platform == "linux2":
                 logging.info("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
                 structure_builder.install_pymol_linux(wdir)
             else:
@@ -703,8 +704,10 @@ def freeda_pipeline():
 
     # report exceptions
     except Exception:
-        logging.exception("\n\n...FATAL ERROR... : Something went wrong (see below). "
-                          "Send screen shot to : Damian Dudka -> damiandudka0@gmail.com\n\n")
+        operating_system = platform.platform()
+        logging.exception("\n\n...FATAL ERROR... : Something went wrong (see below).\n"
+                          "Send screen shot to : Damian Dudka -> damiandudka0@gmail.com\n"
+                          "Your operating system is: %s\n\n" % operating_system)
 
 
 def check_gene_name(gene_name, op):

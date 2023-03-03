@@ -7,7 +7,7 @@ MacOS (Intel-chip)
 (Compatible with Intel-chip MacOS: Mojave, Big Sur and Monterrey and Ventura)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
-	`https://github.com/DDudka9/freeda/releases/tag/v1.0.2-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.2-mac>`_
+	`https://github.com/DDudka9/freeda/releases/tag/v1.0.3-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.3-mac>`_
 2. Install PyMOL `https://pymol.org/2/ <https://pymol.org/2/>`_ in your Applications folder (takes minutes)
 3. Double-click the .app file to open FREEDA GUI (it might take a minute to load)
 
