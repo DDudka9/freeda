@@ -976,6 +976,8 @@ def make_graphs(wdir, ref_species, final_dict_to_plot, result_path, gene, nr_of_
         clade = "Carnivora"
     elif ref_species == "Gg":
         clade = "Phasianidae"
+    elif ref_species == "Dme":
+        clade = "Drosophila"
 
     # plot recurrently changing sites (put it 11 bin of M8 model with postmean omega > 1.0)
     plt.subplot(311, title="PAML analysis (%s) - %s (%s - %s species)" % (codon_frequency, gene,

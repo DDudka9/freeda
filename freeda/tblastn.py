@@ -190,7 +190,29 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
                "AlectorisRufa_genome": 1041225438,
                "CoturnixJaponica_genome": 939336855}
 
-    flies = {"DrosophilaMelanogaster_genome": 145550290}
+    flies = {"DrosophilaMelanogaster_genome": 145550290,
+             "DrosophilaSimulans_genome": 135164843,
+             "DrosophilaMauritiana_genome": 131710764,
+             "DrosophilaSechellia_genome": 149708744,
+             "DrosophilaYakuba_genome": 153141101,
+             "DrosophilaSantomea_genome": 148564044,
+             "DrosophilaTeissieri_genome": 146510489,
+             "DrosophilaOrena_genome": 185126277,
+             "DrosophilaErecta_genome": 137303873,
+             "DrosophilaEugracilis_genome": 167000171,
+             "DrosophilaSubpulchrella_genome": 271471590,
+             "DrosophilaBiarmipes_genome": 187564475,
+             "DrosophilaTakahashii_genome": 167510332,
+             "DrosophilaFicusphila_genome": 169919136,
+             "DrosophilaCarrolli_genome": 234041655,
+             "DrosophilaRhopaloa_genome": 195850575,
+             "DrosophilaKurseongensis_genome": 208948327,
+             "DrosophilaFuyamai_genome": 231955431,
+             "DrosophilaElegans_genome": 180649414,
+             "DrosophilaOshimai_genome": 183206165,
+             "DrosophilaBocqueti_genome": 175136531,
+             "DrosophilaJambulina_genome": 181811110,
+             "DrosophilaKikkawai_genome": 191106214}
 
     # define clade
     if ref_species in ["Mm", "Rn"]:
@@ -201,7 +223,7 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
         genomes = carnivora
     elif ref_species in ["Gg"]:
         genomes = phasianidae
-    elif ref_species in ["Dm"]:
+    elif ref_species in ["Dme"]:
         genomes = flies
 
     genome_file = False
@@ -266,11 +288,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             genome_file_databases = True
             return genome_file_databases
 
-        #if genome + ".fasta.nin" in all_files:
-        #    message = "\nGenome : %s blast database already exists" % genome
-        #    logging.info(message)
-        #    genome_file_databases = True
-        #    return genome_file_databases
 
         # check if a compressed zip file from previous run is present (and remove)
         if not check_genome_downloads(ref_species, database_path, genome, zip=True):
@@ -296,12 +313,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             if not check_blast_database(genome, database_path):
                 genome_file_databases = False
                 return genome_file_databases
-
-            #if genome + ".fasta.nin" not in all_files:
-            #    message = "\n...FATAL ERROR... : Genome : %s database failed to build" \
-            #                  "\n     -> exiting the pipeline now..." % genome
-            #    logging.info(message)
-            #    return genome_file_databases
 
             # successful build
             else:
@@ -351,14 +362,6 @@ def check_genome_present(wdir, ref_species, database_path, genome, ref_genome=Fa
             if not check_blast_database(genome, database_path):
                 genome_file_databases = False
                 return genome_file_databases
-
-
-            #if genome + ".fasta.nin" not in all_files:
-            #    message = "\n...FATAL ERROR... : Genome : %s database failed to build" \
-            #         "\n     -> exiting the pipeline now..." % genome
-            #    logging.info(message)
-            #    return genome_file_databases
-
 
             # successful build
             else:
@@ -986,8 +989,163 @@ def check_blast_database(genome, database_path):
                                    ('ZalophusCalifornianus_genome.fasta.ndb', 20380),
                                    ('ZalophusCalifornianus_genome.fasta.nsq', 602458774),
                                    ('ZalophusCalifornianus_genome.fasta.nhr', 7529),
-                                   ('ZalophusCalifornianus_genome.fasta.nin', 660)]
-         }
+                                   ('ZalophusCalifornianus_genome.fasta.nin', 660)],
+         'DrosophilaSimulans': [('DrosophilaSimulans_genome.fasta.ndb', 20380),
+                                ('DrosophilaSimulans_genome.fasta.ntf', 16284),
+                                ('DrosophilaSimulans_genome.fasta.nhr', 41496),
+                                ('DrosophilaSimulans_genome.fasta.nsq', 33392323),
+                                ('DrosophilaSimulans_genome.fasta.not', 2932),
+                                ('DrosophilaSimulans_genome.fasta.nin', 3112),
+                                ('DrosophilaSimulans_genome.fasta.nto', 912)],
+         'DrosophilaMauritiana': [('DrosophilaMauritiana_genome.fasta.ndb', 20380),
+                                  ('DrosophilaMauritiana_genome.fasta.ntf', 16284),
+                                  ('DrosophilaMauritiana_genome.fasta.nhr', 78989),
+                                  ('DrosophilaMauritiana_genome.fasta.nsq', 32533720),
+                                  ('DrosophilaMauritiana_genome.fasta.not', 5608),
+                                  ('DrosophilaMauritiana_genome.fasta.nin', 5788),
+                                  ('DrosophilaMauritiana_genome.fasta.nto', 1804)],
+         'DrosophilaSechellia': [('DrosophilaSechellia_genome.fasta.ndb', 20380),
+                                 ('DrosophilaSechellia_genome.fasta.ntf', 16284),
+                                 ('DrosophilaSechellia_genome.fasta.nhr', 88806),
+                                 ('DrosophilaSechellia_genome.fasta.nsq', 36976228),
+                                 ('DrosophilaSechellia_genome.fasta.not', 6352),
+                                 ('DrosophilaSechellia_genome.fasta.nin', 6532),
+                                 ('DrosophilaSechellia_genome.fasta.nto', 2052)],
+         'DrosophilaYakuba': [('DrosophilaYakuba_genome.fasta.ndb', 20380),
+                              ('DrosophilaYakuba_genome.fasta.ntf', 16284),
+                              ('DrosophilaYakuba_genome.fasta.nhr', 62908),
+                              ('DrosophilaYakuba_genome.fasta.nsq', 37827741),
+                              ('DrosophilaYakuba_genome.fasta.not', 4564),
+                              ('DrosophilaYakuba_genome.fasta.nin', 4736),
+                              ('DrosophilaYakuba_genome.fasta.nto', 1456)],
+         'DrosophilaSantomea': [('DrosophilaSantomea_genome.fasta.ndb', 20380),
+                               ('DrosophilaSantomea_genome.fasta.ntf', 16284),
+                               ('DrosophilaSantomea_genome.fasta.nhr', 18560),
+                               ('DrosophilaSantomea_genome.fasta.nsq', 36704225),
+                               ('DrosophilaSantomea_genome.fasta.not', 1168),
+                               ('DrosophilaSantomea_genome.fasta.nin', 1348),
+                               ('DrosophilaSantomea_genome.fasta.nto', 324)],
+         'DrosophilaTeissieri': [('DrosophilaTeissieri_genome.fasta.ndb', 20380),
+                                 ('DrosophilaTeissieri_genome.fasta.ntf', 16284),
+                                 ('DrosophilaTeissieri_genome.fasta.nhr', 179447),
+                                 ('DrosophilaTeissieri_genome.fasta.nsq', 36173752),
+                                 ('DrosophilaTeissieri_genome.fasta.not', 13636),
+                                 ('DrosophilaTeissieri_genome.fasta.nin', 13816),
+                                 ('DrosophilaTeissieri_genome.fasta.nto', 4480)],
+         'DrosophilaOrena': [('DrosophilaOrena_genome.fasta.ndb', 20380),
+                            ('DrosophilaOrena_genome.fasta.ntf', 16284),
+                            ('DrosophilaOrena_genome.fasta.nhr', 74388),
+                            ('DrosophilaOrena_genome.fasta.nsq', 45723031),
+                            ('DrosophilaOrena_genome.fasta.not', 4972),
+                            ('DrosophilaOrena_genome.fasta.nin', 5144),
+                            ('DrosophilaOrena_genome.fasta.nto', 1592)],
+         'DrosophilaErecta': [('DrosophilaErecta_genome.fasta.ndb', 20380),
+                              ('DrosophilaErecta_genome.fasta.ntf', 16284),
+                              ('DrosophilaErecta_genome.fasta.nhr', 81003),
+                              ('DrosophilaErecta_genome.fasta.nsq', 33914625),
+                              ('DrosophilaErecta_genome.fasta.not', 5896),
+                              ('DrosophilaErecta_genome.fasta.nin', 6068),
+                              ('DrosophilaErecta_genome.fasta.nto', 1900)],
+         'DrosophilaEugracilis': [('DrosophilaEugracilis_genome.fasta.ndb', 20380),
+                                  ('DrosophilaEugracilis_genome.fasta.ntf', 16284),
+                                  ('DrosophilaEugracilis_genome.fasta.nhr', 361216),
+                                  ('DrosophilaEugracilis_genome.fasta.nsq', 41204062),
+                                  ('DrosophilaEugracilis_genome.fasta.not', 25804),
+                                  ('DrosophilaEugracilis_genome.fasta.nin', 25984),
+                                  ('DrosophilaEugracilis_genome.fasta.nto', 8536)],
+         'DrosophilaSubpulchrella': [('DrosophilaSubpulchrella_genome.fasta.ndb',
+                                      20380),
+                                     ('DrosophilaSubpulchrella_genome.fasta.ntf', 16284),
+                                     ('DrosophilaSubpulchrella_genome.fasta.nhr', 220613),
+                                     ('DrosophilaSubpulchrella_genome.fasta.nsq', 67022015),
+                                     ('DrosophilaSubpulchrella_genome.fasta.not', 16552),
+                                     ('DrosophilaSubpulchrella_genome.fasta.nin', 16740),
+                                     ('DrosophilaSubpulchrella_genome.fasta.nto', 5452)],
+         'DrosophilaBiarmipes': [('DrosophilaBiarmipes_genome.fasta.ndb', 20380),
+                                 ('DrosophilaBiarmipes_genome.fasta.ntf', 16284),
+                                 ('DrosophilaBiarmipes_genome.fasta.nhr', 46642),
+                                 ('DrosophilaBiarmipes_genome.fasta.nsq', 46329699),
+                                 ('DrosophilaBiarmipes_genome.fasta.not', 3304),
+                                 ('DrosophilaBiarmipes_genome.fasta.nin', 3484),
+                                 ('DrosophilaBiarmipes_genome.fasta.nto', 1036)],
+         'DrosophilaTakahashii': [('DrosophilaTakahashii_genome.fasta.ndb', 20380),
+                                  ('DrosophilaTakahashii_genome.fasta.ntf', 16284),
+                                  ('DrosophilaTakahashii_genome.fasta.nhr', 20166),
+                                  ('DrosophilaTakahashii_genome.fasta.nsq', 41382067),
+                                  ('DrosophilaTakahashii_genome.fasta.not', 1372),
+                                  ('DrosophilaTakahashii_genome.fasta.nin', 1552),
+                                  ('DrosophilaTakahashii_genome.fasta.nto', 392)],
+         'DrosophilaFicusphila': [('DrosophilaFicusphila_genome.fasta.ndb', 20380),
+                                  ('DrosophilaFicusphila_genome.fasta.ntf', 16284),
+                                  ('DrosophilaFicusphila_genome.fasta.nhr', 139610),
+                                  ('DrosophilaFicusphila_genome.fasta.nsq', 41958669),
+                                  ('DrosophilaFicusphila_genome.fasta.not', 9964),
+                                  ('DrosophilaFicusphila_genome.fasta.nin', 10144),
+                                  ('DrosophilaFicusphila_genome.fasta.nto', 3256)],
+         'DrosophilaCarrolli': [('DrosophilaCarrolli_genome.fasta.ndb', 20380),
+                                ('DrosophilaCarrolli_genome.fasta.ntf', 16284),
+                                ('DrosophilaCarrolli_genome.fasta.nhr', 52730),
+                                ('DrosophilaCarrolli_genome.fasta.nsq', 57804927),
+                                ('DrosophilaCarrolli_genome.fasta.not', 3964),
+                                ('DrosophilaCarrolli_genome.fasta.nin', 4144),
+                                ('DrosophilaCarrolli_genome.fasta.nto', 1256)],
+         'DrosophilaRhopaloa': [('DrosophilaRhopaloa_genome.fasta.ndb', 20380),
+                                ('DrosophilaRhopaloa_genome.fasta.ntf', 16284),
+                                ('DrosophilaRhopaloa_genome.fasta.nhr', 37284),
+                                ('DrosophilaRhopaloa_genome.fasta.nsq', 48377100),
+                                ('DrosophilaRhopaloa_genome.fasta.not', 2644),
+                                ('DrosophilaRhopaloa_genome.fasta.nin', 2824),
+                                ('DrosophilaRhopaloa_genome.fasta.nto', 816)],
+         'DrosophilaKurseongensis': [('DrosophilaKurseongensis_genome.fasta.ndb',
+                                      20380),
+                                     ('DrosophilaKurseongensis_genome.fasta.ntf', 16284),
+                                     ('DrosophilaKurseongensis_genome.fasta.nhr', 43185),
+                                     ('DrosophilaKurseongensis_genome.fasta.nsq', 51610268),
+                                     ('DrosophilaKurseongensis_genome.fasta.not', 3112),
+                                     ('DrosophilaKurseongensis_genome.fasta.nin', 3300),
+                                     ('DrosophilaKurseongensis_genome.fasta.nto', 972)],
+         'DrosophilaFuyamai': [('DrosophilaFuyamai_genome.fasta.ndb', 20380),
+                               ('DrosophilaFuyamai_genome.fasta.ntf', 16284),
+                               ('DrosophilaFuyamai_genome.fasta.nhr', 145460),
+                               ('DrosophilaFuyamai_genome.fasta.nsq', 57275609),
+                               ('DrosophilaFuyamai_genome.fasta.not', 10576),
+                               ('DrosophilaFuyamai_genome.fasta.nin', 10748),
+                               ('DrosophilaFuyamai_genome.fasta.nto', 3460)],
+         'DrosophilaElegans': [('DrosophilaElegans_genome.fasta.ndb', 20380),
+                               ('DrosophilaElegans_genome.fasta.ntf', 16284),
+                               ('DrosophilaElegans_genome.fasta.nhr', 117792),
+                               ('DrosophilaElegans_genome.fasta.nsq', 44611641),
+                               ('DrosophilaElegans_genome.fasta.not', 8548),
+                               ('DrosophilaElegans_genome.fasta.nin', 8720),
+                               ('DrosophilaElegans_genome.fasta.nto', 2784)],
+         'DrosophilaOshimai': [('DrosophilaOshimai_genome.fasta.ndb', 20380),
+                               ('DrosophilaOshimai_genome.fasta.ntf', 16284),
+                               ('DrosophilaOshimai_genome.fasta.nhr', 50052),
+                               ('DrosophilaOshimai_genome.fasta.nsq', 45253373),
+                               ('DrosophilaOshimai_genome.fasta.not', 3784),
+                               ('DrosophilaOshimai_genome.fasta.nin', 3956),
+                               ('DrosophilaOshimai_genome.fasta.nto', 1196)],
+         'DrosophilaBocqueti': [('DrosophilaBocqueti_genome.fasta.ndb', 20380),
+                                ('DrosophilaBocqueti_genome.fasta.ntf', 16284),
+                                ('DrosophilaBocqueti_genome.fasta.nhr', 51160),
+                                ('DrosophilaBocqueti_genome.fasta.nsq', 43260460),
+                                ('DrosophilaBocqueti_genome.fasta.not', 3676),
+                                ('DrosophilaBocqueti_genome.fasta.nin', 3856),
+                                ('DrosophilaBocqueti_genome.fasta.nto', 1160)],
+         'DrosophilaJambulina': [('DrosophilaJambulina_genome.fasta.ndb', 20380),
+                                 ('DrosophilaJambulina_genome.fasta.ntf', 16284),
+                                 ('DrosophilaJambulina_genome.fasta.nhr', 18602),
+                                 ('DrosophilaJambulina_genome.fasta.nsq', 44913380),
+                                 ('DrosophilaJambulina_genome.fasta.not', 1276),
+                                 ('DrosophilaJambulina_genome.fasta.nin', 1456),
+                                 ('DrosophilaJambulina_genome.fasta.nto', 360)],
+         'DrosophilaKikkawai': [('DrosophilaKikkawai_genome.fasta.ndb', 20380),
+                                ('DrosophilaKikkawai_genome.fasta.ntf', 16284),
+                                ('DrosophilaKikkawai_genome.fasta.nhr', 73750),
+                                ('DrosophilaKikkawai_genome.fasta.nsq', 47200143),
+                                ('DrosophilaKikkawai_genome.fasta.not', 5296),
+                                ('DrosophilaKikkawai_genome.fasta.nin', 5476),
+                                ('DrosophilaKikkawai_genome.fasta.nto', 1700)]}
 
     # define the expected sizes of all possible databases
     expected_databases = {}

@@ -556,10 +556,10 @@ def check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned
 
     double_intron = True
 
-    N_mismatches = 0
-    N_indels = 0
-    C_mismatches = 0
-    C_indels = 0
+    mismatches_5_prime = 0
+    indels_5_prime = 0
+    mismatches_3_prime = 0
+    indels_3_prime = 0
 
     for position, bp in enumerate(cloned_exon_aligned):
 
@@ -568,33 +568,33 @@ def check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned
 
             # expecting intron regions (sometimes there are trailing true exonic bp that will also be penalized here)
             if ref_exon_aligned[position] != "-":
-                N_mismatches += 1
+                mismatches_5_prime += 1
 
             # allow max 10 indels
-            elif N_indels < 10:
+            elif indels_5_prime < 10:
 
                 # deletion
                 if bp == "-" and gene_aligned[position] != "-":
-                    N_indels += 1
+                    indels_5_prime += 1
                 # insertion
                 elif bp != "-" and gene_aligned[position] == "-":
-                    N_indels += 1
+                    indels_5_prime += 1
                 # mismatch
                 elif bp != gene_aligned[position]:
-                    N_mismatches += 1
+                    mismatches_5_prime += 1
                 # match
                 else:
                     pass
 
             # past indel margin
-            elif N_indels >= 10:
+            elif indels_5_prime >= 10:
 
                 # deletion
                 if bp == "-":
-                    N_mismatches += 1
+                    mismatches_5_prime += 1
                 # insertion
                 elif bp != gene_aligned[position]:
-                    N_mismatches += 1
+                    mismatches_5_prime += 1
                 # match
                 else:
                     pass
@@ -604,43 +604,43 @@ def check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned
 
             # expecting intron regions (sometimes there are trailing true exonic bp that will also be penalized here)
             if ref_exon_aligned[position] != "-":
-                C_mismatches += 1
+                mismatches_3_prime += 1
 
             # allow max 10 indels
-            elif C_indels < 10:
+            elif indels_3_prime < 10:
 
                 # deletion
                 if bp == "-" and gene_aligned[position] != "-":
-                    C_indels += 1
+                    indels_3_prime += 1
                 # insertion
                 elif bp != "-" and gene_aligned[position] == "-":
-                    C_indels += 1
+                    indels_3_prime += 1
                 # mismatch
                 elif bp != gene_aligned[position]:
-                    C_mismatches += 1
+                    mismatches_3_prime += 1
                 # match
                 else:
                     pass
 
             # past indel margin
-            elif C_indels > 10:
+            elif indels_3_prime > 10:
 
                 # deletion
                 if bp == "-":
-                    C_mismatches += 1
+                    mismatches_3_prime += 1
                 # insertion
                 elif bp != gene_aligned[position]:
-                    C_mismatches += 1
+                    mismatches_3_prime += 1
                 # match
                 else:
                     pass
 
-    N_score = (50 - N_mismatches) / 50
+    N_score = (50 - mismatches_5_prime) / 50
     message = "\n    N_score : %s " % N_score
     print(message)
     logging.info(message)
 
-    C_score = (50 - C_mismatches) / 50
+    C_score = (50 - mismatches_3_prime) / 50
     message = "    C_score : %s " % C_score
     print(message)
     logging.info(message)

@@ -181,7 +181,7 @@ def get_uniprot_id(ref_species, gene):
         ref_species_number = "9615"
     elif ref_species == "Gg":
         ref_species_number = "9031"
-    elif ref_species == "Dm":
+    elif ref_species == "Dme":
         ref_species_number = "7227"
 
     possible_uniprot_ids = []
@@ -372,7 +372,7 @@ def generate_ref_genome_object(wdir, ref_species):
         release = 94
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
-    elif ref_species == "Dm":
+    elif ref_species == "Dme":
         ref_genome_name = "DrosophilaMelanogaster_genome"
         species = "fruit fly"  # temporarily to avoid crashing on old pyensemnbl release
         release = 107
@@ -416,7 +416,7 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
         ref_genome_name = "CanisFamiliaris_genome"
     elif ref_species == "Gg":
         ref_genome_name = "GallusGallus_genome"
-    elif ref_species == "Dm":
+    elif ref_species == "Dme":
         ref_genome_name = "DrosophilaMelanogaster_genome"
 
     input_correct = False
@@ -946,7 +946,7 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
     # Drosophila transcripts dont have names followed by "-201", "-202"... etc conncention
     # but rather "-RA", "-RB" etc. so the ensembl_number cannot be an integer
 
-    if ref_species == "Dm":
+    if ref_species == "Dme":
 
         number = "A"
         for t, features in likely_transcripts.items():
@@ -956,7 +956,7 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
                 number = ensembl_number
                 selected_transcript_id = t
 
-    if ref_species != "Dm":
+    if ref_species != "Dme":
 
         number = float("inf")
         for t, features in likely_transcripts.items():

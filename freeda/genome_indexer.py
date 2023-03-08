@@ -154,8 +154,29 @@ def check_index(index_path):
          'UrsusAmericanus_genome.idx': [6258683],
          'UrsusMaritimus_genome.idx': [249851],
          'VulpesFerrilata_genome.idx': [40955],
-         'ZalophusCalifornianus_genome.idx': [20475]
-    }
+         'ZalophusCalifornianus_genome.idx': [20475],
+         'DrosophilaSimulans_genome.idx': [35960],
+         'DrosophilaMauritiana_genome.idx': [44152],
+         'DrosophilaSechellia_genome.idx': [52344],
+         'DrosophilaYakuba_genome.idx': [44152],
+         'DrosophilaSantomea_genome.idx': [15480],
+         'DrosophilaTeissieri_genome.idx': [85112],
+         'DrosophilaOrena_genome.idx': [44152],
+         'DrosophilaErecta_genome.idx': [52344],
+         'DrosophilaEugracilis_genome.idx': [146552],
+         'DrosophilaSubpulchrella_genome.idx': [101496],
+         'DrosophilaBiarmipes_genome.idx': [35960],
+         'DrosophilaTakahashii_genome.idx': [15480],
+         'DrosophilaFicusphila_genome.idx': [68728],
+         'DrosophilaCarrolli_genome.idx': [40056],
+         'DrosophilaRhopaloa_genome.idx': [31864],
+         'DrosophilaKurseongensis_genome.idx': [35960],
+         'DrosophilaFuyamai_genome.idx': [72824],
+         'DrosophilaElegans_genome.idx': [60536],
+         'DrosophilaOshimai_genome.idx': [35960],
+         'DrosophilaBocqueti_genome.idx': [35960],
+         'DrosophilaJambulina_genome.idx': [15480],
+         'DrosophilaKikkawai_genome.idx': [44152]}
 
     expected_index_size = possible_indexes[index_path.split("/")[-1]][0]
     if os.path.getsize(index_path) < expected_index_size:

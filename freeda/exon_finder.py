@@ -212,6 +212,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 # check for very divergent introns (will be counted as intron)
                 # does not check for divergent introns in last exon
                 # it will not run if exception is raised
+                # divergent exon variable is only changed at 3 prime check - cose its redundant
                 else:
                     if intron_at_3_prime is False \
                         and three_prime_retrotransposition is False \
@@ -551,6 +552,22 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
     no_homology_threshold = 0.66
     allowed_indels = 20
 
+    # added statement: if ref_species != "Dme":
+    #if ref_species != "Dme":
+
+    #    min_stretch_length = 50
+    #    homology_threshold = 0.75
+    #    no_homology_threshold = 0.66
+    #    allowed_indels = 20
+
+    # added statement: if ref_species == "Dme":
+    #if ref_species == "Dme":
+    #
+    #    min_stretch_length = 25
+    #    homology_threshold = 0.60
+    #    no_homology_threshold = 0.50
+    #    allowed_indels = 30
+
     # for testing intron at the beginning of an exon
     if last_bp is False:
         # mark the ref position to be used for homology_check
@@ -683,8 +700,7 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
 
 
 def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
-    """Checks exon homology if: ambigous intron, RETRO suspected or truncation suspected at 5-prime"""
-    # runs only when ambigous intron (100bp stretch with 0.80 homology) or RETRO suspected
+    """Checks exon homology if: ambigous both introns or RETRO suspected"""
 
     homology = False
 

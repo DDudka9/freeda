@@ -2115,7 +2115,7 @@ def get_ref_genome_contigs_dict(ref_species):
     elif ref_species == "Gg":
         ref_genome_contigs_dict = chicken_dict
 
-    elif ref_species == "Dm":
+    elif ref_species == "Dme":
         ref_genome_contigs_dict = fly_dict
         
     return ref_genome_contigs_dict
@@ -2249,8 +2249,28 @@ def get_available_species(ref_species):
                        "Ar": "AlectorisRufa",
                        "Cj": "CoturnixJaponica"}
 
-    elif ref_species == "Dm":
-        species = {}
+    elif ref_species == "Dme":
+        species = {"Dsi": "DrosophilaSimulans",
+           "Dma": "DrosophilaMauritiana",
+           "Dse": "DrosophilaSechellia",
+           "Dya": "DrosophilaYakuba",
+           "Dsa": "DrosophilaSantomea",
+           "Dte": "DrosophilaTeissieri",
+           "Der": "DrosophilaErecta",
+           "Deu": "DrosophilaEugracilis",
+           "Dsu": "DrosophilaSubpulchrella",
+           "Dbi": "DrosophilaBiarmipes",
+           "Dta": "DrosophilaTakahashii",
+           "Dfi": "DrosophilaFicusphila",
+           "Dca": "DrosophilaCarrolli",
+           "Drh": "DrosophilaRhopaloa",
+           "Dku": "DrosophilaKurseongensis",
+           "Dfu": "DrosophilaFuyamai",
+           "Del": "DrosophilaElegans",
+           "Dos": "DrosophilaOshimai",
+           "Dbo": "DrosophilaBocqueti",
+           "Dja": "DrosophilaJambulina",
+           "Dki": "DrosophilaKikkawai"}
 
     return species
 
@@ -2340,7 +2360,29 @@ def extend_abbreviations(ref_species):
                "Ar": "Alectoris rufa (Ar)",
                "Cj": "Coturnix japonica (Cj)"}
 
-    fly = {}
+    fly = {"Dme": "Drosophila melanogaster (Dme)",
+           "Dsi": "Drosophila simulans (Dsi)",
+           "Dma": "Drosophila mauritiana (Dma)",
+           "Dse": "Drosophila sechellia (Dse)",
+           "Dya": "Drosophila yakuba (Dya)",
+           "Dsa": "Drosophila santomea (Dsa)",
+           "Dte": "Drosophila teissieri (Dte)",
+           "Dor": "Drosophila orena (Dor)",
+           "Der": "Drosophila erecta (Der)",
+           "Deu": "Drosophila eugracilis (Deu)",
+           "Dsu": "Drosophila subpulchrella (Dsu)",
+           "Dbi": "Drosophila biarmipes (Dbi)",
+           "Dta": "Drosophila takahashii (Dta)",
+           "Dfi": "Drosophila ficusphila (Dfi)",
+           "Dca": "Drosophila carrolli (Dca)",
+           "Drh": "Drosophila rhopaloa (Drh)",
+           "Dku": "Drosophila kurseongensis (Dku)",
+           "Dfu": "Drosophila fuyamai (Dfu)",
+           "Del": "Drosophila elegans (Del)",
+           "Dos": "Drosophila oshimai (Dos)",
+           "Dbo": "Drosophila bocqueti (Dbo)",
+           "Dja": "Drosophila jambulina (Dja)",
+           "Dki": "Drosophila kikkawai (Dki)"}
 
     if ref_species == "Mm" or ref_species == "Rn":
         names = mouse
@@ -2350,7 +2392,7 @@ def extend_abbreviations(ref_species):
         names = dog
     elif ref_species == "Gg":
         names = chicken
-    elif ref_species == "Dm":
+    elif ref_species == "Dme":
         names = fly
 
     return names
@@ -2547,8 +2589,29 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                                ("Ar", "AlectorisRufa_genome", "GCA_019345075.1"),  # red-legged partridge
                                ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  # Japanese quail
 
-
-    fly_dict = {"Dm": (())}
+    # From Kim et al., 2021 eLife (101 genomes) + santomea and orena
+    fly_dict = {"Dme": (("Dsi", "DrosophilaSimulans_genome", "GCA_018904415.1"),
+                       ("Dma", "DrosophilaMauritiana_genome", "GCA_018904475.1"),
+                       ("Dse", "DrosophilaSechellia_genome", "GCA_018904445.1"),
+                       ("Dya", "DrosophilaYakuba_genome", "GCA_018904385.1"),
+                       ("Dsa", "DrosophilaSantomea_genome", "GCA_016746245.2"),
+                       ("Dte", "DrosophilaTeissieri_genome", "GCA_018903635.1"),
+                       ("Dor", "DrosophilaOrena_genome", "GCA_005876975.1"),
+                       ("Der", "DrosophilaErecta_genome", "GCA_018904525.1"),
+                       ("Deu", "DrosophilaEugracilis_genome", "GCA_018153835.1"),
+                       ("Dsu", "DrosophilaSubpulchrella_genome", "GCA_018150325.1"),
+                       ("Dbi", "DrosophilaBiarmipes_genome", "GCA_018148935.1"),
+                       ("Dta", "DrosophilaTakahashii_genome", "GCA_018152695.1"),
+                       ("Dfi", "DrosophilaFicusphila_genome", "GCA_018152265.1"),
+                       ("Dca", "DrosophilaCarrolli_genome", "GCA_018152295.1"),
+                       ("Drh", "DrosophilaRhopaloa_genome", "GCA_018152115.1"),
+                       ("Dku", "DrosophilaKurseongensis_genome", "GCA_018153305.1"),
+                       ("Dfu", "DrosophilaFuyamai_genome", "GCA_018153365.1"),
+                       ("Del", "DrosophilaElegans_genome", "GCA_018152505.1"),
+                       ("Dos", "DrosophilaOshimai_genome", "GCA_018150695.1"),
+                       ("Dbo", "DrosophilaBocqueti_genome", "GCA_018151655.1"),
+                       ("Dja", "DrosophilaJambulina_genome", "GCA_018152175.1"),
+                       ("Dki", "DrosophilaKikkawai_genome", "GCA_018152535.1"))}
 
 
     # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)
@@ -2558,7 +2621,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     cat_ref_dict = {"Fc": (("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # pyensembl is using Felis_catu_6.2
     dog_ref_dict = {"Cf": (("Cf", "CanisFamiliaris_genome", "GCF_000002285.3"))}  # CanFam3.1
     chicken_ref_dict = {"Gg": (("Gg", "GallusGallus_genome", "GCA_000002315.3"))}  # chicken Gallus_gallus-5.0
-    fly_ref_dict = {"Dm": (("Dm", "DrosophilaMelanogaster_genome", "GCA_000001215.4"))}  # fly BDGP6.32
+    fly_ref_dict = {"Dme": (("Dme", "DrosophilaMelanogaster_genome", "GCA_000001215.4"))}  # fly BDGP6.32
 
     # function used by main to get genomes for analysis
     if ref_genome is False:
@@ -2575,7 +2638,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
             dict_filename = "carnivores_genomes_check.txt"
         elif ref_species == "Gg":
             dict_filename = "phasanidae_genomes.txt"
-        elif ref_species == "Dm":
+        elif ref_species == "Dme":
             dict_filename = "drosophila_genomes.txt"
 
         # get genomes from variables
@@ -2593,7 +2656,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                 genomes_dict = carnivora_dog_dict
             elif ref_species == "Gg":
                 genomes_dict = phasianidae_dict
-            elif ref_species == "Dm":
+            elif ref_species == "Dme":
                 genomes_dict = fly_dict
 
             with open(wdir + dict_filename, 'w') as f:
@@ -2620,7 +2683,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
             genomes_dict = dog_ref_dict
         elif ref_species == "Gg":
             genomes_dict = chicken_ref_dict
-        elif ref_species == "Dm":
+        elif ref_species == "Dme":
             genomes_dict = fly_ref_dict
 
     # collect genomes
