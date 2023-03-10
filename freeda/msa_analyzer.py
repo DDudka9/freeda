@@ -68,7 +68,7 @@ def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expec
         cds_seq, locus_seq, gene_seq = index_positions(seqs)
         # find all exons in contig locus if no retrotransposition was detected
         exons, possible_retrotransposition, synteny, RETRO_score, synteny_score \
-            = exon_finder.find_exons(gene, cds_seq, locus_seq, gene_seq, contig_name, ref_exons,
+            = exon_finder.find_exons(ref_species, gene, cds_seq, locus_seq, gene_seq, contig_name, ref_exons,
                                      expected_exons, all_genes_dict)
         # skip this contig if possible retrotransposition event was detected
         # likelihood of false positive RETRO is more than 1 per 3 intronic exons

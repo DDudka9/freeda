@@ -578,9 +578,9 @@ def freeda_pipeline():
 
         # generate a reference Genome object
         ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
-            biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
+            biotype, all_genes_ensembl, all_gene_ids_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
 
-        if not input_extractor.validate_gene_names(all_genes, all_genes_ensembl):
+        if not input_extractor.validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
             ublock_user_entries()
             return
 
@@ -598,7 +598,7 @@ def freeda_pipeline():
             message = "\n----------- * %s * -----------" % gene
             logging.info(message)
             # get structure prediction model from AlphaFold
-            possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene)
+            possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene, ensembl)
             model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
                                                                                    gene, possible_uniprot_ids)
             # get sequence input from ensembl

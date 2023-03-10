@@ -348,7 +348,7 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     # pull the contig by its base name
     base_name = contig.split("__")[0]
     seq = genome_index[str(base_name)].seq
-    prefix, suffix = get_prefix_suffix(start, len(seq), gene, all_genes_dict)
+    prefix, suffix = get_prefix_suffix(ref_species, start, len(seq), gene, all_genes_dict)
     # try trim contig and add 10000bp overhangs for later introny check
     seq = seq[start - prefix: end + suffix]
     # if full contig lacks enough bp on either end, the Seq object
@@ -372,7 +372,7 @@ def get_contig_locus(ref_species, contig, gene, genome_name, fasta_path, start, 
     shutil.move(file_name, fasta_path)
 
 
-def get_prefix_suffix(start, seq_length, gene, all_genes_dict):
+def get_prefix_suffix(ref_species, start, seq_length, gene, all_genes_dict):
     """Generates extension for each contig"""
 
     length = 10000
@@ -381,6 +381,10 @@ def get_prefix_suffix(start, seq_length, gene, all_genes_dict):
         # check if long exons are expected (overrides default length)
         if all_genes_dict[gene][1] is True:
             length = 30000
+
+    # ADDED 03/08/2023
+    if ref_species == "Dme":
+        length = 1000
 
     prefix = 0
     longest_prefix = prefix

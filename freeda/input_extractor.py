@@ -166,7 +166,7 @@ def correct_for_microexons(wdir, ref_species, gene, microexons, missing_bp_list,
     return input_correct
 
 
-def get_uniprot_id(ref_species, gene):
+def get_uniprot_id(ref_species, gene, ensembl):
     """Retrieves all possible uniprot ids to be matched against structure prediction from AlphaFold"""
 
     if ref_species == "Mm":
@@ -183,6 +183,8 @@ def get_uniprot_id(ref_species, gene):
         ref_species_number = "9031"
     elif ref_species == "Dme":
         ref_species_number = "7227"
+        # need to convert the FlyBase ID to gene name for Uniprot requests
+        gene = ensembl.gene_by_id(gene).gene_name
 
     possible_uniprot_ids = []
     # AlphaFold flags "reviewed" protein with "GENENAME_MOUSE" so name count helps to find canonical version
@@ -313,20 +315,57 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
         return model_seq, retrieved_uniprot_id
 
 
-def validate_gene_names(all_genes, all_genes_ensembl):
+def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
     """Checks if user provided valid gene names -> find in ensembl object"""
 
     all_names_valid = True
 
     absent_names = []
+
+    # modified 03/09/2023
     for gene in all_genes:
-        if gene not in all_genes_ensembl:
+        if ref_species == "Dme":
+            # make sure its a valid gene name
+            try:
+                gene_biotype = ensembl.gene_by_id(gene).biotype
+                gene_name = ensembl.gene_by_id(gene).gene_name
+
+                if gene_biotype != "protein_coding":
+                    message = "... FATAL_ERROR... : %s is %s instead of a protein coding gene " \
+                              "-> check gene name here: ensembl.org \n" \
+                              "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).biotype)
+                    logging.info(message)
+                    protein_coding = False
+                    return protein_coding
+
+                elif len(gene_name) == 1:
+                    message = "...FATAL_ERROR... : %s encodes a gene called '%s' which is a common name" \
+                              " -> cannot reliably fetch input data \n" \
+                              "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).gene_name)
+                    logging.info(message)
+                    unique_name = False
+                    return unique_name
+
+                elif gene_name not in all_genes_ensembl:
+                    all_names_valid = False
+                    absent_names.append(gene)
+
+            except ValueError:
+                message = "... FATAL_ERROR... : %s is NOT a valid gene name " \
+                          "-> check gene name here: ensembl.org \n" \
+                          "        -> exiting the pipeline now...\n" % gene
+                logging.info(message)
+                protein_coding = False
+                return protein_coding
+
+        if ref_species != "Dme" and gene not in all_genes_ensembl:
             all_names_valid = False
             absent_names.append(gene)
 
     if not all_names_valid:
         message = "... FATAL_ERROR... : Gene names %s do not exist in " \
-              "reference assembly -> exiting the pipeline now...\n" % absent_names
+              "reference assembly -> check gene name here: ensembl.org \n" \
+                  "        -> exiting the pipeline now...\n" % absent_names
         logging.info(message)
 
     return all_names_valid
@@ -395,9 +434,10 @@ def generate_ref_genome_object(wdir, ref_species):
 
     # get all gene names available (list)
     all_genes_ensembl = ensembl.gene_names()
+    all_gene_ids_ensembl = ensembl.gene_ids()
 
     return ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
-           biotype, all_genes_ensembl
+           biotype, all_genes_ensembl, all_gene_ids_ensembl
 
 
 def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
@@ -430,7 +470,13 @@ def extract_input(wdir, ref_species, ref_genomes_path, ref_genome_contigs_dict,
     exons_input_path = wdir + "Exons/"
 
     # check if provided gene.txt list has valid gene names (if list used not GUI)
-    all_genes = {g for g in ensembl.gene_names()}
+    # need to convert FlyBase ID to gene name for Drosophila
+    if ref_species == "Dme":
+        all_genes = {g for g in ensembl.gene_ids()}
+
+    if ref_species != "Dme":
+        all_genes = {g for g in ensembl.gene_names()}
+
     if gene not in all_genes:
         input_correct = False
         message = "\n...WARNING... : Reference genome lacks gene name: "'%s'"\n" % gene
@@ -614,8 +660,8 @@ def extract_exons(wdir, ref_species, gene, exons_input_path, ref_genomes_path, r
     coding_exons = {}
     UTR_5_length = len(UTR_5)
     UTR_3_length = len(UTR_3)
-    removed_on_coding_from_start = False
-    removed_on_coding_from_end = False
+    removed_non_coding_from_start = False
+    removed_non_coding_from_end = False
     start_codon_present = False
     stop_codon_present = False
     nr_of_removed_non_coding_exons_start = 0
@@ -637,7 +683,7 @@ def extract_exons(wdir, ref_species, gene, exons_input_path, ref_genomes_path, r
 
         # trim off the non-coding exons containing UTR_5
         if exon[1]-exon[0] <= UTR_5_length:
-            removed_on_coding_from_start = True
+            removed_non_coding_from_start = True
             nr_of_removed_non_coding_exons_start += 1
             exon_intervals = exon_intervals[1:]
             trimmed_UTR_5_length = UTR_5_length - (exon[1]-exon[0])
@@ -652,7 +698,7 @@ def extract_exons(wdir, ref_species, gene, exons_input_path, ref_genomes_path, r
 
         # trim off the non-coding exons containing UTR_3
         if exon[1]-exon[0] <= UTR_3_length:
-            removed_on_coding_from_end = True
+            removed_non_coding_from_end = True
             nr_of_removed_non_coding_exons_end += 1
             exon_intervals = exon_intervals[:-1]
             trimmed_UTR_3_length = UTR_3_length - (exon[1]-exon[0])
@@ -665,28 +711,30 @@ def extract_exons(wdir, ref_species, gene, exons_input_path, ref_genomes_path, r
         stop = exon[1]
 
         if number == 1 and strand == "+":
-            if removed_on_coding_from_start is False:
+            if removed_non_coding_from_start is False:
                 start = start + start_codon_offset
             else:
                 start = start + start_codon_offset - nr_of_removed_non_coding_exons_start
 
         if number == 1 and strand == "-":
-            if removed_on_coding_from_start is False:
+            if removed_non_coding_from_start is False:
                 stop = stop - start_codon_offset
             else:
                 stop = stop - start_codon_offset + nr_of_removed_non_coding_exons_start
 
         if number == len(exon_intervals) and strand == "+":
-            if removed_on_coding_from_end is False:
+            if removed_non_coding_from_end is False:
                 stop = stop - UTR_3_length
             else:
                 stop = stop - UTR_3_length + nr_of_removed_non_coding_exons_end
 
         if number == len(exon_intervals) and strand == "-":
-            if removed_on_coding_from_end is False:
+            if removed_non_coding_from_end is False:
                 start = start + UTR_3_length
             else:
-                start = start + UTR_3_length - 1
+                # this does not behave well when more than 1 non-coding exon at 3' e.g. FBgn0016976
+                # ADDED "nr_of_removed_non_coding_exons_end" instead of "-" on 03/09/2023
+                start = start + UTR_3_length - nr_of_removed_non_coding_exons_end
 
         exon_fasta_sequence = get_single_exon(ref_species, gene, ref_genome_contigs_dict,
                 ref_genomes_path, ref_genome_name, rules, contig, strand, number, start, stop)
@@ -783,8 +831,13 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
 
     # list all genes in contig
     genes = ensembl.genes(contig)
+
     # create a Gene object
-    gene_obj = [gene for gene in genes if gene.gene_id == gene_id[0]][0]
+    if ref_species == "Dme":
+        gene_obj = [g for g in genes if g.gene_id == gene_id][0]
+    if ref_species != "Dme":
+        gene_obj = [g for g in genes if g.gene_id == gene_id[0]][0]
+
     # get gene name
     gene_name = gene_obj.gene_name
     # get gene starting position
@@ -813,6 +866,9 @@ def extract_gene(wdir, ref_species, gene_input_path, ensembl, contig, strand, ge
 
     # last bp is often missing in gene where UTR_3 is missing -> last exon will not be called unless fixed
     if len(UTR_3) == 0:
+
+        if ref_species == "Dme":
+            gene_name = gene_id
 
         with open(wdir + "Genes/" + gene_name + "_" + ref_species + "_gene.fasta", "r") as f:
             file = f.readlines()
@@ -870,7 +926,12 @@ def parse_sequence(ref_species, output_path, fasta_sequence, gene, transcript, s
 def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype, model_seq):
     """Extracts coding sequence by creating Transcript object"""
 
-    all_transcripts_ids = ensembl.transcript_ids_of_gene_name(gene)
+    # ADDED 03/09/2023 to prevent syntax errors with various symbols
+    if ref_species == "Dme":
+        all_transcripts_ids = ensembl.transcript_ids_of_gene_id(gene)
+    if ref_species != "Dme":
+        all_transcripts_ids = ensembl.transcript_ids_of_gene_name(gene)
+
     all_transcripts_dict = {}
     selected_transcript_id = None
     transcript = None
@@ -888,7 +949,11 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
         all_transcripts_dict[t] = []
 
         # find gene id
-        gene_id = ensembl.gene_ids_of_gene_name(gene)
+        if ref_species != "Dme":
+            gene_id = ensembl.gene_ids_of_gene_name(gene)
+        if ref_species == "Dme":
+            gene_id = gene
+
         all_transcripts_dict[t].append(gene_id)
 
         # find contig

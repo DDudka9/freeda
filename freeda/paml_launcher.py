@@ -780,7 +780,15 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
         logging.info(message)
 
         # flag cds with rare extreme frameshifts or just missing too many exons
-        if score < 0.69:
+        # ADDED on 03/08/2023 (from 0.69 and no ref species check
+        if ref_species == "Dme" and score < 0.60:
+            to_delete.append(species)
+            message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
+                      "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), gene)
+            print(message)
+            logging.info(message)
+
+        elif ref_species != "Dme" and score < 0.69:
             to_delete.append(species)
             message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
                       "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), gene)

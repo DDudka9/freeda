@@ -129,6 +129,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         input_present = True
 
         for gene in all_genes:
+
             structure_path = wdir + "Structures/" + gene + "_" + ref_species
             if "model_matches_input_seq.txt" in os.listdir(structure_path) \
                     or "model_incompatible.txt" in os.listdir(structure_path):
@@ -189,10 +190,10 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         # generate a reference Genome object
         # WHY DOES IT RETURN REF_SPECIES?
         ref_genome_present, ensembl, ref_species, ref_genomes_path, ref_genome_contigs_dict, \
-                        biotype, all_genes_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
+                        biotype, all_genes_ensembl, all_gene_ids_ensembl = input_extractor.generate_ref_genome_object(wdir, ref_species)
 
         # check if provided gene names are present in ensembl object for ref assembly
-        if not input_extractor.validate_gene_names(all_genes, all_genes_ensembl):
+        if not input_extractor.validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
             return
 
         # stop pipeline if the reference genome is absent
@@ -206,7 +207,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
             print("\n----------- * %s * -----------" % gene)
             # get structure prediction model from AlphaFold
-            possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene)
+            possible_uniprot_ids = input_extractor.get_uniprot_id(ref_species, gene, ensembl)
             model_seq, uniprot_id = input_extractor.fetch_structure_prediction(wdir, ref_species,
                                                                                gene, possible_uniprot_ids)
             # get sequence input from ensembl
@@ -351,9 +352,9 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Dme")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=40)
+                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
                         help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4")
     parser.add_argument("-es", "--excluded_species",

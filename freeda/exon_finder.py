@@ -29,7 +29,7 @@ Finds exons in genomic assemblies
 import logging
 
 
-def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, expected_exons, all_genes_dict=None):
+def find_exons(ref_species, gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, expected_exons, all_genes_dict=None):
     """Finds and calls exons based on the cds_seq and exon make-up from reference species"""
 
     last_exon = expected_exons[-1]
@@ -99,14 +99,14 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             if locus_seq[position] in "ACTG":
 
                 # check if this exon has intron at 5-prime
-                if check_intron(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
+                if check_intron(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                     intron_at_5_prime = True
 
                     # check if its the first exon based on ref species cds_seq
                     if exon_number == 1:
 
                         # check synteny
-                        if check_synteny_5_prime(position, locus_seq, gene_seq) is True:
+                        if check_synteny_5_prime(ref_species, position, locus_seq, gene_seq) is True:
                             five_prime_synteny = True
 
                         # do not allow intron in first exon if not syntenic (often RETRO have 5UTR)
@@ -120,7 +120,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                                 and locus_seq[position-4] == "-" \
                                 and locus_seq[position-7] == "-":
 
-                            five_prime_retrotransposition = check_retrotransposition(position, last_bp, cds_seq,
+                            five_prime_retrotransposition = check_retrotransposition(ref_species, position, last_bp, cds_seq,
                                                                                      locus_seq, gene_seq)
 
                     # KeyError triggered when match at the edge of alignment)
@@ -179,7 +179,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
             exon_checked = False
 
             # check intron first
-            if check_intron(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
+            if check_intron(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                 intron_at_3_prime = True
 
             # check if its the last exon based on ref species cds_seq
@@ -188,7 +188,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 # check synteny
                 # WARNING: average 800bp 3'UTRs in mammals make synteny check at 3_prime not very efficient
                 # (many contigs too short)
-                three_prime_synteny, three_prime_synteny_message = check_synteny_3_prime(position, locus_seq, gene_seq)
+                three_prime_synteny, three_prime_synteny_message = check_synteny_3_prime(ref_species, position, locus_seq, gene_seq)
                 if three_prime_synteny is False:
 
                     # do not allow intron in last exon if not syntenic (often RETRO have 5UTR)
@@ -203,7 +203,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                                 and locus_seq[position+6] == "-" \
                                 and locus_seq[position-1] not in "-N":
 
-                        if check_retrotransposition(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
+                        if check_retrotransposition(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                             three_prime_retrotransposition = True
                 # KeyError triggered when match at the edge of alignment)
                 except KeyError:
@@ -216,7 +216,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
                 else:
                     if intron_at_3_prime is False \
                         and three_prime_retrotransposition is False \
-                        and homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
+                        and homology_check(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq) is True:
                         divergent_introns = True
 
 
@@ -536,7 +536,7 @@ def find_exons(gene_name, cds_seq, locus_seq, gene_seq, contig_name, ref_exons, 
     return exons, possible_retrotransposition, synteny, RETRO_score, synteny_score
 
 
-def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
+def check_intron(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq):
     """Assesses if intron is present based on hamming distance scores"""
 
     # default state of intron is false
@@ -551,22 +551,6 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
     homology_threshold = 0.75
     no_homology_threshold = 0.66
     allowed_indels = 20
-
-    # added statement: if ref_species != "Dme":
-    #if ref_species != "Dme":
-
-    #    min_stretch_length = 50
-    #    homology_threshold = 0.75
-    #    no_homology_threshold = 0.66
-    #    allowed_indels = 20
-
-    # added statement: if ref_species == "Dme":
-    #if ref_species == "Dme":
-    #
-    #    min_stretch_length = 25
-    #    homology_threshold = 0.60
-    #    no_homology_threshold = 0.50
-    #    allowed_indels = 30
 
     # for testing intron at the beginning of an exon
     if last_bp is False:
@@ -671,7 +655,7 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
         elif stretch_length == extension and rolling_hd >= homology_threshold:
 
             # check homology inwards before calling intron
-            homology = homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq)
+            homology = homology_check(ref_species, starting_position, last_bp, cds_seq, locus_seq, gene_seq)
             if homology is True:
                 intron = True
                 return intron
@@ -699,7 +683,7 @@ def check_intron(position, last_bp, cds_seq, locus_seq, gene_seq):
     return intron
 
 
-def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
+def homology_check(ref_species, starting_position, last_bp, cds_seq, locus_seq, gene_seq):
     """Checks exon homology if: ambigous both introns or RETRO suspected"""
 
     homology = False
@@ -712,6 +696,11 @@ def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
     matches = 0
     indels = 0
     allowed_indels = 10
+
+    # override homology stringency when running drosophila
+    if ref_species == "Dme":
+        homology_threshold = 0.70
+        no_homology_threshold = 0.50
 
     if last_bp is False:
 
@@ -849,7 +838,7 @@ def homology_check(starting_position, last_bp, cds_seq, locus_seq, gene_seq):
         return homology
 
 
-def check_synteny_5_prime(starting_position, locus_seq, gene_seq):
+def check_synteny_5_prime(ref_species, starting_position, locus_seq, gene_seq):
     """Checks synteny at 5'"""
 
     synteny = False
@@ -857,6 +846,10 @@ def check_synteny_5_prime(starting_position, locus_seq, gene_seq):
     stretch_length = 0
     matches = 0
     homology_threshold = 0.75
+
+    # ADDED 03/08/2023 -> has to add ref species to find_exons function and msa_analyzer.py module
+    if ref_species == "Dme":
+        homology_threshold = 0.65
 
     # start from previous position
     starting_position -= 1
@@ -920,7 +913,7 @@ def check_synteny_5_prime(starting_position, locus_seq, gene_seq):
     return synteny
 
 
-def check_synteny_3_prime(starting_position, locus_seq, gene_seq):
+def check_synteny_3_prime(ref_species, starting_position, locus_seq, gene_seq):
     """Checks synteny at 3'"""
 
     synteny = False
@@ -928,6 +921,10 @@ def check_synteny_3_prime(starting_position, locus_seq, gene_seq):
     stretch_length = 0
     matches = 0
     homology_threshold = 0.75
+
+    # ADDED 03/08/2023 -> has to add ref species to find_exons function and msa_analyzer.py module
+    if ref_species == "Dme":
+        homology_threshold = 0.65
 
     # if contig too short, call lack of synteny
     if starting_position + UTR_length > len(locus_seq):
@@ -979,12 +976,12 @@ def check_synteny_3_prime(starting_position, locus_seq, gene_seq):
     return synteny, three_prime_synteny_message
 
 
-def check_retrotransposition(position, last_bp, cds_seq, locus_seq, gene_seq):  # runs only when intron is False
+def check_retrotransposition(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq):  # runs only when intron is False
     """Checks for retrotransposition events"""
 
     retrotransposition = False
 
-    if homology_check(position, last_bp, cds_seq, locus_seq, gene_seq) is True:
+    if homology_check(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq) is True:
         retrotransposition = True
         return retrotransposition
     else:
