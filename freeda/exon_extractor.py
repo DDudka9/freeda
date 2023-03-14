@@ -104,7 +104,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
                 # index given genome
                 genome_index = genome_indexer.index_genome_database(wdir, genome_name)
                 # generate matches dataframe
-                matches = matches_generator.generate_matches(match_path, t, gene, genome_name, all_genes_dict)
+                matches = matches_generator.generate_matches(ref_species, match_path, t, gene, genome_name, all_genes_dict)
                 # if some matches are present but do not pass threshold -> matches will be None
                 if matches.empty:
                     continue
@@ -149,8 +149,8 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
     return result_path
 
 
-def check_blast_output(blast_output_path, t, all_genes):
-    """Checks if at least one blast output matches for a given gene passes the blast threshold picked by the user"""
+def check_blast_output(blast_output_path, t_initial, all_genes):
+    """Checks if at least one blast output matches for a given gene passes the initial blast threshold"""
 
     blast_output_correct = True
 
@@ -161,24 +161,24 @@ def check_blast_output(blast_output_path, t, all_genes):
         genome_names = [file for file in blast_output_files if not file.startswith(".")]
         no_matches_above_t = 0
 
-        for genome_name in genome_names:
+        for filename in genome_names:
 
-            with open(blast_output_path + genome_name, "r") as f:
+            with open(blast_output_path + filename, "r") as f:
                 file = f.readlines()
 
-                if not [match for match in file if float(match.split("\t")[9]) > t]:
+                if not [match for match in file if float(match.split("\t")[9]) > t_initial]:
                     no_matches_above_t += 1
-                    os.remove(blast_output_path + genome_name)
-                    message = "\n...WARNING... : No matches above threshold : %s " \
-                              "found in blast output file : %s" % (t, genome_name)
-                    print(message)
+                    os.remove(blast_output_path + filename)
+                    message = "\n...WARNING... : No matches above blast threshold : %s\n" \
+                              "found in : %s genome" % (t_initial, filename.split("_")[1])
                     logging.info(message)
 
-                if no_matches_above_t > 3:
+                if no_matches_above_t >= 10:
                     blast_output_correct = False
-                    print("\n...FATAL ERROR... : At least 3 blast output files contain no matches above threshold : %s "
-                          "for gene name: %s -> please exclude them and run FREEDA again -> exiting the pipeline now..."
-                          % (t, gene))
+                    message = "\n...FATAL ERROR... : >= 10 species show no matches above blast threshold: %s\n" \
+                              "Gene: %s -> please run FREEDA again with exclude species option (2-letter code)\n" \
+                              % (t_initial, gene)
+                    logging.info(message)
                     return blast_output_correct
 
     return blast_output_correct

@@ -33,7 +33,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
+def generate_matches(ref_species, match_path, t, gene, genome_name, all_genes_dict=None):
     """Generates matches based on the blast results"""
 
     columns = ["qseqid", "sseqid", "qstart", "qend", "sstart", "send",
@@ -47,13 +47,13 @@ def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
                         "sstart": int,
                         "send": int,
                         "pident": float})
-    # select matches above treshold (30% defult) and add template "strand" Series
-    selected_matches = threshold_matches(m_assigned_dataframe, t, gene, genome_name, all_genes_dict)
+    # select matches above treshold (60 or 30% defult) and add template "strand" Series
+    selected_matches, t_final = threshold_matches(ref_species, m_assigned_dataframe, t, gene, genome_name, all_genes_dict)
     # do not allow the dataframe to be empty
     if selected_matches.empty:
         os.remove(match_path)
-        message = "\n...WARNING... No matches pass the used blast threshold (%s percent) for gene : " \
-                  "%s in %s -> species removed" % (str(t), gene, genome_name)
+        message = "...WARNING... No matches pass the used blast threshold (%s percent) for gene : " \
+                  "%s in %s -> species removed\n" % (str(t_final), gene, genome_name)
         print(message)
         logging.info(message)
         return selected_matches
@@ -66,7 +66,7 @@ def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
     d = make_contigs_dict(matches)
     dataframes = split_contigs_to_dataframes(matches, d)
     # split matches if further than most known mouse genes
-    concatenated_matches = split_large_contigs(dataframes, gene, all_genes_dict).reset_index(drop=True)
+    concatenated_matches = split_large_contigs(ref_species, dataframes, gene, all_genes_dict).reset_index(drop=True)
     matches = concatenated_matches.astype({"sstart": int, "send": int})
     
     # record all contigs and starts/ends for strand determination
@@ -90,20 +90,26 @@ def generate_matches(match_path, t, gene, genome_name, all_genes_dict=None):
     return matches
 
 
-def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
+def threshold_matches(ref_species, matches, t, gene, genome_name, all_genes_dict):
     """Sets a dynamic threshold for matches depending on their number"""
+
+    t_final = t
 
     # GUI is used to run FREEDA
     if all_genes_dict:
         # check if strict search is needed
-        if all_genes_dict[gene][1] == "Common domains expected":
-            t = 80
+        if all_genes_dict[gene][1] == "Common domains expected" and ref_species != "Dme":
+            t_final = 80
+        if all_genes_dict[gene][1] == "Common domains expected" and ref_species == "Dme":
+            t_final = 60
+        if all_genes_dict[gene][1] != "Common domains expected" and ref_species == "Dme":
+            t_final = 30
 
     # add empty "strand" column
     strand = ["for" for index in range(len(matches))]
     matches["strand"] = strand
     # filter matches based on identity 
-    threshold = matches["pident"] > t
+    threshold = matches["pident"] > t_final
     
     # get only columns of interest and check that there is less than 40 matches (to reduce MSA time)
     matches_above_threshold = matches[threshold]
@@ -112,15 +118,15 @@ def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
     
     # if not, increase identity threshold
     else:
-        while len(matches_above_threshold) > 100 and t < 90:  # changed to 100 01/09/2022 and capped at t<90 10/06/22
-            t = t + 5
-            threshold = matches["pident"] > t
+        while len(matches_above_threshold) > 100 and t_final < 90:  # changed to 100 01/09/2022 and capped at t<90 10/06/22
+            t_final = t_final + 5
+            threshold = matches["pident"] > t_final
             m = matches[threshold]
             matches_above_threshold = m
 
     message = "-------------------------------------------------\n" \
         "\n----- Gene: " + gene + " in genome: " + genome_name + \
-        " -> matches identity threshold used: " + str(t) + "\n" \
+        " -> matches identity threshold used: " + str(t_final) + "\n" \
         "\n-------------------------------------------------\n"
     print(message)
     logging.info(message)
@@ -128,7 +134,7 @@ def threshold_matches(matches, t, gene, genome_name, all_genes_dict):
     # get rid of duplicated contig names
     selected_matches = matches_above_threshold[["sseqid", "sstart", "send", "qseqid", "strand"]]
 
-    return selected_matches
+    return selected_matches, t_final
 
 
 def make_contigs_dict(matches):
@@ -163,7 +169,7 @@ def split_contigs_to_dataframes(matches, d):
     return dataframes
 
 
-def split_large_contigs(dataframes, gene, all_genes_dict):
+def split_large_contigs(ref_species, dataframes, gene, all_genes_dict):
     """Splits large contigs (where matches are 30kb apart as default)"""
     # Most mouse introns are smaller than 30kb
     # Long and Deutsch 1999 Nucleic Acids Research
@@ -176,8 +182,10 @@ def split_large_contigs(dataframes, gene, all_genes_dict):
         if all_genes_dict[gene][0] == "Long introns expected (>50kb)":
             length = 200000
         # check if tandem duplication expected (overrides the long introns variable)
-        elif all_genes_dict[gene][0] == "Tandem duplication expected":
+        elif all_genes_dict[gene][0] == "Tandem duplication expected" and ref_species != "Dme":
             length = 10000
+        elif all_genes_dict[gene][0] == "Tandem duplication expected" and ref_species == "Dme":
+            length = 250
 
     list_new_matches = []
     for matches in dataframes:

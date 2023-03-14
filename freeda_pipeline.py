@@ -250,10 +250,6 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                                                                all_genes, all_genomes,
                                                                final_excluded_species)
         else:
-            print("\n     ...FATAL ERROR... : Genome of at least one species contains "
-                  "no matches above the identity threshold used : %s \n"
-                  "-> use a lower one or exclude species from analysis" 
-                    "-> exiting the pipeline now..." % t)
             return
 
     # ----------------------------------------#
@@ -352,9 +348,9 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Dme")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
+                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=30)
     parser.add_argument("-f", "--codon_frequencies",
                         help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4")
     parser.add_argument("-es", "--excluded_species",

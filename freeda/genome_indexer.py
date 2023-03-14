@@ -165,6 +165,7 @@ def check_index(index_path):
          'DrosophilaErecta_genome.idx': [52344],
          'DrosophilaEugracilis_genome.idx': [146552],
          'DrosophilaSubpulchrella_genome.idx': [101496],
+         'DrosophilaSuzukii_genome.idx': [48248],
          'DrosophilaBiarmipes_genome.idx': [35960],
          'DrosophilaTakahashii_genome.idx': [15480],
          'DrosophilaFicusphila_genome.idx': [68728],
@@ -172,11 +173,7 @@ def check_index(index_path):
          'DrosophilaRhopaloa_genome.idx': [31864],
          'DrosophilaKurseongensis_genome.idx': [35960],
          'DrosophilaFuyamai_genome.idx': [72824],
-         'DrosophilaElegans_genome.idx': [60536],
-         'DrosophilaOshimai_genome.idx': [35960],
-         'DrosophilaBocqueti_genome.idx': [35960],
-         'DrosophilaJambulina_genome.idx': [15480],
-         'DrosophilaKikkawai_genome.idx': [44152]}
+         'DrosophilaElegans_genome.idx': [60536]}
 
     expected_index_size = possible_indexes[index_path.split("/")[-1]][0]
     if os.path.getsize(index_path) < expected_index_size:

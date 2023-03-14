@@ -244,9 +244,9 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
             # correct number of species in the final analysis
             final_nr_of_species = nr_of_species - len(to_delete)
             nr_of_species_total_dict[gene] = final_nr_of_species
-            final_species_headers = [species for species in final_species_headers if species not in to_delete]
+            final_species_headers_corrected = [species for species in final_species_headers if ">" + species not in to_delete]
             message = "\n Final species cloned and aligned (+ ref) for %s : %s %s \n" \
-                      % (gene, str(final_nr_of_species), str(final_species_headers))
+                      % (gene, str(final_nr_of_species), str(final_species_headers_corrected))
             print(message)
             logging.info(message)
 
@@ -398,13 +398,13 @@ def check_compatibility(ref_species, gene, translated_path):
 
     if score < 0.01:
         message = "\n...NOTE... : Cloned seq for gene %s from %s species is %s percent identical to that found " \
-                  "in ensembl (indels are ommitted)" % (gene, species, 100 - (score * 100))
+                  "in Ensembl database" % (gene, species, 100 - (score * 100))
         print(message)
         logging.info(message)
 
     if score > 0.01:
         message = "\n...WARNING... : Cloned seq for gene %s from %s is only %s percent identical to that found " \
-                  "in ensembl (indels are ommitted)" % (gene, species, 100 - (score * 100))
+                  "in Ensembl database" % (gene, species, 100 - (score * 100))
         print(message)
         logging.info(message)
 
@@ -512,7 +512,7 @@ def eliminate_frameshits_cds(wdir, ref_species, gene, raw_translated_path, raw_o
             if mismatches > 10:
                 to_delete.append(species)
                 message = "\n...WARNING... : CDS for species : %s in %s protein contains a possible frameshift " \
-                          "-> eliminated from alignment" % (species.rstrip("\n"), gene)
+                          "-> eliminated from alignment" % (species.replace(">", "").rstrip("\n"), gene)
                 print(message)
                 logging.info(message)
                 break
@@ -763,7 +763,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
     ref_cds = all_seq_dict[">" + ref_species]
     to_delete = []
 
-    # penalize mismatches and gaps
+    # penalize mismatches (mildly) and gaps (severely)
     for species, seq in all_seq_dict.items():
         matches = 0
 
@@ -775,7 +775,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
                 matches += 1
 
         score = matches/len(ref_cds.replace("-", ""))
-        message = "Alignment score for species : %s = %s" % (species.replace(">", "").rstrip("\n"), score)
+        message = "Alignment score for species : %s = %s" % (species, score)
         print(message)
         logging.info(message)
 
@@ -784,14 +784,14 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
         if ref_species == "Dme" and score < 0.60:
             to_delete.append(species)
             message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
-                      "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), gene)
+                      "or contains too many gaps -> eliminated from alignment" % (species.replace(">", "").rstrip("\n"), gene)
             print(message)
             logging.info(message)
 
         elif ref_species != "Dme" and score < 0.69:
             to_delete.append(species)
             message = "...WARNING... : CDS for species : %s in %s gene is either too divergent " \
-                      "or contains too many gaps -> eliminated from alignment" % (species.rstrip("\n"), gene)
+                      "or contains too many gaps -> eliminated from alignment" % (species.replace(">", "").rstrip("\n"), gene)
             print(message)
             logging.info(message)
 

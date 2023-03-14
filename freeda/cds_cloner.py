@@ -438,6 +438,12 @@ def generate_single_exon_MSA(wdir, ref_species, seq, contig_name, exon_number, g
 def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath):
     """Checks if single exons were properly mapped after exon finding."""
 
+    no_synteny_threshold = 0.60
+    synteny_threshold = 0.75
+
+    if ref_species == "Dme":
+        synteny_threshold = 0.69
+
     # get dictionary from single exon alignment
     all_seq_dict = fasta_reader.alignment_file_to_dict(wdir, ref_species, out_filename)
 
@@ -454,7 +460,7 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
 
     # check for unreasonable insertions
     if len(cloned_exon_aligned.replace("-", "")) / len(gene_aligned.replace("-", "")) > 2:
-        message = "\n...WARNING... : Exon : %s : Contains a huge insertions " \
+        message = "\n...WARNING... : Exon : %s : Contains a huge insertion " \
                   "-> eliminated" % cloned_exon_header
         print(message)
         logging.info(message)
@@ -489,16 +495,17 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
     score = matches/mapping_positions
 
     # eliminate misaligned exons by converting all bases to dashes (save original alignment as "_uncorrected")
-    if 0.60 <= score <= 0.75:
+    if no_synteny_threshold <= score <= synteny_threshold:
 
         # check if both flanks of the poorly aligned cloned exon are homologous to reference introns
         double_intron = check_intron_single_exon(ref_exon_aligned, cloned_exon_aligned, gene_aligned)
 
         if double_intron is False:
 
-            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > 0.75, questionable " \
-                      "= 0.60-0.75, poor < 0.60) and lack of two flanking introns " \
-                      "-> eliminated" % (cloned_exon_header, score)
+            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > %s, questionable " \
+                      "= %s-%s, poor < %s) and lack of two flanking introns " \
+                      "-> eliminated" % (cloned_exon_header, score, synteny_threshold,
+                                         no_synteny_threshold, synteny_threshold, no_synteny_threshold)
             print(message)
             logging.info(message)
             uncorrected_filename = "_uncorrected_" + out_filename
@@ -516,18 +523,20 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
 
         # low score but introns detected at both ends
         else:
-            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > 0.75, questionable " \
-                      "= 0.60-0.75, poor < 0.60) but flanked by two syntenic introns " \
-                      "-> acceptable" % (cloned_exon_header, score)
+            message = "\n...WARNING... : Exon : %s : Questionable alignment score : %s (good > %s, questionable " \
+                      "= %s-%s, poor < %s) but flanked by two syntenic introns " \
+                      "-> acceptable" % (cloned_exon_header, score, synteny_threshold,
+                                         no_synteny_threshold, synteny_threshold, no_synteny_threshold)
             print(message)
             logging.info(message)
             return
 
-    if score < 0.60:
+    if score < no_synteny_threshold:
 
         message = "\n...WARNING... : Exon : %s : Poor alignment score : %s " \
-                  "(good > 0.75, questionable = 0.60-0.75, poor < 0.60)" \
-                  " -> eliminated" % (cloned_exon_header, score)
+                  "(good > %s, questionable = %s-%s, poor < %s)" \
+                  " -> eliminated" % (cloned_exon_header, score, synteny_threshold,
+                                        no_synteny_threshold, synteny_threshold, no_synteny_threshold)
         print(message)
         logging.info(message)
         uncorrected_filename = "_uncorrected_" + out_filename
@@ -543,9 +552,10 @@ def single_exon_mapping_checkpoint(wdir, ref_species, out_filename, in_filepath)
                 f.write(seq + "\n")
         return
 
-    if score > 0.75:
-        message = "\nExon : %s Good alignment score : %s (good > 0.75, questionable = 0.60-0.75, poor < 0.60) " \
-                  "-> accepted" % (cloned_exon_header, score)
+    if score > synteny_threshold:
+        message = "\nExon : %s Good alignment score : %s (good > %s, questionable = %s-%s, poor < %s) " \
+                  "-> accepted" % (cloned_exon_header, score, synteny_threshold,
+                                    no_synteny_threshold, synteny_threshold, no_synteny_threshold)
         print(message)
         logging.info(message)
         return

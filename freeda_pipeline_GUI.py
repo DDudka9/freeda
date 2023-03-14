@@ -97,8 +97,8 @@ def raise_logger():
     logger.addHandler(text_handler)
 
     logging.info("\n***************** Welcome to FREEDA *****************\n\n"
-                 "[Currently supporting MacOS: Mojave, Big Sur, Monterrey and Ventura]\n"
                  "[Use Linux release via Virtual Box if you have M1/M2 chip Mac]\n\n"
+                 "For Flies use FlyBase ID (flybase.org) instead of gene name\n\n"
                  "If this is your FIRST TIME please run a TEST:\n\n"
                  "     1. Select your species of interest\n"
                  "     2. In 'Gene name' window type 'Cenpo' (mouse) or 'CENPO' (other species)\n"
@@ -113,7 +113,6 @@ def raise_logger():
                  "            p-value -> 0.0055 (mouse) or 0.0001 (human) or 0.1699 (chicken)\n"
                  "            CDS cover. -> 98% (mouse) or 99% (human) or 96% (chicken)\n"
                  "            species -> 16 (mouse) or 19 (human) or 18 (chicken)\n"
-                 "            pr < 0.9 -> 42 (mouse) or 19 (human) or 0 (chicken)\n"
                  "            pr >= 0.9 -> 15 (mouse) or 16 (human) or 0 (chicken)")
 
 
@@ -179,6 +178,7 @@ def block_user_entries():
     primates.configure(state="disabled")
     carnivores.configure(state="disabled")
     birds.configure(state="disabled")
+    flies.configure(state="disabled")
 
     codon_freq_F3X4.configure(state="disabled")
     codon_freq_F61.configure(state="disabled")
@@ -264,6 +264,7 @@ def ublock_user_entries():
     primates.configure(state="normal")
     carnivores.configure(state="normal")
     birds.configure(state="normal")
+    flies.configure(state="normal")
 
     codon_freq_F3X4.configure(state="normal")
     codon_freq_F61.configure(state="normal")
@@ -485,7 +486,8 @@ def freeda_pipeline():
         wdir = wdirectory.get() + "/"
         ref_species = clade.get()
         codon_frequencies = codon_freq.get()
-        t = 60
+        t_initial = 30
+
         all_genes_dict = {gene_name1.get(): [advanced_1_2_sb.get(), advanced_1_2_sb.get(),
                                         [site11_label.get(), site11_start.get(), site11_end.get()],
                                         [site12_label.get(), site12_start.get(), site12_end.get()],
@@ -635,19 +637,15 @@ def freeda_pipeline():
         ######## RUN EXON FINDING ########
         # ----------------------------------------#
 
-        if exon_extractor.check_blast_output(wdir + "Blast_output/", t, all_genes):
+        if exon_extractor.check_blast_output(wdir + "Blast_output/", t_initial, all_genes):
             result_path = exon_extractor.analyze_blast_results(wdir, wdir + "Blast_output/",
-                                                               ref_species, int(t), all_genes, all_genomes,
+                                                               ref_species, int(t_initial), all_genes, all_genomes,
                                                                final_excluded_species, gui, logging_window,
                                                                all_genes_dict)
             # set a StringVar for GUI
             result_path_var.set(result_path)
 
         else:
-            message = "\n     ...FATAL ERROR... : Genome of at least one species contains " \
-                  "no matches above the identity threshold used : %s \n" \
-                  "-> exiting the pipeline now..." % t
-            logging.info(message)
             ublock_user_entries()
             return
 
@@ -1214,7 +1212,8 @@ results_labels_upper.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform
 # create results labels frame
 results_labels = ttk.Frame(results_labelframe, padding="2 2 2 2")
 results_labels.grid(column=0, row=3, columnspan=8, sticky=(N, W, E, S), padx=5, pady=2)
-results_labels.columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1, uniform="group1")
+results_labels.columnconfigure((0), weight=3, uniform="group1")
+results_labels.columnconfigure((1, 2, 3, 4, 5, 6, 7), weight=2, uniform="group1")
 
 # create user gene 1 result frame
 g1_results_frame = ttk.Frame(results_labelframe, relief="ridge", padding="2 2 2 2")
@@ -1269,14 +1268,16 @@ raise_logger()
 
 # CLADE
 clade = StringVar()
-rodents = ttk.Radiobutton(settings_frame, text="Mouse (Murinae)", variable=clade, value="Mm")
+rodents = ttk.Radiobutton(settings_frame, text="Mouse", variable=clade, value="Mm")
 rodents.grid(column=0, row=1, columnspan=3, sticky=(W))
-primates = ttk.Radiobutton(settings_frame, text="Human (Primates)", variable=clade, value="Hs")
+primates = ttk.Radiobutton(settings_frame, text="Human", variable=clade, value="Hs")
 primates.grid(column=0, row=2, columnspan=4, sticky=(W))
-carnivores = ttk.Radiobutton(settings_frame, text="Dog (Carnivora)", variable=clade, value="Cf")
+carnivores = ttk.Radiobutton(settings_frame, text="Dog", variable=clade, value="Cf")
 carnivores.grid(column=0, row=3, columnspan=3, sticky=(W))
-birds = ttk.Radiobutton(settings_frame, text="Chicken (Phasian.)", variable=clade, value="Gg")
+birds = ttk.Radiobutton(settings_frame, text="Chicken", variable=clade, value="Gg")
 birds.grid(column=0, row=4, columnspan=3, sticky=(W))
+flies = ttk.Radiobutton(settings_frame, text="Flies", variable=clade, value="Dme")
+flies.grid(column=3, row=1, columnspan=3, sticky=(W))
 
 # CODON FREQUENCY
 ttk.Label(codon_freq_frame, text="Codon frequencies").grid(column=0, row=0, sticky=(W))
@@ -1623,6 +1624,9 @@ g1_adapt_more_entry = ttk.Entry(g1_results_frame, style="EntryStyle.TEntry", sta
 g1_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g1_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
+g1_results_frame.columnconfigure(0, weight=3, uniform="group1")
+g1_results_frame.columnconfigure((1, 2, 3, 4, 5, 6, 7), weight=2, uniform="group1")
+
 
 # gene 2 results
 g2_results_var = StringVar()
@@ -1658,6 +1662,9 @@ g2_adapt_more_entry = ttk.Entry(g2_results_frame, style="EntryStyle.TEntry", sta
 g2_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g2_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
+g2_results_frame.columnconfigure(0, weight=3, uniform="group1")
+g2_results_frame.columnconfigure((1, 2, 3, 4, 5, 6, 7), weight=2, uniform="group1")
+
 # gene 3 results
 g3_results_var = StringVar()
 g3_results_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", state="disabled", text=g3_results_var, justify='center')
@@ -1692,6 +1699,8 @@ g3_adapt_more_entry = ttk.Entry(g3_results_frame, style="EntryStyle.TEntry", sta
 g3_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g3_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
+g3_results_frame.columnconfigure(0, weight=3, uniform="group1")
+g3_results_frame.columnconfigure((1, 2, 3, 4, 5, 6, 7), weight=2, uniform="group1")
 
 # gene 4 results
 g4_results_var = StringVar()
@@ -1727,6 +1736,8 @@ g4_adapt_more_entry = ttk.Entry(g4_results_frame, style="EntryStyle.TEntry", sta
 g4_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g4_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
 
+g4_results_frame.columnconfigure(0, weight=3, uniform="group1")
+g4_results_frame.columnconfigure((1, 2, 3, 4, 5, 6, 7), weight=2, uniform="group1")
 
 # gene 5 results
 g5_results_var = StringVar()
@@ -1761,6 +1772,9 @@ g5_adapt_more_var = StringVar()
 g5_adapt_more_entry = ttk.Entry(g5_results_frame, style="EntryStyle.TEntry", state="disabled", text=g5_adapt_more_var, justify='center')
 g5_adapt_more_entry.grid(column=7, row=0, sticky=(W))
 g5_adapt_more_entry.config(foreground="black")  # text will be black despite disabled state
+
+g5_results_frame.columnconfigure(0, weight=3, uniform="group1")
+g5_results_frame.columnconfigure((1, 2, 3, 4, 5, 6, 7), weight=2, uniform="group1")
 
 try:
     root.mainloop()

@@ -331,16 +331,16 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
                 gene_name = ensembl.gene_by_id(gene).gene_name
 
                 if gene_biotype != "protein_coding":
-                    message = "... FATAL_ERROR... : %s is %s instead of a protein coding gene " \
-                              "-> check gene name here: ensembl.org \n" \
+                    message = "... FATAL_ERROR... : %s is %s instead of a protein coding gene\n" \
+                              "    -> check gene name here: ensembl.org \n" \
                               "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).biotype)
                     logging.info(message)
                     protein_coding = False
                     return protein_coding
 
                 elif len(gene_name) == 1:
-                    message = "...FATAL_ERROR... : %s encodes a gene called '%s' which is a common name" \
-                              " -> cannot reliably fetch input data \n" \
+                    message = "...FATAL_ERROR... : %s encodes a gene called '%s' which is a common name\n" \
+                              "    -> cannot reliably fetch input data \n" \
                               "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).gene_name)
                     logging.info(message)
                     unique_name = False
@@ -351,8 +351,8 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
                     absent_names.append(gene)
 
             except ValueError:
-                message = "... FATAL_ERROR... : %s is NOT a valid gene name " \
-                          "-> check gene name here: ensembl.org \n" \
+                message = "... FATAL_ERROR... : %s is NOT a valid gene name\n" \
+                          "   -> check gene name here: ensembl.org \n" \
                           "        -> exiting the pipeline now...\n" % gene
                 logging.info(message)
                 protein_coding = False
@@ -363,8 +363,8 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
             absent_names.append(gene)
 
     if not all_names_valid:
-        message = "... FATAL_ERROR... : Gene names %s do not exist in " \
-              "reference assembly -> check gene name here: ensembl.org \n" \
+        message = "... FATAL_ERROR... : Gene names %s do not exist in reference assembly\n" \
+                  "    -> check gene name here: ensembl.org \n" \
                   "        -> exiting the pipeline now...\n" % absent_names
         logging.info(message)
 
@@ -733,7 +733,7 @@ def extract_exons(wdir, ref_species, gene, exons_input_path, ref_genomes_path, r
                 start = start + UTR_3_length
             else:
                 # this does not behave well when more than 1 non-coding exon at 3' e.g. FBgn0016976
-                # ADDED "nr_of_removed_non_coding_exons_end" instead of "-" on 03/09/2023
+                # ADDED "nr_of_removed_non_coding_exons_end" instead of "-1" on 03/09/2023
                 start = start + UTR_3_length - nr_of_removed_non_coding_exons_end
 
         exon_fasta_sequence = get_single_exon(ref_species, gene, ref_genome_contigs_dict,

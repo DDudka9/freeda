@@ -2259,6 +2259,7 @@ def get_available_species(ref_species):
            "Der": "DrosophilaErecta",
            "Deu": "DrosophilaEugracilis",
            "Dsu": "DrosophilaSubpulchrella",
+           "Dsz": "DrosophilaSuzukii",
            "Dbi": "DrosophilaBiarmipes",
            "Dta": "DrosophilaTakahashii",
            "Dfi": "DrosophilaFicusphila",
@@ -2266,11 +2267,7 @@ def get_available_species(ref_species):
            "Drh": "DrosophilaRhopaloa",
            "Dku": "DrosophilaKurseongensis",
            "Dfu": "DrosophilaFuyamai",
-           "Del": "DrosophilaElegans",
-           "Dos": "DrosophilaOshimai",
-           "Dbo": "DrosophilaBocqueti",
-           "Dja": "DrosophilaJambulina",
-           "Dki": "DrosophilaKikkawai"}
+           "Del": "DrosophilaElegans"}
 
     return species
 
@@ -2371,6 +2368,7 @@ def extend_abbreviations(ref_species):
            "Der": "Drosophila erecta (Der)",
            "Deu": "Drosophila eugracilis (Deu)",
            "Dsu": "Drosophila subpulchrella (Dsu)",
+           "Dsz": "Drosophila suzukii (Dsz)",
            "Dbi": "Drosophila biarmipes (Dbi)",
            "Dta": "Drosophila takahashii (Dta)",
            "Dfi": "Drosophila ficusphila (Dfi)",
@@ -2378,11 +2376,7 @@ def extend_abbreviations(ref_species):
            "Drh": "Drosophila rhopaloa (Drh)",
            "Dku": "Drosophila kurseongensis (Dku)",
            "Dfu": "Drosophila fuyamai (Dfu)",
-           "Del": "Drosophila elegans (Del)",
-           "Dos": "Drosophila oshimai (Dos)",
-           "Dbo": "Drosophila bocqueti (Dbo)",
-           "Dja": "Drosophila jambulina (Dja)",
-           "Dki": "Drosophila kikkawai (Dki)"}
+           "Del": "Drosophila elegans (Del)"}
 
     if ref_species == "Mm" or ref_species == "Rn":
         names = mouse
@@ -2589,7 +2583,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                                ("Ar", "AlectorisRufa_genome", "GCA_019345075.1"),  # red-legged partridge
                                ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  # Japanese quail
 
-    # From Kim et al., 2021 eLife (101 genomes) + santomea and orena
+    # From Kim et al., 2021 eLife (101 genomes) + santomea, orena and suzukii
     fly_dict = {"Dme": (("Dsi", "DrosophilaSimulans_genome", "GCA_018904415.1"),
                        ("Dma", "DrosophilaMauritiana_genome", "GCA_018904475.1"),
                        ("Dse", "DrosophilaSechellia_genome", "GCA_018904445.1"),
@@ -2600,6 +2594,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                        ("Der", "DrosophilaErecta_genome", "GCA_018904525.1"),
                        ("Deu", "DrosophilaEugracilis_genome", "GCA_018153835.1"),
                        ("Dsu", "DrosophilaSubpulchrella_genome", "GCA_018150325.1"),
+                       ("Dsz", "DrosophilaSuzukii_genome", "GCA_013340165.1"),
                        ("Dbi", "DrosophilaBiarmipes_genome", "GCA_018148935.1"),
                        ("Dta", "DrosophilaTakahashii_genome", "GCA_018152695.1"),
                        ("Dfi", "DrosophilaFicusphila_genome", "GCA_018152265.1"),
@@ -2607,11 +2602,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                        ("Drh", "DrosophilaRhopaloa_genome", "GCA_018152115.1"),
                        ("Dku", "DrosophilaKurseongensis_genome", "GCA_018153305.1"),
                        ("Dfu", "DrosophilaFuyamai_genome", "GCA_018153365.1"),
-                       ("Del", "DrosophilaElegans_genome", "GCA_018152505.1"),
-                       ("Dos", "DrosophilaOshimai_genome", "GCA_018150695.1"),
-                       ("Dbo", "DrosophilaBocqueti_genome", "GCA_018151655.1"),
-                       ("Dja", "DrosophilaJambulina_genome", "GCA_018152175.1"),
-                       ("Dki", "DrosophilaKikkawai_genome", "GCA_018152535.1"))}
+                       ("Del", "DrosophilaElegans_genome", "GCA_018152505.1"))}
 
 
     # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)

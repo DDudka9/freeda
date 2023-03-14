@@ -201,6 +201,7 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
              "DrosophilaErecta_genome": 137303873,
              "DrosophilaEugracilis_genome": 167000171,
              "DrosophilaSubpulchrella_genome": 271471590,
+             "DrosophilaSuzukii_genome": 271313394,
              "DrosophilaBiarmipes_genome": 187564475,
              "DrosophilaTakahashii_genome": 167510332,
              "DrosophilaFicusphila_genome": 169919136,
@@ -208,11 +209,7 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
              "DrosophilaRhopaloa_genome": 195850575,
              "DrosophilaKurseongensis_genome": 208948327,
              "DrosophilaFuyamai_genome": 231955431,
-             "DrosophilaElegans_genome": 180649414,
-             "DrosophilaOshimai_genome": 183206165,
-             "DrosophilaBocqueti_genome": 175136531,
-             "DrosophilaJambulina_genome": 181811110,
-             "DrosophilaKikkawai_genome": 191106214}
+             "DrosophilaElegans_genome": 180649414}
 
     # define clade
     if ref_species in ["Mm", "Rn"]:
@@ -1061,6 +1058,13 @@ def check_blast_database(genome, database_path):
                                      ('DrosophilaSubpulchrella_genome.fasta.not', 16552),
                                      ('DrosophilaSubpulchrella_genome.fasta.nin', 16740),
                                      ('DrosophilaSubpulchrella_genome.fasta.nto', 5452)],
+         'DrosophilaSuzukii': [('DrosophilaSuzukii_genome.fasta.ndb', 20380),
+                                    ('DrosophilaSuzukii_genome.fasta.ntf', 16284),
+                                    ('DrosophilaSuzukii_genome.fasta.nhr', 84435),
+                                    ('DrosophilaSuzukii_genome.fasta.nsq', 67003287),
+                                    ('DrosophilaSuzukii_genome.fasta.not', 6460),
+                                    ('DrosophilaSuzukii_genome.fasta.nin', 6640),
+                                    ('DrosophilaSuzukii_genome.fasta.nto', 2088)],
          'DrosophilaBiarmipes': [('DrosophilaBiarmipes_genome.fasta.ndb', 20380),
                                  ('DrosophilaBiarmipes_genome.fasta.ntf', 16284),
                                  ('DrosophilaBiarmipes_genome.fasta.nhr', 46642),
@@ -1117,35 +1121,7 @@ def check_blast_database(genome, database_path):
                                ('DrosophilaElegans_genome.fasta.nsq', 44611641),
                                ('DrosophilaElegans_genome.fasta.not', 8548),
                                ('DrosophilaElegans_genome.fasta.nin', 8720),
-                               ('DrosophilaElegans_genome.fasta.nto', 2784)],
-         'DrosophilaOshimai': [('DrosophilaOshimai_genome.fasta.ndb', 20380),
-                               ('DrosophilaOshimai_genome.fasta.ntf', 16284),
-                               ('DrosophilaOshimai_genome.fasta.nhr', 50052),
-                               ('DrosophilaOshimai_genome.fasta.nsq', 45253373),
-                               ('DrosophilaOshimai_genome.fasta.not', 3784),
-                               ('DrosophilaOshimai_genome.fasta.nin', 3956),
-                               ('DrosophilaOshimai_genome.fasta.nto', 1196)],
-         'DrosophilaBocqueti': [('DrosophilaBocqueti_genome.fasta.ndb', 20380),
-                                ('DrosophilaBocqueti_genome.fasta.ntf', 16284),
-                                ('DrosophilaBocqueti_genome.fasta.nhr', 51160),
-                                ('DrosophilaBocqueti_genome.fasta.nsq', 43260460),
-                                ('DrosophilaBocqueti_genome.fasta.not', 3676),
-                                ('DrosophilaBocqueti_genome.fasta.nin', 3856),
-                                ('DrosophilaBocqueti_genome.fasta.nto', 1160)],
-         'DrosophilaJambulina': [('DrosophilaJambulina_genome.fasta.ndb', 20380),
-                                 ('DrosophilaJambulina_genome.fasta.ntf', 16284),
-                                 ('DrosophilaJambulina_genome.fasta.nhr', 18602),
-                                 ('DrosophilaJambulina_genome.fasta.nsq', 44913380),
-                                 ('DrosophilaJambulina_genome.fasta.not', 1276),
-                                 ('DrosophilaJambulina_genome.fasta.nin', 1456),
-                                 ('DrosophilaJambulina_genome.fasta.nto', 360)],
-         'DrosophilaKikkawai': [('DrosophilaKikkawai_genome.fasta.ndb', 20380),
-                                ('DrosophilaKikkawai_genome.fasta.ntf', 16284),
-                                ('DrosophilaKikkawai_genome.fasta.nhr', 73750),
-                                ('DrosophilaKikkawai_genome.fasta.nsq', 47200143),
-                                ('DrosophilaKikkawai_genome.fasta.not', 5296),
-                                ('DrosophilaKikkawai_genome.fasta.nin', 5476),
-                                ('DrosophilaKikkawai_genome.fasta.nto', 1700)]}
+                               ('DrosophilaElegans_genome.fasta.nto', 2784)]}
 
     # define the expected sizes of all possible databases
     expected_databases = {}

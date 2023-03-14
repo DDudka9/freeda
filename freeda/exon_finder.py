@@ -266,7 +266,7 @@ def find_exons(ref_species, gene_name, cds_seq, locus_seq, gene_seq, contig_name
                         intron = True
 
                         # check insertions
-                        big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
+                        big_insertion = check_insertion(ref_species, contig_name, insertion, exon_number, ref_exons, insertion_with_N)
 
                         message = "Contig %s exon %s might be RETRO at (5-prime) but is syntenic at (3-prime)" \
                             % (contig_name, exon_number)
@@ -286,7 +286,7 @@ def find_exons(ref_species, gene_name, cds_seq, locus_seq, gene_seq, contig_name
                         intron = True
 
                         # check insertions
-                        big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
+                        big_insertion = check_insertion(ref_species, contig_name, insertion, exon_number, ref_exons, insertion_with_N)
 
                         message = "Contig %s exon %s is syntenic at (5-prime) but might be RETRO at (3-prime)" \
                             % (contig_name, exon_number)
@@ -363,7 +363,7 @@ def find_exons(ref_species, gene_name, cds_seq, locus_seq, gene_seq, contig_name
                                                 and single_exon is False:
                 intron = True
 
-                big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
+                big_insertion = check_insertion(ref_species, contig_name, insertion, exon_number, ref_exons, insertion_with_N)
 
                 message = "Contig %s exon %s has divergent introns (allowed)" \
                         % (contig_name, exon_number)
@@ -437,7 +437,7 @@ def find_exons(ref_species, gene_name, cds_seq, locus_seq, gene_seq, contig_name
                 nr_of_intron_exons += 1
 
                 # check insertions
-                big_insertion = check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N)
+                big_insertion = check_insertion(ref_species, contig_name, insertion, exon_number, ref_exons, insertion_with_N)
 
                 # this is the first bp of an intron -> will not be cloned  
                 exon_end = position
@@ -551,6 +551,13 @@ def check_intron(ref_species, position, last_bp, cds_seq, locus_seq, gene_seq):
     homology_threshold = 0.75
     no_homology_threshold = 0.66
     allowed_indels = 20
+
+    # ADDED 03/11/2023
+    if ref_species == "Dme":
+        min_stretch_length = 30
+        homology_threshold = 0.60
+        no_homology_threshold = 0.50
+        allowed_indels = 100
 
     # for testing intron at the beginning of an exon
     if last_bp is False:
@@ -849,7 +856,7 @@ def check_synteny_5_prime(ref_species, starting_position, locus_seq, gene_seq):
 
     # ADDED 03/08/2023 -> has to add ref species to find_exons function and msa_analyzer.py module
     if ref_species == "Dme":
-        homology_threshold = 0.65
+        homology_threshold = 0.60
 
     # start from previous position
     starting_position -= 1
@@ -889,7 +896,7 @@ def check_synteny_5_prime(ref_species, starting_position, locus_seq, gene_seq):
         return synteny
 
     # cannot call synteny if too many indels
-    if stretch_length < 100:
+    if stretch_length < 100 and ref_species != "Dme":   # ADDED Dme check on 03/11/2023
 
         message = "\n..............Contig too short to check 5-prime synteny: only %s bp aligned \n" % str(stretch_length)
         print(message)
@@ -924,7 +931,7 @@ def check_synteny_3_prime(ref_species, starting_position, locus_seq, gene_seq):
 
     # ADDED 03/08/2023 -> has to add ref species to find_exons function and msa_analyzer.py module
     if ref_species == "Dme":
-        homology_threshold = 0.65
+        homology_threshold = 0.60
 
     # if contig too short, call lack of synteny
     if starting_position + UTR_length > len(locus_seq):
@@ -956,8 +963,7 @@ def check_synteny_3_prime(ref_species, starting_position, locus_seq, gene_seq):
         return synteny, three_prime_synteny_message
 
     # cannot call synteny if too many indels
-    if stretch_length < 100:
-
+    if stretch_length < 100 and ref_species != "Dme":   # ADDED Dme check on 03/11/2023
         three_prime_synteny_message = "\n.............Contig too short to check 3-prime synteny: only %s bp aligned\n" \
                                       % str(stretch_length)
         return synteny, three_prime_synteny_message
@@ -1005,8 +1011,12 @@ def reset_exon_parameters():
          intron, exon_missing, last_bp, big_insertion, insertion_with_N
 
 
-def check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_with_N):
+def check_insertion(ref_species, contig_name, insertion, exon_number, ref_exons, insertion_with_N):
     """Checks for insertions"""
+
+    insertion_threshold = 180
+    if ref_species == "Dme":
+        insertion_threshold = 300
 
     big_insertion = False
 
@@ -1020,15 +1030,16 @@ def check_insertion(contig_name, insertion, exon_number, ref_exons, insertion_wi
         return big_insertion
 
     # allow insertions (even frameshifts) in last exons
-    if exon_number == list(ref_exons.keys())[-1] and (insertion >= 180 or (insertion >= 10 and insertion % 3 != 0)):
+    if exon_number == list(ref_exons.keys())[-1] and (insertion >= insertion_threshold
+                                                      or (insertion >= 10 and insertion % 3 != 0)):
         insertion_message = ">>>>> Contig %s exon %s contains %s bp insertion (LAST EXON -> allowed) <<<<< \n" \
             % (contig_name, exon_number, str(insertion))
         print(insertion_message)
         logging.info(insertion_message)
         return big_insertion
 
-    # do not allow big insertions or frameshift insertions in middle exons (conservative approach)
-    if insertion >= 180: # or (insertion >= 10 and insertion % 3 != 0):
+    # do not allow big insertions
+    if insertion >= insertion_threshold: # or (insertion >= 10 and insertion % 3 != 0):
         big_insertion = True
         insertion_message = ">>>>> Contig %s exon %s contains %s bp insertion (not allowed) <<<<< \n" \
             % (contig_name, exon_number, str(insertion))
