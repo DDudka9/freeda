@@ -402,7 +402,7 @@ def generate_ref_genome_object(wdir, ref_species):
     elif ref_species == "Cf":
         ref_genome_name = "CanisFamiliaris_genome"
         species = "canis familiaris"
-        release = 90
+        release = 99   # changed from 90 on 03/21/2023
         ref_genome_contigs_dict = genomes_preprocessing.get_ref_genome_contigs_dict(ref_species)
 
     elif ref_species == "Gg":

@@ -33,7 +33,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def generate_matches(ref_species, match_path, t, gene, genome_name, all_genes_dict=None):
+def generate_matches(ref_species, match_path, t_initial, gene, genome_name, all_genes_dict=None):
     """Generates matches based on the blast results"""
 
     columns = ["qseqid", "sseqid", "qstart", "qend", "sstart", "send",
@@ -48,7 +48,7 @@ def generate_matches(ref_species, match_path, t, gene, genome_name, all_genes_di
                         "send": int,
                         "pident": float})
     # select matches above treshold (60 or 30% defult) and add template "strand" Series
-    selected_matches, t_final = threshold_matches(ref_species, m_assigned_dataframe, t, gene, genome_name, all_genes_dict)
+    selected_matches, t_final = threshold_matches(ref_species, m_assigned_dataframe, t_initial, gene, genome_name, all_genes_dict)
     # do not allow the dataframe to be empty
     if selected_matches.empty:
         os.remove(match_path)
@@ -90,10 +90,10 @@ def generate_matches(ref_species, match_path, t, gene, genome_name, all_genes_di
     return matches
 
 
-def threshold_matches(ref_species, matches, t, gene, genome_name, all_genes_dict):
+def threshold_matches(ref_species, matches, t_initial, gene, genome_name, all_genes_dict):
     """Sets a dynamic threshold for matches depending on their number"""
 
-    t_final = t
+    t_final = t_initial
 
     # GUI is used to run FREEDA
     if all_genes_dict:

@@ -44,7 +44,7 @@ import re
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, all_genomes,
+def analyze_blast_results(wdir, blast_output_path, ref_species, t_initial, all_genes, all_genomes,
                           final_excluded_species=None, gui=None, logging_window=None, all_genes_dict=None):
     """ Finds and clones exons based on blast results"""
 
@@ -104,7 +104,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t, all_genes, al
                 # index given genome
                 genome_index = genome_indexer.index_genome_database(wdir, genome_name)
                 # generate matches dataframe
-                matches = matches_generator.generate_matches(ref_species, match_path, t, gene, genome_name, all_genes_dict)
+                matches = matches_generator.generate_matches(ref_species, match_path, t_initial, gene, genome_name, all_genes_dict)
                 # if some matches are present but do not pass threshold -> matches will be None
                 if matches.empty:
                     continue

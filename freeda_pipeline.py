@@ -64,7 +64,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
 
     # initial percent identity threshold for blast matches analysis
     if t is None:
-        t = 30
+        t = 60
 
     if codon_frequencies is None:
         codon_frequencies = "F3X4"
@@ -348,15 +348,14 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Dme")
+                        help="specify reference organism (default is mouse)", type=str, default="Mm")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=30)
+                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
     parser.add_argument("-f", "--codon_frequencies",
                         help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4")
     parser.add_argument("-es", "--excluded_species",
-                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="")
+                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="")  # for siimiformes synteny check Hm Cm Tf Pp Pd Ap Ag
 
     args = parser.parse_args()
     freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,
                     codon_frequencies=args.codon_frequencies, excluded_species=args.excluded_species)
-

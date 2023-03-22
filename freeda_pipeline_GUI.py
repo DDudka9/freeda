@@ -486,7 +486,7 @@ def freeda_pipeline():
         wdir = wdirectory.get() + "/"
         ref_species = clade.get()
         codon_frequencies = codon_freq.get()
-        t_initial = 30
+        t_initial = 60
 
         all_genes_dict = {gene_name1.get(): [advanced_1_2_sb.get(), advanced_1_2_sb.get(),
                                         [site11_label.get(), site11_start.get(), site11_end.get()],
