@@ -35,7 +35,7 @@ import logging
 import platform
 
 
-def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
+def run_blast(wdir, ref_species, all_genes, final_excluded_species=None, subgroup=None):
     """Runs tblastn based on NCBI makedatabase routine."""
 
     database_path = wdir + "Genomes/"
@@ -50,7 +50,7 @@ def run_blast(wdir, ref_species, all_genes, final_excluded_species=None):
     else:
         threads = 4
 
-    all_genomes = genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species)
+    all_genomes = genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species, subgroup)
     genomes = [names[1] for names in all_genomes]
 
     # clear Blast_output folder
@@ -130,10 +130,16 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
 
     primates = {"HomoSapiens_genome": 3138414431,
              "PanTroglodytes_genome": 3062328323,
+             "PanPaniscus_genome": 0,
              "GorillaGorilla_genome": 3083663602,
              "PongoAbelli_genome": 3103792067,
+             "PongoPygmaeus_genome": 0,
              "NomascusLeucogenys_genome": 2879637870,
+             "NomascusSiki_genome": 0,
              "HylobatesMoloch_genome": 2885571806,
+             "HylobatesPileatus_genome": 0,
+             "SymphalangusSyndactylus_genome": 0,
+             "HoolockLeuconedys_genome": 0,
              "CercopithecusMona_genome": 2939174695,
              "MacacaMulatta_genome": 3075206655,
              "PapioAnubis_genome": 2906552752,
@@ -166,9 +172,15 @@ def check_genome_downloads(ref_species, database_path, genome, zip=False):
            "ParadoxurusHermaphroditus_genome": 2559496470,
            "CryptoproctaFerox_genome": 2539739378,
            "SuricataSuricatta_genome": 2389361575,
+           "MungosMungo_genome": 0,
            "HyaenaHyaena_genome": 2512114800,
            "PantheraTigris_genome": 2437681936,
+           "NeofelisNebulosa_genome": 0,
+           "PumaConcolor_genome": 0,
+           "AcinonyxJubatus_genome": 0,
            "LynxRufus_genome": 2469754470,
+           "PrionailurusViverrinus_genome": 0,
+           "OtocolobusManul_genome": 0,
            "FelisCatus_genome": 2486898359}
 
     phasianidae = {"GallusGallus_genome": 1248683961,
@@ -1121,7 +1133,91 @@ def check_blast_database(genome, database_path):
                                ('DrosophilaElegans_genome.fasta.nsq', 44611641),
                                ('DrosophilaElegans_genome.fasta.not', 8548),
                                ('DrosophilaElegans_genome.fasta.nin', 8720),
-                               ('DrosophilaElegans_genome.fasta.nto', 2784)]}
+                               ('DrosophilaElegans_genome.fasta.nto', 2784)],
+         'PanPaniscus_genome': [('PanPaniscus_genome.fasta.ndb', 0),
+                          ('PanPaniscus_genome.fasta.ntf', 0),
+                          ('PanPaniscus_genome.fasta.nhr', 0),
+                          ('PanPaniscus_genome.fasta.nsq', 0),
+                          ('PanPaniscus_genome.fasta.not', 0),
+                          ('PanPaniscus_genome.fasta.nin', 0),
+                          ('PanPaniscus_genome.fasta.nto', 0)],
+        'PongoPygmaeus_genome': [('PongoPygmaeus_genome.fasta.ndb', 0),
+                               ('PongoPygmaeus_genome.fasta.ntf', 0),
+                               ('PongoPygmaeus_genome.fasta.nhr', 0),
+                               ('PongoPygmaeus_genome.fasta.nsq', 0),
+                               ('PongoPygmaeus_genome.fasta.not', 0),
+                               ('PongoPygmaeus_genome.fasta.nin', 0),
+                               ('PongoPygmaeus_genome.fasta.nto', 0)],
+         'NomascusSiki_genome': [('NomascusSiki_genome.fasta.ndb', 0),
+                                 ('NomascusSiki_genome.fasta.ntf', 0),
+                                 ('NomascusSiki_genome.fasta.nhr', 0),
+                                 ('NomascusSiki_genome.fasta.nsq', 0),
+                                 ('NomascusSiki_genome.fasta.not', 0),
+                                 ('NomascusSiki_genome.fasta.nin', 0),
+                                 ('NomascusSiki_genome.fasta.nto', 0)],
+         'HylobatesPileatus_genome': [('HylobatesPileatus_genome.fasta.ndb', 0),
+                                ('HylobatesPileatus_genome.fasta.ntf', 0),
+                                ('HylobatesPileatus_genome.fasta.nhr', 0),
+                                ('HylobatesPileatus_genome.fasta.nsq', 0),
+                                ('HylobatesPileatus_genome.fasta.not', 0),
+                                ('HylobatesPileatus_genome.fasta.nin', 0),
+                                ('HylobatesPileatus_genome.fasta.nto', 0)],
+         'SymphalangusSyndactylus_genome': [('SymphalangusSyndactylus_genome.fasta.ndb', 0),
+                                     ('SymphalangusSyndactylus_genome.fasta.ntf', 0),
+                                     ('SymphalangusSyndactylus_genome.fasta.nhr', 0),
+                                     ('SymphalangusSyndactylus_genome.fasta.nsq', 0),
+                                     ('SymphalangusSyndactylus_genome.fasta.not', 0),
+                                     ('SymphalangusSyndactylus_genome.fasta.nin', 0),
+                                     ('SymphalangusSyndactylus_genome.fasta.nto', 0)],
+         'HoolockLeuconedys_genome': [('HoolockLeuconedys_genome.fasta.ndb', 0),
+                                           ('HoolockLeuconedys_genome.fasta.ntf', 0),
+                                           ('HoolockLeuconedys_genome.fasta.nhr', 0),
+                                           ('HoolockLeuconedys_genome.fasta.nsq', 0),
+                                           ('HoolockLeuconedys_genome.fasta.not', 0),
+                                           ('HoolockLeuconedys_genome.fasta.nin', 0),
+                                           ('HoolockLeuconedys_genome.fasta.nto', 0)],
+         'OtocolobusManul_genome': [('OtocolobusManul_genome.fasta.ndb', 0),
+                                     ('OtocolobusManul_genome.fasta.ntf', 0),
+                                     ('OtocolobusManul_genome.fasta.nhr', 0),
+                                     ('OtocolobusManul_genome.fasta.nsq', 0),
+                                     ('OtocolobusManul_genome.fasta.not', 0),
+                                     ('OtocolobusManul_genome.fasta.nin', 0),
+                                     ('OtocolobusManul_genome.fasta.nto', 0)],
+         'PrionailurusViverrinus_genome': [('PrionailurusViverrinus_genome.fasta.ndb', 0),
+                                   ('PrionailurusViverrinus_genome.fasta.ntf', 0),
+                                   ('PrionailurusViverrinus_genome.fasta.nhr', 0),
+                                   ('PrionailurusViverrinus_genome.fasta.nsq', 0),
+                                   ('PrionailurusViverrinus_genome.fasta.not', 0),
+                                   ('PrionailurusViverrinus_genome.fasta.nin', 0),
+                                   ('PrionailurusViverrinus_genome.fasta.nto', 0)],
+         'AcinonyxJubatus_genome': [('AcinonyxJubatus_genome.fasta.ndb', 0),
+                                          ('AcinonyxJubatus_genome.fasta.ntf', 0),
+                                          ('AcinonyxJubatus_genome.fasta.nhr', 0),
+                                          ('AcinonyxJubatus_genome.fasta.nsq', 0),
+                                          ('AcinonyxJubatus_genome.fasta.not', 0),
+                                          ('AcinonyxJubatus_genome.fasta.nin', 0),
+                                          ('AcinonyxJubatus_genome.fasta.nto', 0)],
+         'PumaConcolor_genome': [('PumaConcolor_genome.fasta.ndb', 0),
+                                   ('PumaConcolor_genome.fasta.ntf', 0),
+                                   ('PumaConcolor_genome.fasta.nhr', 0),
+                                   ('PumaConcolor_genome.fasta.nsq', 0),
+                                   ('PumaConcolor_genome.fasta.not', 0),
+                                   ('PumaConcolor_genome.fasta.nin', 0),
+                                   ('PumaConcolor_genome.fasta.nto', 0)],
+         'NeofelisNebulosa_genome': [('NeofelisNebulosa_genome.fasta.ndb', 0),
+                                ('NeofelisNebulosa_genome.fasta.ntf', 0),
+                                ('NeofelisNebulosa_genome.fasta.nhr', 0),
+                                ('NeofelisNebulosa_genome.fasta.nsq', 0),
+                                ('NeofelisNebulosa_genome.fasta.not', 0),
+                                ('NeofelisNebulosa_genome.fasta.nin', 0),
+                                ('NeofelisNebulosa_genome.fasta.nto', 0)],
+         'MungosMungo_genome': [('MungosMungo_genome.fasta.ndb', 0),
+                                    ('MungosMungo_genome.fasta.ntf', 0),
+                                    ('MungosMungo_genome.fasta.nhr', 0),
+                                    ('MungosMungo_genome.fasta.nsq', 0),
+                                    ('MungosMungo_genome.fasta.not', 0),
+                                    ('MungosMungo_genome.fasta.nin', 0),
+                                    ('MungosMungo_genome.fasta.nto', 0)]}
 
     # define the expected sizes of all possible databases
     expected_databases = {}

@@ -443,14 +443,37 @@ def select_contigs_to_MSA(contig, fasta_path):
         if "comp" in path:
             comp = True
             with open(path, "r") as o:
-                seq = o.read()
+                #seq = o.read()
+                #rev_comp_seqs.append(seq)
+
+                # ADDED 03/23/2023 to remove Ns
+                seq = ""
+                lines = o.readlines()
+                for line in lines:
+                    if line.startswith(">"):
+                        seq += line
+                    else:
+                        seq += line.replace("N", "")
+
                 rev_comp_seqs.append(seq)
 
         # if a given contig wasnt matched on the opposite strand, fill the other list
         elif comp is False:
             with open(path, "r") as o:
-                seq = o.read()
+                #seq = o.read()
+                #selected_seqs.append(seq)
+
+                # ADDED 03/23/2023 to remove Ns
+                seq = ""
+                lines = o.readlines()
+                for line in lines:
+                    if line.startswith(">"):
+                        seq += line
+                    else:
+                        seq += line.replace("N", "")
+
                 selected_seqs.append(seq)
+
         # if a given path contains contig that has been reversed, do nothing
         else:
             pass

@@ -775,7 +775,7 @@ def cloned_cds_frameshift_checkpoint(wdir, ref_species, gene, filename):
                 matches += 1
 
         score = matches/len(ref_cds.replace("-", ""))
-        message = "Alignment score for species : %s = %s" % (species, score)
+        message = "Alignment score for species : %s = %s" % (species.replace(">", ""), score)
         print(message)
         logging.info(message)
 
@@ -937,7 +937,7 @@ def post_Gblocks_STOP_remover(gene_folder_path, raw_out_Gblocks_filename, gene):
     
     all_cds = {}
     all_cds_no_STOP = {}
-    artificial_STOP_codon_positions = set()  # doesnt allow repetitions
+    premature_STOP_codon_positions = set()  # doesnt allow repetitions
     species_with_STOP = []
     
     # read species and cds into a dict to ease search
@@ -968,7 +968,7 @@ def post_Gblocks_STOP_remover(gene_folder_path, raw_out_Gblocks_filename, gene):
             species_with_STOP.append(species)
             
             for position in STOP_positions:
-                artificial_STOP_codon_positions.add(position)
+                premature_STOP_codon_positions.add(position)
     
     # edit all coding sequences removing STOP columns
     for header, cds in all_cds.items():
@@ -978,7 +978,7 @@ def post_Gblocks_STOP_remover(gene_folder_path, raw_out_Gblocks_filename, gene):
         
         # join all the codon except STOP positions
         all_cds_no_STOP[header] = "".join([cds_no_STOP + codon for position, codon in enumerate(all_codons) \
-                                   if position not in artificial_STOP_codon_positions])
+                                   if position not in premature_STOP_codon_positions])
     
     # overwrite the previous out_Gblocks file
     with open(post_Gblocks_path, "w") as f:
@@ -989,8 +989,8 @@ def post_Gblocks_STOP_remover(gene_folder_path, raw_out_Gblocks_filename, gene):
     
     # issue a warning if STOPs were present
     if species_with_STOP:
-        
-        STOP_positions = sorted([(position * 3) + 1 for position in artificial_STOP_codon_positions])
+
+        STOP_positions = sorted([(position * 3) + 1 for position in premature_STOP_codon_positions])
         
         message = "\n !!! WARNING !!! - CDS for: %s contains early STOP codons " \
                   "starting at nucleotide position in Gblocks_final_no_STOP alignment: %s in species: %s \n         " \

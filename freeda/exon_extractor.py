@@ -33,6 +33,7 @@ from freeda import matches_processor
 from freeda import msa_aligner
 from freeda import msa_analyzer
 from freeda import gui_logging_handler
+from freeda import genomes_preprocessing
 import datetime
 import glob
 import time
@@ -149,8 +150,8 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t_initial, all_g
     return result_path
 
 
-def check_blast_output(blast_output_path, t_initial, all_genes):
-    """Checks if at least one blast output matches for a given gene passes the initial blast threshold"""
+def check_blast_output(ref_species, blast_output_path, t_initial, all_genes):
+    """Checks how many blast output matches for a given gene are missing for the initial blast threshold"""
 
     blast_output_correct = True
 
@@ -160,6 +161,8 @@ def check_blast_output(blast_output_path, t_initial, all_genes):
         # make sure there are no hidden files
         genome_names = [file for file in blast_output_files if not file.startswith(".")]
         no_matches_above_t = 0
+        species_to_exclude = []
+        species_to_exclude_abb = []
 
         for filename in genome_names:
 
@@ -168,18 +171,33 @@ def check_blast_output(blast_output_path, t_initial, all_genes):
 
                 if not [match for match in file if float(match.split("\t")[9]) > t_initial]:
                     no_matches_above_t += 1
+                    species_to_exclude.append(filename.split("_")[1])
                     os.remove(blast_output_path + filename)
                     message = "\n...WARNING... : No matches above blast threshold : %s\n" \
                               "found in : %s genome" % (t_initial, filename.split("_")[1])
                     logging.info(message)
 
-                if no_matches_above_t >= 10:
-                    blast_output_correct = False
-                    message = "\n...FATAL ERROR... : >= 10 species show no matches above blast threshold: %s\n" \
-                              "Gene: %s -> please run FREEDA again with exclude species option (2-letter code)\n" \
-                              % (t_initial, gene)
-                    logging.info(message)
-                    return blast_output_correct
+        if no_matches_above_t >= 5:
+            blast_output_correct = False
+
+            # get abbreviations for each species
+            abbreviations = genomes_preprocessing.get_abbreviations(ref_species)
+            species_to_exclude_abb = [abb for name, abb in abbreviations.items() if name in species_to_exclude]
+
+            message = "\n...FATAL ERROR... : >= 5 species show no matches above blast threshold: %s\n" \
+                "Gene: %s -> please run FREEDA again with Exclude species option (copy paste this: %s)\n" \
+                % (t_initial, gene, str(species_to_exclude_abb).replace("[", "")
+                                                                .replace("]", "")
+                                                                .replace(",", " ")
+                                                                .replace("'", ""))
+            logging.info(message)
+            return blast_output_correct
+
+        if len(genome_names) < 6:
+            blast_output_correct = False
+            message = "\n...FATAL ERROR... : Too few genomes were selected (< 6)"
+            logging.info(message)
+            return blast_output_correct
 
     return blast_output_correct
 

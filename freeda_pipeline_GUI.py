@@ -97,23 +97,23 @@ def raise_logger():
     logger.addHandler(text_handler)
 
     logging.info("\n***************** Welcome to FREEDA *****************\n\n"
-                 "[Use Linux release via Virtual Box if you have M1/M2 chip Mac]\n\n"
-                 "For Flies use FlyBase ID (flybase.org) instead of gene name\n\n"
                  "If this is your FIRST TIME please run a TEST:\n\n"
-                 "     1. Select your species of interest\n"
-                 "     2. In 'Gene name' window type 'Cenpo' (mouse) or 'CENPO' (other species)\n"
-                 "     3. Make a new folder on your hard drive (min. 100GB of free space)\n"
-                 "     3. Select that folder in 'Set directory' window\n"
-                 "     4. Click 'Analyze'\n"
-                 "     5. FREEDA will first download genomes (1-2h) then analyze the gene (0.5-1h)\n"
-                 "     6. You should get these results:\n\n"
-                 "            Gene -> Cenpo (mouse) or CENPO (human) or CENPO (chicken)\n"
-                 "            Pos. select -> YES (mouse) or YES (human) or NO (chicken)\n"
-                 "            LRT -> 10.3976 (mouse) or 24.234 (human) or 3.5454 (chicken)\n"
-                 "            p-value -> 0.0055 (mouse) or 0.0001 (human) or 0.1699 (chicken)\n"
-                 "            CDS cover. -> 98% (mouse) or 99% (human) or 96% (chicken)\n"
-                 "            species -> 16 (mouse) or 19 (human) or 18 (chicken)\n"
-                 "            pr >= 0.9 -> 15 (mouse) or 16 (human) or 0 (chicken)")
+                 "  1. Select your species of interest\n"
+                 "  2. In 'Gene name' window type 'Cenpo' (Mouse) or 'CENPO' (other vertebrates)\n"
+                 "  (for flies always use FlyBase ID (e.g., FBgn0004400 (rhino)) not a gene name)\n"
+                 "  3. Make a new folder on your external drive (min. 100GB of free space)\n"
+                 "  4. Click 'Set directory' and select that folder (cannot have whitespaces)\n"
+                 "  5. Click 'Analyze'\n"
+                 "  6. FREEDA will first download genomes (1-3h) then analyze the gene (about 1h)\n"
+                 "  7. You should get these results:\n\n"
+                 "     Gene -> Cenpo (Mouse) / CENPO (Human) / CENPO (Chicken) / FBgn0004400 (Fly)\n"
+                 "     Pos. select -> YES (Mouse) / YES (Human) / NO (Chicken) / YES (Fly)\n"
+                 "     LRT -> 10.3976 (Mouse) / 24.234 (Human) / 3.5454 (Chicken) / 7.376 (Fly)\n"
+                 "     p-value -> 0.0055 (Mouse) / 0.0001 (Human) / 0.1699 (Chicken) / 0.025 (Fly)\n"
+                 "     CDS cover. -> 98% (Mouse) / 99% (Human) / 96% (Chicken) / 93% (Fly)\n"
+                 "     species -> 16 (Mouse) / 19 (Human) / 18 (Chicken) / 6 (Fly)\n"
+                 "     pr >= 0.9 -> 15 (Mouse) / 16 (Human) / 0 (Chicken) / 26 (Fly)\n\n"
+                 "  * See Documentation for available subgroup analyzes (e.g., catarrhini)")
 
 
 def check_input():
@@ -123,6 +123,16 @@ def check_input():
 
     if not wdirectory.get():
         logging.info("\n...FATAL_ERROR... : Choose working directory")
+        ready = False
+
+    # ADDED 03/31/2023
+    unsup_charact = [" ", ".", ",", ":", ";", ">", "<", "=", "+", "$", "£",
+                     "*", "#", "?", "!", "|", "[", "]", "{", "}", "%", "&", "'", "`"]
+    unsup_charact_found = set()
+    unsup_charact_present = [unsup_charact_found.add(c) for c in wdirectory.get() if c in unsup_charact]
+    if unsup_charact_present:
+        logging.info("\n...FATAL_ERROR... : Please remove characters: %s from your folder name"
+                     % str(unsup_charact_found).replace("{", "").replace("}", ""))
         ready = False
 
     if not clade.get():
@@ -486,7 +496,7 @@ def freeda_pipeline():
         wdir = wdirectory.get() + "/"
         ref_species = clade.get()
         codon_frequencies = codon_freq.get()
-        t_initial = 60
+        t_initial = 30
 
         all_genes_dict = {gene_name1.get(): [advanced_1_2_sb.get(), advanced_1_2_sb.get(),
                                         [site11_label.get(), site11_start.get(), site11_end.get()],
@@ -520,6 +530,8 @@ def freeda_pipeline():
             if ex_species in available_species:
                 final_excluded_species[ex_species] = available_species[ex_species]  # add genome as value to species key
 
+        subgroup = subgroup_var.get()
+
         global logging_window
 
         # LOGGER
@@ -547,7 +559,7 @@ def freeda_pipeline():
         folder_generator.generate_basic_folders(wdir)
 
         # get all species and genome names
-        all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species)]
+        all_genomes = [genome[1] for genome in genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species, subgroup)]
 
         # ----------------------------------------#
         ######## ASSIGN ENVIRONMENT VARIABLES ########
@@ -631,13 +643,13 @@ def freeda_pipeline():
         # ----------------------------------------#
 
         print("Checking genome blast databases...")
-        tblastn.run_blast(wdir, ref_species, all_genes, final_excluded_species)
+        tblastn.run_blast(wdir, ref_species, all_genes, final_excluded_species, subgroup)
 
         # ----------------------------------------#
         ######## RUN EXON FINDING ########
         # ----------------------------------------#
 
-        if exon_extractor.check_blast_output(wdir + "Blast_output/", t_initial, all_genes):
+        if exon_extractor.check_blast_output(ref_species, wdir + "Blast_output/", t_initial, all_genes):
             result_path = exon_extractor.analyze_blast_results(wdir, wdir + "Blast_output/",
                                                                ref_species, int(t_initial), all_genes, all_genomes,
                                                                final_excluded_species, gui, logging_window,
@@ -756,7 +768,18 @@ def check_label(label, op):
     return valid
 
 def check_excluded_species(label, op):
-    """Checks if user provided a valid species name"""
+    """Checks if user provided a valid species abbreviation"""
+    # accept only entry composed of letters and numbers
+    valid = re.match(r"^[A-Z]{1}[a-z]{1}$", label) is not None
+    # keystroke validation
+    if op == "key":
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None
+        return ok_so_far
+
+    return valid
+
+def check_subgroup_name(label, op):
+    """Checks if user provided a valid subgroup name"""
     # accept only entry composed of letters and numbers
     valid = re.match(r"^[A-Z]{1}[a-z]{1}$", label) is not None
     # keystroke validation
@@ -1183,11 +1206,12 @@ wdir_frame.columnconfigure((2, 3), weight=2, uniform="group1")
 
 # create exclude frame
 exclude_frame = ttk.Frame(input_frame, relief="ridge", padding="2 2 2 2")
-exclude_frame.grid(column=0, row=27, columnspan=5, sticky=(N, W, E, S), padx=5)
+exclude_frame.grid(column=0, row=27, columnspan=4, sticky=(N, W, E, S), padx=5)
 # let all columns resize
-exclude_frame.columnconfigure(0, weight=3, uniform="group1")
-exclude_frame.columnconfigure(1, weight=5, uniform="group1")
-exclude_frame.columnconfigure((2, 3), weight=2, uniform="group1")
+exclude_frame.columnconfigure(0, weight=6, uniform="group1")
+exclude_frame.columnconfigure(1, weight=2, uniform="group1")
+exclude_frame.columnconfigure(2, weight=7, uniform="group1")
+exclude_frame.columnconfigure(3, weight=4, uniform="group1")
 
 # create output frame
 output_frame = ttk.Frame(mainframe, relief="sunken", padding="5 5 5 5")
@@ -1245,17 +1269,18 @@ check_gene_name_wrapper = (settings_frame.register(check_gene_name), "%P", "%V")
 check_functional_residues = (settings_frame.register(check_functional_residues), "%P", "%V")
 check_label = (settings_frame.register(check_label), "%P", "%V")
 check_excluded_species = (settings_frame.register(check_excluded_species), "%P", "%V")
+check_subgroup_name = (settings_frame.register(check_subgroup_name), "%P", "%V")
 
 # ERRORS
 error_message1 = StringVar()
-message1 = "Invalid gene name (follow pattern: Cenpo for mouse; CENPO for other clades)"
+message1 = "Invalid gene name (follow pattern: Cenpo for mouse; CENPO for human, dog and chicken; FBgn0004400 for fly)"
 error_message2 = StringVar()
 message2 = "Invalid residue number (follow pattern: 100)"
 # error labels
-error_label1 = ttk.Label(input_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message1)
-error_label1.grid(column=0, row=28, columnspan=4, padx=5, pady=1, sticky=(W))
-error_label2 = ttk.Label(input_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message2)
-error_label2.grid(column=0, row=29, columnspan=4, padx=5, pady=1, sticky=(W))
+error_label1 = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message1)
+error_label1.grid(column=0, row=28, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label2 = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message2)
+error_label2.grid(column=0, row=29, columnspan=6, padx=5, pady=1, sticky=(W))
 
 # LOGO
 canvas = Canvas(logo_frame, width=200, height=50)
@@ -1276,7 +1301,7 @@ carnivores = ttk.Radiobutton(settings_frame, text="Dog", variable=clade, value="
 carnivores.grid(column=0, row=3, columnspan=3, sticky=(W))
 birds = ttk.Radiobutton(settings_frame, text="Chicken", variable=clade, value="Gg")
 birds.grid(column=0, row=4, columnspan=3, sticky=(W))
-flies = ttk.Radiobutton(settings_frame, text="Flies", variable=clade, value="Dme")
+flies = ttk.Radiobutton(settings_frame, text="Fly", variable=clade, value="Dme")
 flies.grid(column=3, row=1, columnspan=3, sticky=(W))
 
 # CODON FREQUENCY
@@ -1544,8 +1569,15 @@ exclude_species_var = StringVar()
 exclude_species_entry = ttk.Entry(exclude_frame, textvariable=exclude_species_var, validate="all",
                                   validatecommand=check_excluded_species)
 exclude_species_entry.grid(column=1, row=21, padx=5, pady=3, sticky=(W, E))
-ttk.Label(exclude_frame, text="   Exclude species: ").grid(column=0, row=21, padx=5, sticky=(W))
-ttk.Label(exclude_frame, text="(optional; e.g. Ha Gs)").grid(column=2, row=21, columnspan=2, sticky=(W))
+ttk.Label(exclude_frame, text="  Excl. species (e.g., Ha)").grid(column=0, row=21, padx=5, sticky=(W))
+#ttk.Label(exclude_frame, text="(optional; e.g. Ha Gs)").grid(column=2, row=21, columnspan=2, sticky=(W))
+
+# SELECT SUBGROUP
+subgroup_var = StringVar()
+subgroup_entry = ttk.Entry(exclude_frame, textvariable=subgroup_var, validate="all",
+                validatecommand=check_subgroup_name)  # uses the same principles as exluded species check
+ttk.Label(exclude_frame, text="  Subgroup (e.g., catarrhini)").grid(column=2, row=21, padx=5, sticky=(W))
+subgroup_entry.grid(column=3, row=21, padx=5, pady=3, sticky=(W, E))
 
 # BUTTONS
 result_path_var = StringVar()

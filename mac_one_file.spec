@@ -2,11 +2,11 @@
 
 add_binaries = []
 
-add_data = [('include_mac/entitlements.plist','.'),
-			('include_mac/freeda_logo.png', '.'), 
-			('include_mac/bedtools', 'bedtools'),
-			('include_mac/lib', '.'),
-			('include_mac/bin', '.')]
+add_data = [('include_mac_M1/entitlements.plist','.'),
+			('include_mac_M1/freeda_logo.png', '.'), 
+			('include_mac_M1/bedtools', 'bedtools'),
+			('include_mac_M1/lib', '.'),
+			('include_mac_M1/bin', '.')]
 			
 add_imports = ['PIL._tkinter_finder']
 
@@ -39,7 +39,7 @@ exe = EXE(pyz,
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
-          upx=True,
+          upx=False,
           upx_exclude=[],
           runtime_tmpdir=None,
           console=False,
@@ -49,5 +49,5 @@ exe = EXE(pyz,
           entitlements_file=None )
 app = BUNDLE(exe,
              name='freeda_pipeline_GUI.app',
-             icon='include_mac/freeda_img4_icon.icns',
+             icon='include_mac_M1/freeda_img4_icon.icns',
              bundle_identifier=None)

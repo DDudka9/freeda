@@ -98,12 +98,14 @@ def threshold_matches(ref_species, matches, t_initial, gene, genome_name, all_ge
     # GUI is used to run FREEDA
     if all_genes_dict:
         # check if strict search is needed
+        if all_genes_dict[gene][1] != "Common domains expected" and ref_species != "Dme":
+            t_final = 60
         if all_genes_dict[gene][1] == "Common domains expected" and ref_species != "Dme":
             t_final = 80
-        if all_genes_dict[gene][1] == "Common domains expected" and ref_species == "Dme":
-            t_final = 60
         if all_genes_dict[gene][1] != "Common domains expected" and ref_species == "Dme":
             t_final = 30
+        if all_genes_dict[gene][1] == "Common domains expected" and ref_species == "Dme":
+            t_final = 60
 
     # add empty "strand" column
     strand = ["for" for index in range(len(matches))]

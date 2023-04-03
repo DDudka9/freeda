@@ -916,6 +916,12 @@ def parse_sequence(ref_species, output_path, fasta_sequence, gene, transcript, s
             complement = rules[base] + complement
         sequence = complement
 
+    # testing removing masked bases in ref gene ADDED 03/23/2023
+    if sequence_type == "gene" and "N" in sequence:
+        message = "\n...WARNING... : Masked bases found in reference gene -> removed\n"
+        logging.info(message)
+        sequence = sequence.replace("N", "")
+
     # write it into a file
     filename = gene + "_" + ref_species + "_" + sequence_type
     with open(output_path + filename + ".fasta", "w") as f:

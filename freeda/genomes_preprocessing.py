@@ -2168,8 +2168,14 @@ def get_available_species(ref_species):
         species = {"Pt": "PanTroglodytes",
                       "Gg": "GorillaGorilla",
                       "Pb": "PongoAbelli",
+                      "Pa": "PanPaniscus",
+                      "Py": "PongoPygmaeus",
                       "Ne": "NomascusLeucogenys",
+                      "Ns": "NomascusSiki",
                       "Hm": "HylobatesMoloch",
+                      "Hp": "HylobatesPileatus",
+                      "Ss": "SymphalangusSyndactylus",
+                      "Hl": "HoolockLeuconedys",
                       "Cm": "CercopithecusMona",
                       "Cs": "ChlorocebusSabaeus",
                       "Mu": "MacacaMulatta",
@@ -2203,13 +2209,25 @@ def get_available_species(ref_species):
                        "Hh": "HyaenaHyaena",
                        "Ce": "CryptoproctaFerox",
                        "Ss": "SuricataSuricatta",
+                       "Mu": "MungosMungo",
                        "Pt": "PantheraTigris",
+                       "Nn": "NeofelisNebulosa",
+                       "Pc": "PumaConcolor",
+                       "Aj": "AcinonyxJubatus",
                        "Lr": "LynxRufus",
+                       "Pv": "PrionailurusViverrinus",
+                       "Om": "OtocolobusManul",
                        "Fc": "FelisCatus"}
 
     elif ref_species == "Fc":
-        species = {"Lr": "LynxRufus",
+        species = {"Om": "OtocolobusManul",
+                       "Pv": "PrionailurusViverrinus",
+                       "Aj": "AcinonyxJubatus",
+                       "Lr": "LynxRufus",
+                       "Pc": "PumaConcolor",
+                       "Nn": "NeofelisNebulosa",
                        "Pt": "PantheraTigris",
+                       "Mu": "MungosMungo",
                        "Ss": "SuricataSuricatta",
                        "Ce": "CryptoproctaFerox",
                        "Hh": "HyaenaHyaena",
@@ -2256,6 +2274,7 @@ def get_available_species(ref_species):
            "Dya": "DrosophilaYakuba",
            "Dsa": "DrosophilaSantomea",
            "Dte": "DrosophilaTeissieri",
+           "Dor": "DrosophilaOrena",
            "Der": "DrosophilaErecta",
            "Deu": "DrosophilaEugracilis",
            "Dsu": "DrosophilaSubpulchrella",
@@ -2270,6 +2289,138 @@ def get_available_species(ref_species):
            "Del": "DrosophilaElegans"}
 
     return species
+
+
+def get_abbreviations(ref_species):
+    """Matches species names to abbreviations"""
+
+    mouse = {"MusMusculus" : "Mm",
+             "MusSpicilegus" : "Mi",
+             "MusSpretus" : "Ms",
+             "MusCaroli" : "Mc",
+             "MusMinutoides" : "Mu",
+             "MusPahari" : "Mp",
+             "ApodemusSylvaticus" : "Ay",
+             "ApodemusSpeciosus" : "Ap",
+             "HylomyscusAlleni" : "Ha",
+             "PraomysDelectorum" : "Pd",
+             "MastomysNatalensis" : "Mn",
+             "MastomysCoucha" : "Mo",
+             "GrammomysDolichurus" : "Gd",
+             "GrammomysSurdaster" : "Gs",
+             "ArvicanthisNiloticus" : "An",
+             "RhabdomysDilectus" : "Rd",
+             "RhynchomysSoricoides" : "Rs",
+             "RattusRattus" : "Rr",
+             "RattusNorvegicus" : "Rn"}
+
+    human = {"HomoSapiens" : "Hs",
+             "PanTroglodytes" : "Pt",
+             "PanPaniscus" : "Pa",
+             "GorillaGorilla" : "Gg",
+             "PongoAbelli" : "Pb",
+             "PongoPygmaeus" : "Py",
+             "NomascusLeucogenys" : "Ne",
+             "NomascusSiki" : "Ns",
+             "HylobatesMoloch" : "Hm",
+             "HylobatesPileatus" : "Hp",
+             "SymphalangusSyndactylus" : "Ss",
+             "HoolockLeuconedys" : "Hl",
+             "CercopithecusMona" : "Cm",
+             "ChlorocebusSabaeus" : "Cs",
+             "MacacaMulatta" : "Mu",
+             "PapioAnubis" : "Pu",
+             "PiliocolobusTephrosceles" : "Pi",
+             "TrachypithecusFrancoisi" : "Tf",
+             "PitheciaPithecia" : "Pp",
+             "AotusNancymaae" : "An",
+             "PlecturocebusDonacophilus" : "Pd",
+             "AlouattaPalliata" : "Ap",
+             "CallithrixJacchus" : "Cj",
+             "SaimiriBoliviensis" : "Sb",
+             "AtelesGeoffroyi" : "Ag"}
+
+    dog = {"CanisFamiliaris" : "Cf",
+           "SpeothosVenaticus" : "Sv",
+           "VulpesFerrilata" : "Vf",
+           "UrsusMaritimus" : "Um",
+           "UrsusAmericanus" : "Ua",
+           "MiroungaLeonina" : "Ml",
+           "OdobenusRosmarus" : "Or",
+           "ZalophusCalifornianus" : "Zc",
+           "SpilogaleGracilis" : "Sg",
+           "AilurusFulgens" : "Af",
+           "ProcyonLotor" : "Pl",
+           "MelesMeles" : "Mm",
+           "GuloGulo" : "Gg",
+           "MustelaNigripes" : "Mn",
+           "LutraLutra" : "Ll",
+           "ParadoxurusHermaphroditus" : "Ph",
+           "CryptoproctaFerox" : "Ce",
+           "SuricataSuricatta" : "Ss",
+           "MungosMungo" : "Mu",
+           "HyaenaHyaena" : "Hh",
+           "PantheraTigris" : "Pt",
+           "NeofelisNebulosa" : "Nn",
+           "PumaConcolor" : "Pc",
+           "AcinonyxJubatus" : "Aj",
+           "LynxRufus" : "Lr",
+           "PrionailurusViverrinus" : "Pv",
+           "OtocolobusManul" : "Om",
+           "FelisCatus" : "Fc"}
+
+    chicken = {"GallusGallus" : "Gg",
+               "BambusicolaThoracicus" : "Bt",
+               "PavoMuticus" : "Pm",
+               "PavoCristatus" : "Pc",
+               "MeleagrisGallopavo" : "Mg",
+               "CentrocercusUrophasianus" : "Cu",
+               "CentrocercusMinimus" : "Ci",
+               "LyrurusTetrix" : "Lt",
+               "LagopusLeucura" : "Ll",
+               "LagopusMuta" : "Lm",
+               "TympanuchusCupido" : "Tc",
+               "ChrysolophusPictus" : "Cp",
+               "PhasianusColchicus" : "Ph",
+               "CrossoptilonMantchuricum" : "Cr",
+               "SyrmaticusMikado" : "Sm",
+               "LophuraNycthemera" : "Ln",
+               "AlectorisRufa" : "Ar",
+               "CoturnixJaponica" : "Cj"}
+
+    fly = {"DrosophilaMelanogaster" : "Dme",
+           "DrosophilaSimulans" : "Dsi",
+           "DrosophilaMauritiana" : "Dma",
+           "DrosophilaSechellia" : "Dse",
+           "DrosophilaYakuba" : "Dya",
+           "DrosophilaSantomea" : "Dsa",
+           "DrosophilaTeissieri" : "Dte",
+           "DrosophilaOrena" : "Dor",
+           "DrosophilaErecta" : "Der",
+           "DrosophilaEugracilis" : "Deu",
+           "DrosophilaSubpulchrella" : "Dsu",
+           "DrosophilaSuzukii" : "Dsz",
+           "DrosophilaBiarmipes" : "Dbi",
+           "DrosophilaTakahashii" : "Dta",
+           "DrosophilaFicusphila" : "Dfi",
+           "DrosophilaCarrolli" : "Dca",
+           "DrosophilaRhopaloa" : "Drh",
+           "DrosophilaKurseongensis" : "Dku",
+           "DrosophilaFuyamai" : "Dfu",
+           "DrosophilaElegans" : "Del"}
+
+    if ref_species == "Mm" or ref_species == "Rn":
+        abbreviations = mouse
+    elif ref_species == "Hs":
+        abbreviations = human
+    elif ref_species == "Cf" or ref_species == "Fc":
+        abbreviations = dog
+    elif ref_species == "Gg":
+        abbreviations = chicken
+    elif ref_species == "Dme":
+        abbreviations = fly
+
+    return abbreviations
 
 
 def extend_abbreviations(ref_species):
@@ -2297,10 +2448,16 @@ def extend_abbreviations(ref_species):
 
     human = {"Hs": "Homo sapiens (Hs)",
              "Pt": "Pan troglodytes (Pt)",
+             "Pa": "Pan paniscus (Pa)",
              "Gg": "Gorilla gorilla (Gg)",
              "Pb": "Pongo abelli (Pb)",
+             "Py": "Pongo pygmaeus (Py)",
              "Ne": "Nomascus leucogenys (Ne)",
+             "Ns": "Nomascus siki (Ns)",
              "Hm": "Hylobates moloch (Hm)",
+             "Hp": "Hylobates pileatus (Hp)",
+             "Ss": "Symphalangus syndactylus (Ss)",
+             "Hl": "Hoolock leuconedys (Hl)",
              "Cm": "Cercopithecus mona (Cm)",
              "Cs": "Chlorocebus sabaeus (Cs)",
              "Mu": "Macaca mulatta (Mu)",
@@ -2333,9 +2490,15 @@ def extend_abbreviations(ref_species):
            "Ph": "Paradoxurus hermaphroditus (Ph)",
            "Ce": "Cryptoprocta ferox (Ce)",
            "Ss": "Suricata suricatta (Ss)",
+           "Mu": "Mungos mungo (Mu)",
            "Hh": "Hyaena hyaena (Hh)",
            "Pt": "Panthera tigris (Pt)",
+           "Nn": "Neofelis nebulosa (Nn)",
+           "Pc": "Puma concolor (Pc)",
+           "Aj": "Acinonyx jubatus (Aj)",
            "Lr": "Lynx rufus (Lr)",
+           "Pv": "Prionailurus viverrinus (Pv)",
+           "Om": "Otocolobus manul (Om)",
            "Fc": "Felis catus (Fc)"}
 
     chicken = {"Gg": "Gallus gallus (Gg)",
@@ -2420,13 +2583,15 @@ def substitute_abbreviations(ref_species, path, tree=False):
                 f.write(seq + "\n")
 
 
-def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
+def get_names(wdir, ref_species, final_excluded_species=None, subgroup=None, ref_genome=False):
     """Gets species, genomes names and accession numbers used for FREEDA analysis"""
 
     if final_excluded_species is None:
         final_excluded_species = {}
+    if subgroup is None:
+        pass
 
-    mouse_dict = {"Mm": (("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
+    murinae_mouse_dict = {"Mm": (("Mi", "MusSpicilegus_genome", "GCA_003336285.1"),
                       ("Ms", "MusSpretus_genome", "GCA_001624865.1"),
                       ("Mc", "MusCaroli_genome", "GCA_900094665.2"),
                       ("Mu", "MusMinutoides_genome", "GCA_902729485.2"),
@@ -2445,7 +2610,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                       ("Rr", "RattusRattus_genome", "GCA_011064425.1"),
                       ("Rn", "RattusNorvegicus_genome", "GCA_000001895.4"))}
 
-    rat_dict = {"Rn": (("Rr", "RattusRattus_genome", "GCA_011064425.1"),
+    murinae_rat_dict = {"Rn": (("Rr", "RattusRattus_genome", "GCA_011064425.1"),
                          ("Rs", "RhynchomysSoricoides_genome", "GCA_019843965.1"),
                          ("Rd", "RhabdomysDilectus_genome", "GCA_019844195.1"),
                          ("An", "ArvicanthisNiloticus_genome", "GCA_011762505.1"),
@@ -2466,7 +2631,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
 
     # Simiiformes sccording to Timetree 40-44.2 (42.9 Mya)
     # Nwk format tree is missing Pongo abeli!
-    human_dict = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
+    primates_dict = {"Hs": (("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
                       ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),  # western lowland gorilla
                       ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
                       ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
@@ -2484,37 +2649,6 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                       ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),  # common marmoset
                       ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # squirrel monkey
                       ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"))}  # spider monkey
-
-    # Simiiformes sccording to Timetree 40-44.2 (42.9 Mya)
-    # Nwk format tree is missing Pongo abeli!
-    # This list was deprecated
-    human_dict_extended = {"Hs":(("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
-                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),  # western lowland gorilla
-                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
-                      ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
-                      ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
-                      ("Ss", "SymphalangusSyndactylus_genome", "GCA_023761135.1"),  # siamang -> added 08/17/22
-                      ("Hl", "HoolockLeuconedys_genome", "GCA_023748175.1"),  # eastern hoolock gibbon -> added 08/17/22
-                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # mona monkey
-                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),  # green monkey
-                      ("Ep", "ErythrocebusPatas_genome", "GCA_023783455.1"),  # red guenon -> added 08/17/22
-                      ("Ms", "MandrillusSphinx_genome", "GCA_023783085.1"),  # mandrill -> added 08/17/22
-                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),  # rhesus monkey
-                      ("La", "LophocebusAterrimus_genome", "GCA_023783235.1"),  # black crested mangabey -> added 08/17/22
-                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),  # olive baboon
-                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"),  # colobus monkey
-                      ("Tf", "TrachypithecusFrancoisi_genome", "GCA_009764325.1"),  # Francois's langur
-                      ("Rs", "RhinopithecusStrykeri_genome", "GCA_023764705.1"),  # burmese snub-nosed monkey -> added 08/17/22
-                      ("Pn", "PygathrixNigripes_genome", "GCA_023764695.1"),  # black-shanked douc langur -> added 08/17/22
-                      ("Pp", "PitheciaPithecia_genome", "GCA_004026645.1"),  # white-faced saki
-                      ("An", "AotusNancymaae_genome", "GCA_000952055.2"),  # Ma's night monkey
-                      ("Pd", "PlecturocebusDonacophilus_genome", "GCA_004027715.1"),  # bolivian titi
-                      ("Ap", "AlouattaPalliata_genome", "GCA_004027835.1"),  # mantled howler monkey
-                      ("Cj", "CallithrixJacchus_genome", "GCA_011100535.2"),  # common marmoset
-                      ("Sb", "SaimiriBoliviensis_genome", "GCA_016699345.1"),  # squirrel monkey
-                      ("Ag", "AtelesGeoffroyi_genome", "GCA_004024785.1"),  # spider monkey
-                      ("Sa", "SapajusApella_genome", "GCA_023762875.1"),  # white-fronted capuchin -> added 08/17/22
-                      ("Ca", "CebusAlbifrons_genome", "GCA_023783575.1"))}  # tufted capuchin -> added 08/17/22
 
     # Carnivora according to Timetree 52.9-57.3 (55.4mya)
     carnivora_cat_dict = {"Fc": (
@@ -2543,7 +2677,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     # Carnivora according to Timetree 52.9-57.3 (55.4 Mya)
     carnivora_dog_dict = {"Cf": (
         ("Sv", "SpeothosVenaticus_genome", "GCA_023170115.1"),  # bush dog
-        ("Vf", "VulpesFerrilata_genome", "GCA_024500485.1"),  # Tybethan sand fox (vulpes vulpes is on ensembl)
+        ("Vf", "VulpesFerrilata_genome", "GCA_024500485.1"),  # Tybethan sand fox
         ("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
         ("Ua", "UrsusAmericanus_genome", "GCA_003344425.1"),  # American black bear
         ("Ml", "MiroungaLeonina_genome", "GCA_011800145.1"),  # elephant seal
@@ -2554,14 +2688,14 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
         ("Pl", "ProcyonLotor_genome", "GCA_015708975.1"),  # raccoon
         ("Mm", "MelesMeles_genome", "GCA_922984935.2"),  # Eurasian badger
         ("Gg", "GuloGulo_genome", "GCA_023973185.1"),  # American wolverine
-        ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret (mustela furo is on ensembl)
+        ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret
         ("Ll", "LutraLutra_genome", "GCA_902655055.2"),  # Eurasian river otter
         ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"),  # asian palm civet
         ("Ce", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
         ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
         ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
         ("Pt", "PantheraTigris_genome", "GCA_024034525.1"),  # tiger
-        ("Lr", "LynxRufus_genome", "GCA_022079265.1"),  # bobcat (lynx canadiensis is on ensembl)
+        ("Lr", "LynxRufus_genome", "GCA_022079265.1"),  # bobcat
         ("Fc", "FelisCatus_genome", "GCF_000181335.1"))}  # cat
 
     # Phasianidae according to Timetree 29.9-40.7 (36.9 Mya)
@@ -2584,7 +2718,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                                ("Cj", "CoturnixJaponica_genome", "GCA_001577835.2"))}  # Japanese quail
 
     # From Kim et al., 2021 eLife (101 genomes) + santomea, orena and suzukii
-    fly_dict = {"Dme": (("Dsi", "DrosophilaSimulans_genome", "GCA_018904415.1"),
+    drosophila_dict = {"Dme": (("Dsi", "DrosophilaSimulans_genome", "GCA_018904415.1"),
                        ("Dma", "DrosophilaMauritiana_genome", "GCA_018904475.1"),
                        ("Dse", "DrosophilaSechellia_genome", "GCA_018904445.1"),
                        ("Dya", "DrosophilaYakuba_genome", "GCA_018904385.1"),
@@ -2604,6 +2738,67 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
                        ("Dfu", "DrosophilaFuyamai_genome", "GCA_018153365.1"),
                        ("Del", "DrosophilaElegans_genome", "GCA_018152505.1"))}
 
+    # AVAILABLE SUBGROUPS
+    hominoidea_dict = {"Hs": (("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
+                      ("Pa", "PanPaniscus_genome", "GCA_029289425.1"),  # pygmy chimpanzee
+                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),  # western lowland gorilla
+                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
+                      ("Py", "PongoPygmaeus_genome", "GCA_028885625.1"),  # bornean orangutan
+                      ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
+                      ("Ns", "NomascusSiki_gemome", "GCA_023783065.1"),  # southern white-cheeked gibbon
+                      ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
+                      ("Hp", "HylobatesPileatus_genome", "GCA_021498465.1"),  # pileated gibbon
+                      ("Ss", "SymphalangusSyndactylus_genome", "GCA_028878055.1"),  # siamang
+                      ("Hl", "HoolockLeuconedys_genome", "GCA_023748175.1"))}  # eastern hoolock gibbon
+
+    catarrhini_dict = {"Hs": (("Pt", "PanTroglodytes_genome", "GCA_002880755.3"),  # chimpanzee
+                      ("Gg", "GorillaGorilla_genome", "GCA_008122165.1"),  # western lowland gorilla
+                      ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
+                      ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
+                      ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
+                      ("Cm", "CercopithecusMona_genome", "GCA_014849445.1"),  # mona monkey
+                      ("Mu", "MacacaMulatta_genome", "GCA_008058575.1"),  # rhesus monkey
+                      ("Pu", "PapioAnubis_genome", "GCA_008728515.1"),  # olive baboon
+                      ("Cs", "ChlorocebusSabaeus_genome", "GCA_015252025.1"),  # green monkey
+                      ("Tf", "TrachypithecusFrancoisi_genome", "GCA_009764325.1"),  # Francois's langur
+                      ("Pi", "PiliocolobusTephrosceles_genome", "GCA_002776525.3"))}  # colobus monkey
+
+    caniformia_dict = {"Cf": (("Sv", "SpeothosVenaticus_genome", "GCA_023170115.1"),  # bush dog
+                      ("Vf", "VulpesFerrilata_genome", "GCA_024500485.1"),  # Tybethan sand fox
+                      ("Um", "UrsusMaritimus_genome", "GCA_017311325.1"),  # polar bear
+                      ("Ua", "UrsusAmericanus_genome", "GCA_003344425.1"),  # American black bear
+                      ("Ml", "MiroungaLeonina_genome", "GCA_011800145.1"),  # elephant seal
+                      ("Or", "OdobenusRosmarus_genome", "GCA_000321225.1"),  # pacific walrus
+                      ("Zc", "ZalophusCalifornianus_genome", "GCA_009762305.2"),  # sea lion
+                      ("Sg", "SpilogaleGracilis_genome", "GCA_004023965.1"),  # western spotted skunk
+                      ("Af", "AilurusFulgens_genome", "GCA_002007465.1"),  # lesser panda
+                      ("Pl", "ProcyonLotor_genome", "GCA_015708975.1"),  # raccoon
+                      ("Mm", "MelesMeles_genome", "GCA_922984935.2"),  # Eurasian badger
+                      ("Gg", "GuloGulo_genome", "GCA_023973185.1"),  # American wolverine
+                      ("Mn", "MustelaNigripes_genome", "GCA_022355385.1"),  # black-footed ferret
+                      ("Ll", "LutraLutra_genome", "GCA_902655055.2"))}  # Eurasian river otter
+
+    feliformia_dict = {"Fc": (("Om", "OtocolobusManul_genome", "GCA_028564725.1"),  # Pallas's cat
+                      ("Pv", "PrionailurusViverrinus_genome", "GCA_028551425.1"),  # fishing cat
+                      ("Lr", "LynxRufus_genome", "GCA_022079265.1"),  # bobcat
+                      ("Aj", "AcinonyxJubatus_genome", "GCA_027475565.2"),  # cheetah
+                      ("Pc", "PumaConcolor_genome", "GCA_028749985.1"),  # puma
+                      ("Nn", "NeofelisNebulosa_genome", "GCA_028018385.1"),  # clouded leopard
+                      ("Pt", "PantheraTigris_genome", "GCA_024034525.1"),  # tiger
+                      ("Hh", "HyaenaHyaena_genome", "GCA_004023945.1"),  # hyaena
+                      ("Mu", "MungosMungo_genome", "GCA_028533875.1"),  # banded mongoose
+                      ("Ss", "SuricataSuricatta_genome", "GCA_006229205.1"),  # meerkat
+                      ("Ce", "CryptoproctaFerox_genome", "GCA_004023885.1"),  # fossa
+                      ("Ph", "ParadoxurusHermaphroditus_genome", "GCA_004024585.1"))}  # asian palm civet
+
+    melanogaster_dict = {"Dme": (("Dsi", "DrosophilaSimulans_genome", "GCA_018904415.1"),
+                       ("Dma", "DrosophilaMauritiana_genome", "GCA_018904475.1"),
+                       ("Dse", "DrosophilaSechellia_genome", "GCA_018904445.1"),
+                       ("Dya", "DrosophilaYakuba_genome", "GCA_018904385.1"),
+                       ("Dsa", "DrosophilaSantomea_genome", "GCA_016746245.2"),
+                       ("Dte", "DrosophilaTeissieri_genome", "GCA_018903635.1"),
+                       ("Dor", "DrosophilaOrena_genome", "GCA_005876975.1"),
+                       ("Der", "DrosophilaErecta_genome", "GCA_018904525.1"))}
 
     # redundant parenthesis allow collecting ref and not ref genomes with the same loop (below)
     mouse_ref_dict = {"Mm": (("Mm", "MusMusculus_genome", "GCA_000001635.9"))} # GeneBank GRCm39
@@ -2618,44 +2813,84 @@ def get_names(wdir, ref_species, final_excluded_species=None, ref_genome=False):
     if ref_genome is False:
 
         if ref_species == "Mm":
-            dict_filename = "murinae_genomes.txt"
+            dict_filename = "murinae_mouse_genomes.txt"
+
         elif ref_species == "Rn":
-            dict_filename = "murinae_genomes_check.txt"
+            dict_filename = "murinae_rat_genomes.txt"
+
         elif ref_species == "Hs":
-            dict_filename = "primates_genomes.txt"
+            if subgroup == "hominoidea":
+                dict_filename = "hominoidea_genomes.txt"
+            elif subgroup == "catarrhini":
+                dict_filename = "catarrhini_genomes.txt"
+            else:
+                dict_filename = "primates_genomes.txt"
+
         elif ref_species == "Cf":
-            dict_filename = "carnivores_genomes.txt"
+            if subgroup == "caniformia":
+                dict_filename = "caniformia_genomes.txt"
+            else:
+                dict_filename = "carnivora_dog_genomes.txt"
+
         elif ref_species == "Fc":
-            dict_filename = "carnivores_genomes_check.txt"
+            if subgroup == "feliformia":
+                dict_filename = "feliformia_genomes.txt"
+            else:
+                dict_filename = "carnivora_cat_genomes.txt"
+
         elif ref_species == "Gg":
             dict_filename = "phasanidae_genomes.txt"
+
         elif ref_species == "Dme":
-            dict_filename = "drosophila_genomes.txt"
+            if subgroup == "melanogaster":
+                dict_filename = "melanogaster_genomes.txt"
+            else:
+                dict_filename = "drosophila_genomes.txt"
 
         # get genomes from variables
         if not os.path.isfile(wdir + dict_filename):
 
             if ref_species == "Mm":
-                genomes_dict = mouse_dict
+                genomes_dict = murinae_mouse_dict
+
             elif ref_species == "Rn":
-                genomes_dict = rat_dict
+                genomes_dict = murinae_rat_dict
+
             elif ref_species == "Hs":
-                genomes_dict = human_dict
-            elif ref_species == "Fc":
-                genomes_dict = carnivora_cat_dict
+                if subgroup == "hominoidea":
+                    genomes_dict = hominoidea_dict
+                elif subgroup == "catarrhini":
+                    genomes_dict = catarrhini_dict
+                else:
+                    genomes_dict = primates_dict
+
             elif ref_species == "Cf":
-                genomes_dict = carnivora_dog_dict
+                if subgroup == "caniformia":
+                    genomes_dict = caniformia_dict
+                else:
+                    genomes_dict = carnivora_dog_dict
+
+            elif ref_species == "Fc":
+                if subgroup == "feliformia":
+                    genomes_dict = feliformia_dict
+                else:
+                    genomes_dict = carnivora_cat_dict
+
             elif ref_species == "Gg":
                 genomes_dict = phasianidae_dict
-            elif ref_species == "Dme":
-                genomes_dict = fly_dict
 
+            elif ref_species == "Dme":
+                if subgroup == "melanogaster":
+                    genomes_dict = melanogaster_dict
+                else:
+                    genomes_dict = drosophila_dict
+
+            # record genomes into file for future use
             with open(wdir + dict_filename, 'w') as f:
                 f.write(dumps(genomes_dict))
 
         # get genomes from file
         else:
-
             with open(wdir + dict_filename, "r") as f:
                 genomes_dict = literal_eval(f.read())
 

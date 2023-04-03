@@ -245,7 +245,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
     # ----------------------------------------#
 
     if user_input2 == "y":
-        if exon_extractor.check_blast_output(blast_output_path, t, all_genes):
+        if exon_extractor.check_blast_output(ref_species, blast_output_path, t, all_genes):
             result_path = exon_extractor.analyze_blast_results(wdir, blast_output_path, ref_species, int(t),
                                                                all_genes, all_genomes,
                                                                final_excluded_species)
@@ -348,13 +348,13 @@ if __name__ == '__main__':
                         help="specify working directory (absolute path to Data folder ex. /Users/user/Data/)", type=str,
                         default=None)
     parser.add_argument("-rs", "--ref_species",
-                        help="specify reference organism (default is mouse)", type=str, default="Mm")
+                        help="specify reference organism (default is mouse)", type=str, default="Dme")
     parser.add_argument("-t", "--blast_threshold",
-                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=60)
+                        help="specify percentage identity threshold for blast (default is 60)", type=int, default=80)
     parser.add_argument("-f", "--codon_frequencies",
                         help="specify codon frequency models (F3x4 is default)", type=str, default="F3X4")
     parser.add_argument("-es", "--excluded_species",
-                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="")  # for siimiformes synteny check Hm Cm Tf Pp Pd Ap Ag
+                        help="specify species to exclude (e.g. Ha Gs)", type=str, default="")
 
     args = parser.parse_args()
     freeda_pipeline(wdir=args.wdir, ref_species=args.ref_species, t=args.blast_threshold,
