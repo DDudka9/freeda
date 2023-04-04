@@ -112,7 +112,8 @@ def raise_logger():
                  "     p-value -> 0.0055 (Mouse) / 0.0001 (Human) / 0.1699 (Chicken) / 0.025 (Fly)\n"
                  "     CDS cover. -> 98% (Mouse) / 99% (Human) / 96% (Chicken) / 93% (Fly)\n"
                  "     species -> 16 (Mouse) / 19 (Human) / 18 (Chicken) / 6 (Fly)\n"
-                 "     pr >= 0.9 -> 15 (Mouse) / 16 (Human) / 0 (Chicken) / 26 (Fly)\n\n")
+                 "     pr >= 0.9 -> 15 (Mouse) / 16 (Human) / 0 (Chicken) / 26 (Fly)\n\n"
+                 "Currently available subgroups: hominoidea, catarrhini, caniformia, melanogaster")
 
 
 def check_input():
