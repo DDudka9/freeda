@@ -138,13 +138,12 @@ def check_input():
         logging.info("\n...FATAL_ERROR... : Choose reference species")
         ready = False
 
-    if subgroup_var.get() not in ["hominoidea", "catarrhini", "caniformes", "feliformes", "melanogaster", ""]:
+    if subgroup_var.get() not in ["hominoidea", "catarrhini", "caniformia", "melanogaster", ""]:
         logging.info("\n...FATAL_ERROR... : Invalid subgroup")
         ready = False
 
-    clade_subgroup_dict = {"hominoidea" : "Hs", "catarrhini" : "Hs",
-                           "caniformes" : "Cf", "feliformes" : "Fc",
-                            "melanogaster" : "Dme"}
+    clade_subgroup_dict = {"hominoidea": "Hs", "catarrhini": "Hs",
+                           "caniformia": "Cf", "melanogaster": "Dme"}
 
     if subgroup_var.get() in clade_subgroup_dict:
         if clade_subgroup_dict[subgroup_var.get()] != clade.get():
