@@ -46,7 +46,7 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def analyze_blast_results(wdir, blast_output_path, ref_species, t_initial, all_genes, all_genomes,
-                          final_excluded_species=None, gui=None, logging_window=None, all_genes_dict=None):
+                          final_excluded_species=None, gui=None, logging_window=None, all_genes_dict=None, subgroup=None):
     """ Finds and clones exons based on blast results"""
 
     start_time = time.time()
@@ -116,7 +116,7 @@ def analyze_blast_results(wdir, blast_output_path, ref_species, t_initial, all_g
                 msa_aligner.run_msa(MSA_path)
                 # return potential exons for a current gene in current genome
                 msa_analyzer.analyze_MSA(wdir, ref_species, MSA_path, gene,
-                                         genome_name, ref_exons, expected_exons, all_genes_dict)
+                            genome_name, ref_exons, expected_exons, all_genes_dict, final_excluded_species, subgroup)
                 # mark that this blast result has been analyzed
                 message = "\nFinished running gene: '%s' from genome: '%s'\n" \
                     % (gene, genome_name)

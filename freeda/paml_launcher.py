@@ -51,7 +51,8 @@ import copy
 import pyensembl
 
 
-def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequencies, gui=None, logging_window=None):
+def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequencies, gui=None, logging_window=None,
+                      final_excluded_species=None, subgroup=None):
     """Main function controlling building final alignments, gene trees and PAML anaylsis"""
 
     failed_paml = []
@@ -78,7 +79,7 @@ def analyze_final_cds(wdir, ref_species, result_path, all_genes, codon_frequenci
     logging.info("\n\n======================== PAML ANALYSIS ========================")
 
     # make an empty template for all possible species
-    all_species = [names[0] for names in genomes_preprocessing.get_names(wdir, ref_species)]
+    all_species = [names[0] for names in genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species, subgroup)]
 
     all_species_dict = {ref_species: ""}
     for species in all_species:

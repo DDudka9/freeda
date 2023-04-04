@@ -320,6 +320,15 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
 
     all_names_valid = True
 
+    if ref_species == "Mm" or ref_species == "Hs":
+        ensembl_release = "http://may2021.archive.ensembl.org/index.html"
+    elif ref_species == "Cf":
+        ensembl_release = "http://jan2020.archive.ensembl.org/index.html"
+    elif ref_species == "Gg":
+        ensembl_release = "http://oct2018.archive.ensembl.org/index.html"
+    else:
+        ensembl_release = "https://useast.ensembl.org/index.html"
+
     absent_names = []
 
     # modified 03/09/2023
@@ -332,8 +341,9 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
 
                 if gene_biotype != "protein_coding":
                     message = "... FATAL_ERROR... : %s is %s instead of a protein coding gene\n" \
-                              "    -> check gene name here: ensembl.org \n" \
-                              "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).biotype)
+                              "    -> check gene name here: %s \n" \
+                              "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).biotype,
+                                                                            ensembl_release)
                     logging.info(message)
                     protein_coding = False
                     return protein_coding
@@ -421,7 +431,7 @@ def generate_ref_genome_object(wdir, ref_species):
     ref_genomes_path = wdir + "Reference_genomes/"
     # check if reference genome is present -> exit if not
     ref_genome_present = tblastn.check_genome_present(wdir, ref_species, ref_genomes_path,
-                                                      ref_genome_name, ref_genome=True)
+                                        ref_genome_name, ref_genome=True)
 
     logging.getLogger("pyensembl").setLevel(logging.WARNING)  # disables logging from pyensembl
     # get ref assembly database

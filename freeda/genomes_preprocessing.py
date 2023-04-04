@@ -29,6 +29,7 @@ Prepares genomic assemblies for blast search and exons extraction
 from json import dumps
 from ast import literal_eval
 import os
+import logging
 
 
 def get_ref_genome_contigs_dict(ref_species):
@@ -2745,7 +2746,7 @@ def get_names(wdir, ref_species, final_excluded_species=None, subgroup=None, ref
                       ("Pb", "PongoAbelli_genome", "GCA_002880775.3"),  # sumatran orangutan
                       ("Py", "PongoPygmaeus_genome", "GCA_028885625.1"),  # bornean orangutan
                       ("Ne", "NomascusLeucogenys_genome", "GCA_006542625.1"),  # white-cheeked gibbon
-                      ("Ns", "NomascusSiki_gemome", "GCA_023783065.1"),  # southern white-cheeked gibbon
+                      ("Ns", "NomascusSiki_genome", "GCA_023783065.1"),  # southern white-cheeked gibbon
                       ("Hm", "HylobatesMoloch_genome", "GCA_009828535.3"),  # silvery gibbon
                       ("Hp", "HylobatesPileatus_genome", "GCA_021498465.1"),  # pileated gibbon
                       ("Ss", "SymphalangusSyndactylus_genome", "GCA_028878055.1"),  # siamang

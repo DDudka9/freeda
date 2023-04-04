@@ -67,7 +67,8 @@ def generate_contig_folders(result_path, all_genes, all_genomes):
         os.makedirs(result_path + str(gene))
 
     # name genome folder for each gene folder
-    all_gene_folders = os.listdir(result_path)
+    all_gene_folders = [folder for folder in os.listdir(result_path) if not folder.startswith(".")]
+
     for gene_folder in all_gene_folders:
         for genome in all_genomes:
             os.makedirs(result_path + str(gene_folder) + "/" + genome)

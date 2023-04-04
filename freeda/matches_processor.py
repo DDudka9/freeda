@@ -46,7 +46,7 @@ def process_matches(ref_species, wdir, matches, cds_seq, gene_seq, result_path, 
         # get exons as dataframe
         base_name = contig.split("__")[0]
         exons, bed_name, fasta_name = get_exons(base_name, matches, contig)
-        # check for exons detected on reversed strand to pseudohap
+        # check for exons detected on reversed strand
         validated_exons, nr_of_exons_reversed, start, end, rev = check_strand(exons)
         # log how many reversed exons were detected
         log_strand(validated_exons, nr_of_exons_reversed, contig)

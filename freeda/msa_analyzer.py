@@ -42,7 +42,8 @@ import glob
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expected_exons, all_genes_dict=None):
+def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expected_exons, all_genes_dict=None,
+                final_excluded_species=None, subgroup=None):
     """Analyzes MSA per contig -> finds exons, clones them into cds"""
 
     # make a dictionary with exon number as key and sequences, names as values -> include microexons as empty lists
@@ -103,7 +104,8 @@ def analyze_MSA(wdir, ref_species, MSA_path, gene, genome_name, ref_exons, expec
     final_cds = cloned_cds.replace("N", "")
     
     # write a given gene cds into a file
-    species_name = find_species_abbreviation(wdir, ref_species, gene, genome_name, final_cds, MSA_path)
+    species_name = find_species_abbreviation(wdir, ref_species, gene, genome_name, final_cds, MSA_path,
+                                             final_excluded_species, subgroup)
     file_cloned_cds(final_cds, gene, species_name)
 
 
@@ -244,13 +246,13 @@ def find_contigs_with_most_intronic_exons(preselected_exons_overhangs):
     return most_intronic_contigs
 
 
-def find_species_abbreviation(wdir, ref_species, gene, genome_name, cloned_cds, MSA_path):
+def find_species_abbreviation(wdir, ref_species, gene, genome_name, cloned_cds, MSA_path, final_excluded_species=None,
+                              subgroup=None):
     """Finds species abbreviation."""
 
     # get all genome names and genomes dict with species abbreviations as keys
-    all_genomes = genomes_preprocessing.get_names(wdir, ref_species)
+    all_genomes = genomes_preprocessing.get_names(wdir, ref_species, final_excluded_species, subgroup)
 
-    # refactoring in progress...
     header = [name[0] for name in all_genomes if name[1] == genome_name][0]
     filepath = MSA_path + "Cloned_cds"
     filename = header + "_" + gene + ".fasta"

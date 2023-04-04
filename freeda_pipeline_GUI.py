@@ -112,8 +112,7 @@ def raise_logger():
                  "     p-value -> 0.0055 (Mouse) / 0.0001 (Human) / 0.1699 (Chicken) / 0.025 (Fly)\n"
                  "     CDS cover. -> 98% (Mouse) / 99% (Human) / 96% (Chicken) / 93% (Fly)\n"
                  "     species -> 16 (Mouse) / 19 (Human) / 18 (Chicken) / 6 (Fly)\n"
-                 "     pr >= 0.9 -> 15 (Mouse) / 16 (Human) / 0 (Chicken) / 26 (Fly)\n\n"
-                 "  * See Documentation for available subgroup analyzes (e.g., catarrhini)")
+                 "     pr >= 0.9 -> 15 (Mouse) / 16 (Human) / 0 (Chicken) / 26 (Fly)\n\n")
 
 
 def check_input():
@@ -136,8 +135,21 @@ def check_input():
         ready = False
 
     if not clade.get():
-        logging.info("\n...FATAL_ERROR... : Choose clade")
+        logging.info("\n...FATAL_ERROR... : Choose reference species")
         ready = False
+
+    if subgroup_var.get() not in ["hominoidea", "catarrhini", "caniformes", "feliformes", "melanogaster", ""]:
+        logging.info("\n...FATAL_ERROR... : Invalid subgroup")
+        ready = False
+
+    clade_subgroup_dict = {"hominoidea" : "Hs", "catarrhini" : "Hs",
+                           "caniformes" : "Cf", "feliformes" : "Fc",
+                            "melanogaster" : "Dme"}
+
+    if subgroup_var.get() in clade_subgroup_dict:
+        if clade_subgroup_dict[subgroup_var.get()] != clade.get():
+            logging.info("\n...FATAL_ERROR... : Invalid reference species for this subgroup")
+            ready = False
 
     all_genes = [gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name5.get()]
     if not any(all_genes):
@@ -261,6 +273,7 @@ def block_user_entries():
     site53_label.configure(state="disabled")
 
     exclude_species_entry.configure(state="disabled")
+    subgroup_entry.configure(state="disabled")
 
     wdir_button.configure(state="disabled")
     wdir_entry.configure(state="disabled")
@@ -347,6 +360,7 @@ def ublock_user_entries():
     site53_label.configure(state="normal")
 
     exclude_species_entry.configure(state="normal")
+    subgroup_entry.configure(state="normal")
 
     wdir_button.configure(state="normal")
     wdir_entry.configure(state="normal")
@@ -653,7 +667,7 @@ def freeda_pipeline():
             result_path = exon_extractor.analyze_blast_results(wdir, wdir + "Blast_output/",
                                                                ref_species, int(t_initial), all_genes, all_genomes,
                                                                final_excluded_species, gui, logging_window,
-                                                               all_genes_dict)
+                                                               all_genes_dict, subgroup)
             # set a StringVar for GUI
             result_path_var.set(result_path)
 
@@ -669,13 +683,14 @@ def freeda_pipeline():
         nr_of_species_total_dict, PAML_logfile_name, day, failed_paml, \
                 genes_under_pos_sel = paml_launcher.analyze_final_cds(wdir, ref_species, result_path,
                                                                       all_genes, codon_frequencies,
-                                                                      gui, logging_window)
+                                                                      gui, logging_window, final_excluded_species,
+                                                                      subgroup)
 
         # visualize PAML result
         final_PAML_log_dict = paml_visualizer.analyze_PAML_results(wdir, result_path, all_genes,
                                                                    nr_of_species_total_dict, ref_species,
                                                                    PAML_logfile_name, day, genes_under_pos_sel,
-                                                                   failed_paml, codon_frequencies, gui)
+                                                                   failed_paml, codon_frequencies, gui, subgroup)
         # in case PAML failed and dict wasnt created
         if final_PAML_log_dict:
             get_results(final_PAML_log_dict)
