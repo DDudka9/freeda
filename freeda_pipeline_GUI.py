@@ -113,7 +113,8 @@ def raise_logger():
                  "     CDS cover. -> 98% (Mouse) / 99% (Human) / 96% (Chicken) / 93% (Fly)\n"
                  "     species -> 16 (Mouse) / 19 (Human) / 18 (Chicken) / 6 (Fly)\n"
                  "     pr >= 0.9 -> 15 (Mouse) / 16 (Human) / 0 (Chicken) / 26 (Fly)\n\n"
-                 "Currently available subgroups: hominoidea, catarrhini, caniformia, melanogaster")
+                 "For more information see Documentation: https://ddudka9.github.io/freeda/")
+
 
 
 def check_input():
@@ -737,70 +738,172 @@ def freeda_pipeline():
 
 def check_gene_name(gene_name, op):
     """Checks if user provided a valid gene name"""
-    error_message1.set("")
+    if any([gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name1.get()]):
+        error_message1a.set(" At least one gene name was provided")
+        error_message1b.set("")
+    else:
+        error_message1a.set("")
+        error_message1b.set("Please provide at least one gene name (out of 5)")
     # accept only entry starting with one capital letter followed by small or big letters or numbers
-    valid = re.match(r"^[A-Z]{1}([A-Za-z0-9]+$)", gene_name) is not None
+    valid = re.match(r"^[A-Z]{1}([A-Za-z0-9]+$)", gene_name) is not None or gene_name == ""
     # button can be clicked only if gene names are valid
     analyze_button.state(["!disabled"] if valid else ["disabled"])
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[A-Za-z0-9]+$", gene_name) is not None
+        ok_so_far = re.match(r"^(?![\s\S])|[A-Za-z0-9]+$", gene_name) is not None or gene_name == ""
         if not ok_so_far:
-            error_message1.set(message1)
+            error_message1a.set("")
+            error_message1b.set("Invalid gene name (follow pattern: Cenpo for mouse; CENPO for human, dog and chicken; FBgn0004400 for fly)")
+        elif any([gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name1.get()]):
+            error_message1a.set(" At least one gene name was provided")
+            error_message1b.set("")
+        else:
+            error_message1a.set("")
+            error_message1b.set("Please provide at least one gene name (out of 5)")
         return ok_so_far
     elif op == "focusout":
         if not valid:
-            error_message1.set(message1)
+            error_message1a.set("")
+            error_message1b.set("Invalid gene name (follow pattern: Cenpo for mouse; CENPO for human, dog and chicken; FBgn0004400 for fly)")
+        elif any([gene_name1.get(), gene_name2.get(), gene_name3.get(), gene_name4.get(), gene_name1.get()]):
+            error_message1a.set(" At least one gene name was provided")
+            error_message1b.set("")
+        else:
+            error_message1a.set("")
+            error_message1b.set("Please provide at least one gene name (out of 5)")
     return valid
 
 
 def check_functional_residues(residue, op):
     """Checks if user provided a valid residue number"""
-    error_message2.set("")
+    error_message2a.set(" Residue number is fine (or none provided) -> this is optional")
+    error_message2b.set("")
     # accept only entry starting with non-0 number followed by max 3 numbers
-    valid = re.match(r"^[1-9]{1}([0-9]{0,3}$)", residue) is not None
+    valid = re.match(r"^[1-9]{1}([0-9]{0,3}$)", residue) is not None or residue == ""
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[0-9]+$", residue) is not None
+        ok_so_far = re.match(r"^(?![\s\S])|[0-9]+$", residue) is not None or residue == ""
+        #return ok_so_far
         if not ok_so_far:
-            error_message2.set(message2)
+            error_message2a.set("")
+            error_message2b.set("Invalid residue number (follow pattern: 100)")
+        else:
+            error_message2a.set(" Residue number is fine (or none provided) -> this is optional")
+            error_message2b.set("")
         return ok_so_far
     elif op == "focusout":
         if not valid:
-            error_message2.set(message2)
+            error_message2a.set("")
+            error_message2b.set("Invalid residue number (follow pattern: 100)")
+        elif residue != "":
+            error_message2a.set(" Residue number is fine -> this is optional")
+            error_message2b.set("")
+        elif residue == "":
+            error_message2a.set(" Residue number was not provided -> this is optional")
+            error_message2b.set("")
     return valid
 
 
 def check_label(label, op):
     """Checks if user provided a valid label name"""
+    error_message3a.set(" Residue label is fine (or none provided) -> this is optional")
+    error_message3b.set("")
     # accept only entry composed of letters and numbers
-    valid = re.match(r"^[A-Za-z0-9]+$", label) is not None
+    valid = re.match(r"^[A-Za-z0-9]+$", label) is not None or label == ""
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None or label == ""
+
+        # ADDED 04/05/2023
+        if not ok_so_far and label != "":
+            error_message3a.set("")
+            error_message3b.set("Invalid residue label (follow pattern: My domain")
+        else:
+            error_message3a.set(" Residue label is fine (or none provided) -> this is optional")
+            error_message3b.set("")
         return ok_so_far
+    elif op == "focusout":
+        if not valid and label != "":
+            error_message3a.set("")
+            error_message3b.set("Invalid residue label (follow pattern: My domain)")
+        elif label != "":
+            error_message3a.set(" Residue label is fine -> this is optional")
+            error_message3b.set("")
+        elif label == "":
+            error_message3a.set(" Residue label was none provided -> this is optional")
+            error_message3b.set("")
 
     return valid
 
-def check_excluded_species(label, op):
+
+def check_excluded_species(abbreviation, op):
     """Checks if user provided a valid species abbreviation"""
+    error_message4a.set(" Provide excluded species abbreviation (see Documentation: https://ddudka9.github.io/freeda/) -> this is optional")
+    error_message4b.set("")
     # accept only entry composed of letters and numbers
-    valid = re.match(r"^[A-Z]{1}[a-z]{1}$", label) is not None
+    valid = re.match(r"^[A-Z]{1}[a-z]{1}$", abbreviation) is not None or abbreviation == ""
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", abbreviation) is not None or abbreviation == ""
+
+        # ADDED 04/05/2023
+        if not ok_so_far:
+            error_message4a.set("")
+            error_message4b.set("Invalid character")
+        else:
+            error_message4a.set(" Excluded species abbreviation is fine (or none provided) -> this is optional")
+            error_message4b.set("")
         return ok_so_far
+    elif op == "focusout":
+        if not valid:
+            error_message4a.set("")
+            error_message4b.set("Invalid excluded species abbreviation (see Documentation: https://ddudka9.github.io/freeda/)")
+        else:
+            error_message4a.set(" Excluded species abbreviation is fine (or none provided) -> this is optional")
+            error_message4b.set("")
 
     return valid
 
-def check_subgroup_name(label, op):
+
+def check_subgroup_name(subgroup, op):
     """Checks if user provided a valid subgroup name"""
+    if subgroup in ["hominoidea", "catarrhini", "caniformia", "melanogaster", ""]:
+        error_message5a.set(" Subgroup is fine (or none provided) -> this is optional")
+        error_message5b.set("")
+    else:
+        error_message5a.set(" Available subgroups are: hominoidea, catarrhini, caniformia, melanogaster -> this is optional")
+        error_message5b.set("")
     # accept only entry composed of letters and numbers
-    valid = re.match(r"^[A-Z]{1}[a-z]{1}$", label) is not None
+    valid = re.match(r"^[A-Z]{1}[a-z]{1}$", subgroup) is not None or subgroup in ["hominoidea",
+                                                                                  "catarrhini",
+                                                                                  "caniformia",
+                                                                                  "melanogaster",
+                                                                                  ""]
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", subgroup) is not None or subgroup in ["hominoidea",
+                                                                                  "catarrhini",
+                                                                                  "caniformia",
+                                                                                  "melanogaster",
+                                                                                  ""]
+        # ADDED 04/05/2023
+        if not ok_so_far:
+            error_message5a.set("")
+            error_message5b.set("Invalid character")
+        elif subgroup in ["hominoidea", "catarrhini", "caniformia", "melanogaster", ""]:
+            error_message5a.set(" Subgroup is fine (or none provided) -> this is optional")
+            error_message5b.set("")
         return ok_so_far
+    elif op == "focusout":
+        if not valid:
+            error_message5a.set("")
+            error_message5b.set("Invalid subgroup (available: hominoidea, catarrhini, caniformia, melanogaster)")
+        elif subgroup in ["hominoidea", "catarrhini", "caniformia", "melanogaster"]:
+            error_message5a.set(" Subgroup is fine -> this is optional")
+            error_message5b.set("")
+        elif subgroup == "":
+            error_message5a.set(" No subgroup provided -> this is optional")
+            error_message5b.set("")
 
     return valid
 
@@ -1287,15 +1390,38 @@ check_excluded_species = (settings_frame.register(check_excluded_species), "%P",
 check_subgroup_name = (settings_frame.register(check_subgroup_name), "%P", "%V")
 
 # ERRORS
-error_message1 = StringVar()
-message1 = "Invalid gene name (follow pattern: Cenpo for mouse; CENPO for human, dog and chicken; FBgn0004400 for fly)"
-error_message2 = StringVar()
-message2 = "Invalid residue number (follow pattern: 100)"
+error_message1a = StringVar()
+error_message1b = StringVar()
+error_message2a = StringVar()
+error_message2b = StringVar()
+error_message3a = StringVar()
+error_message3b = StringVar()
+error_message4a = StringVar()
+error_message4b = StringVar()
+error_message5a = StringVar()
+error_message5b = StringVar()
+
 # error labels
-error_label1 = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message1)
-error_label1.grid(column=0, row=28, columnspan=6, padx=5, pady=1, sticky=(W))
-error_label2 = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message2)
-error_label2.grid(column=0, row=29, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label1a = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="cyan", textvariable=error_message1a)
+error_label1a.grid(column=0, row=28, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label1b = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message1b)
+error_label1b.grid(column=0, row=28, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label2a = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="cyan", textvariable=error_message2a)
+error_label2a.grid(column=0, row=29, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label2b = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message2b)
+error_label2b.grid(column=0, row=29, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label3a = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="cyan", textvariable=error_message3a)
+error_label3a.grid(column=0, row=30, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label3b = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message3b)
+error_label3b.grid(column=0, row=30, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label4a = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="cyan", textvariable=error_message4a)
+error_label4a.grid(column=0, row=31, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label4b = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message4b)
+error_label4b.grid(column=0, row=31, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label5a = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="cyan", textvariable=error_message5a)
+error_label5a.grid(column=0, row=32, columnspan=6, padx=5, pady=1, sticky=(W))
+error_label5b = ttk.Label(output_frame, font="TkSmallCaptionFont", foreground="magenta", textvariable=error_message5b)
+error_label5b.grid(column=0, row=32, columnspan=6, padx=5, pady=1, sticky=(W))
 
 # LOGO
 canvas = Canvas(logo_frame, width=200, height=50)

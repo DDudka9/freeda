@@ -320,13 +320,20 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
 
     all_names_valid = True
 
-    if ref_species == "Mm" or ref_species == "Hs":
+    if ref_species == "Mm":
+        species = "mouse"
+        ensembl_release = "http://may2021.archive.ensembl.org/index.html"
+    elif ref_species == "Hs":
+        species = "human"
         ensembl_release = "http://may2021.archive.ensembl.org/index.html"
     elif ref_species == "Cf":
+        species = "dog"
         ensembl_release = "http://jan2020.archive.ensembl.org/index.html"
     elif ref_species == "Gg":
+        species = "chicken"
         ensembl_release = "http://oct2018.archive.ensembl.org/index.html"
     else:
+        species = "your species"
         ensembl_release = "https://useast.ensembl.org/index.html"
 
     absent_names = []
@@ -340,18 +347,18 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
                 gene_name = ensembl.gene_by_id(gene).gene_name
 
                 if gene_biotype != "protein_coding":
-                    message = "... FATAL_ERROR... : %s is %s instead of a protein coding gene\n" \
-                              "    -> check gene name here: %s \n" \
-                              "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).biotype,
+                    message = "\n... FATAL_ERROR... : %s is %s instead of a protein coding gene\n\n" \
+                              "-> check gene name for %s here: %s \n\n" \
+                              "        -> correct gene name and click Analyze again...\n" % (gene, species, ensembl.gene_by_id(gene).biotype,
                                                                             ensembl_release)
                     logging.info(message)
                     protein_coding = False
                     return protein_coding
 
                 elif len(gene_name) == 1:
-                    message = "...FATAL_ERROR... : %s encodes a gene called '%s' which is a common name\n" \
-                              "    -> cannot reliably fetch input data \n" \
-                              "        -> exiting the pipeline now...\n" % (gene, ensembl.gene_by_id(gene).gene_name)
+                    message = "\n...FATAL_ERROR... : %s encodes a gene called '%s' which is a common name\n\n" \
+                              "-> cannot reliably fetch input data \n\n" \
+                              "        -> correct gene name and click Analyze again...\n" % (gene, ensembl.gene_by_id(gene).gene_name)
                     logging.info(message)
                     unique_name = False
                     return unique_name
@@ -361,9 +368,9 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
                     absent_names.append(gene)
 
             except ValueError:
-                message = "... FATAL_ERROR... : %s is NOT a valid gene name\n" \
-                          "   -> check gene name here: ensembl.org \n" \
-                          "        -> exiting the pipeline now...\n" % gene
+                message = "\n... FATAL_ERROR... : %s is NOT a valid gene name\n\n" \
+                          "-> check gene name for %s here: %s \n\n" \
+                          "        -> correct gene name and click Analyze again...\n" % (gene, species, ensembl_release)
                 logging.info(message)
                 protein_coding = False
                 return protein_coding
@@ -373,9 +380,9 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
             absent_names.append(gene)
 
     if not all_names_valid:
-        message = "... FATAL_ERROR... : Gene names %s do not exist in reference assembly\n" \
-                  "    -> check gene name here: ensembl.org \n" \
-                  "        -> exiting the pipeline now...\n" % absent_names
+        message = "\n... FATAL_ERROR... : Gene names %s do not exist in reference assembly\n\n" \
+                  "-> check gene name for %s here: %s \n\n" \
+                  "        -> correct gene name and click Analyze again...\n" % (absent_names, species, ensembl_release)
         logging.info(message)
 
     return all_names_valid
