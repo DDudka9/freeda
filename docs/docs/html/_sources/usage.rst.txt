@@ -8,7 +8,7 @@ Using FREEDA GUI
 
 FREEDA's graphical user interface allows analyzing up to 5 genes at a time. 
 
-*Depending on the specification of your computer, allocate about 1-2h per gene + 1-2h at first run to download genomes and make local blast databases.*
+*Depending on the specification of your computer, allocate about 1-2h per gene + 1-2h at first run to download genomes and make local blast databases. Fly analyzes are much faster because the genomes and genes are much smaller*
 
 **Mandatory steps:**
 
@@ -44,15 +44,17 @@ g. *Codon frequencies* (default F3X4)
 	
 h. *Exclude species* (recommended in case of observing frameshifts in the alignment - see :ref:`Understanding Results` - use abbreviation listed next to the species causing frameshit e.g. Gd for *Grammomys dolichurus*)
 
-i. *ABORT* (generally not recommended but useful to instantly stop the analysis - it shuts down the whole app)
+i. *Subgroup* (you can opt to analyze a specific clade: hominoidea, catarrhini, caniformia and melanogaster are available; make sure to select the matching reference species)
+
+j. *ABORT* (generally not recommended but useful to instantly stop the analysis - it shuts down the whole app)
 
 
 
 **TIPS:**
 
 1. Stable Internet connection allows smooth download of all genomes (see :ref:`Troubleshooting`).
-2. Allocate 1-2h per gene (depending on your computer's CPU and RAM) + 1-2h at first run to download genomes and make local blast databases.
-3. Large genes (>50kb) will take longer (hours) to analyze. Protein size matters less.
+2. If analyzing vertebrates: allocate 1-2h per gene (depending on your computer's CPU and RAM) + 1-2h at first run to download genomes and make local blast databases.
+3. Large genes (>100kb) will take longer (hours) to analyze. Protein size matters less.
 4. Make a dedicated folder for FREEDA (and always use the same one to avoid downloading genomes again)
 5. You can scroll text in the Events Window up-down and left-right
 	- *...NOTE... :* - this indicates information for the user - no action needed
@@ -61,6 +63,7 @@ i. *ABORT* (generally not recommended but useful to instantly stop the analysis 
 6. Putting your computer to sleep should not interfere with the analysis (will resume after awaking).
 7. We recommend the free software UNIPRO by Ugene for viewing alignment files `http://ugene.net/download-all.html <http://ugene.net/download-all.html>`_.
 8. When opening structure files (.pse) with PyMOL you can click "Skip activation" - no license is ever needed to view the structure files .
+9. If you downloaded a new FREEDA release - its safest to remove all text (.txt) files from the main folder
 
 
 Understanding Events Window
@@ -76,8 +79,9 @@ Understanding Events Window
 
 	.. image:: /_images/GUI_genomes_downloaded.png
    
-   *There will be 18-22 genomic assemblies downloaded for each selected taxon.
+   *There will be 18-22 genomic assemblies downloaded for each selected taxon unless you specified a subgroup.
    This step is triggered each time you select a new working directory ("Set directory" in GUI)!*
+
 
 **EACH TIME**
 

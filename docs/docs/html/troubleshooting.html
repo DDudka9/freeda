@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Development" href="development.html" />
-    <link rel="prev" title="Usage" href="usage.html" />
+    <link rel="prev" title="Genomic assemblies used" href="assemblies.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -51,6 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getstarted.html">How to get started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assemblies.html">Genomic assemblies used</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#fatal-errors-action-needed">Fatal errors (action needed)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#warnings-no-action-needed">Warnings (no action needed)</a></li>
@@ -65,7 +66,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="usage.html" title="previous chapter">Usage</a></li>
+      <li>Previous: <a href="assemblies.html" title="previous chapter">Genomic assemblies used</a></li>
       <li>Next: <a href="development.html" title="next chapter">Development</a></li>
   </ul></li>
 </ul>
@@ -98,7 +99,7 @@
             
   <div class="section" id="troubleshooting">
 <h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">¶</a></h1>
-<p>The most common error comes from unstable Internet connection, especially during the first run. Simply re-run the .app.</p>
+<p>The most common error comes from unstable Internet connection, especially during downloading genomes (first run). Simply close and run FREEDA again.</p>
 <dl class="simple">
 <dt>In case your issue is not covered here please send (<strong>damiandudka0&#64;gmail.com</strong>):</dt><dd><ul class="simple">
 <li><p>print-screen of the GUI</p></li>
@@ -114,19 +115,19 @@
 <div><p><em>REASON:</em> Follows most unknown errors causing FREEDA to crash.</p>
 <p><em>SOLUTION:</em> Please attach a screen shot and &quot;FREEDA-current-date.log&quot; and (if present) &quot;PAML-current-date.log&quot;. They will be either in &quot;Raw_data&quot; folder or in the main folder indicated within the GUI (&quot;Set directory&quot;).</p>
 </div></blockquote>
-<p><strong>...FATAL ERROR... PyMOL not found in the PATH, the Applications folder, or the working directory.</strong></p>
+<p><strong>...FATAL ERROR... : PyMOL not found in the PATH, the Applications folder, or the working directory.</strong></p>
 <blockquote>
 <div><p><em>REASON:</em> This is most likely a iOS user error installing PyMOL outside of the Applications folder.</p>
 <p><em>SOLUTION:</em> Move the PyMOL .app to Applications.</p>
 </div></blockquote>
 <p><strong>...FATAL ERROR... : Partial or empty genome file : GENOME.fasta -&gt; likely Internet connection was disrupted -&gt; please run FREEDA again...</strong></p>
 <blockquote>
-<div><p><em>REASON:</em> The most common error at first run - almost always caused by unstable Internet connection or ABORTing the .app when downloading the genomes at first run.</p>
+<div><p><em>REASON:</em> The most common error at first run - almost always caused by unstable Internet connection or closing the app when downloading the genomes at first run.</p>
 <p><em>SOLUTION:</em> Simply re-run the app.</p>
 </div></blockquote>
 <p><strong>...FATAL ERROR... : Genome : GENOME blast databases failed to build (likely interrupted) -&gt; rerun the pipeline...</strong></p>
 <blockquote>
-<div><p><em>REASON:</em> Most likely the .app crashed or was ABORTed while making local BLAST databases.</p>
+<div><p><em>REASON:</em> Most likely the app crashed or was closed while making local BLAST databases.</p>
 <p><em>SOLUTION:</em> Try re-running the app.</p>
 </div></blockquote>
 <p><strong>...FATAL ERROR... : Genome : GENOME blast databases were built partially (likely interrupted) -&gt; rerun the pipeline...</strong></p>
@@ -136,10 +137,20 @@
 </div></blockquote>
 <p><strong>...FATAL ERROR... : Repetitive coding sequence detected in GENE (min 80bp repeat) -&gt; cannot reliably analyze this GENE</strong></p>
 <blockquote>
-<div><p><em>REASON:</em> FREEDA's ability to find orthologous exons relies on accurate alignment to the reference coding sequence. Repetitive sequences are notoriously difficult to align, therefore FREEDA will not try analyze genes with min. 80bp repeats in coding sequence (e.g. Tacc3 in rodents).</p>
+<div><p><em>REASON:</em> FREEDA's ability to find orthologous exons relies on accurate alignment to the reference coding sequence. Repetitive sequences are notoriously difficult to align, therefore FREEDA will not try to analyze genes with more than 80bp-long repeats in coding sequence (e.g. Tacc3 in rodents).</p>
 <p><em>SOLUTION:</em> Unfortunately this gene cannot be analyzed reliably. If you still want to try I can run the analysis on my end and let you know if its reliable: <a class="reference external" href="mailto:damiandudka0&#37;&#52;&#48;gmail&#46;com">damiandudka0<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
 </div></blockquote>
+<p><strong>...FATAL ERROR... : GENE is transposable element instead of a protein coding gene -&gt; check gene name for SPECIES here: ensembl.org -&gt; correct gene name and click Analyze again...</strong></p>
+<blockquote>
+<div><p><em>REASON:</em> Provided gene name does not encode a protein (but its a trasposable element in this case).</p>
+<p><em>SOLUTION:</em> Check out the link FREEDA gives you and ensure you know the name of the protein coding gene you are interested in. ALWAYS use the release FREEDA gives you the link to.</p>
+</div></blockquote>
 <p><strong>...FATAL ERROR... : No reliable coding sequence annotation detected for GENE</strong></p>
+<blockquote>
+<div><p><em>REASON:</em> This is usually caused by unreliable annotation of the gene of interest - mostly concerning dog and chicken assemblies.</p>
+<p><em>SOLUTION:</em> Verify your gene annotation that FREEDA used under the link provided</p>
+</div></blockquote>
+<p><strong>...FATAL ERROR... : Gene names [GENE] do not exist in reference assembly -&gt; check gene name for SPECIES here: ensembl.org -&gt; correct gene name and click Analyze again...</strong></p>
 <blockquote>
 <div><p><em>REASON:</em> This is usually caused by unreliable annotation of the gene of interest - mostly concerning dog and chicken assemblies.</p>
 <p><em>SOLUTION:</em> Make sure there is a known coding sequence for this gene (e.g. visit Ensembl database - <a class="reference external" href="https://useast.ensembl.org/index.html">https://useast.ensembl.org/index.html</a></p>
@@ -149,10 +160,15 @@
 <div><p><em>REASON:</em> Unreliable input generation - usually following another FATAL_ERROR (e.g. no coding transcript found)</p>
 <p><em>SOLUTION:</em> Make this is not a pseudogene (e.g. visit Ensembl database - <a class="reference external" href="https://useast.ensembl.org/index.html">https://useast.ensembl.org/index.html</a></p>
 </div></blockquote>
-<p><strong>...FATAL ERROR... : At least 3 blast output files contain no matches above threshold : ... for gene name: GENE -&gt; please exclude them and run FREEDA again -&gt; exiting the pipeline now...</strong></p>
+<p><strong>...FATAL ERROR... : &gt;= 5 species show no matches above blast threshold: 60% Gene: GENE -&gt; please run FREEDA again with Exclude species option (copy paste this: Pt Gg)</strong></p>
 <blockquote>
-<div><p><em>REASON:</em> When using &quot;Common domain expected&quot; option to increase the threshold of BLAST hits (from 60 to 80%), you might end up with no hits for very divergent genes. It might also be due to a gene loss.</p>
-<p><em>SOLUTION:</em> Try the &quot;Exclude species&quot; option using two-letter code for each genome (e.g. Pt Gg for <em>Pan troglodytes</em> and <em>Gorilla gorilla</em>; see CITATION).</p>
+<div><p><em>REASON:</em> FREEDA uses a default 60% (vertebrates) or 30% (flies) treshold for identity when blasting coding sequences. In case of very divergent genes that threshold might not be met. If you used &quot;Common domains expected&quot; advanced option that increases the threshold to 80% (vertebrates) or 60% (flies) increasing the risk of no matches found for a given species. It might also be due to a gene loss in some species.</p>
+<p><em>SOLUTION:</em> Try the &quot;Exclude species&quot; option using two-letter (or three-letter for flies) code for each genome (e.g., type Pt Gg for <em>Pan troglodytes</em> and <em>Gorilla gorilla</em>; or Dsi Der for <em>Drosophila simulans</em> and <em>Drosophila erecta</em>). You can also try to indicate a subgroup (hominoidea, catarrhini, caniformia, melanogaster) to avoid blasting against more divergent species.</p>
+</div></blockquote>
+<p><strong>...FATAL ERROR... : Too few genomes were selected (&lt; 6)</strong></p>
+<blockquote>
+<div><p><em>REASON:</em> Similar to the previous error. FREEDA expects coding sequences from at least 6 species (genomic assemblies) to be able to run the analysis. This is most likely to happen if you select melanogaster as subgroup (maximum 9 species available).</p>
+<p><em>SOLUTION:</em> Make sure not to select &quot;Common domains expected&quot; and do not select melanogaster subgroup (allowing search in more divergent flies too).</p>
 </div></blockquote>
 </div>
 <div class="section" id="warnings-no-action-needed">

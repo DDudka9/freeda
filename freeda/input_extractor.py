@@ -332,6 +332,9 @@ def validate_gene_names(ref_species, all_genes, all_genes_ensembl, ensembl):
     elif ref_species == "Gg":
         species = "chicken"
         ensembl_release = "http://oct2018.archive.ensembl.org/index.html"
+    elif ref_species == "Dme":
+        species = "fly"
+        ensembl_release = "https://flybase.org/"
     else:
         species = "your species"
         ensembl_release = "https://useast.ensembl.org/index.html"
@@ -949,6 +952,25 @@ def parse_sequence(ref_species, output_path, fasta_sequence, gene, transcript, s
 def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype, model_seq):
     """Extracts coding sequence by creating Transcript object"""
 
+    if ref_species == "Mm":
+        species = "mouse"
+        ensembl_release = "http://may2021.archive.ensembl.org/index.html"
+    elif ref_species == "Hs":
+        species = "human"
+        ensembl_release = "http://may2021.archive.ensembl.org/index.html"
+    elif ref_species == "Cf":
+        species = "dog"
+        ensembl_release = "http://jan2020.archive.ensembl.org/index.html"
+    elif ref_species == "Gg":
+        species = "chicken"
+        ensembl_release = "http://oct2018.archive.ensembl.org/index.html"
+    elif ref_species == "Dme":
+        species = "fly"
+        ensembl_release = "https://flybase.org/"
+    else:
+        species = "your species"
+        ensembl_release = "https://useast.ensembl.org/index.html"
+
     # ADDED 03/09/2023 to prevent syntax errors with various symbols
     if ref_species == "Dme":
         all_transcripts_ids = ensembl.transcript_ids_of_gene_id(gene)
@@ -1067,7 +1089,8 @@ def extract_cds(ensembl, ref_species, coding_sequence_input_path, gene, biotype,
 
     # some gene names in ensembl do not code proteins -> exit pipeline
     if not selected_transcript_id:
-        message = "\n...FATAL ERROR... : No reliable coding sequence annotation detected for gene %s" % gene
+        message = "\n...FATAL ERROR... : No reliable coding sequence annotation detected for gene %s in %s\n" \
+                  "  -> verify annotation of your gene that FREEDA used here: %s" % (gene, species, ensembl_release)
         logging.info(message)
         return transcript, selected_transcript_id, gene_id, contig, strand, \
                UTR_5, UTR_3, cds_sequence_expected, matching_length

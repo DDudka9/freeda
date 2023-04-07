@@ -1,13 +1,13 @@
 How to get started
 ==================
 
-MacOS (Intel-chip)
+MacOS
 ------------------
 
-(Compatible with Intel-chip MacOS: Mojave, Big Sur and Monterrey and Ventura)
+(Compatible with both Inter and Apple Silicon MacOS: Mojave, Big Sur, Monterrey and Ventura)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
-	`https://github.com/DDudka9/freeda/releases/tag/v1.0.3-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.3-mac>`_
+	`https://github.com/DDudka9/freeda/releases/tag/v1.0.9-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.9-mac>`_
 2. Install PyMOL `https://pymol.org/2/ <https://pymol.org/2/>`_ in your Applications folder (takes minutes)
 3. Double-click the .app file to open FREEDA GUI (it might take a minute to load)
 
@@ -25,10 +25,10 @@ Linux
 3. Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
 
 
-Windows (or M1/M2-chip MacOS)
+Windows
 -----------------------------
 
-FREEDA is not available for Windows and may not yet run on M1/M2-chip Macs. However, it is easy to run FREEDA from a free VirtualBox running Linux inside a Windows computer or M1/M2-chip Mac. Setting up a VirtualBox takes minutes.
+FREEDA is not available for Windows. However, it is easy to run FREEDA from a free VirtualBox running Linux inside a Windows computer. Setting up a VirtualBox takes minutes.
 
 .. _virtual machine anchor:
 
