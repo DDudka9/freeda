@@ -4,14 +4,14 @@ How to get started
 MacOS
 ------------------
 
-(Compatible with both Inter and Apple Silicon MacOS: Mojave, Big Sur, Monterrey and Ventura)
-(Make sure you have Rosetta 2 program installed on MacOS with Apple Silicon chip)
+(Compatible with both Intel and Apple Silicon MacOS: Mojave, Big Sur, Monterrey and Ventura)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
-	`https://github.com/DDudka9/freeda/releases/tag/v1.0.9-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.9-mac>`_
+	`https://github.com/DDudka9/freeda/releases/tag/v1.0.10-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.10-mac>`_
 2. Install PyMOL `https://pymol.org/2/ <https://pymol.org/2/>`_ in your Applications folder (takes minutes).
 3. Double-click the .app file to open FREEDA GUI (it might take a minute to load).
 
+* Make sure you have Rosetta 2 program installed on MacOS with Apple Silicon chip
 
 .. _linux installation anchor:
 

@@ -42,7 +42,7 @@ g. *Codon frequencies* (default F3X4)
 	
 	(We recommend consulting PAML User Guide: `http://abacus.gene.ucl.ac.uk/software/paml.html <http://abacus.gene.ucl.ac.uk/software/paml.html>`_)
 	
-h. *Exclude species* (recommended in case of observing frameshifts in the alignment - see :ref:`Understanding Results` - use abbreviation listed next to the species causing frameshit e.g. Gd for *Grammomys dolichurus*)
+h. *Exclude species* (recommended in case of observing frameshifts in the alignment - see :ref:`Understanding Results` - use abbreviation listed here: :ref:`Genomic assemblies used` e.g. Gd for *Grammomys dolichurus*)
 
 i. *Subgroup* (you can opt to analyze a specific clade: hominoidea, catarrhini, caniformia and melanogaster are available; make sure to select the matching reference species)
 
