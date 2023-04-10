@@ -12,9 +12,9 @@ FREEDA's graphical user interface allows analyzing up to 5 genes at a time.
 
 **Mandatory steps:**
 
-a. Provide gene name (e.g. MX1 gene encodes MxA protein; when in doubt consult: `https://www.uniprot.org/ <https://www.uniprot.org/>`_)
+a. Provide gene name (e.g., MX1 gene encodes MxA protein; when in doubt consult: `https://www.uniprot.org/ <https://www.uniprot.org/>`_)
 b. Select reference species
-c. Click "Set directory" (we recommend this to be a hard drive)
+c. Click "Set directory" (we recommend this to be an external drive).
 d. Click "Analyze"
 
 
@@ -62,7 +62,7 @@ j. *ABORT* (generally not recommended but useful to instantly stop the analysis 
 	- *...FATAL ERROR... :* - this indicates critical failure - action needed (see :ref:`Troubleshooting`).
 6. Putting your computer to sleep should not interfere with the analysis (will resume after awaking).
 7. We recommend the free software UNIPRO by Ugene for viewing alignment files `http://ugene.net/download-all.html <http://ugene.net/download-all.html>`_.
-8. When opening structure files (.pse) with PyMOL you can click "Skip activation" - no license is ever needed to view the structure files .
+8. When opening structure files (.pse) with PyMOL you can click "Skip activation" - no license is ever needed to view the structure files.
 9. If you downloaded a new FREEDA release - its safest to remove all text (.txt) files from the main folder
 
 
@@ -125,13 +125,13 @@ Understanding Events Window
 
 	.. image:: /_images/GUI_events_RETRO.png
 	
-	*We urge manual verification of the raw alignment of that specific contig to ensure 
-	that the contig contains a retro-duplication (see below). "RETRO_score" is a ratio 
-	of exons that are likely retro-duplicated and likely syntenic exons. However, if no 
-	potentially syntenic exons are found in the contig, even a single exon flagged as possibly 
-	"RETRO" raises "RETRO_score" to a maximum (100). "RETRO_score" is always enabled.*
+    *We urge manual verification of the raw alignment of that specific contig to ensure
+    that the contig contains a retro-duplication (see below). "RETRO_score" is a ratio
+    of exons that are potentially retro-duplicated and syntenic exons. However, if no
+    potential exons are found in the contig, even a single exon flagged as possibly
+    "RETRO" raises "RETRO_score" to a maximum (100). "RETRO_score" is always enabled.*
 
-**Exon calling - this contig is does not have the last two syntenic exons expected**
+**Exon calling - this contig does not have the last two syntenic exons expected**
 
 	.. image:: /_images/GUI_events_syntenic_5prime.png
 
@@ -212,12 +212,12 @@ Understanding Results
 	*pr >= 0.9* - Number of residues with high probability of being under positive selection
 	
 
-**Folder with all results (inside user indicated "Set directory")**
+**Folder with all results (inside user-indicated "Set directory")**
 
 	.. image:: /_images/Working_directory_Raw_data.png
 	.. image:: /_images/Working_directory_Results_data.png
 
-**Exemplary nucleotide alignment (opened with UNIPRO Ugene)**
+**Exemplary nucleotide alignment (viewed in UNIPRO Ugene)**
 
 	*Cenpo_raw_nucleotide_alignment.fasta*
 
@@ -227,7 +227,7 @@ Understanding Results
 	Region marked will be removed as it cannot be analyzed. Inspect this file to find which 
 	species causes loss of regions from final alignment.*
 
-**Exemplary protein alignment (opened with UNIPRO Ugene)**
+**Exemplary protein alignment (viewed in UNIPRO Ugene)**
 
 	*Cenpo_protein_alignment.fasta*
 
@@ -263,13 +263,13 @@ Understanding Results
 	gene of interest using the "exclude species" option to avoid spurious signatures 
 	of positive selection.*
 
-**Exemplary gene tree (opened with Figtree)**
+**Exemplary gene tree (viewed in Figtree)**
 	
 	*Cenpo.tree*
 	
 	.. image:: /_images/Exemplary_gene_tree.png
 
-**Results worksheet (opened in Excel)**
+**Results worksheet (viewed in Excel)**
 
 	*PAML_result-10-31-2022-13-02_F3X4.xlsx*
 
@@ -278,7 +278,7 @@ Understanding Results
 	*Here you can find probabilities of positive selection acting on each recurrently changing 
 	residue (displayed on top).*
 	
-**Residues under positive selection mapped onto referene CDS (opened in Preview)**
+**Residues under positive selection mapped onto referene CDS (viewed in Preview)**
 	
 	*Cenpo_PAML_graph_F3X4.tif*
 	
@@ -289,7 +289,7 @@ Understanding Results
 	Bottom graph (magenta) shows residues with the highest probability of evolving under 
 	positive selection. Gray regions have been excluded from analysis (e.g. indels).*
 
-**Residues under positive selection mapped onto structural prediction (opened with PyMOL)**
+**Residues under positive selection mapped onto structural prediction (viewed in PyMOL)**
 
 	*Cenpo_Mm.pse*
 

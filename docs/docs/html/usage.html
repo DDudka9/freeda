@@ -107,9 +107,9 @@
 <p><em>Depending on the specification of your computer, allocate about 1-2h per gene + 1-2h at first run to download genomes and make local blast databases. Fly analyzes are much faster because the genomes and genes are much smaller</em></p>
 <p><strong>Mandatory steps:</strong></p>
 <ol class="loweralpha simple">
-<li><p>Provide gene name (e.g. MX1 gene encodes MxA protein; when in doubt consult: <a class="reference external" href="https://www.uniprot.org/">https://www.uniprot.org/</a>)</p></li>
+<li><p>Provide gene name (e.g., MX1 gene encodes MxA protein; when in doubt consult: <a class="reference external" href="https://www.uniprot.org/">https://www.uniprot.org/</a>)</p></li>
 <li><p>Select reference species</p></li>
-<li><p>Click &quot;Set directory&quot; (we recommend this to be a hard drive)</p></li>
+<li><p>Click &quot;Set directory&quot; (we recommend this to be an external drive).</p></li>
 <li><p>Click &quot;Analyze&quot;</p></li>
 </ol>
 <p><strong>Optional steps:</strong></p>
@@ -168,7 +168,7 @@
 </li>
 <li><p>Putting your computer to sleep should not interfere with the analysis (will resume after awaking).</p></li>
 <li><p>We recommend the free software UNIPRO by Ugene for viewing alignment files <a class="reference external" href="http://ugene.net/download-all.html">http://ugene.net/download-all.html</a>.</p></li>
-<li><p>When opening structure files (.pse) with PyMOL you can click &quot;Skip activation&quot; - no license is ever needed to view the structure files .</p></li>
+<li><p>When opening structure files (.pse) with PyMOL you can click &quot;Skip activation&quot; - no license is ever needed to view the structure files.</p></li>
 <li><p>If you downloaded a new FREEDA release - its safest to remove all text (.txt) files from the main folder</p></li>
 </ol>
 </div>
@@ -224,14 +224,16 @@ recent duplications whose surrounding locus has not yet significantly diverged.<
 </div></blockquote>
 <p><strong>Exon calling - this contig may contain a retro-duplication</strong></p>
 <blockquote>
+<div><blockquote>
 <div><img alt="_images/GUI_events_RETRO.png" src="_images/GUI_events_RETRO.png" />
+</div></blockquote>
 <p><em>We urge manual verification of the raw alignment of that specific contig to ensure
 that the contig contains a retro-duplication (see below). &quot;RETRO_score&quot; is a ratio
-of exons that are likely retro-duplicated and likely syntenic exons. However, if no
-potentially syntenic exons are found in the contig, even a single exon flagged as possibly
+of exons that are potentially retro-duplicated and syntenic exons. However, if no
+potential exons are found in the contig, even a single exon flagged as possibly
 &quot;RETRO&quot; raises &quot;RETRO_score&quot; to a maximum (100). &quot;RETRO_score&quot; is always enabled.</em></p>
 </div></blockquote>
-<p><strong>Exon calling - this contig is does not have the last two syntenic exons expected</strong></p>
+<p><strong>Exon calling - this contig does not have the last two syntenic exons expected</strong></p>
 <blockquote>
 <div><img alt="_images/GUI_events_syntenic_5prime.png" src="_images/GUI_events_syntenic_5prime.png" />
 </div></blockquote>
@@ -297,12 +299,12 @@ PAML analysis starts for the first gene.</em></p>
 <p><em>pr &lt; 0.9</em> - Number of all residues that might be evolving under positive selection</p>
 <p><em>pr &gt;= 0.9</em> - Number of residues with high probability of being under positive selection</p>
 </div></blockquote>
-<p><strong>Folder with all results (inside user indicated &quot;Set directory&quot;)</strong></p>
+<p><strong>Folder with all results (inside user-indicated &quot;Set directory&quot;)</strong></p>
 <blockquote>
 <div><img alt="_images/Working_directory_Raw_data.png" src="_images/Working_directory_Raw_data.png" />
 <img alt="_images/Working_directory_Results_data.png" src="_images/Working_directory_Results_data.png" />
 </div></blockquote>
-<p><strong>Exemplary nucleotide alignment (opened with UNIPRO Ugene)</strong></p>
+<p><strong>Exemplary nucleotide alignment (viewed in UNIPRO Ugene)</strong></p>
 <blockquote>
 <div><p><em>Cenpo_raw_nucleotide_alignment.fasta</em></p>
 <img alt="_images/Exemplary_nucleotide_alignment.png" src="_images/Exemplary_nucleotide_alignment.png" />
@@ -310,7 +312,7 @@ PAML analysis starts for the first gene.</em></p>
 Region marked will be removed as it cannot be analyzed. Inspect this file to find which
 species causes loss of regions from final alignment.</em></p>
 </div></blockquote>
-<p><strong>Exemplary protein alignment (opened with UNIPRO Ugene)</strong></p>
+<p><strong>Exemplary protein alignment (viewed in UNIPRO Ugene)</strong></p>
 <blockquote>
 <div><p><em>Cenpo_protein_alignment.fasta</em></p>
 <img alt="_images/Exemplary_protein_alignment.png" src="_images/Exemplary_protein_alignment.png" />
@@ -340,19 +342,19 @@ still occur as seen in the protein sequence (see above). The user should re-anal
 gene of interest using the &quot;exclude species&quot; option to avoid spurious signatures
 of positive selection.</em></p>
 </div></blockquote>
-<p><strong>Exemplary gene tree (opened with Figtree)</strong></p>
+<p><strong>Exemplary gene tree (viewed in Figtree)</strong></p>
 <blockquote>
 <div><p><em>Cenpo.tree</em></p>
 <img alt="_images/Exemplary_gene_tree.png" src="_images/Exemplary_gene_tree.png" />
 </div></blockquote>
-<p><strong>Results worksheet (opened in Excel)</strong></p>
+<p><strong>Results worksheet (viewed in Excel)</strong></p>
 <blockquote>
 <div><p><em>PAML_result-10-31-2022-13-02_F3X4.xlsx</em></p>
 <img alt="_images/Exemplary_results_sheet.png" src="_images/Exemplary_results_sheet.png" />
 <p><em>Here you can find probabilities of positive selection acting on each recurrently changing
 residue (displayed on top).</em></p>
 </div></blockquote>
-<p><strong>Residues under positive selection mapped onto referene CDS (opened in Preview)</strong></p>
+<p><strong>Residues under positive selection mapped onto referene CDS (viewed in Preview)</strong></p>
 <blockquote>
 <div><p><em>Cenpo_PAML_graph_F3X4.tif</em></p>
 <img alt="_images/Exemplary_graph.png" src="_images/Exemplary_graph.png" />
@@ -361,7 +363,7 @@ residues that evolve under positive selection with more or less probability (0-7
 Bottom graph (magenta) shows residues with the highest probability of evolving under
 positive selection. Gray regions have been excluded from analysis (e.g. indels).</em></p>
 </div></blockquote>
-<p><strong>Residues under positive selection mapped onto structural prediction (opened with PyMOL)</strong></p>
+<p><strong>Residues under positive selection mapped onto structural prediction (viewed in PyMOL)</strong></p>
 <blockquote>
 <div><p><em>Cenpo_Mm.pse</em></p>
 <img alt="_images/Exemplary_protein_structure.png" src="_images/Exemplary_protein_structure.png" />

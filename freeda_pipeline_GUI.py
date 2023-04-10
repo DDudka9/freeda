@@ -1190,7 +1190,7 @@ root = Tk()
 root.maxsize(width=1280, height=725)
 root.resizable(False, False)
 
-root.title("FREEDA - Finder of Rapidly Evolving Exons in De novo Assemblies")
+root.title("FREEDA - Finder of Rapidly Evolving Exons in Diverse Assemblies")
 root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=1)
 

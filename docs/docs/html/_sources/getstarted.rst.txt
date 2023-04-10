@@ -5,11 +5,12 @@ MacOS
 ------------------
 
 (Compatible with both Inter and Apple Silicon MacOS: Mojave, Big Sur, Monterrey and Ventura)
+(Make sure you have Rosetta 2 program installed on MacOS with Apple Silicon chip)
 
 1. Download the latest MacOS release from the GitHub Releases page: 
 	`https://github.com/DDudka9/freeda/releases/tag/v1.0.9-mac <https://github.com/DDudka9/freeda/releases/tag/v1.0.9-mac>`_
-2. Install PyMOL `https://pymol.org/2/ <https://pymol.org/2/>`_ in your Applications folder (takes minutes)
-3. Double-click the .app file to open FREEDA GUI (it might take a minute to load)
+2. Install PyMOL `https://pymol.org/2/ <https://pymol.org/2/>`_ in your Applications folder (takes minutes).
+3. Double-click the .app file to open FREEDA GUI (it might take a minute to load).
 
 
 .. _linux installation anchor:
@@ -22,7 +23,7 @@ Linux
 1. Download the latest Linux release from the GitHub Releases page: 
 	`https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux <https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux>`_
 2. "Double-click" the .zip file -> Extract (anywhere is fine)
-3. Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
+3. Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load).
 
 
 Windows
