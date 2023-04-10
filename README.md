@@ -33,7 +33,8 @@ MacOS
 2. Install PyMOL https://pymol.org/2 in your Applications folder (takes minutes)
 3. Double-click the .app file to run FREEDA (it might take a minute to load) and follow the steps depicted below.
 
-(Make sure you have Rosetta 2 program installed on MacOS with Apple Silicon chip)
+*Make sure you have Rosetta 2 program installed on MacOS with Apple Silicon chip
+
 (Find exhaustive walkthrough and explanation of the results in Documentation: [https://ddudka9.github.io/freeda/](https://ddudka9.github.io/freeda/))
 ![](GUI_example.png)
 
