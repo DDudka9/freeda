@@ -809,13 +809,11 @@ def check_label(label, op):
     error_message3a.set(" Residue label is fine (or none provided) -> this is optional")
     error_message3b.set("")
     # accept only entry composed of letters and numbers
-    valid = re.match(r"^[A-Za-z0-9]+$", label) is not None or label == ""
+    valid = re.match(r"^[A-Za-z0-9]+$", label) is not None
     # keystroke validation
     if op == "key":
-        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None or label == ""
-
-        # ADDED 04/05/2023
-        if not ok_so_far and label != "":
+        ok_so_far = re.match(r"^(?![\s\S])|[\w\s]+$", label) is not None
+        if not ok_so_far:
             error_message3a.set("")
             error_message3b.set("Invalid residue label (follow pattern: My domain")
         else:
@@ -823,14 +821,11 @@ def check_label(label, op):
             error_message3b.set("")
         return ok_so_far
     elif op == "focusout":
-        if not valid and label != "":
-            error_message3a.set("")
-            error_message3b.set("Invalid residue label (follow pattern: My domain)")
-        elif label != "":
+        if label != "":
             error_message3a.set(" Residue label is fine -> this is optional")
             error_message3b.set("")
         elif label == "":
-            error_message3a.set(" Residue label was none provided -> this is optional")
+            error_message3a.set(" Residue label was not provided -> this is optional")
             error_message3b.set("")
 
     return valid
