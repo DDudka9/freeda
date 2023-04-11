@@ -47,7 +47,7 @@ Linux
 3. Press ctrl + alt + t to open Terminal window.
 4. Drag and drop the FREEDA file and press ENTER to open FREEDA GUI (it might take a minute to load).
 
-5. Windows
+Windows
 -------
 
 FREEDA is not available for Windows. However, it is easy to run FREEDA from a free VirtualBox running Linux inside a Windows computer. 
