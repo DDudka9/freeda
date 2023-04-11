@@ -46,21 +46,23 @@ One way to set up a virtual machine is:
 
    .. image:: /_images/VB1.png
 
-4. Enter a name and installation location for your virtual machine. Choose "Linux" for the type and "Ubuntu (64-bit)" for the version. Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.
+4. Enter a name and installation location for your virtual machine. Choose "Linux" for the type and "Ubuntu 22.04 LTS (Jammy Jellyfish) (64-bit)" for the version.
 
    .. image:: /_images/New_VB2.png
 
-5. On the next screen, create a disk image. 100GB of disk space is needed to run FREEDA on one taxon, but we recommend allocating 500GB to be able to run all taxons. The rest of the settings on this screen can remain as their defaults.
+5. On the next screen, select minimum 100GB of disk space if you want to run FREEDA on a single taxon (e.g., primates), but we recommend allocating 500GB to be able to run all taxons.
+Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.
+You can leave number of CPU at 1 but selecting 2 CPU would lead to better performance and stability of your Linux (DO NOT allocate the maximum number available!). You can change that later.
 
    .. image:: /_images/New_VB3.png
 
-6.  After creating the virtual machine, assign the operating system image to it by clicking on the option next to IDE Secondary Device 0 and "Choosing disk file" that you downloaded before (.iso file).
+6.  After creating the virtual machine, assign the operating system image to it by clicking the option next to IDE Secondary Device 0 and "Choosing disk file" that you downloaded earlier (.iso file).
 
    .. image:: /_images/New_VB4.png
 
    .. image:: /_images/New_VB4_2.png
 
-7. We recommend increasing performance by allocating at least 2 CPU units by going to Settings -> System -> Processor.
+7. If you selected only 1 CPU earlier, now you can increase it to 2 CPU units by going to Settings -> System -> Processor.
 
    .. image:: /_images/New_VB4_3.png
 
