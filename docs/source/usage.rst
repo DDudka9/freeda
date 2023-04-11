@@ -4,7 +4,7 @@ Usage
 Using FREEDA GUI
 ----------------
 
-	.. image:: /_images/GUI_input_2.png
+	.. image:: /_images/GUI_input.png
 
 FREEDA's graphical user interface allows analyzing up to 5 genes at a time. 
 

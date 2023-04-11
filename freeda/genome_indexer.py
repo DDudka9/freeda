@@ -121,6 +121,7 @@ def check_index(index_path):
          'MiroungaLeonina_genome.idx': [90107],
          'MusCaroli_genome.idx': [192507],
          'MusMinutoides_genome.idx': [4022267],
+         'MusMusculus_genome.idx': [0],
          'MusPahari_genome.idx': [163835],
          'MusSpicilegus_genome.idx': [2019323],
          'MusSpretus_genome.idx': [319483],
