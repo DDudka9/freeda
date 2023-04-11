@@ -41,12 +41,13 @@ MacOS
 Linux
 -----
 
-1. Download the latest Linux release (compatible with Ubuntu 22.04.1 LTS) from the GitHub Releases page: 
-	[https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux](https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux)
-2. "Double-click" the .zip file -> Extract (anywhere is fine)
-3. Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load)
+1. Download the latest Linux release (compatible with Ubuntu 22.04 LTS) from the GitHub Releases page: 
+	[https://github.com/DDudka9/freeda/releases/tag/v1.0.10-linux](https://github.com/DDudka9/freeda/releases/tag/v1.0.10-linux)
+2. "Right-click" the FREEDA file -> go to Properties -> go to Permissions -> tick Allow executing fila as program
+3. Press ctrl + alt + t to open Terminal window.
+4. Drag and drop the FREEDA file and press ENTER to open FREEDA GUI (it might take a minute to load).
 
-Windows
+5. Windows
 -------
 
 FREEDA is not available for Windows. However, it is easy to run FREEDA from a free VirtualBox running Linux inside a Windows computer. 
