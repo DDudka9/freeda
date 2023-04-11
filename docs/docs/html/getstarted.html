@@ -139,20 +139,25 @@
 <li><p>Open VirtualBox and click on &quot;New&quot; to create a new virtual machine.</p>
 <img alt="_images/VB1.png" src="_images/VB1.png" />
 </li>
-<li><p>Enter a name and installation location for your virtual machine. Choose &quot;Linux&quot; for the type and &quot;Ubuntu (64-bit)&quot; for the version. Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.</p>
+<li><p>Enter a name and installation location for your virtual machine. Choose &quot;Linux&quot; for the type and &quot;Ubuntu 22.04 LTS (Jammy Jellyfish) (64-bit)&quot; for the version.</p>
 <img alt="_images/New_VB2.png" src="_images/New_VB2.png" />
 </li>
-<li><p>On the next screen, create a disk image. 100GB of disk space is needed to run FREEDA on one taxon, but we recommend allocating 500GB to be able to run all taxons. The rest of the settings on this screen can remain as their defaults.</p>
-<img alt="_images/New_VB3.png" src="_images/New_VB3.png" />
-</li>
-<li><p>After creating the virtual machine, assign the operating system image to it by clicking on the option next to IDE Secondary Device 0 and &quot;Choosing disk file&quot; that you downloaded before (.iso file).</p></li>
+</ol>
+<p>5. On the next screen, select minimum 100GB of disk space if you want to run FREEDA on a single taxon (e.g., primates), but we recommend allocating 500GB to be able to run all taxons.
+Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.
+You can leave number of CPU at 1 but selecting 2 CPU would lead to better performance and stability of your Linux (DO NOT allocate the maximum number available!). You can change that later.</p>
+<blockquote>
+<div><img alt="_images/New_VB3.png" src="_images/New_VB3.png" />
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li><p>After creating the virtual machine, assign the operating system image to it by clicking the option next to IDE Secondary Device 0 and &quot;Choosing disk file&quot; that you downloaded earlier (.iso file).</p></li>
 </ol>
 <blockquote>
 <div><img alt="_images/New_VB4.png" src="_images/New_VB4.png" />
 <img alt="_images/New_VB4_2.png" src="_images/New_VB4_2.png" />
 </div></blockquote>
 <ol class="arabic" start="7">
-<li><p>We recommend increasing performance by allocating at least 2 CPU units by going to Settings -&gt; System -&gt; Processor.</p>
+<li><p>If you selected only 1 CPU earlier, now you can increase it to 2 CPU units by going to Settings -&gt; System -&gt; Processor.</p>
 <img alt="_images/New_VB4_3.png" src="_images/New_VB4_3.png" />
 </li>
 <li><p>Open the virtual machine by clicking &quot;Start&quot;. Once it has started, choose &quot;Install Ubuntu&quot;.</p>
