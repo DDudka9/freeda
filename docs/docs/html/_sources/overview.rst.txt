@@ -9,8 +9,8 @@ without training in computational biology and molecular evolution.
 - Source code: `https://github.com/DDudka9/freeda <https://github.com/DDudka9/freeda>`_
 - Requirements:
 	- Operating systems compatible:
-		- MacOS: Mojave, Big Sur, Monterrey and Ventura
-		- Linux Ubuntu 22.04.1 LTS
+		- MacOS: Mojave, Big Sur, Monterrey and Ventura (Apple Silicon must have Rosetta installed)
+		- Linux Ubuntu 22.04 LTS
 		- Windows (currently through VirtualBox only)
 	- Disc space:
 		- min 100 GB per taxon e.g. primates (we recommend using a hard drive with 500GB space)

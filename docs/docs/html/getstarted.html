@@ -116,15 +116,16 @@
 </div>
 <div class="section" id="linux">
 <span id="linux-installation-anchor"></span><h2>Linux<a class="headerlink" href="#linux" title="Permalink to this heading">¶</a></h2>
-<p>(Compatible with Ubuntu 22.04.1 LTS release <a class="reference external" href="https://ubuntu.com/download/desktop">https://ubuntu.com/download/desktop</a>)</p>
+<p>(Compatible with Ubuntu 22.04 LTS release <a class="reference external" href="https://ubuntu.com/download/desktop">https://ubuntu.com/download/desktop</a>)</p>
 <ol class="arabic simple">
 <li><dl class="simple">
-<dt>Download the latest Linux release from the GitHub Releases page:</dt><dd><p><a class="reference external" href="https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux">https://github.com/DDudka9/freeda/releases/tag/v1.0.0-linux</a></p>
+<dt>Download the latest Linux release from the GitHub Releases page:</dt><dd><p><a class="reference external" href="https://github.com/DDudka9/freeda/releases/tag/v1.0.10-linux">https://github.com/DDudka9/freeda/releases/tag/v1.0.10-linux</a></p>
 </dd>
 </dl>
 </li>
-<li><p>&quot;Double-click&quot; the .zip file -&gt; Extract (anywhere is fine)</p></li>
-<li><p>Press ctrl + alt + t to open Terminal window. Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load).</p></li>
+<li><p>&quot;Right-click&quot; the FREEDA file -&gt; go to Properties -&gt; go to Permissions -&gt; tick Allow executing fila as program</p></li>
+<li><p>Press ctrl + alt + t to open Terminal window.</p></li>
+<li><p>Drag and drop the extracted file and press ENTER to open FREEDA GUI (it might take a minute to load).</p></li>
 </ol>
 </div>
 <div class="section" id="windows">
@@ -134,28 +135,31 @@
 <p>One way to set up a virtual machine is:</p>
 <ol class="arabic">
 <li><p>Download a commonly used VirtualBox from <a class="reference external" href="https://virtualbox.org/wiki/Downloads">https://virtualbox.org/wiki/Downloads</a>.</p></li>
-<li><p>Download Linux version Ubuntu 22.04.1 LTS from <a class="reference external" href="https://ubuntu.com/download/desktop">https://ubuntu.com/download/desktop</a>. In general, operating system files have the suffix &quot;.iso&quot;.</p></li>
+<li><p>Download Linux version Ubuntu 22.04 LTS from <a class="reference external" href="https://ubuntu.com/download/desktop">https://ubuntu.com/download/desktop</a>. In general, operating system files have the suffix &quot;.iso&quot;.</p></li>
 <li><p>Open VirtualBox and click on &quot;New&quot; to create a new virtual machine.</p>
 <img alt="_images/VB1.png" src="_images/VB1.png" />
 </li>
 <li><p>Enter a name and installation location for your virtual machine. Choose &quot;Linux&quot; for the type and &quot;Ubuntu (64-bit)&quot; for the version. Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.</p>
-<img alt="_images/VB2.png" src="_images/VB2.png" />
+<img alt="_images/New_VB2.png" src="_images/New_VB2.png" />
 </li>
 <li><p>On the next screen, create a disk image. 100GB of disk space is needed to run FREEDA on one taxon, but we recommend allocating 500GB to be able to run all taxons. The rest of the settings on this screen can remain as their defaults.</p>
-<img alt="_images/VB3.png" src="_images/VB3.png" />
+<img alt="_images/New_VB3.png" src="_images/New_VB3.png" />
 </li>
-<li><p>After creating the virtual machine, assign the operating system image to it by clicking on the option next to IDE Secondary Device 0 and choosing the disk file you downloaded before (.iso file).</p></li>
+<li><p>After creating the virtual machine, assign the operating system image to it by clicking on the option next to IDE Secondary Device 0 and &quot;Choosing disk file&quot; that you downloaded before (.iso file).</p></li>
 </ol>
 <blockquote>
-<div><img alt="_images/VB4.png" src="_images/VB4.png" />
+<div><img alt="_images/New_VB4.png" src="_images/New_VB4.png" />
+<img alt="_images/New_VB4_2.png" src="_images/New_VB4_2.png" />
 </div></blockquote>
 <ol class="arabic" start="7">
-<li><p>We recommend increasing performance by allocating at least 2 CPU units by going to Settings -&gt; System -&gt; Processor.</p></li>
+<li><p>We recommend increasing performance by allocating at least 2 CPU units by going to Settings -&gt; System -&gt; Processor.</p>
+<img alt="_images/New_VB4_3.png" src="_images/New_VB4_3.png" />
+</li>
 <li><p>Open the virtual machine by clicking &quot;Start&quot;. Once it has started, choose &quot;Install Ubuntu&quot;.</p>
-<img alt="_images/VB5.png" src="_images/VB5.png" />
+<img alt="_images/New_VB5.png" src="_images/New_VB5.png" />
 </li>
 <li><p>Follow the installer instructions. Note that when the screen comes up to &quot;Erase disk and install Ubuntu&quot; this will <strong>not</strong> affect the other files on your computer. It is only erasing the data inside the virtual machine.</p>
-<img alt="_images/VB6.png" src="_images/VB6.png" />
+<img alt="_images/New_VB6.png" src="_images/New_VB6.png" />
 </li>
 <li><p>Continue with the installation. When it is complete, the virtual machine will restart. When it asks to &quot;remove the installation medium&quot;, just press ENTER.</p></li>
 </ol>
@@ -167,11 +171,13 @@
 <img alt="_images/VB8.png" src="_images/VB8.png" />
 </li>
 </ol>
-<p>Congratulations! To run FREEDA now, just follow the steps for a Linux installation at <a class="reference internal" href="#linux-installation-anchor"><span class="std std-ref">Linux Installation</span></a>.</p>
-<ol class="arabic simple" start="12">
-<li><p>We suggest increasing the resolution of the VirtualBox Linux window (Settings -&gt; Displays -&gt; Resolution 1360x768) to make sure the GUI fits the screen. We also suggest to prevent sleeping -&gt; Settings -&gt; Power -&gt; Screen Blank -&gt; Never to ensure uninterrupted analysis.</p></li>
-</ol>
-<p>To run FREEDA in VirtualBox just follow instructions for (<a class="reference internal" href="#linux"><span class="std std-ref">Linux</span></a>)</p>
+<p>12. We suggest increasing the resolution of the VirtualBox Linux window.
+Settings (right top corner) -&gt; Displays -&gt; Resolution 1360x768) to make sure the GUI fits the screen.
+We also suggest to prevent sleeping -&gt; Settings -&gt; Power -&gt; Screen Blank -&gt; Never to ensure uninterrupted analysis.</p>
+<p>Congratulations! To run FREEDA in VirtualBox just follow instructions for (<a class="reference internal" href="#linux"><span class="std std-ref">Linux</span></a>)
+-&gt; remember that you will have to download FREEDA within your VirtualBox
+(best is to open Mozilla Firefox that is automatically installed by Linux and go to
+<a class="reference external" href="https://github.com/DDudka9/freeda/releases/tag/v1.0.10-linux">https://github.com/DDudka9/freeda/releases/tag/v1.0.10-linux</a>)</p>
 </div>
 </div>
 
