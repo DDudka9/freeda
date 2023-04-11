@@ -51,8 +51,8 @@ One way to set up a virtual machine is:
    .. image:: /_images/New_VB2.png
 
 5. On the next screen, select minimum 100GB of disk space if you want to run FREEDA on a single taxon (e.g., primates), but we recommend allocating 500GB to be able to run all taxons.
-Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.
-You can leave number of CPU at 1 but selecting 2 CPU would lead to better performance and stability of your Linux (DO NOT allocate the maximum number available!). You can change that later.
+   Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.
+   You can leave number of CPU at 1 but selecting 2 CPU would lead to better performance and stability of your Linux (DO NOT allocate the maximum number available!). You can change that later.
 
    .. image:: /_images/New_VB3.png
 
