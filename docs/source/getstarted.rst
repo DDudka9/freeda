@@ -46,13 +46,13 @@ One way to set up a virtual machine is:
 
    .. image:: /_images/VB1.png
 
-4. On the next screen select disk space. We recommend allocating 500GB to ensure you dont run out of space! YOU CANNOT CHANGE THAT LATER.
-
-   .. image:: /_images/New_VB1_1.png
-
-5. Next, enter a name and installation location for your virtual machine. Choose "Linux" for the type and "Ubuntu 22.04 LTS (Jammy Jellyfish) (64-bit)" for the version.
+4. Next, enter a name and installation location for your virtual machine. Choose "Linux" for the type and "Ubuntu 22.04 LTS (Jammy Jellyfish) (64-bit)" for the version.
 
    .. image:: /_images/New_VB2.png
+
+5. On the next screen select disk space. We recommend allocating 500GB to ensure you dont run out of space! YOU CANNOT CHANGE THAT LATER.
+
+   .. image:: /_images/New_VB2_1.png
 
 6. Next allocate RAM and CPU units for the virtual machine. At least 4GB (4096MB) of RAM is recommended in this step (DO NOT allocate the maximum number available!).
    We recommend selecting 2 CPU units to ensure high performance and stability of your Linux (DO NOT allocate the maximum number available!).
