@@ -139,12 +139,15 @@
 <li><p>Open VirtualBox and click on &quot;New&quot; to create a new virtual machine.</p>
 <img alt="_images/VB1.png" src="_images/VB1.png" />
 </li>
-<li><p>Enter a name and installation location for your virtual machine. Choose &quot;Linux&quot; for the type and &quot;Ubuntu 22.04 LTS (Jammy Jellyfish) (64-bit)&quot; for the version.</p>
+<li><p>On the next screen select disk space. We recommend allocating 500GB to ensure you dont run out of space! YOU CANNOT CHANGE THAT LATER.</p>
+<img alt="_images/New_VB1_1.png" src="_images/New_VB1_1.png" />
+</li>
+<li><p>Next, enter a name and installation location for your virtual machine. Choose &quot;Linux&quot; for the type and &quot;Ubuntu 22.04 LTS (Jammy Jellyfish) (64-bit)&quot; for the version.</p>
 <img alt="_images/New_VB2.png" src="_images/New_VB2.png" />
 </li>
-<li><p>On the next screen, select minimum 100GB of disk space if you want to run FREEDA on a single taxon (e.g., primates), but we recommend allocating 500GB to be able to run all taxons.
-Allocate RAM for the virtual machine. Allocating more RAM will make the virtual machine run faster. At least 4GB (4096MB) of RAM is recommended in this step.
-You can leave number of CPU at 1 but selecting 2 CPU would lead to better performance and stability of your Linux (DO NOT allocate the maximum number available!). You can change that later.</p>
+<li><p>Next allocate RAM and CPU units for the virtual machine. At least 4GB (4096MB) of RAM is recommended in this step (DO NOT allocate the maximum number available!).
+We recommend selecting 2 CPU units to ensure high performance and stability of your Linux (DO NOT allocate the maximum number available!).
+You can change both of those later.</p>
 <img alt="_images/New_VB3.png" src="_images/New_VB3.png" />
 </li>
 <li><p>After creating the virtual machine, assign the operating system image to it by clicking the option next to IDE Secondary Device 0 and &quot;Choosing disk file&quot; that you downloaded earlier (.iso file).</p></li>
@@ -153,29 +156,32 @@ You can leave number of CPU at 1 but selecting 2 CPU would lead to better perfor
 <div><img alt="_images/New_VB4.png" src="_images/New_VB4.png" />
 <img alt="_images/New_VB4_2.png" src="_images/New_VB4_2.png" />
 </div></blockquote>
-<ol class="arabic" start="7">
+<ol class="arabic" start="8">
 <li><p>If you selected only 1 CPU earlier, now you can increase it to 2 CPU units by going to Settings -&gt; System -&gt; Processor.</p>
 <img alt="_images/New_VB4_3.png" src="_images/New_VB4_3.png" />
 </li>
 <li><p>Open the virtual machine by clicking &quot;Start&quot;. Once it has started, choose &quot;Install Ubuntu&quot;.</p>
 <img alt="_images/New_VB5.png" src="_images/New_VB5.png" />
 </li>
-<li><p>Follow the installer instructions. Note that when the screen comes up to &quot;Erase disk and install Ubuntu&quot; this will <strong>not</strong> affect the other files on your computer. It is only erasing the data inside the virtual machine.</p>
-<img alt="_images/New_VB6.png" src="_images/New_VB6.png" />
-</li>
+<li><p>Follow the installer instructions. Note that when the screen comes up to &quot;Erase disk and install Ubuntu&quot; this will <strong>not</strong> affect the other files on your computer. It is only erasing the data inside the virtual machine.</p></li>
+</ol>
+<blockquote>
+<div><img alt="_images/New_VB6.png" src="_images/New_VB6.png" />
+</div></blockquote>
+<ol class="arabic simple" start="11">
 <li><p>Continue with the installation. When it is complete, the virtual machine will restart. When it asks to &quot;remove the installation medium&quot;, just press ENTER.</p></li>
 </ol>
 <blockquote>
 <div><img alt="_images/VB7.png" src="_images/VB7.png" />
 </div></blockquote>
-<ol class="arabic" start="11">
+<ol class="arabic" start="12">
 <li><p>If the installation has been completed successfully, the virtual machine should boot to a desktop image.</p>
-<img alt="_images/VB8.png" src="_images/VB8.png" />
+<img alt="_images/New_VB8.png" src="_images/New_VB8.png" />
 </li>
 </ol>
-<p>12. We suggest increasing the resolution of the VirtualBox Linux window.
+<p>Finally, we suggest increasing the resolution of the VirtualBox Linux window.
 Settings (right top corner) -&gt; Displays -&gt; Resolution 1360x768) to make sure the GUI fits the screen.
-We also suggest to prevent sleeping -&gt; Settings -&gt; Power -&gt; Screen Blank -&gt; Never to ensure uninterrupted analysis.</p>
+We also suggest preventing sleeping -&gt; Settings -&gt; Power -&gt; Screen Blank -&gt; Never to ensure uninterrupted analysis.</p>
 <p>Congratulations! To run FREEDA in VirtualBox just follow instructions for (<a class="reference internal" href="#linux"><span class="std std-ref">Linux</span></a>)
 -&gt; remember that you will have to download FREEDA within your VirtualBox
 (best is to open Mozilla Firefox that is automatically installed by Linux and go to
