@@ -54,7 +54,7 @@ One way to set up a virtual machine is:
 
    .. image:: /_images/New_VB2_1.png
 
-6. Next allocate RAM and CPU units for the virtual machine. At least 4GB (4096MB) of RAM is recommended in this step (DO NOT allocate the maximum number available!).
+6. Next allocate RAM and CPU units for the virtual machine. At least 6GB (6144MB) of RAM is recommended in this step (DO NOT allocate the maximum number available!).
    We recommend selecting 2 CPU units to ensure high performance and stability of your Linux (DO NOT allocate the maximum number available!).
    You can change both of those later.
 

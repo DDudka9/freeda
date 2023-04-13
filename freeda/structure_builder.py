@@ -52,7 +52,9 @@ def get_interpro(uniprot_id):
     print("\n Retrieving InterPro data for UniProt ID " + uniprot_id + "...\n")
     interpro_url = "https://www.ebi.ac.uk/interpro/api/protein/uniprot/" + uniprot_id + "/entry/interpro/"
     print("Request URL: " + interpro_url)
-    response = requests.get(interpro_url)
+    #response = requests.get(interpro_url)
+    # MODIFIED 04/12/2023
+    response = requests.get(interpro_url, verify=False)  # should prevent SSLError
     return response
 
 
@@ -60,7 +62,9 @@ def get_domain_info(interpro_entry_id):
     """Gets Interpro domain entry from json file"""
 
     domain_entry_url = "https://www.ebi.ac.uk/interpro/api/entry/interpro/" + interpro_entry_id
-    response = requests.get(domain_entry_url)
+    #response = requests.get(domain_entry_url)
+    # MODIFIED 04/12/2023
+    response = requests.get(domain_entry_url, verify=False)  # should prevent SSLError
     return response
 
 
@@ -178,7 +182,9 @@ def download_pymol_linux(wdir, pymol_tar_name):
     """Downloads pymol on Linux systems"""
     linux_url = "http://pymol.org/installers/PyMOL-2.5.2_293-Linux-x86_64-py37.tar.bz2"
     try:
-        r = requests.get(linux_url)
+        #r = requests.get(linux_url)
+        # MODIFIED 04/12/2023
+        r = requests.get(linux_url, verify=False) # should prevent SSLError
         r.raise_for_status()
         with open(os.path.join(wdir, pymol_tar_name), "wb") as f:
             f.write(r.content)
