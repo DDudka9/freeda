@@ -287,7 +287,7 @@ def fetch_structure_prediction(wdir, ref_species, gene, possible_uniprot_ids):
     # e.g. Spc25 and Spcs2 (alt. name Spc25)
     if len(valid_uniprot_ids) > 1 :
         message = "...WARNING... : More than one valid structure prediction %s detected for: %s\n" \
-                  % (gene, valid_uniprot_ids)
+                  % (valid_uniprot_ids, gene)
         logging.info(message)
 
     if not os.path.isfile(gene_filepath):

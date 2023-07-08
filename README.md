@@ -12,11 +12,10 @@ without training in computational biology and molecular evolution.
 	- min 100 GB of disc space for each taxon e.g. primates (we recommend a hard drive with 500GB space)
 	- Stable Internet connection
 
-If you use FREEDA for published work, please cite the original paper [preprint]
+If you use FREEDA for published work, please cite the original paper:
 
-FREEDA: an automated computational pipeline guides experimental testing of protein innovation by detecting positive selection
-Damian Dudka, R Brian Akins, Michael A Lampson
-bioRxiv 2023.02.27.530329; doi: https://doi.org/10.1101/2023.02.27.530329
+Dudka D, Akins RB, Lampson MA. FREEDA: An automated computational pipeline guides experimental testing of protein innovation. J Cell Biol. 2023 Sep 4;222(9):e202212084. doi: 10.1083/jcb.202212084. Epub 2023 Jun 26. PMID: 37358475; PMCID: PMC10292211.
+
 
 FREEDA is published under the GPLv3 license.
 
