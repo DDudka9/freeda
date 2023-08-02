@@ -25,6 +25,11 @@
       <excludeFolder url="file://$MODULE_DIR$/build_122022" />
       <excludeFolder url="file://$MODULE_DIR$/dist_122022" />
       <excludeFolder url="file://$MODULE_DIR$/include_mac_M1" />
+      <excludeFolder url="file://$MODULE_DIR$/older_builds" />
+      <excludeFolder url="file://$MODULE_DIR$/older_builds/dist_07_31_2023/build" />
+      <excludeFolder url="file://$MODULE_DIR$/older_builds/dist_one_file_cli_07_31_2023/build" />
+      <excludeFolder url="file://$MODULE_DIR$/older_builds/build" />
+      <excludeFolder url="file://$MODULE_DIR$/older_builds/dist" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (py37)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
