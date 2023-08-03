@@ -36,7 +36,9 @@ from freeda import paml_launcher
 from freeda import paml_visualizer
 from freeda import structure_builder
 from freeda import genomes_preprocessing
+from freeda import pyinstaller_compatibility
 import os
+import sys
 import re
 import shutil
 
@@ -53,6 +55,30 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                      "\n macOS -> follow README file or go to https://pymol.org/2/ to download and install Pymol"
                      "\n ubuntu -> follow README file or go to Software Manager and download and install Pymol")
         return
+
+    # ----------------------------------------#
+    ######## ASSIGN ENVIRONMENT VARIABLES ########
+    # ----------------------------------------#
+
+    if pyinstaller_compatibility.is_bundled():
+        os.environ["MAFFT_BINARIES"] = pyinstaller_compatibility.resource_path("mafft_bin")
+        os.environ["REQUESTS_CA_BUNDLE"] = pyinstaller_compatibility.resource_path("certifi/cacert.pem")
+
+    # ----------------------------------------#
+    ######## INSTALL PYMOL IF NEEDED ########
+    # ----------------------------------------#
+
+    if not shutil.which("pymol") and \
+            not os.path.exists(os.path.join("/", "Applications", "PyMOL.app", "Contents", "MacOS", "PyMOL")):
+        if sys.platform == "linux" or sys.platform == "linux2":
+            print("\nPyMOL not found in the PATH. Checking for PyMOL in the current working directory.")
+            structure_builder.install_pymol_linux(wdir)
+        else:
+            message = "\nWELCOME! It seems that you are running FREEDA\nfor the first time -> " \
+                      "Please download PyMOL from:\n\nhttps://pymol.org/\n\nand place it in the Applications folder\n" \
+                      "Then close the FREEDA application (or click ABORT) and open it again"
+            print(message)
+            return
 
     # ----------------------------------------#
     ######## GET USER INPUT ########
