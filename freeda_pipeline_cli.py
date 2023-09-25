@@ -181,7 +181,7 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
         else:
             # define advanced options and labels
             advanced_options = input("\n(FREEDA) (optional) Access advanced options for gene: %s "
-                                         "(yes or no):\n" % user_gene).lower()
+                                         "(yes or no)\n" % user_gene).lower()
             if advanced_options == "yes":
                 advanced_option_1 = input("\n(FREEDA) (advanced) For gene: %s pick one number: "
                                                "1 - Duplication expected, "
@@ -197,7 +197,8 @@ def freeda_pipeline(wdir=None, ref_species=None, t=None, codon_frequencies=None,
                     print("\nYou did not select any of the available options for gene: %s\n" % user_gene)
                     advanced_option_1 = "Advanced options (OFF)"
 
-                advanced_option_2 = input("\n(FREEDA) (advanced) Do you expect common domains in gene: %s?\n"
+                advanced_option_2 = input("\n(FREEDA) (advanced) Do you expect common domains in gene: %s? "
+                                          "(yes or no)\n"
                                               % user_gene).lower()
                 if advanced_option_2 == "yes":
                     advanced_option_2 = "Common domains expected"

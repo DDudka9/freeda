@@ -121,11 +121,22 @@ def clone_cds(wdir, ref_species, preselected_exons_overhangs, most_intron_contig
             for winner in winners_hd_normalized:
                 total_hd_normalized = 0
                 exons = [exon_nr for exon_nr, cs in duplicated_exons.items() if winner in cs]
+                #total_hd_temp = 0  # added 08/17/2023
+                #total_len_temp = 0  # added 08/17/2023
                 for exon_nr in exons:
+                    # added 08/17/2023
+                    #hd_temp, len_temp = hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner,
+                    #                                                preselected_exons_overhangs, MSA_path,
+                    #                                                gene_name)
+                    #total_hd_temp += hd_temp  # added 08/17/2023
+                    #total_len_temp += len_temp  # added 08/17/2023
                     total_hd_normalized += hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner,
                                                                            preselected_exons_overhangs, MSA_path,
                                                                            gene_name)
+
+                # winners_hd_normalized[winner] = total_hd_temp / total_len_temp  # added 08/17/2023
                 winners_hd_normalized[winner] = total_hd_normalized
+                # contigs_hd_analyzed[winner] = total_hd_temp / total_len_temp  # added 08/17/2023
                 contigs_hd_analyzed[winner] = total_hd_normalized
 
             # get most conserved winner
@@ -325,9 +336,12 @@ def hamming_distance_to_ref_species(wdir, ref_exons, exon_nr, winner, preselecte
     shutil.move(in_filename, MSA_path + "Duplicated_exons/")
     shutil.move(out_filename, MSA_path + "Duplicated_exons/")
 
-    #    return hd_normalized
+    # return hd_normalized
     hd_normalized = hd / len(ref_exons[exon_nr][1])
+    # hd_temp = hd  #  added 08/17/2023
+    # len_temp = len(ref_exons[exon_nr][1])  # added 08/17/2023
 
+    # return hd_temp, len_temp  # added 08/17/2023
     return hd_normalized
     
     

@@ -11,6 +11,7 @@ without training in computational biology and molecular evolution.
 - Requirements:
 	- min 100 GB of disc space for each taxon e.g. primates (we recommend a hard drive with 500GB space)
 	- Stable Internet connection
+- (NEW) You can now run FREEDA using a web-based server Tamarind Bio [https://www.tamarind.bio/freeda](https://www.tamarind.bio/freeda)
 
 If you use FREEDA for published work, please cite the original paper:
 
