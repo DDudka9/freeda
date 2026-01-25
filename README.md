@@ -12,7 +12,7 @@ without training in computational biology and molecular evolution.
 	- min 100 GB of disc space for each taxon e.g. primates (we recommend a hard drive with 500GB space)
 	- Stable Internet connection
 
-UPDATE (01/2025) - FREEDA is undergoing the first update since its release. Until the new version comes out, before running the pipline, please manually download the genomes related to your experimental species. To do so, visit the following DOI addresses and follow the README file you find there (very simple):
+UPDATE (01/2025) - FREEDA is undergoing the first update since its release. Until the new version comes out, before running the pipeline, please manually download the genomes related to your experimental species. To do so, visit the following DOI addresses and follow the README file you find there (very simple):
 
 Human : https://doi.org/10.5281/zenodo.18099595, https://doi.org/10.5281/zenodo.18099842, https://doi.org/10.5281/zenodo.18099866
 Mouse : https://doi.org/10.5281/zenodo.18244805, https://doi.org/10.5281/zenodo.18244834, https://doi.org/10.5281/zenodo.18244867
